@@ -1,5 +1,5 @@
 const whatsNewReleases = Object.freeze({
-    '2026.04.05': {
+    '2026.04.10': {
         items: [
             {
                 key: 'quick_search',
