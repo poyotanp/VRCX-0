@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { openExternalLink } from '@/lib/entityMedia.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import { Button } from '@/ui/shadcn/button';
 import {
     Card,
@@ -16,6 +17,7 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
+import { Empty, EmptyHeader, EmptyTitle } from '@/ui/shadcn/empty';
 import { Input } from '@/ui/shadcn/input';
 
 function buildAssetUrl(relativePath) {
@@ -126,13 +128,19 @@ export function OpenSourceNoticeDialog({ open, onOpenChange, t }) {
                         onChange={(event) => setSearchQuery(event.target.value)}
                     />
                     {loading ? (
-                        <div className="text-muted-foreground rounded-md border border-dashed p-6 text-sm">
-                            {t('dialog.open_source.loading')}
-                        </div>
+                        <Empty className="min-h-24">
+                            <EmptyHeader>
+                                <EmptyTitle>
+                                    {t('dialog.open_source.loading')}
+                                </EmptyTitle>
+                            </EmptyHeader>
+                        </Empty>
                     ) : loadError ? (
-                        <div className="text-muted-foreground rounded-md border border-dashed p-6 text-sm">
-                            {t('dialog.open_source.unavailable')}
-                        </div>
+                        <Alert variant="destructive">
+                            <AlertDescription>
+                                {t('dialog.open_source.unavailable')}
+                            </AlertDescription>
+                        </Alert>
                     ) : (
                         <div className="grid min-h-0 gap-4 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
                             <div className="flex max-h-[30rem] flex-col gap-2 overflow-y-auto pr-1">
@@ -164,9 +172,15 @@ export function OpenSourceNoticeDialog({ open, onOpenChange, t }) {
                                     </Button>
                                 ))}
                                 {!filteredEntries.length ? (
-                                    <div className="text-muted-foreground rounded-md border border-dashed p-6 text-sm">
-                                        {t('dialog.open_source.no_results')}
-                                    </div>
+                                    <Empty className="min-h-28">
+                                        <EmptyHeader>
+                                            <EmptyTitle>
+                                                {t(
+                                                    'dialog.open_source.no_results'
+                                                )}
+                                            </EmptyTitle>
+                                        </EmptyHeader>
+                                    </Empty>
                                 ) : null}
                             </div>
                             <Card className="min-h-[30rem]">
@@ -223,17 +237,29 @@ export function OpenSourceNoticeDialog({ open, onOpenChange, t }) {
                                                     {selectedEntry.noticeText}
                                                 </pre>
                                             ) : (
-                                                <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
-                                                    {t(
-                                                        'dialog.open_source.notice_unavailable'
-                                                    )}
-                                                </div>
+                                                <Empty className="min-h-32">
+                                                    <EmptyHeader>
+                                                        <EmptyTitle>
+                                                            {t(
+                                                                'dialog.open_source.notice_unavailable'
+                                                            )}
+                                                        </EmptyTitle>
+                                                    </EmptyHeader>
+                                                </Empty>
                                             )}
                                         </CardContent>
                                     </>
                                 ) : (
-                                    <CardContent className="text-muted-foreground flex min-h-[30rem] items-center justify-center text-sm">
-                                        {t('dialog.open_source.select_package')}
+                                    <CardContent className="flex min-h-[30rem] items-center justify-center">
+                                        <Empty className="border-0">
+                                            <EmptyHeader>
+                                                <EmptyTitle>
+                                                    {t(
+                                                        'dialog.open_source.select_package'
+                                                    )}
+                                                </EmptyTitle>
+                                            </EmptyHeader>
+                                        </Empty>
                                     </CardContent>
                                 )}
                             </Card>

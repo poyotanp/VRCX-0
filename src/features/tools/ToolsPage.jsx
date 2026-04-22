@@ -22,11 +22,11 @@ import {
 import { cn } from '@/lib/utils.js';
 import { configRepository } from '@/repositories/index.js';
 import { triggerToolByKey } from '@/services/toolActionService.js';
+import { getNavIconComponent } from '@/shared/constants/navIcons.js';
 import {
     getToolsByCategory,
     toolCategories
 } from '@/shared/constants/tools.js';
-import { getNavIconComponent } from '@/shared/constants/navIcons.js';
 import { useDashboardStore } from '@/state/dashboardStore.js';
 import { usePreferencesStore } from '@/state/preferencesStore.js';
 import { Button } from '@/ui/shadcn/button';
@@ -66,15 +66,15 @@ function ToolItem({
     const PinStateIcon = isPinned ? PinOffIcon : PinIcon;
 
     return (
-        <div className="group hover:bg-accent/50 relative rounded-md border text-left transition-colors">
+        <div className="relative h-full">
             <Button
                 type="button"
-                variant="ghost"
-                className="h-full w-full min-w-0 items-start justify-start gap-2.5 rounded-md p-3 pr-10 text-left font-normal whitespace-normal"
+                variant="outline"
+                className="h-full w-full min-w-0 items-start justify-start gap-2.5 p-3 pr-10 text-left font-normal whitespace-normal"
                 onClick={onClick}
             >
                 <div className="bg-muted/40 text-muted-foreground flex size-8 flex-none items-center justify-center rounded-md">
-                    <Icon aria-hidden="true" />
+                    <Icon aria-hidden="true" data-icon="inline-start" />
                 </div>
                 <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{title}</div>
@@ -152,8 +152,7 @@ function removeToolNavItem(layout, navKey) {
             if (entry.type === 'folder') {
                 const nextItems = (entry.items || []).filter(
                     (item) =>
-                        (typeof item === 'string' ? item : item?.key) !==
-                        navKey
+                        (typeof item === 'string' ? item : item?.key) !== navKey
                 );
                 return nextItems.length ? { ...entry, items: nextItems } : null;
             }

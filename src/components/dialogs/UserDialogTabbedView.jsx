@@ -79,6 +79,7 @@ import { getFaviconUrl } from '@/shared/utils/urlUtils.js';
 import { useFriendRosterStore } from '@/state/friendRosterStore.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Checkbox } from '@/ui/shadcn/checkbox';
@@ -88,9 +89,17 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/ui/shadcn/dropdown-menu';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
 import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
 import {
     HoverCard,
@@ -350,6 +359,11 @@ function UserGroupCard({
     const image = rowImage(displayGroup, 'group');
     const label = groupDisplayName(displayGroup);
     const visibility = groupMemberVisibility(group);
+    const visibilityValue = ['visible', 'friends', 'hidden'].includes(
+        visibility
+    )
+        ? visibility
+        : 'visible';
     const memberCount =
         Number(
             group?.memberCount ??
@@ -386,10 +400,10 @@ function UserGroupCard({
                     <img
                         src={image}
                         alt=""
-                        className="size-9 shrink-0 rounded-full object-cover"
+                        className="size-9 shrink-0 rounded-md object-cover"
                     />
                 ) : (
-                    <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-full [&>svg]:size-4">
+                    <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-md [&>svg]:size-4">
                         <UsersIcon className="text-muted-foreground" />
                     </span>
                 )}
@@ -470,27 +484,22 @@ function UserGroupCard({
                             </>
                         ) : null}
                         <DropdownMenuGroup>
-                            <DropdownMenuItem
-                                onSelect={() =>
-                                    onVisibilityChange?.(group, 'visible')
+                            <DropdownMenuRadioGroup
+                                value={visibilityValue}
+                                onValueChange={(value) =>
+                                    onVisibilityChange?.(group, value)
                                 }
                             >
-                                Visibility: Everyone
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onSelect={() =>
-                                    onVisibilityChange?.(group, 'friends')
-                                }
-                            >
-                                Visibility: Friends
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onSelect={() =>
-                                    onVisibilityChange?.(group, 'hidden')
-                                }
-                            >
-                                Visibility: Hidden
-                            </DropdownMenuItem>
+                                <DropdownMenuRadioItem value="visible">
+                                    Visibility: Everyone
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="friends">
+                                    Visibility: Friends
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="hidden">
+                                    Visibility: Hidden
+                                </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
                             <DropdownMenuItem
                                 variant="destructive"
                                 onSelect={() => onLeave?.(group)}
@@ -555,6 +564,50 @@ function openRow(row, kind) {
     }
 }
 
+function entityListEmptyTitle(kind) {
+    if (kind === 'user') {
+        return 'No users';
+    }
+    if (kind === 'world') {
+        return 'No worlds';
+    }
+    if (kind === 'avatar') {
+        return 'No avatars';
+    }
+    if (kind === 'group') {
+        return 'No groups';
+    }
+    return 'No results';
+}
+
+function EntityListState({ kind, loading = false, error = '' }) {
+    if (loading) {
+        return (
+            <div className="text-muted-foreground flex min-h-32 items-center justify-center gap-2 text-sm">
+                <Spinner className="size-4" />
+                <span>Loading...</span>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        );
+    }
+
+    return (
+        <Empty className="min-h-32 border">
+            <EmptyHeader>
+                <EmptyTitle>{entityListEmptyTitle(kind)}</EmptyTitle>
+                <EmptyDescription>No matching entries.</EmptyDescription>
+            </EmptyHeader>
+        </Empty>
+    );
+}
+
 function EntityList({
     rows,
     kind = '',
@@ -570,13 +623,13 @@ function EntityList({
     onGroupSelectionChange
 }) {
     if (loading) {
-        return <EntityBlank>Loading...</EntityBlank>;
+        return <EntityListState kind={kind} loading />;
     }
     if (error) {
-        return <EntityBlank>{error}</EntityBlank>;
+        return <EntityListState kind={kind} error={error} />;
     }
     if (!rows.length) {
-        return <EntityBlank />;
+        return <EntityListState kind={kind} />;
     }
     const nowMs = Date.now();
     return (
@@ -618,6 +671,8 @@ function EntityList({
                             row?.shortCode ||
                             row?.username ||
                             '';
+                const imageRoundedClassName =
+                    kind === 'user' ? 'rounded-full' : 'rounded-md';
                 const travelingTimestamp =
                     kind === 'user' ? userTravelingTimestamp(row) : 0;
                 const dotClassName =
@@ -635,10 +690,18 @@ function EntityList({
                                 <img
                                     src={image}
                                     alt=""
-                                    className="size-9 rounded-full object-cover"
+                                    className={cn(
+                                        'size-9 object-cover',
+                                        imageRoundedClassName
+                                    )}
                                 />
                             ) : (
-                                <span className="bg-muted flex size-9 items-center justify-center rounded-full [&>svg]:size-4">
+                                <span
+                                    className={cn(
+                                        'bg-muted flex size-9 items-center justify-center [&>svg]:size-4',
+                                        imageRoundedClassName
+                                    )}
+                                >
                                     <UserIcon className="text-muted-foreground" />
                                 </span>
                             )}

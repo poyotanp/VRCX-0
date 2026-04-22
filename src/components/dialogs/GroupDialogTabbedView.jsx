@@ -47,6 +47,7 @@ import { tryOpenLaunchLocation } from '@/services/directAccessService.js';
 import { parseLocation } from '@/shared/utils/locationParser.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Checkbox } from '@/ui/shadcn/checkbox';
@@ -58,6 +59,12 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
 import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
 import { Input } from '@/ui/shadcn/input';
 import {
@@ -74,6 +81,15 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/ui/shadcn/select';
+import { Spinner } from '@/ui/shadcn/spinner';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/ui/shadcn/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 import { Textarea } from '@/ui/shadcn/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/ui/shadcn/toggle-group';
@@ -82,7 +98,6 @@ import {
     EntityActionDropdown,
     EntityActionItem,
     EntityActionSeparator,
-    EntityBlank,
     EntityDialogHeader,
     EntityDialogScaffold,
     EntityDialogTabContent,
@@ -113,6 +128,60 @@ function firstText(...values) {
         }
     }
     return '';
+}
+
+function groupRowsEmptyTitle(kind) {
+    if (kind === 'posts') {
+        return 'No posts';
+    }
+    if (kind === 'members') {
+        return 'No members';
+    }
+    if (kind === 'photos') {
+        return 'No photos';
+    }
+    return 'No rows';
+}
+
+function GroupListState({
+    title = 'No rows',
+    description = 'No matching entries.',
+    loading = false,
+    error = '',
+    className = ''
+}) {
+    if (loading) {
+        return (
+            <div
+                className={cn(
+                    'text-muted-foreground flex min-h-32 items-center justify-center gap-2 text-sm',
+                    className
+                )}
+            >
+                <Spinner className="size-4" />
+                <span>Loading...</span>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <Alert variant="destructive" className={className}>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        );
+    }
+
+    return (
+        <Empty className={cn('min-h-32 border', className)}>
+            <EmptyHeader>
+                <EmptyTitle>{title}</EmptyTitle>
+                {description ? (
+                    <EmptyDescription>{description}</EmptyDescription>
+                ) : null}
+            </EmptyHeader>
+        </Empty>
+    );
 }
 
 function normalizeGroupLanguages(group, languageOptionMap = new Map()) {
@@ -333,16 +402,21 @@ function PostList({
                             <div className="text-muted-foreground mt-1 flex flex-wrap items-center justify-end gap-1.5 text-xs">
                                 {Array.isArray(post?.roleIds) &&
                                 post.roleIds.length ? (
-                                    <span className="inline-flex items-center gap-1">
-                                        <EyeIcon className="size-3.5" />
-                                        {post.roleIds
-                                            .map(
-                                                (roleId) =>
-                                                    rolesById.get(roleId) ||
-                                                    'Role'
-                                            )
-                                            .join(', ')}
-                                    </span>
+                                    <Badge
+                                        variant="outline"
+                                        className="max-w-full"
+                                    >
+                                        <EyeIcon data-icon="inline-start" />
+                                        <span className="truncate">
+                                            {post.roleIds
+                                                .map(
+                                                    (roleId) =>
+                                                        rolesById.get(roleId) ||
+                                                        'Role'
+                                                )
+                                                .join(', ')}
+                                        </span>
+                                    </Badge>
                                 ) : null}
                                 {post?.authorDisplayName ? (
                                     <span>{post.authorDisplayName}</span>
@@ -432,13 +506,13 @@ function PhotoGalleryRows({ rows, group, loading, error, onPreviewImage }) {
     }, [activeGallery, galleryEntries]);
 
     if (loading) {
-        return <EntityBlank>Loading...</EntityBlank>;
+        return <GroupListState title="No photos" loading />;
     }
     if (error) {
-        return <EntityBlank>{error}</EntityBlank>;
+        return <GroupListState title="No photos" error={error} />;
     }
     if (!galleryEntries.length) {
-        return <EntityBlank />;
+        return <GroupListState title="No photos" />;
     }
 
     return (
@@ -526,10 +600,12 @@ function RowList({
     onDeletePost
 }) {
     if (loading) {
-        return <EntityBlank>Loading...</EntityBlank>;
+        return <GroupListState title={groupRowsEmptyTitle(kind)} loading />;
     }
     if (error) {
-        return <EntityBlank>{error}</EntityBlank>;
+        return (
+            <GroupListState title={groupRowsEmptyTitle(kind)} error={error} />
+        );
     }
     if (kind === 'photos') {
         return (
@@ -543,7 +619,7 @@ function RowList({
         );
     }
     if (!rows.length) {
-        return <EntityBlank />;
+        return <GroupListState title={groupRowsEmptyTitle(kind)} />;
     }
     if (kind === 'posts') {
         return (
@@ -1332,32 +1408,40 @@ function GroupModerationToolsDialog({ open, onOpenChange, group, endpoint }) {
                                 </div>
                             </div>
                             {loading ? (
-                                <EntityBlank>Loading...</EntityBlank>
+                                <GroupListState
+                                    title={`No ${tab.label.toLowerCase()}`}
+                                    loading
+                                />
                             ) : null}
-                            {error ? <EntityBlank>{error}</EntityBlank> : null}
+                            {error ? (
+                                <GroupListState
+                                    title={`No ${tab.label.toLowerCase()}`}
+                                    error={error}
+                                />
+                            ) : null}
                             {!loading && !error ? (
                                 <div className="overflow-auto rounded-md border">
-                                    <table className="w-full text-left text-sm">
-                                        <thead className="bg-background sticky top-0">
-                                            <tr className="border-b">
-                                                <th className="w-56 px-3 py-2">
+                                    <Table>
+                                        <TableHeader className="bg-background sticky top-0">
+                                            <TableRow>
+                                                <TableHead className="w-56">
                                                     User
-                                                </th>
-                                                <th className="px-3 py-2">
+                                                </TableHead>
+                                                <TableHead>
                                                     Roles / Description
-                                                </th>
-                                                <th className="w-44 px-3 py-2">
+                                                </TableHead>
+                                                <TableHead className="w-44">
                                                     Status
-                                                </th>
-                                                <th className="w-44 px-3 py-2">
+                                                </TableHead>
+                                                <TableHead className="w-44">
                                                     Date
-                                                </th>
-                                                <th className="w-48 px-3 py-2 text-right">
+                                                </TableHead>
+                                                <TableHead className="w-48 text-right">
                                                     Actions
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                                </TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
                                             {visibleRows.length ? (
                                                 visibleRows.map(
                                                     (row, index) => {
@@ -1378,11 +1462,10 @@ function GroupModerationToolsDialog({ open, onOpenChange, group, endpoint }) {
                                                                 row
                                                             );
                                                         return (
-                                                            <tr
+                                                            <TableRow
                                                                 key={`${label}:${date}:${index}`}
-                                                                className="border-b last:border-b-0"
                                                             >
-                                                                <td className="px-3 py-2 align-top">
+                                                                <TableCell className="align-top">
                                                                     {userId ? (
                                                                         <Button
                                                                             type="button"
@@ -1416,8 +1499,8 @@ function GroupModerationToolsDialog({ open, onOpenChange, group, endpoint }) {
                                                                             row?.id ||
                                                                             '—'}
                                                                     </div>
-                                                                </td>
-                                                                <td className="text-muted-foreground px-3 py-2 align-top text-xs">
+                                                                </TableCell>
+                                                                <TableCell className="text-muted-foreground align-top text-xs whitespace-normal">
                                                                     {moderationRowRoles(
                                                                         row,
                                                                         group
@@ -1429,21 +1512,21 @@ function GroupModerationToolsDialog({ open, onOpenChange, group, endpoint }) {
                                                                             row
                                                                         ) ||
                                                                         '—'}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top text-xs">
+                                                                </TableCell>
+                                                                <TableCell className="align-top text-xs whitespace-normal">
                                                                     {moderationRowStatus(
                                                                         row
                                                                     )}
-                                                                </td>
-                                                                <td className="text-muted-foreground px-3 py-2 align-top text-xs">
+                                                                </TableCell>
+                                                                <TableCell className="text-muted-foreground align-top text-xs">
                                                                     {date
                                                                         ? formatDateFilter(
                                                                               date,
                                                                               'long'
                                                                           )
                                                                         : '—'}
-                                                                </td>
-                                                                <td className="px-3 py-2 align-top">
+                                                                </TableCell>
+                                                                <TableCell className="align-top">
                                                                     <div className="flex justify-end gap-2">
                                                                         {actions.map(
                                                                             (
@@ -1481,23 +1564,23 @@ function GroupModerationToolsDialog({ open, onOpenChange, group, endpoint }) {
                                                                             }
                                                                         )}
                                                                     </div>
-                                                                </td>
-                                                            </tr>
+                                                                </TableCell>
+                                                            </TableRow>
                                                         );
                                                     }
                                                 )
                                             ) : (
-                                                <tr>
-                                                    <td
+                                                <TableRow>
+                                                    <TableCell
                                                         colSpan={5}
-                                                        className="text-muted-foreground px-3 py-8 text-center text-sm"
+                                                        className="text-muted-foreground py-8 text-center text-sm"
                                                     >
                                                         No rows.
-                                                    </td>
-                                                </tr>
+                                                    </TableCell>
+                                                </TableRow>
                                             )}
-                                        </tbody>
-                                    </table>
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             ) : null}
                             {!loading && !error ? (
@@ -1762,9 +1845,11 @@ function GroupPostEditorDialog({
                                     ))}
                                 </FieldGroup>
                             ) : (
-                                <div className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
-                                    No roles.
-                                </div>
+                                <GroupListState
+                                    title="No roles"
+                                    description=""
+                                    className="min-h-20 p-3"
+                                />
                             )}
                         </Field>
                     ) : null}
@@ -1842,12 +1927,13 @@ function GroupPostEditorDialog({
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-muted-foreground rounded-md border border-dashed p-3 text-xs">
-                                {galleryStatus === 'running'
-                                    ? 'Loading gallery images...'
-                                    : galleryError ||
-                                      'No gallery images loaded.'}
-                            </div>
+                            <GroupListState
+                                title="No gallery images"
+                                description="Refresh to load gallery images."
+                                loading={galleryStatus === 'running'}
+                                error={galleryError}
+                                className="min-h-24 p-3"
+                            />
                         )}
                     </Field>
                 </FieldGroup>
@@ -2812,21 +2898,22 @@ export function GroupDialogTabbedView({
                                         group.announcement,
                                         group
                                     ).length ? (
-                                        <span
-                                            className="inline-flex items-center gap-1"
+                                        <Badge
+                                            variant="outline"
+                                            className="max-w-full"
                                             title={announcementRoleNames(
                                                 group.announcement,
                                                 group
                                             ).join(', ')}
                                         >
-                                            <EyeIcon className="size-3.5" />
-                                            <span className="max-w-full truncate">
+                                            <EyeIcon data-icon="inline-start" />
+                                            <span className="truncate">
                                                 {announcementRoleNames(
                                                     group.announcement,
                                                     group
                                                 ).join(', ')}
                                             </span>
-                                        </span>
+                                        </Badge>
                                     ) : null}
                                     {announcementUserId(
                                         group.announcement,
@@ -3024,14 +3111,17 @@ export function GroupDialogTabbedView({
                                         <Button
                                             key={link}
                                             type="button"
-                                            variant="ghost"
+                                            variant="link"
                                             size="xs"
+                                            className="h-auto max-w-full min-w-0 justify-start p-0 text-left break-all whitespace-normal"
                                             onClick={() =>
                                                 openExternalLink(link)
                                             }
                                         >
                                             <ExternalLinkIcon data-icon="inline-start" />
-                                            {link}
+                                            <span className="min-w-0 break-all">
+                                                {link}
+                                            </span>
                                         </Button>
                                     ))}
                                 </div>

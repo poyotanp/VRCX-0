@@ -23,6 +23,7 @@ import { useModalStore } from '@/state/modalStore.js';
 import { usePreferencesStore } from '@/state/preferencesStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useShellStore } from '@/state/shellStore.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import { Button } from '@/ui/shadcn/button';
 import {
     Dialog,
@@ -31,6 +32,12 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
 import { Input } from '@/ui/shadcn/input';
 import {
     Select,
@@ -40,6 +47,15 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/ui/shadcn/select';
+import { Spinner } from '@/ui/shadcn/spinner';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/ui/shadcn/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 
 import {
@@ -73,6 +89,29 @@ function formatDate(value) {
         dateStyle: 'medium',
         timeStyle: 'short'
     }).format(date);
+}
+
+function DialogEmptyState({ title, description, className = '' }) {
+    return (
+        <Empty
+            className={['min-h-52 border', className].filter(Boolean).join(' ')}
+        >
+            <EmptyHeader>
+                <EmptyTitle>{title}</EmptyTitle>
+                {description ? (
+                    <EmptyDescription>{description}</EmptyDescription>
+                ) : null}
+            </EmptyHeader>
+        </Empty>
+    );
+}
+
+function DialogErrorState({ children }) {
+    return (
+        <Alert variant="destructive">
+            <AlertDescription>{children}</AlertDescription>
+        </Alert>
+    );
 }
 
 function createInfoChartTooltipElement(detailEntry, hour12) {
@@ -308,9 +347,10 @@ function PreviousInstanceInfoChart({ rows }) {
 
     if (!chartRows.length) {
         return (
-            <div className="text-muted-foreground flex min-h-52 items-center justify-center rounded-md border border-dashed p-6 text-sm">
-                No player detail rows for this instance.
-            </div>
+            <DialogEmptyState
+                title="No player detail rows"
+                description="There are no timeline rows for this instance."
+            />
         );
     }
 
@@ -402,16 +442,11 @@ function PreviousInstanceDetailsPanel({
 
     if (!row) {
         return (
-            <div
-                className={[
-                    'text-muted-foreground flex min-h-52 items-center justify-center rounded-md border border-dashed p-6 text-sm',
-                    className
-                ]
-                    .filter(Boolean)
-                    .join(' ')}
-            >
-                No instance selected.
-            </div>
+            <DialogEmptyState
+                title="No instance selected"
+                description="Select an instance row to view its details."
+                className={className}
+            />
         );
     }
 
@@ -489,60 +524,56 @@ function PreviousInstanceDetailsPanel({
                     </span>
                 </div>
                 {infoData.status === 'running' ? (
-                    <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
-                        Loading instance details...
+                    <div className="text-muted-foreground flex items-center gap-2 rounded-md border border-dashed p-4 text-sm">
+                        <Spinner className="size-4" />
+                        <span>Loading instance details...</span>
                     </div>
                 ) : null}
                 {infoData.status === 'error' ? (
-                    <div className="border-destructive/40 text-destructive rounded-md border p-4 text-sm">
-                        {infoData.error}
-                    </div>
+                    <DialogErrorState>{infoData.error}</DialogErrorState>
                 ) : null}
                 {infoData.status === 'ready' ? (
                     <>
                         <TabsContent value="players" className="mt-2">
                             <div className="max-h-80 overflow-auto rounded-md border">
-                                <table className="w-full text-left text-sm">
-                                    <thead className="bg-background sticky top-0">
-                                        <tr className="border-b">
-                                            <th className="px-3 py-2">Name</th>
-                                            <th className="px-3 py-2">
-                                                User ID
-                                            </th>
-                                            <th className="w-24 px-3 py-2">
+                                <Table>
+                                    <TableHeader className="bg-background sticky top-0">
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>User ID</TableHead>
+                                            <TableHead className="w-24">
                                                 Visits
-                                            </th>
-                                            <th className="w-28 px-3 py-2">
+                                            </TableHead>
+                                            <TableHead className="w-28">
                                                 Time
-                                            </th>
-                                            <th className="w-44 px-3 py-2">
+                                            </TableHead>
+                                            <TableHead className="w-44">
                                                 First Seen
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
                                         {infoData.players.length ? (
                                             infoData.players.map(
                                                 (player, index) => (
-                                                    <tr
+                                                    <TableRow
                                                         key={`${playerDisplayName(player)}:${playerUserId(player)}:${index}`}
-                                                        className="border-b last:border-b-0"
                                                     >
-                                                        <td className="px-3 py-2 align-top">
+                                                        <TableCell className="align-top">
                                                             {playerDisplayName(
                                                                 player
                                                             )}
-                                                        </td>
-                                                        <td className="text-muted-foreground px-3 py-2 align-top font-mono text-xs">
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground align-top font-mono text-xs">
                                                             {playerUserId(
                                                                 player
                                                             ) || '-'}
-                                                        </td>
-                                                        <td className="px-3 py-2 align-top text-xs tabular-nums">
+                                                        </TableCell>
+                                                        <TableCell className="align-top text-xs tabular-nums">
                                                             {player?.count ||
                                                                 '-'}
-                                                        </td>
-                                                        <td className="px-3 py-2 align-top text-xs tabular-nums">
+                                                        </TableCell>
+                                                        <TableCell className="align-top text-xs tabular-nums">
                                                             {Number(
                                                                 player?.time ||
                                                                     0
@@ -553,29 +584,29 @@ function PreviousInstanceDetailsPanel({
                                                                       )
                                                                   )
                                                                 : '-'}
-                                                        </td>
-                                                        <td className="text-muted-foreground px-3 py-2 align-top text-xs">
+                                                        </TableCell>
+                                                        <TableCell className="text-muted-foreground align-top text-xs">
                                                             {formatDate(
                                                                 player?.created_at ||
                                                                     player?.createdAt
                                                             )}
-                                                        </td>
-                                                    </tr>
+                                                        </TableCell>
+                                                    </TableRow>
                                                 )
                                             )
                                         ) : (
-                                            <tr>
-                                                <td
+                                            <TableRow>
+                                                <TableCell
                                                     colSpan={5}
-                                                    className="text-muted-foreground px-3 py-6 text-center text-sm"
+                                                    className="py-6 text-center"
                                                 >
                                                     No player detail rows for
                                                     this instance.
-                                                </td>
-                                            </tr>
+                                                </TableCell>
+                                            </TableRow>
                                         )}
-                                    </tbody>
-                                </table>
+                                    </TableBody>
+                                </Table>
                             </div>
                         </TabsContent>
                         <TabsContent
@@ -595,39 +626,42 @@ function PreviousInstanceDetailsPanel({
                         Leave Details ({infoData.details.length})
                     </summary>
                     <div className="mt-3 max-h-48 overflow-auto">
-                        <table className="w-full text-left text-xs">
-                            <thead className="bg-background sticky top-0">
-                                <tr className="border-b">
-                                    <th className="px-2 py-1">Left At</th>
-                                    <th className="px-2 py-1">Name</th>
-                                    <th className="px-2 py-1">Duration</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <Table>
+                            <TableHeader className="bg-background sticky top-0">
+                                <TableRow>
+                                    <TableHead className="h-8 px-2 py-1 text-xs">
+                                        Left At
+                                    </TableHead>
+                                    <TableHead className="h-8 px-2 py-1 text-xs">
+                                        Name
+                                    </TableHead>
+                                    <TableHead className="h-8 px-2 py-1 text-xs">
+                                        Duration
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {infoData.details.map((detailRow, index) => (
-                                    <tr
+                                    <TableRow
                                         key={`${detailRow?.created_at}:${detailRow?.user_id}:${index}`}
-                                        className="border-b last:border-b-0"
                                     >
-                                        <td className="text-muted-foreground px-2 py-1">
-                                            {formatDate(
-                                                detailRow?.created_at
-                                            )}
-                                        </td>
-                                        <td className="px-2 py-1">
+                                        <TableCell className="text-muted-foreground px-2 py-1 text-xs">
+                                            {formatDate(detailRow?.created_at)}
+                                        </TableCell>
+                                        <TableCell className="px-2 py-1 text-xs">
                                             {playerDisplayName(detailRow)}
-                                        </td>
-                                        <td className="px-2 py-1 tabular-nums">
+                                        </TableCell>
+                                        <TableCell className="px-2 py-1 text-xs tabular-nums">
                                             {Number(detailRow?.time || 0) > 0
                                                 ? timeToText(
                                                       Number(detailRow.time)
                                                   )
                                                 : '-'}
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
                 </details>
             ) : null}
@@ -852,53 +886,54 @@ function PreviousInstancesPanel({
                     </Select>
                 </div>
             </div>
-            <div className="min-h-0 flex-1 overflow-auto rounded-md border">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-background sticky top-0">
-                        <tr className="border-b">
-                            <th className="w-44 px-3 py-2">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-auto px-1"
-                                    onClick={() =>
-                                        setSortDesc((value) => !value)
-                                    }
-                                >
-                                    Created
-                                    {sortDesc ? (
-                                        <ArrowDownIcon data-icon="inline-end" />
-                                    ) : (
-                                        <ArrowUpIcon data-icon="inline-end" />
-                                    )}
-                                </Button>
-                            </th>
-                            <th className="px-3 py-2">Location</th>
-                            <th className="w-48 px-3 py-2">World / Group</th>
-                            <th className="w-44 px-3 py-2">Creator</th>
-                            <th className="w-24 px-3 py-2">Duration</th>
-                            <th className="w-80 px-3 py-2 text-right">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {visibleRows.length ? (
-                            visibleRows.map((row, index) => {
+            {visibleRows.length ? (
+                <div className="min-h-0 flex-1 overflow-auto rounded-md border">
+                    <Table>
+                        <TableHeader className="bg-background sticky top-0">
+                            <TableRow>
+                                <TableHead className="w-44">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-auto px-1"
+                                        onClick={() =>
+                                            setSortDesc((value) => !value)
+                                        }
+                                    >
+                                        Created
+                                        {sortDesc ? (
+                                            <ArrowDownIcon data-icon="inline-end" />
+                                        ) : (
+                                            <ArrowUpIcon data-icon="inline-end" />
+                                        )}
+                                    </Button>
+                                </TableHead>
+                                <TableHead>Location</TableHead>
+                                <TableHead className="w-48">
+                                    World / Group
+                                </TableHead>
+                                <TableHead className="w-44">Creator</TableHead>
+                                <TableHead className="w-24">Duration</TableHead>
+                                <TableHead className="w-80 text-right">
+                                    Actions
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {visibleRows.map((row, index) => {
                                 const location = rowLocation(row);
                                 return (
-                                    <tr
+                                    <TableRow
                                         key={`${location}:${row?.id || row?.created_at || row?.createdAt || index}`}
-                                        className="border-b last:border-b-0"
                                     >
-                                        <td className="text-muted-foreground px-3 py-2 align-top text-xs">
+                                        <TableCell className="text-muted-foreground align-top text-xs">
                                             {formatDate(
                                                 row?.created_at ||
                                                     row?.createdAt
                                             )}
-                                        </td>
-                                        <td className="relative max-w-[26rem] px-3 py-2 align-top text-xs">
+                                        </TableCell>
+                                        <TableCell className="relative max-w-[26rem] align-top text-xs">
                                             <Button
                                                 type="button"
                                                 variant="ghost"
@@ -916,23 +951,23 @@ function PreviousInstancesPanel({
                                                     ? renderLocationCell(row)
                                                     : '-'}
                                             </div>
-                                        </td>
-                                        <td className="text-muted-foreground px-3 py-2 align-top text-xs">
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground align-top text-xs">
                                             {[row?.worldName, row?.groupName]
                                                 .filter(Boolean)
                                                 .join(' / ') || '-'}
-                                        </td>
-                                        <td className="px-3 py-2 align-top">
+                                        </TableCell>
+                                        <TableCell className="align-top">
                                             <InstanceOwnerCell
                                                 userId={rowOwnerUserId(row)}
                                                 location={location}
                                                 endpoint={currentEndpoint}
                                             />
-                                        </td>
-                                        <td className="px-3 py-2 align-top text-xs tabular-nums">
+                                        </TableCell>
+                                        <TableCell className="align-top text-xs tabular-nums">
                                             {rowDuration(row)}
-                                        </td>
-                                        <td className="px-3 py-2 align-top">
+                                        </TableCell>
+                                        <TableCell className="align-top">
                                             <div className="flex justify-end gap-2">
                                                 <InstanceActionBar
                                                     location={location}
@@ -979,23 +1014,24 @@ function PreviousInstancesPanel({
                                                     Delete
                                                 </Button>
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 );
-                            })
-                        ) : (
-                            <tr>
-                                <td
-                                    colSpan={6}
-                                    className="text-muted-foreground px-3 py-8 text-center text-sm"
-                                >
-                                    No instance records.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                            })}
+                        </TableBody>
+                    </Table>
+                </div>
+            ) : (
+                <DialogEmptyState
+                    title="No instance records"
+                    description={
+                        search.trim()
+                            ? 'No instance records match the current search.'
+                            : 'There are no recorded instance visits.'
+                    }
+                    className="min-h-40 flex-none"
+                />
+            )}
             <div className="flex items-center justify-between">
                 <div className="text-muted-foreground text-sm">
                     Page {currentPageIndex + 1} / {totalPages}
@@ -1052,9 +1088,7 @@ function PreviousInstancesTableDialog({
     detailsOnly = false
 }) {
     const initialDetailRow =
-        detailsOnly && Array.isArray(instances)
-            ? instances[0] || null
-            : null;
+        detailsOnly && Array.isArray(instances) ? instances[0] || null : null;
     const dialogTitle = detailsOnly ? 'Instance Details' : title;
     const dialogDescription = detailsOnly
         ? rowLocation(initialDetailRow) || 'Instance details'

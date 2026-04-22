@@ -1,4 +1,4 @@
-import { NetworkIcon, Trash2Icon, UserIcon } from 'lucide-react';
+import { NetworkIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -29,6 +29,7 @@ import {
 import { usePreferencesStore } from '@/state/preferencesStore.js';
 import { useSessionStore } from '@/state/sessionStore.js';
 import { useShellStore } from '@/state/shellStore.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -39,6 +40,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from '@/ui/shadcn/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/ui/shadcn/avatar';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/shadcn/card';
@@ -46,11 +48,12 @@ import { Checkbox } from '@/ui/shadcn/checkbox';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
-import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
 import { Input } from '@/ui/shadcn/input';
 import {
     Select,
@@ -68,6 +71,11 @@ import {
     getLoginUserDisplayName as getUserDisplayName
 } from './loginDisplay.js';
 import { getSnapshotLoginParams } from './loginSession.js';
+
+function getSavedAccountFallback(user) {
+    const label = getUserDisplayName(user) || user?.username || user?.id || '?';
+    return String(label).trim().slice(0, 2).toUpperCase() || '?';
+}
 
 export function LoginPage() {
     const navigate = useNavigate();
@@ -103,6 +111,10 @@ export function LoginPage() {
         enableCustomEndpoint: false,
         endpoint: '',
         websocket: ''
+    });
+    const [loginErrors, setLoginErrors] = useState({
+        username: '',
+        password: ''
     });
     const autoLoginSuppressedKeyRef = useRef('');
     const autoLoginAbortRef = useRef(null);
@@ -513,11 +525,29 @@ export function LoginPage() {
         }
     }
 
+    function validateLoginForm() {
+        const nextErrors = {
+            username: loginForm.username.trim()
+                ? ''
+                : t('view.login.validation.username_required'),
+            password: loginForm.password
+                ? ''
+                : t('view.login.validation.password_required')
+        };
+
+        setLoginErrors(nextErrors);
+        return !nextErrors.username && !nextErrors.password;
+    }
+
     async function handleManualLoginSubmit(event) {
         event.preventDefault();
 
         if (!databaseReady) {
             toast.error('Database initialization is still pending.');
+            return;
+        }
+
+        if (!validateLoginForm()) {
             return;
         }
 
@@ -596,6 +626,14 @@ export function LoginPage() {
               snapshot.savedCredentials[snapshot.lastUserLoggedIn].user
           )
         : snapshot?.lastUserLoggedIn || 'last session';
+    const autoLoginAlertVariant =
+        autoLoginState.status === 'failed' ||
+        autoLoginState.status === 'expired'
+            ? 'destructive'
+            : 'default';
+    const deleteTargetName = deleteTarget?.user
+        ? getUserDisplayName(deleteTarget.user)
+        : '';
 
     return (
         <div className="bg-background relative flex min-h-full w-full flex-col overflow-y-auto p-6">
@@ -649,8 +687,8 @@ export function LoginPage() {
                     >
                         <div className="flex h-full flex-col gap-3">
                             {shouldShowAutoLogin ? (
-                                <Card>
-                                    <CardContent className="flex flex-wrap items-center gap-3 p-3 text-sm">
+                                <Alert variant={autoLoginAlertVariant}>
+                                    <AlertDescription className="flex flex-wrap items-center gap-3 text-sm">
                                         <Badge variant="secondary">
                                             Auto-login
                                         </Badge>
@@ -702,8 +740,8 @@ export function LoginPage() {
                                                 Retry
                                             </Button>
                                         ) : null}
-                                    </CardContent>
-                                </Card>
+                                    </AlertDescription>
+                                </Alert>
                             ) : null}
 
                             <Card className="flex flex-1 flex-col">
@@ -718,7 +756,11 @@ export function LoginPage() {
                                         onSubmit={handleManualLoginSubmit}
                                     >
                                         <FieldGroup className="gap-3">
-                                            <Field>
+                                            <Field
+                                                data-invalid={Boolean(
+                                                    loginErrors.username
+                                                )}
+                                            >
                                                 <FieldLabel htmlFor="react-login-username">
                                                     {t(
                                                         'view.login.field.username'
@@ -726,6 +768,11 @@ export function LoginPage() {
                                                 </FieldLabel>
                                                 <Input
                                                     id="react-login-username"
+                                                    aria-invalid={
+                                                        Boolean(
+                                                            loginErrors.username
+                                                        ) || undefined
+                                                    }
                                                     autoComplete="username"
                                                     disabled={isAuthBusy}
                                                     placeholder={t(
@@ -744,10 +791,27 @@ export function LoginPage() {
                                                                         .value
                                                             })
                                                         );
+                                                        if (
+                                                            loginErrors.username
+                                                        ) {
+                                                            setLoginErrors(
+                                                                (current) => ({
+                                                                    ...current,
+                                                                    username: ''
+                                                                })
+                                                            );
+                                                        }
                                                     }}
                                                 />
+                                                <FieldError>
+                                                    {loginErrors.username}
+                                                </FieldError>
                                             </Field>
-                                            <Field>
+                                            <Field
+                                                data-invalid={Boolean(
+                                                    loginErrors.password
+                                                )}
+                                            >
                                                 <FieldLabel htmlFor="react-login-password">
                                                     {t(
                                                         'view.login.field.password'
@@ -755,6 +819,11 @@ export function LoginPage() {
                                                 </FieldLabel>
                                                 <Input
                                                     id="react-login-password"
+                                                    aria-invalid={
+                                                        Boolean(
+                                                            loginErrors.password
+                                                        ) || undefined
+                                                    }
                                                     type="password"
                                                     autoComplete="current-password"
                                                     disabled={isAuthBusy}
@@ -774,8 +843,21 @@ export function LoginPage() {
                                                                         .value
                                                             })
                                                         );
+                                                        if (
+                                                            loginErrors.password
+                                                        ) {
+                                                            setLoginErrors(
+                                                                (current) => ({
+                                                                    ...current,
+                                                                    password: ''
+                                                                })
+                                                            );
+                                                        }
                                                     }}
                                                 />
+                                                <FieldError>
+                                                    {loginErrors.password}
+                                                </FieldError>
                                             </Field>
                                         </FieldGroup>
 
@@ -890,12 +972,12 @@ export function LoginPage() {
                                                 return (
                                                     <div
                                                         key={entry.user.id}
-                                                        className="hover:bg-muted flex items-center gap-2 rounded-md p-1"
+                                                        className="flex items-center gap-2"
                                                     >
                                                         <Button
                                                             type="button"
-                                                            variant="ghost"
-                                                            className="h-auto min-w-0 flex-1 justify-start gap-3 p-1 text-left font-normal"
+                                                            variant="outline"
+                                                            className="h-auto min-w-0 flex-1 justify-start gap-3 p-2 text-left font-normal"
                                                             disabled={
                                                                 !hasStoredCredentials ||
                                                                 isAuthBusy
@@ -906,19 +988,21 @@ export function LoginPage() {
                                                                 )
                                                             }
                                                         >
-                                                            <div className="bg-background flex size-10 shrink-0 items-center justify-center rounded-full border [&>svg]:size-5">
+                                                            <Avatar size="lg">
                                                                 {avatarUrl ? (
-                                                                    <img
+                                                                    <AvatarImage
                                                                         src={
                                                                             avatarUrl
                                                                         }
                                                                         alt=""
-                                                                        className="size-full rounded-full object-cover"
                                                                     />
-                                                                ) : (
-                                                                    <UserIcon className="text-muted-foreground" />
-                                                                )}
-                                                            </div>
+                                                                ) : null}
+                                                                <AvatarFallback>
+                                                                    {getSavedAccountFallback(
+                                                                        entry.user
+                                                                    )}
+                                                                </AvatarFallback>
+                                                            </Avatar>
                                                             <div className="min-w-0 flex-1">
                                                                 <div className="truncate text-sm font-medium">
                                                                     {getUserDisplayName(
@@ -954,7 +1038,7 @@ export function LoginPage() {
                                                         <Button
                                                             type="button"
                                                             variant="ghost"
-                                                            size="icon"
+                                                            size="icon-sm"
                                                             aria-label={`Remove saved account for ${getUserDisplayName(entry.user)}`}
                                                             disabled={
                                                                 isDeleting ||
@@ -1031,6 +1115,9 @@ export function LoginPage() {
                         <DialogTitle>
                             {t('view.login.proxy_settings')}
                         </DialogTitle>
+                        <DialogDescription>
+                            {t('view.login.proxy_description')}
+                        </DialogDescription>
                     </DialogHeader>
                     <form
                         className="flex flex-col gap-4"
@@ -1159,24 +1246,25 @@ export function LoginPage() {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            Remove saved account
+                            {t('view.login.saved_account_remove.title')}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {deleteTarget?.user?.displayName ||
-                                deleteTarget?.user?.username ||
-                                deleteTarget?.user?.id}{' '}
-                            will be removed.
+                            {t('view.login.saved_account_remove.description', {
+                                name: deleteTargetName
+                            })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isDeleting}>
-                            Cancel
+                            {t('confirm.cancel_button')}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             disabled={isDeleting}
                             onClick={() => void handleDeleteSavedAccount()}
                         >
-                            {isDeleting ? 'Removing...' : 'Remove'}
+                            {isDeleting
+                                ? t('view.login.saved_account_remove.removing')
+                                : t('view.login.saved_account_remove.confirm')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

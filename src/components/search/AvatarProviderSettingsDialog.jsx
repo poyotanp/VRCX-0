@@ -8,11 +8,17 @@ import { Button } from '@/ui/shadcn/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
-import { Field, FieldGroup } from '@/ui/shadcn/field';
-import { Input } from '@/ui/shadcn/input';
+import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput
+} from '@/ui/shadcn/input-group';
 
 function providerListKey(providerList) {
     return JSON.stringify(
@@ -111,33 +117,47 @@ export function AvatarProviderSettingsDialog({
                     <DialogTitle>
                         {t('dialog.avatar_database_provider.header')}
                     </DialogTitle>
+                    <DialogDescription>
+                        {t('dialog.avatar_database_provider.description')}
+                    </DialogDescription>
                 </DialogHeader>
                 <FieldGroup className="gap-2">
                     {draftProviderList.map((provider, index) => (
                         <Field
                             key={`avatar-provider-${index}`}
-                            orientation="horizontal"
                             data-disabled={isSaving}
                         >
-                            <Input
-                                aria-label={`Avatar provider ${index + 1}`}
-                                value={provider}
-                                disabled={isSaving}
-                                onChange={(event) =>
-                                    updateProvider(index, event.target.value)
-                                }
-                                onBlur={() => void saveProviderList()}
-                            />
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                aria-label={`Remove avatar provider ${index + 1}`}
-                                disabled={isSaving}
-                                onClick={() => removeProvider(index)}
+                            <FieldLabel
+                                htmlFor={`avatar-provider-${index}`}
+                                className="sr-only"
                             >
-                                <Trash2Icon data-icon="inline-start" />
-                            </Button>
+                                Avatar provider {index + 1}
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={`avatar-provider-${index}`}
+                                    value={provider}
+                                    disabled={isSaving}
+                                    onChange={(event) =>
+                                        updateProvider(
+                                            index,
+                                            event.target.value
+                                        )
+                                    }
+                                    onBlur={() => void saveProviderList()}
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    <InputGroupButton
+                                        type="button"
+                                        size="icon-xs"
+                                        aria-label={`Remove avatar provider ${index + 1}`}
+                                        disabled={isSaving}
+                                        onClick={() => removeProvider(index)}
+                                    >
+                                        <Trash2Icon data-icon="inline-start" />
+                                    </InputGroupButton>
+                                </InputGroupAddon>
+                            </InputGroup>
                         </Field>
                     ))}
                     <Button

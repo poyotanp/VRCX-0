@@ -6,12 +6,24 @@ import { Checkbox } from '@/ui/shadcn/checkbox';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
-import { Field, FieldGroup, FieldLabel, FieldTitle } from '@/ui/shadcn/field';
-import { Input } from '@/ui/shadcn/input';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSet
+} from '@/ui/shadcn/field';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput
+} from '@/ui/shadcn/input-group';
 import { Textarea } from '@/ui/shadcn/textarea';
 
 const CONTENT_TAGS = [
@@ -156,6 +168,10 @@ function WorldTagsDialog({
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>World Tags</DialogTitle>
+                    <DialogDescription>
+                        Edit managed content, author, and feature tags for this
+                        world.
+                    </DialogDescription>
                 </DialogHeader>
                 <FieldGroup className="gap-3">
                     <Field orientation="horizontal">
@@ -216,9 +232,12 @@ function WorldTagsDialog({
                             }
                         />
                     </Field>
-                    <Field>
-                        <FieldTitle>Content tags</FieldTitle>
-                        <div className="grid grid-cols-2 gap-2">
+                    <FieldSet>
+                        <FieldLegend variant="label">Content tags</FieldLegend>
+                        <FieldGroup
+                            data-slot="checkbox-group"
+                            className="grid grid-cols-2 gap-2"
+                        >
                             {CONTENT_TAGS.map(([key, , label]) => (
                                 <Field key={key} orientation="horizontal">
                                     <Checkbox
@@ -238,21 +257,36 @@ function WorldTagsDialog({
                                     </FieldLabel>
                                 </Field>
                             ))}
-                        </div>
-                        <Textarea
-                            aria-label="Raw content tags"
-                            rows={2}
-                            value={draft.contentTags}
-                            disabled={saving}
-                            className="resize-none"
-                            onChange={(event) =>
-                                updateDraft({ contentTags: event.target.value })
-                            }
-                        />
-                    </Field>
-                    <Field>
-                        <FieldLabel>Default content settings</FieldLabel>
-                        <div className="grid grid-cols-2 gap-2">
+                        </FieldGroup>
+                        <Field>
+                            <FieldLabel
+                                htmlFor="world-owner-content-tags"
+                                className="sr-only"
+                            >
+                                Raw content tags
+                            </FieldLabel>
+                            <Textarea
+                                id="world-owner-content-tags"
+                                rows={2}
+                                value={draft.contentTags}
+                                disabled={saving}
+                                className="resize-none"
+                                onChange={(event) =>
+                                    updateDraft({
+                                        contentTags: event.target.value
+                                    })
+                                }
+                            />
+                        </Field>
+                    </FieldSet>
+                    <FieldSet>
+                        <FieldLegend variant="label">
+                            Default content settings
+                        </FieldLegend>
+                        <FieldGroup
+                            data-slot="checkbox-group"
+                            className="grid grid-cols-2 gap-2"
+                        >
                             {FEATURE_TAGS.map(([key, , label]) => (
                                 <Field key={key} orientation="horizontal">
                                     <Checkbox
@@ -272,8 +306,8 @@ function WorldTagsDialog({
                                     </FieldLabel>
                                 </Field>
                             ))}
-                        </div>
-                    </Field>
+                        </FieldGroup>
+                    </FieldSet>
                 </FieldGroup>
                 <DialogFooter>
                     <Button
@@ -327,34 +361,48 @@ function WorldAllowedDomainsDialog({
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Allowed Video Player Domains</DialogTitle>
+                    <DialogDescription>
+                        Manage domains allowed for this world's video player.
+                    </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-2">
+                <FieldGroup className="gap-2">
                     {urlList.map((domain, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                            <Input
-                                value={domain}
-                                disabled={saving}
-                                onChange={(event) =>
-                                    updateDomain(index, event.target.value)
-                                }
-                            />
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                disabled={saving}
-                                onClick={() =>
-                                    setUrlList((current) =>
-                                        current.filter(
-                                            (_, currentIndex) =>
-                                                currentIndex !== index
-                                        )
-                                    )
-                                }
+                        <Field key={index}>
+                            <FieldLabel
+                                htmlFor={`world-allowed-domain-${index}`}
+                                className="sr-only"
                             >
-                                <Trash2Icon data-icon="inline-start" />
-                            </Button>
-                        </div>
+                                Allowed domain {index + 1}
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    id={`world-allowed-domain-${index}`}
+                                    value={domain}
+                                    disabled={saving}
+                                    onChange={(event) =>
+                                        updateDomain(index, event.target.value)
+                                    }
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    <InputGroupButton
+                                        type="button"
+                                        size="icon-xs"
+                                        disabled={saving}
+                                        aria-label={`Remove domain ${index + 1}`}
+                                        onClick={() =>
+                                            setUrlList((current) =>
+                                                current.filter(
+                                                    (_, currentIndex) =>
+                                                        currentIndex !== index
+                                                )
+                                            )
+                                        }
+                                    >
+                                        <Trash2Icon data-icon="inline-start" />
+                                    </InputGroupButton>
+                                </InputGroupAddon>
+                            </InputGroup>
+                        </Field>
                     ))}
                     <Button
                         type="button"
@@ -367,7 +415,7 @@ function WorldAllowedDomainsDialog({
                     >
                         Add domain
                     </Button>
-                </div>
+                </FieldGroup>
                 <DialogFooter>
                     <Button
                         type="button"

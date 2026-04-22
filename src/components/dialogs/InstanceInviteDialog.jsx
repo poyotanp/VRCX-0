@@ -32,6 +32,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/ui/shadcn/dropdown-menu';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
 import { Field, FieldLabel } from '@/ui/shadcn/field';
 import { Input } from '@/ui/shadcn/input';
 import { Spinner } from '@/ui/shadcn/spinner';
@@ -496,9 +502,15 @@ export function InstanceInviteDialog({
                                 );
                             })
                         ) : (
-                            <div className="text-muted-foreground px-3 py-8 text-center text-sm">
-                                No online friends.
-                            </div>
+                            <Empty className="min-h-32 border-0">
+                                <EmptyHeader>
+                                    <EmptyTitle>No online friends</EmptyTitle>
+                                    <EmptyDescription>
+                                        No selectable online friends match the
+                                        current search.
+                                    </EmptyDescription>
+                                </EmptyHeader>
+                            </Empty>
                         )}
                     </div>
                 </div>

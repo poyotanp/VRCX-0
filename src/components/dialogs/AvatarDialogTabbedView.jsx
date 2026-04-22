@@ -49,7 +49,7 @@ import {
 function PlatformBadge({ label, rating, fileSize, icon: Icon }) {
     return (
         <Badge variant="outline">
-            {Icon ? <Icon className="mr-1 size-3.5" /> : null}
+            {Icon ? <Icon data-icon="inline-start" /> : null}
             {label}
             {rating ? (
                 <span className="ml-1 border-l pl-1">{rating}</span>
@@ -229,7 +229,7 @@ export function AvatarDialogTabbedView({
                         </Badge>
                         {isCurrentAvatar ? (
                             <Badge variant="secondary">
-                                <UserIcon className="mr-1 size-3.5" />
+                                <UserIcon data-icon="inline-start" />
                                 Current
                             </Badge>
                         ) : null}
@@ -238,22 +238,25 @@ export function AvatarDialogTabbedView({
                         ) : null}
                         {isFavorite ? (
                             <Badge>
-                                <HeartIcon className="mr-1 size-3.5 fill-current" />
+                                <HeartIcon
+                                    data-icon="inline-start"
+                                    className="fill-current"
+                                />
                                 Favorite
                             </Badge>
                         ) : null}
                         {avatar.$isCached ? (
-                            <Badge asChild variant="outline">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={onOpenCache}
-                                >
-                                    {avatar.$cacheSize
-                                        ? `${avatar.$cacheSize} Cache`
-                                        : 'Local cache'}
-                                </Button>
-                            </Badge>
+                            <Button
+                                type="button"
+                                size="xs"
+                                variant="outline"
+                                className="rounded-full"
+                                onClick={onOpenCache}
+                            >
+                                {avatar.$cacheSize
+                                    ? `${avatar.$cacheSize} Cache`
+                                    : 'Local cache'}
+                            </Button>
                         ) : null}
                         {hasImposter ? (
                             <Badge variant="outline">

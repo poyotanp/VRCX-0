@@ -53,13 +53,18 @@ import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
 import { Spinner } from '@/ui/shadcn/spinner';
 
 import {
     EntityActionDropdown,
     EntityActionItem,
     EntityActionSeparator,
-    EntityBlank,
     EntityDialogHeader,
     EntityDialogScaffold,
     EntityDialogTabContent,
@@ -87,6 +92,19 @@ function PlatformBadge({ name, fileSize = '' }) {
                 <span className="ml-1 border-l pl-1">{fileSize}</span>
             ) : null}
         </Badge>
+    );
+}
+
+function WorldInstancesEmptyState() {
+    return (
+        <Empty className="min-h-32 border">
+            <EmptyHeader>
+                <EmptyTitle>No active instances</EmptyTitle>
+                <EmptyDescription>
+                    No public or group instances are currently listed.
+                </EmptyDescription>
+            </EmptyHeader>
+        </Empty>
     );
 }
 
@@ -1369,17 +1387,17 @@ export function WorldDialogTabbedView({
                             </Badge>
                         ) : null}
                         {world.$isCached ? (
-                            <Badge asChild variant="outline">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={onOpenCache}
-                                >
-                                    {world.$cacheSize
-                                        ? `${world.$cacheSize} Cache`
-                                        : 'Local cache'}
-                                </Button>
-                            </Badge>
+                            <Button
+                                type="button"
+                                size="xs"
+                                variant="outline"
+                                className="rounded-full"
+                                onClick={onOpenCache}
+                            >
+                                {world.$cacheSize
+                                    ? `${world.$cacheSize} Cache`
+                                    : 'Local cache'}
+                            </Button>
                         ) : null}
                         {platformRows.map((platform) => (
                             <PlatformBadge
@@ -1705,7 +1723,7 @@ export function WorldDialogTabbedView({
                                 );
                             })
                         ) : !isInstanceLocation ? (
-                            <EntityBlank />
+                            <WorldInstancesEmptyState />
                         ) : null}
                     </div>
                 </EntityDialogTabContent>

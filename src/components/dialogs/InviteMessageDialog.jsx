@@ -1,9 +1,4 @@
-import {
-    ImageIcon,
-    PencilIcon,
-    RefreshCcwIcon,
-    SendIcon
-} from 'lucide-react';
+import { ImageIcon, PencilIcon, RefreshCcwIcon, SendIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -14,6 +9,7 @@ import {
     readFileAsBase64,
     validateImageUploadFile
 } from '@/shared/utils/imageUpload.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import { Button } from '@/ui/shadcn/button';
 import {
     Dialog,
@@ -112,7 +108,9 @@ function dialogTitle(mode, messageType) {
             ? 'Request Invite Response'
             : 'Invite Response';
     }
-    return messageType === 'request' ? 'Request With Message' : 'Send With Message';
+    return messageType === 'request'
+        ? 'Request With Message'
+        : 'Send With Message';
 }
 
 function dialogDescription(mode, messageType, targetLabel) {
@@ -379,21 +377,8 @@ function InviteMessagePanel({
         }
     }
 
-    function handleRowAction(row) {
-        if (resolvedMode === 'manage') {
-            beginEdit(row);
-            return;
-        }
-        if (resolvedMode === 'respond') {
-            setEditingRow(null);
-            setConfirmRow(row);
-            return;
-        }
-        void useRow(row);
-    }
-
     const showActionColumn =
-        resolvedMode !== 'select' || Boolean(onUse) || allowEdit;
+        allowEdit || resolvedMode === 'respond' || Boolean(onUse);
     const actionLabel = primaryActionLabel(resolvedMode, resolvedMessageType);
 
     return (
@@ -429,7 +414,11 @@ function InviteMessagePanel({
                     Target: {targetLabel}
                 </div>
             ) : null}
-            {error ? <div className="text-destructive text-sm">{error}</div> : null}
+            {error ? (
+                <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            ) : null}
             <div className="min-h-0 flex-1 overflow-auto rounded-md border">
                 <Table>
                     <TableHeader>
@@ -473,22 +462,8 @@ function InviteMessagePanel({
                                     <TableRow
                                         key={`${resolvedMessageType}:${row.slot}`}
                                         className={cn(
-                                            'cursor-pointer',
                                             selected && 'bg-muted/70'
                                         )}
-                                        tabIndex={0}
-                                        aria-label={`Select message template slot ${row.slot}`}
-                                        onKeyDown={(event) => {
-                                            if (
-                                                event.key !== 'Enter' &&
-                                                event.key !== ' '
-                                            ) {
-                                                return;
-                                            }
-                                            event.preventDefault();
-                                            handleRowAction(row);
-                                        }}
-                                        onClick={() => handleRowAction(row)}
                                     >
                                         <TableCell className="font-mono text-xs">
                                             {row.slot}
@@ -512,7 +487,9 @@ function InviteMessagePanel({
                                                                 sending ||
                                                                 editDisabled
                                                             }
-                                                            onClick={(event) => {
+                                                            onClick={(
+                                                                event
+                                                            ) => {
                                                                 event.stopPropagation();
                                                                 beginEdit(row);
                                                             }}
@@ -520,15 +497,39 @@ function InviteMessagePanel({
                                                             <PencilIcon data-icon="inline-start" />
                                                         </Button>
                                                     ) : null}
-                                                    {resolvedMode === 'select' ? (
+                                                    {resolvedMode ===
+                                                    'select' ? (
                                                         <Button
                                                             type="button"
                                                             variant="outline"
                                                             size="sm"
                                                             disabled={sending}
-                                                            onClick={(event) => {
+                                                            onClick={(
+                                                                event
+                                                            ) => {
                                                                 event.stopPropagation();
-                                                                void useRow(row);
+                                                                void useRow(
+                                                                    row
+                                                                );
+                                                            }}
+                                                        >
+                                                            {actionLabel}
+                                                        </Button>
+                                                    ) : null}
+                                                    {resolvedMode ===
+                                                    'respond' ? (
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            disabled={sending}
+                                                            onClick={() => {
+                                                                setEditingRow(
+                                                                    null
+                                                                );
+                                                                setConfirmRow(
+                                                                    row
+                                                                );
                                                             }}
                                                         >
                                                             {actionLabel}
@@ -557,7 +558,8 @@ function InviteMessagePanel({
                 <div className="flex flex-col gap-2 rounded-md border p-3">
                     <div className="text-sm font-medium">
                         {resolvedMode === 'respond' ? 'Edit and send' : 'Edit'}{' '}
-                        slot <span className="font-mono">{editingRow.slot}</span>
+                        slot{' '}
+                        <span className="font-mono">{editingRow.slot}</span>
                     </div>
                     <Textarea
                         value={editMessage}
@@ -705,7 +707,8 @@ function InviteMessageDialog({
             <DialogContent className="flex max-h-[90vh] max-w-[min(92vw,56rem)] flex-col">
                 <DialogHeader>
                     <DialogTitle>
-                        {title || dialogTitle(resolvedMode, resolvedMessageType)}
+                        {title ||
+                            dialogTitle(resolvedMode, resolvedMessageType)}
                     </DialogTitle>
                     <DialogDescription>
                         {description ||
@@ -770,7 +773,10 @@ function InviteMessageTemplatesDialog({
                     >
                         <TabsList className="flex-wrap">
                             {INVITE_MESSAGE_TYPES.map((entry) => (
-                                <TabsTrigger key={entry.type} value={entry.type}>
+                                <TabsTrigger
+                                    key={entry.type}
+                                    value={entry.type}
+                                >
                                     {entry.label}
                                 </TabsTrigger>
                             ))}

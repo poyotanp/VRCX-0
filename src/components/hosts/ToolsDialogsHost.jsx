@@ -32,6 +32,7 @@ import { useFavoriteStore } from '@/state/favoriteStore.js';
 import { useFriendRosterStore } from '@/state/friendRosterStore.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
+import { Alert, AlertAction, AlertDescription } from '@/ui/shadcn/alert';
 import { Button } from '@/ui/shadcn/button';
 import { Checkbox } from '@/ui/shadcn/checkbox';
 import {
@@ -42,12 +43,15 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
+import { Empty, EmptyHeader, EmptyTitle } from '@/ui/shadcn/empty';
 import {
     Field,
     FieldContent,
     FieldDescription,
     FieldGroup,
-    FieldLabel
+    FieldLabel,
+    FieldLegend,
+    FieldSet
 } from '@/ui/shadcn/field';
 import { Input } from '@/ui/shadcn/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/shadcn/popover';
@@ -235,7 +239,10 @@ function CheckRow({
 
 function MultiCheckList({ idPrefix, values, options, disabled, onChange }) {
     return (
-        <div className="grid gap-2 sm:grid-cols-2">
+        <FieldGroup
+            data-slot="checkbox-group"
+            className="grid gap-2 sm:grid-cols-2"
+        >
             {options.map((option) => (
                 <CheckRow
                     key={option.value}
@@ -250,7 +257,7 @@ function MultiCheckList({ idPrefix, values, options, disabled, onChange }) {
                     }
                 />
             ))}
-        </div>
+        </FieldGroup>
     );
 }
 
@@ -269,60 +276,64 @@ function StatusEditor({
     const descEnabledId = `${id}-description-enabled`;
 
     return (
-        <FieldGroup className="rounded-md border p-3">
-            <Field>
-                <FieldLabel>{label}</FieldLabel>
-                <Select
-                    value={status}
-                    disabled={disabled}
-                    onValueChange={onStatusChange}
-                >
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {statusOptions.map((statusOption) => (
-                                <SelectItem
-                                    key={statusOption}
-                                    value={statusOption}
-                                >
-                                    {t(
-                                        `dialog.user.status.${statusOption.replace(' ', '_')}`
-                                    )}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-            </Field>
-            <Field orientation="horizontal" data-disabled={disabled}>
-                <Switch
-                    id={descEnabledId}
-                    checked={descEnabled}
-                    disabled={disabled}
-                    onCheckedChange={onDescEnabledChange}
-                />
-                <FieldLabel htmlFor={descEnabledId}>
-                    {t(
-                        'view.settings.general.automation.change_status_description'
-                    )}
-                </FieldLabel>
-            </Field>
-            {descEnabled ? (
-                <Field data-disabled={disabled}>
-                    <Input
-                        value={desc}
-                        maxLength={32}
+        <FieldSet className="rounded-md border p-3" disabled={disabled}>
+            <FieldLegend variant="label">{label}</FieldLegend>
+            <FieldGroup>
+                <Field>
+                    <Select
+                        value={status}
                         disabled={disabled}
-                        placeholder={t(
-                            'view.settings.general.automation.status_description_placeholder'
-                        )}
-                        onChange={(event) => onDescChange(event.target.value)}
-                    />
+                        onValueChange={onStatusChange}
+                    >
+                        <SelectTrigger aria-label={label}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {statusOptions.map((statusOption) => (
+                                    <SelectItem
+                                        key={statusOption}
+                                        value={statusOption}
+                                    >
+                                        {t(
+                                            `dialog.user.status.${statusOption.replace(' ', '_')}`
+                                        )}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </Field>
-            ) : null}
-        </FieldGroup>
+                <Field orientation="horizontal" data-disabled={disabled}>
+                    <Switch
+                        id={descEnabledId}
+                        checked={descEnabled}
+                        disabled={disabled}
+                        onCheckedChange={onDescEnabledChange}
+                    />
+                    <FieldLabel htmlFor={descEnabledId}>
+                        {t(
+                            'view.settings.general.automation.change_status_description'
+                        )}
+                    </FieldLabel>
+                </Field>
+                {descEnabled ? (
+                    <Field data-disabled={disabled}>
+                        <Input
+                            value={desc}
+                            maxLength={32}
+                            disabled={disabled}
+                            placeholder={t(
+                                'view.settings.general.automation.status_description_placeholder'
+                            )}
+                            onChange={(event) =>
+                                onDescChange(event.target.value)
+                            }
+                        />
+                    </Field>
+                ) : null}
+            </FieldGroup>
+        </FieldSet>
     );
 }
 
@@ -866,6 +877,9 @@ function ExportFriendsListDialog({ open, onOpenChange }) {
                     <DialogTitle>
                         {t('dialog.export_friends_list.header')}
                     </DialogTitle>
+                    <DialogDescription>
+                        {t('dialog.export_friends_list.description')}
+                    </DialogDescription>
                 </DialogHeader>
                 <Tabs value={tab} onValueChange={setTab}>
                     <TabsList>
@@ -938,9 +952,11 @@ function ExportAvatarsListDialog({ open, onOpenChange }) {
                     <DialogTitle>
                         {t('dialog.export_own_avatars.header')}
                     </DialogTitle>
-                    {loading ? (
-                        <DialogDescription>Loading avatars.</DialogDescription>
-                    ) : null}
+                    <DialogDescription>
+                        {loading
+                            ? 'Loading avatars.'
+                            : t('dialog.export_own_avatars.description')}
+                    </DialogDescription>
                 </DialogHeader>
                 <ToolTextarea value={content} />
             </DialogContent>
@@ -985,7 +1001,10 @@ function NoteExportDialog({ open, onOpenChange }) {
             setRows(nextRows);
         } catch (error) {
             toast.error(
-                userFacingErrorMessage(error, 'Failed to load memo export rows.')
+                userFacingErrorMessage(
+                    error,
+                    'Failed to load memo export rows.'
+                )
             );
         } finally {
             setLoading(false);
@@ -1050,14 +1069,20 @@ function NoteExportDialog({ open, onOpenChange }) {
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-5xl">
                 <DialogHeader>
                     <DialogTitle>{t('dialog.note_export.header')}</DialogTitle>
-                </DialogHeader>
-                <div className="text-muted-foreground flex flex-col gap-1 text-xs">
-                    {Array.from({ length: 8 }, (_, index) => (
-                        <div key={`note-export-description-${index + 1}`}>
-                            {t(`dialog.note_export.description${index + 1}`)}
+                    <DialogDescription asChild>
+                        <div className="flex flex-col gap-1">
+                            {Array.from({ length: 8 }, (_, index) => (
+                                <span
+                                    key={`note-export-description-${index + 1}`}
+                                >
+                                    {t(
+                                        `dialog.note_export.description${index + 1}`
+                                    )}
+                                </span>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </DialogDescription>
+                </DialogHeader>
                 <div className="flex flex-wrap items-center gap-2">
                     <Button
                         type="button"
@@ -1094,19 +1119,23 @@ function NoteExportDialog({ open, onOpenChange }) {
                     ) : null}
                 </div>
                 {errors ? (
-                    <div className="flex flex-col gap-2 rounded-md border p-3">
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setErrors('')}
-                        >
-                            {t('dialog.note_export.clear_errors')}
-                        </Button>
-                        <pre className="text-xs whitespace-pre-wrap">
-                            {errors}
-                        </pre>
-                    </div>
+                    <Alert variant="destructive">
+                        <AlertDescription>
+                            <pre className="text-xs whitespace-pre-wrap">
+                                {errors}
+                            </pre>
+                        </AlertDescription>
+                        <AlertAction>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setErrors('')}
+                            >
+                                {t('dialog.note_export.clear_errors')}
+                            </Button>
+                        </AlertAction>
+                    </Alert>
                 ) : null}
                 <div className="overflow-hidden rounded-md border">
                     <Table>
@@ -1168,7 +1197,7 @@ function NoteExportDialog({ open, onOpenChange }) {
                                             <Button
                                                 type="button"
                                                 variant="ghost"
-                                                className="px-0 hover:text-primary"
+                                                className="hover:text-primary px-0"
                                                 onClick={() =>
                                                     openUserDialog({
                                                         userId: row.id,
@@ -1523,9 +1552,15 @@ function GroupCalendarDialog({ open, onOpenChange }) {
                                     />
                                 ))
                             ) : (
-                                <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
-                                    {t('dialog.group_calendar.no_events')}
-                                </div>
+                                <Empty className="h-40 border-0 p-4">
+                                    <EmptyHeader>
+                                        <EmptyTitle>
+                                            {t(
+                                                'dialog.group_calendar.no_events'
+                                            )}
+                                        </EmptyTitle>
+                                    </EmptyHeader>
+                                </Empty>
                             )}
                         </ScrollArea>
                         <div className="rounded-md border p-4">
@@ -1666,15 +1701,19 @@ function GroupCalendarDialog({ open, onOpenChange }) {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
-                                    {search
-                                        ? t(
-                                              'dialog.group_calendar.search_no_matching'
-                                          )
-                                        : t(
-                                              'dialog.group_calendar.search_no_this_month'
-                                          )}
-                                </div>
+                                <Empty className="h-40 border-0 p-4">
+                                    <EmptyHeader>
+                                        <EmptyTitle>
+                                            {search
+                                                ? t(
+                                                      'dialog.group_calendar.search_no_matching'
+                                                  )
+                                                : t(
+                                                      'dialog.group_calendar.search_no_this_month'
+                                                  )}
+                                        </EmptyTitle>
+                                    </EmptyHeader>
+                                </Empty>
                             )}
                         </ScrollArea>
                     </div>
@@ -1730,9 +1769,7 @@ async function downloadEventIcs(event) {
     try {
         await backend.app.SaveCalendarFile(fileName, content);
     } catch (error) {
-        toast.error(
-            userFacingErrorMessage(error, 'Failed to save .ics file.')
-        );
+        toast.error(userFacingErrorMessage(error, 'Failed to save .ics file.'));
     }
 }
 
@@ -1879,7 +1916,7 @@ function GroupEventCard({
                                     <Button
                                         type="button"
                                         variant="ghost"
-                                        className="text-muted-foreground h-auto max-w-full justify-start p-0 text-left text-xs font-normal hover:text-primary"
+                                        className="text-muted-foreground hover:text-primary h-auto max-w-full justify-start p-0 text-left text-xs font-normal"
                                         onClick={stopAndRun(() =>
                                             openGroupDialog({ groupId })
                                         )}
@@ -1892,7 +1929,7 @@ function GroupEventCard({
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    className="h-auto max-w-full justify-start p-0 text-left text-sm font-medium hover:text-primary"
+                                    className="hover:text-primary h-auto max-w-full justify-start p-0 text-left text-sm font-medium"
                                     onClick={stopAndRun(() =>
                                         openGroupDialog({ groupId })
                                     )}

@@ -20,8 +20,15 @@ import { parseLocation } from '@/shared/utils/locationParser.js';
 import { usePreferencesStore } from '@/state/preferencesStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useShellStore } from '@/state/shellStore.js';
+import { Alert, AlertDescription } from '@/ui/shadcn/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/shadcn/avatar';
 import { Button } from '@/ui/shadcn/button';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
 import { Field, FieldLabel } from '@/ui/shadcn/field';
 import {
     Select,
@@ -296,6 +303,19 @@ function HeatmapChart({
 function getWorldThumbnailUrl(world) {
     const url = world?.thumbnailImageUrl || world?.imageUrl || '';
     return url ? url.replace('256', '128') : '';
+}
+
+function ActivityEmptyState({ title, description }) {
+    return (
+        <Empty className="mt-8 min-h-40 border">
+            <EmptyHeader>
+                <EmptyTitle>{title}</EmptyTitle>
+                {description ? (
+                    <EmptyDescription>{description}</EmptyDescription>
+                ) : null}
+            </EmptyHeader>
+        </Empty>
+    );
 }
 
 function TopWorldRows({ worlds, sortBy, t }) {
@@ -1145,19 +1165,17 @@ export function UserActivityPanel({ profile, isCurrentUser, active = false }) {
                 </div>
             ) : null}
             {!loading && error ? (
-                <div className="text-destructive mt-8 text-center text-sm">
-                    {error}
-                </div>
+                <Alert variant="destructive" className="mt-8">
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
             ) : null}
             {!loading && !error && !hasAnyData ? (
-                <div className="text-muted-foreground mt-8 flex flex-1 items-center justify-center text-sm">
-                    {t('common.no_data')}
-                </div>
+                <ActivityEmptyState title={t('common.no_data')} />
             ) : null}
             {!loading && hasAnyData && filteredEventCount === 0 ? (
-                <div className="text-muted-foreground mt-8 flex flex-1 items-center justify-center text-sm">
-                    {t('dialog.user.activity.no_data_in_period')}
-                </div>
+                <ActivityEmptyState
+                    title={t('dialog.user.activity.no_data_in_period')}
+                />
             ) : null}
 
             {filteredEventCount > 0 ? (

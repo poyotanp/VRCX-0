@@ -263,6 +263,7 @@
             "forgotPassword": "Forgot Password?",
             "updater": "Updater",
             "proxy_settings": "Proxy Settings",
+            "proxy_description": "Set the proxy server used before login and optional development endpoints.",
             "settings": "Settings",
             "language": "Language",
             "field": {
@@ -276,6 +277,16 @@
             "placeholder": {
                 "account": "VRChat account",
                 "password": "VRChat password"
+            },
+            "validation": {
+                "username_required": "Username or email is required.",
+                "password_required": "Password is required."
+            },
+            "saved_account_remove": {
+                "title": "Remove saved account",
+                "description": "{name} will be removed.",
+                "confirm": "Remove",
+                "removing": "Removing..."
             },
             "footer": {
                 "builtForPlayers": "Built for VRChat players",
@@ -935,6 +946,7 @@
                     "sort_instance_users_by_time": "Time in Instance",
                     "sort_instance_users_by_alphabet": "Name",
                     "table_page_sizes": "Table Page Sizes",
+                    "table_page_sizes_description": "Add, remove, and select the page-size options shown in table controls.",
                     "table_page_sizes_error": "Page size must be a number between 1 and 1000",
                     "show_notification_icon_dot": "Tray Notification Dot",
                     "striped_data_table_mode": "Striped Tables",
@@ -2019,11 +2031,13 @@
         },
         "export_friends_list": {
             "header": "Export Friends List",
+            "description": "Export your current friends list as CSV or JSON.",
             "csv": "CSV",
             "json": "JSON"
         },
         "export_own_avatars": {
-            "header": "Export Own Avatars"
+            "header": "Export Own Avatars",
+            "description": "Export the ID and name list for avatars you own."
         },
         "discord_names": {
             "header": "Discord Names",
@@ -2421,6 +2435,7 @@
         },
         "avatar_database_provider": {
             "header": "Avatar Database Provider",
+            "description": "Manage avatar search provider endpoints.",
             "add_provider": "Add Provider"
         }
     },

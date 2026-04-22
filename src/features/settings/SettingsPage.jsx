@@ -126,14 +126,23 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuGroup,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/ui/shadcn/dropdown-menu';
+import { Empty, EmptyHeader, EmptyTitle } from '@/ui/shadcn/empty';
 import {
     Field as ShadcnField,
     FieldLabel as ShadcnFieldLabel
 } from '@/ui/shadcn/field';
 import { Input } from '@/ui/shadcn/input';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput
+} from '@/ui/shadcn/input-group';
 import {
     Select,
     SelectContent,
@@ -333,7 +342,10 @@ function TablePageSizesDialog({ open, onOpenChange, onSaved }) {
         setInput('');
     }, [open]);
 
-    async function persist(nextSizes, { close = false, showToast = false } = {}) {
+    async function persist(
+        nextSizes,
+        { close = false, showToast = false } = {}
+    ) {
         const normalizedSizes = normalizeTablePageSizes(nextSizes);
         setDraft(normalizedSizes);
         try {
@@ -403,7 +415,7 @@ function TablePageSizesDialog({ open, onOpenChange, onSaved }) {
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'view.settings.appearance.appearance.table_page_sizes'
+                            'view.settings.appearance.appearance.table_page_sizes_description'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -435,8 +447,8 @@ function TablePageSizesDialog({ open, onOpenChange, onSaved }) {
                         description="1-1000"
                         controlId="settings-table-page-size-input"
                     >
-                        <div className="flex gap-2">
-                            <Input
+                        <InputGroup>
+                            <InputGroupInput
                                 id="settings-table-page-size-input"
                                 type="number"
                                 name="tablePageSize"
@@ -457,17 +469,19 @@ function TablePageSizesDialog({ open, onOpenChange, onSaved }) {
                                     }
                                 }}
                             />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                aria-label={t(
-                                    'view.settings.appearance.appearance.table_page_sizes'
-                                )}
-                                onClick={() => addPageSize()}
-                            >
-                                <PlusIcon data-icon="inline-start" />
-                            </Button>
-                        </div>
+                            <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                    type="button"
+                                    size="icon-xs"
+                                    aria-label={t(
+                                        'view.settings.appearance.appearance.table_page_sizes'
+                                    )}
+                                    onClick={() => addPageSize()}
+                                >
+                                    <PlusIcon data-icon="inline-start" />
+                                </InputGroupButton>
+                            </InputGroupAddon>
+                        </InputGroup>
                     </Field>
                     <div className="max-h-64 overflow-y-auto rounded-md border p-1">
                         <FieldGroup>
@@ -2015,3132 +2029,2875 @@ export function SettingsPage() {
                     </div>
                 ) : null}
                 <SettingsTabContent value="system">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.general.general.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.general.general.version'
-                                        )}
-                                        :{' '}
-                                        {formatReleaseDisplayVersion(
-                                            VERSION || ''
-                                        ) || '-'}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <div className="flex flex-wrap gap-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.general.general.header')}
+                            </CardTitle>
+                            <CardDescription>
+                                {t('view.settings.general.general.version')}:{' '}
+                                {formatReleaseDisplayVersion(VERSION || '') ||
+                                    '-'}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        void openExternalLink(
+                                            'https://github.com/Map1en/VRCX-0'
+                                        )
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.general.general.repository_url'
+                                    )}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        void openExternalLink(
+                                            'https://github.com/Map1en/VRCX-0/issues'
+                                        )
+                                    }
+                                >
+                                    {t('view.settings.general.general.support')}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.general.application.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.general.application.startup'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.isStartAtWindowsStartup}
+                                    onCheckedChange={(checked) =>
+                                        void savePreferenceValue(
+                                            'isStartAtWindowsStartup',
+                                            checked,
+                                            () =>
+                                                setStartAtWindowsStartupPreference(
+                                                    checked
+                                                )
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.general.application.minimized'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.isStartAsMinimizedState}
+                                    onCheckedChange={(checked) =>
+                                        void savePreferenceValue(
+                                            'isStartAsMinimizedState',
+                                            checked,
+                                            () =>
+                                                setStartAsMinimizedPreference(
+                                                    checked
+                                                )
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.general.application.tray'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.isCloseToTray}
+                                    onCheckedChange={(checked) =>
+                                        void savePreferenceValue(
+                                            'isCloseToTray',
+                                            checked,
+                                            () =>
+                                                setCloseToTrayPreference(
+                                                    checked
+                                                )
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.general.application.proxy'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => void promptProxySettings()}
+                                >
+                                    {t(
+                                        'view.settings.general.application.proxy'
+                                    )}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.general.legal_notice.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <div className="text-muted-foreground rounded-lg border p-4 text-sm">
+                                <p>
+                                    {t(
+                                        'view.settings.general.legal_notice.info'
+                                    )}
+                                </p>
+                                <p>
+                                    {t(
+                                        'view.settings.general.legal_notice.disclaimer1'
+                                    )}
+                                </p>
+                                <p>
+                                    {t(
+                                        'view.settings.general.legal_notice.disclaimer2'
+                                    )}
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        setOpenSourceNoticeOpen(true)
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.general.legal_notice.open_source_software_notice'
+                                    )}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
+                <SettingsTabContent value="interface">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.appearance.appearance.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.language'
+                                )}
+                                controlId="settings-language"
+                            >
+                                <Select
+                                    value={locale || 'en'}
+                                    onValueChange={(value) =>
+                                        void commit(() =>
+                                            setAppLanguagePreference(value)
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-language"
+                                        className="w-56"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {languageCodes.map((code) => (
+                                                <SelectItem
+                                                    key={code}
+                                                    value={code}
+                                                >
+                                                    {getLanguageName(code)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.font_family'
+                                )}
+                            >
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                void openExternalLink(
-                                                    'https://github.com/Map1en/VRCX-0'
-                                                )
-                                            }
+                                            className="min-w-44 justify-between font-normal"
                                         >
-                                            {t(
-                                                'view.settings.general.general.repository_url'
-                                            )}
+                                            <span className="truncate">
+                                                {fontDropdownDisplayText}
+                                            </span>
+                                            <ChevronDownIcon
+                                                data-icon="inline-end"
+                                                className="opacity-50"
+                                            />
                                         </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                void openExternalLink(
-                                                    'https://github.com/Map1en/VRCX-0/issues'
-                                                )
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.general.general.support'
-                                            )}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.general.application.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.application.startup'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.isStartAtWindowsStartup
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void savePreferenceValue(
-                                                    'isStartAtWindowsStartup',
-                                                    checked,
-                                                    () =>
-                                                        setStartAtWindowsStartupPreference(
-                                                            checked
-                                                        )
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.application.minimized'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.isStartAsMinimizedState
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void savePreferenceValue(
-                                                    'isStartAsMinimizedState',
-                                                    checked,
-                                                    () =>
-                                                        setStartAsMinimizedPreference(
-                                                            checked
-                                                        )
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.application.tray'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.isCloseToTray}
-                                            onCheckedChange={(checked) =>
-                                                void savePreferenceValue(
-                                                    'isCloseToTray',
-                                                    checked,
-                                                    () =>
-                                                        setCloseToTrayPreference(
-                                                            checked
-                                                        )
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.application.proxy'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                void promptProxySettings()
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.general.application.proxy'
-                                            )}
-                                        </Button>
-                                    </Field>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.general.legal_notice.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <div className="text-muted-foreground rounded-lg border p-4 text-sm">
-                                        <p>
-                                            {t(
-                                                'view.settings.general.legal_notice.info'
-                                            )}
-                                        </p>
-                                        <p>
-                                            {t(
-                                                'view.settings.general.legal_notice.disclaimer1'
-                                            )}
-                                        </p>
-                                        <p>
-                                            {t(
-                                                'view.settings.general.legal_notice.disclaimer2'
-                                            )}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                setOpenSourceNoticeOpen(true)
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.general.legal_notice.open_source_software_notice'
-                                            )}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
-                    <SettingsTabContent value="interface">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.appearance.appearance.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.language'
-                                        )}
-                                        controlId="settings-language"
-                                    >
-                                        <Select
-                                            value={locale || 'en'}
-                                            onValueChange={(value) =>
-                                                void commit(() =>
-                                                    setAppLanguagePreference(
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuRadioGroup
+                                                value={prefs.appFontFamily}
+                                                onValueChange={(value) => {
+                                                    if (value === 'custom') {
+                                                        openCustomFontDialog();
+                                                        return;
+                                                    }
+                                                    void saveFontFamilyPreference(
+                                                        value
+                                                    );
+                                                }}
+                                            >
+                                                {westernFontDropdownOptions.map(
+                                                    ([value, labelKey]) => (
+                                                        <DropdownMenuRadioItem
+                                                            key={value}
+                                                            value={value}
+                                                        >
+                                                            {t(labelKey)}
+                                                        </DropdownMenuRadioItem>
+                                                    )
+                                                )}
+                                                <DropdownMenuRadioItem value="custom">
+                                                    {t(
+                                                        'view.settings.appearance.appearance.font_family_custom'
+                                                    )}
+                                                </DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuGroup>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuRadioGroup
+                                                value={
+                                                    prefs.appFontFamily ===
+                                                    'custom'
+                                                        ? ''
+                                                        : prefs.appCjkFontPack
+                                                }
+                                                onValueChange={(value) =>
+                                                    void selectCjkFontPack(
                                                         value
                                                     )
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-language"
-                                                className="w-56"
+                                                }
                                             >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {languageCodes.map(
-                                                        (code) => (
-                                                            <SelectItem
-                                                                key={code}
-                                                                value={code}
-                                                            >
-                                                                {getLanguageName(
-                                                                    code
-                                                                )}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.font_family'
-                                        )}
-                                    >
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="min-w-44 justify-between font-normal"
-                                                >
-                                                    <span className="truncate">
-                                                        {
-                                                            fontDropdownDisplayText
-                                                        }
-                                                    </span>
-                                                    <ChevronDownIcon
-                                                        data-icon="inline-end"
-                                                        className="opacity-50"
-                                                    />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuGroup>
-                                                    {westernFontDropdownOptions.map(
-                                                        ([value, labelKey]) => (
-                                                            <DropdownMenuCheckboxItem
-                                                                key={value}
-                                                                checked={
-                                                                    prefs.appFontFamily ===
-                                                                    value
-                                                                }
-                                                                onSelect={() =>
-                                                                    void saveFontFamilyPreference(
-                                                                        value
-                                                                    )
-                                                                }
-                                                            >
-                                                                {t(labelKey)}
-                                                            </DropdownMenuCheckboxItem>
-                                                        )
-                                                    )}
-                                                </DropdownMenuGroup>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuGroup>
-                                                    {cjkFontPackOptions.map(
-                                                        ([value, labelKey]) => (
-                                                            <DropdownMenuCheckboxItem
-                                                                key={value}
-                                                                checked={
-                                                                    prefs.appCjkFontPack ===
-                                                                        value &&
-                                                                    prefs.appFontFamily !==
-                                                                        'custom'
-                                                                }
-                                                                onSelect={() =>
-                                                                    void selectCjkFontPack(
-                                                                        value
-                                                                    )
-                                                                }
-                                                            >
-                                                                {t(labelKey)}
-                                                            </DropdownMenuCheckboxItem>
-                                                        )
-                                                    )}
-                                                </DropdownMenuGroup>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuGroup>
-                                                    <DropdownMenuCheckboxItem
-                                                        checked={
-                                                            prefs.appFontFamily ===
-                                                            'custom'
-                                                        }
-                                                        onSelect={
-                                                            openCustomFontDialog
-                                                        }
-                                                    >
-                                                        {t(
-                                                            'view.settings.appearance.appearance.font_family_custom'
-                                                        )}
-                                                    </DropdownMenuCheckboxItem>
-                                                </DropdownMenuGroup>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.zoom'
-                                        )}
-                                        controlId="settings-zoom"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                id="settings-zoom"
-                                                name="zoom"
-                                                inputMode="numeric"
-                                                type="number"
-                                                min={30}
-                                                max={300}
-                                                step={1}
-                                                className="w-28"
-                                                value={zoomInput}
-                                                onChange={(event) =>
-                                                    setZoomInput(
-                                                        event.target.value
+                                                {cjkFontPackOptions.map(
+                                                    ([value, labelKey]) => (
+                                                        <DropdownMenuRadioItem
+                                                            key={value}
+                                                            value={value}
+                                                        >
+                                                            {t(labelKey)}
+                                                        </DropdownMenuRadioItem>
                                                     )
-                                                }
-                                                onBlur={() =>
-                                                    void commit(async () => {
-                                                        const nextZoom =
-                                                            await setZoomLevelPreference(
-                                                                zoomInput
-                                                            );
-                                                        setZoomInput(
-                                                            String(nextZoom)
-                                                        );
-                                                    })
-                                                }
-                                            />
-                                            <Badge variant="outline">
-                                                {formatZoomPercentage(
-                                                    zoomLevel
                                                 )}
-                                            </Badge>
-                                        </div>
-                                    </Field>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.show_notification_icon_dot'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.notificationIconDot}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'notificationIconDot',
-                                                    'notificationIconDot',
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.zoom'
+                                )}
+                                controlId="settings-zoom"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        id="settings-zoom"
+                                        name="zoom"
+                                        inputMode="numeric"
+                                        type="number"
+                                        min={30}
+                                        max={300}
+                                        step={1}
+                                        className="w-28"
+                                        value={zoomInput}
+                                        onChange={(event) =>
+                                            setZoomInput(event.target.value)
+                                        }
+                                        onBlur={() =>
+                                            void commit(async () => {
+                                                const nextZoom =
+                                                    await setZoomLevelPreference(
+                                                        zoomInput
+                                                    );
+                                                setZoomInput(String(nextZoom));
+                                            })
+                                        }
+                                    />
+                                    <Badge variant="outline">
+                                        {formatZoomPercentage(zoomLevel)}
+                                    </Badge>
+                                </div>
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.show_notification_icon_dot'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.notificationIconDot}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'notificationIconDot',
+                                            'notificationIconDot',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.striped_data_table_mode'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.dataTableStriped}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setDataTableStripedPreference(
                                                     checked
-                                                )
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    dataTableStriped: checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        dataTableStriped:
+                                                            !checked
+                                                    }));
                                             }
-                                        />
-                                    </Field>
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.striped_data_table_mode'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.dataTableStriped}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setDataTableStripedPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            dataTableStriped:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    dataTableStriped:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.toggle_pointer_on_hover'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.appearance.toggle_pointer_on_hover_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.showPointerOnHover}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setPointerOnHoverPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            showPointerOnHover:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    showPointerOnHover:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.accessible_status_indicators'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.appearance.accessible_status_indicators_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.accessibleStatusIndicators
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setAccessibleStatusIndicatorsPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            accessibleStatusIndicators:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    accessibleStatusIndicators:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.appearance.display.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.show_instance_id'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.showInstanceIdInLocation
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'showInstanceIdInLocation',
-                                                    'VRCX_showInstanceIdInLocation',
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.toggle_pointer_on_hover'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.appearance.toggle_pointer_on_hover_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.showPointerOnHover}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setPointerOnHoverPreference(
                                                     checked
-                                                )
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    showPointerOnHover: checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        showPointerOnHover:
+                                                            !checked
+                                                    }));
                                             }
-                                        />
-                                    </Field>
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.age_gated_instances'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.appearance.age_gated_instances_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.isAgeGatedInstancesVisible
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'isAgeGatedInstancesVisible',
-                                                    'VRCX_isAgeGatedInstancesVisible',
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.accessible_status_indicators'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.appearance.accessible_status_indicators_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.accessibleStatusIndicators}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setAccessibleStatusIndicatorsPreference(
                                                     checked
-                                                )
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    accessibleStatusIndicators:
+                                                        checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        accessibleStatusIndicators:
+                                                            !checked
+                                                    }));
                                             }
-                                        />
-                                    </Field>
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.appearance.display.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.show_instance_id'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.showInstanceIdInLocation}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'showInstanceIdInLocation',
+                                            'VRCX_showInstanceIdInLocation',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.nicknames'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.appearance.nicknames_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={!prefs.hideNicknames}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'hideNicknames',
-                                                    'hideNicknames',
-                                                    !checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.age_gated_instances'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.appearance.age_gated_instances_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.isAgeGatedInstancesVisible}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'isAgeGatedInstancesVisible',
+                                            'VRCX_isAgeGatedInstancesVisible',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.vrcplus_profile_icons'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.appearance.vrcplus_profile_icons_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.displayVRCPlusIconsAsAvatar
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'displayVRCPlusIconsAsAvatar',
-                                                    'displayVRCPlusIconsAsAvatar',
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.nicknames'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.appearance.nicknames_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={!prefs.hideNicknames}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'hideNicknames',
+                                            'hideNicknames',
+                                            !checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.vrcplus_profile_icons'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.appearance.vrcplus_profile_icons_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.displayVRCPlusIconsAsAvatar}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'displayVRCPlusIconsAsAvatar',
+                                            'displayVRCPlusIconsAsAvatar',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.interface.navigation.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.interface.navigation.show_new_dashboard_button'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.showNewDashboardButton}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setShowNewDashboardButtonPreference(
                                                     checked
-                                                )
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    showNewDashboardButton:
+                                                        checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        showNewDashboardButton:
+                                                            !checked
+                                                    }));
                                             }
-                                        />
-                                    </Field>
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.interface.lists_tables.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.sort_favorite_by'
+                                )}
+                            >
+                                <SegmentedPreference
+                                    value={
+                                        prefs.sortFavorites ? 'date' : 'name'
+                                    }
+                                    onChange={(value) =>
+                                        void saveBoolPreference(
+                                            'sortFavorites',
+                                            'sortFavorites',
+                                            value === 'date'
+                                        )
+                                    }
+                                    options={[
+                                        {
+                                            value: 'name',
+                                            label: t(
+                                                'view.settings.appearance.appearance.sort_favorite_by_name'
+                                            )
+                                        },
+                                        {
+                                            value: 'date',
+                                            label: t(
+                                                'view.settings.appearance.appearance.sort_favorite_by_date'
+                                            )
+                                        }
+                                    ]}
+                                />
+                            </Field>
 
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.interface.navigation.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.interface.navigation.show_new_dashboard_button'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.showNewDashboardButton
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setShowNewDashboardButtonPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            showNewDashboardButton:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    showNewDashboardButton:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.table_page_sizes'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        void openTablePageSizesDialog()
+                                    }
+                                >
+                                    {t('common.actions.configure')}
+                                </Button>
+                            </Field>
 
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.interface.lists_tables.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.sort_favorite_by'
-                                        )}
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.appearance.table_entries_settings'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.appearance.table_entries_settings_description'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => void openTableLimitsDialog()}
+                                >
+                                    {t('common.actions.configure')}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.appearance.timedate.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.timedate.time_format'
+                                )}
+                                controlId="settings-time-format"
+                            >
+                                <Select
+                                    value={prefs.dtHour12 ? '12' : '24'}
+                                    onValueChange={(value) =>
+                                        void saveBoolPreference(
+                                            'dtHour12',
+                                            'dtHour12',
+                                            value === '12'
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-time-format"
+                                        className="w-56"
                                     >
-                                        <SegmentedPreference
-                                            value={
-                                                prefs.sortFavorites
-                                                    ? 'date'
-                                                    : 'name'
-                                            }
-                                            onChange={(value) =>
-                                                void saveBoolPreference(
-                                                    'sortFavorites',
-                                                    'sortFavorites',
-                                                    value === 'date'
-                                                )
-                                            }
-                                            options={[
-                                                {
-                                                    value: 'name',
-                                                    label: t(
-                                                        'view.settings.appearance.appearance.sort_favorite_by_name'
-                                                    )
-                                                },
-                                                {
-                                                    value: 'date',
-                                                    label: t(
-                                                        'view.settings.appearance.appearance.sort_favorite_by_date'
-                                                    )
-                                                }
-                                            ]}
-                                        />
-                                    </Field>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="12">
+                                                {t(
+                                                    'view.settings.appearance.timedate.time_format_12'
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="24">
+                                                {t(
+                                                    'view.settings.appearance.timedate.time_format_24'
+                                                )}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.table_page_sizes'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                void openTablePageSizesDialog()
-                                            }
-                                        >
-                                            {t('common.actions.configure')}
-                                        </Button>
-                                    </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.timedate.force_iso_date_format'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.dtIsoFormat}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'dtIsoFormat',
+                                            'dtIsoFormat',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.appearance.table_entries_settings'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.appearance.table_entries_settings_description'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                void openTableLimitsDialog()
-                                            }
-                                        >
-                                            {t('common.actions.configure')}
-                                        </Button>
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.appearance.timedate.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.timedate.time_format'
-                                        )}
-                                        controlId="settings-time-format"
-                                    >
-                                        <Select
-                                            value={prefs.dtHour12 ? '12' : '24'}
-                                            onValueChange={(value) =>
-                                                void saveBoolPreference(
-                                                    'dtHour12',
-                                                    'dtHour12',
-                                                    value === '12'
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-time-format"
-                                                className="w-56"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    <SelectItem value="12">
-                                                        {t(
-                                                            'view.settings.appearance.timedate.time_format_12'
-                                                        )}
-                                                    </SelectItem>
-                                                    <SelectItem value="24">
-                                                        {t(
-                                                            'view.settings.appearance.timedate.time_format_24'
-                                                        )}
-                                                    </SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.timedate.force_iso_date_format'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.dtIsoFormat}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'dtIsoFormat',
-                                                    'dtIsoFormat',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.timedate.week_starts_on'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.timedate.week_starts_on_description'
-                                        )}
-                                        controlId="settings-week-starts-on"
-                                    >
-                                        <Select
-                                            value={String(prefs.weekStartsOn)}
-                                            onValueChange={(value) =>
-                                                void savePreferenceValue(
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.timedate.week_starts_on'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.timedate.week_starts_on_description'
+                                )}
+                                controlId="settings-week-starts-on"
+                            >
+                                <Select
+                                    value={String(prefs.weekStartsOn)}
+                                    onValueChange={(value) =>
+                                        void savePreferenceValue(
+                                            'weekStartsOn',
+                                            Number.parseInt(value, 10),
+                                            () =>
+                                                setIntConfigPreference(
                                                     'weekStartsOn',
-                                                    Number.parseInt(value, 10),
-                                                    () =>
-                                                        setIntConfigPreference(
-                                                            'weekStartsOn',
-                                                            value,
-                                                            {
-                                                                min: 0,
-                                                                max: 6,
-                                                                fallback: 1
-                                                            }
-                                                        )
+                                                    value,
+                                                    {
+                                                        min: 0,
+                                                        max: 6,
+                                                        fallback: 1
+                                                    }
                                                 )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-week-starts-on"
-                                                className="w-56"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {weekStartOptions.map(
-                                                        ([value, labelKey]) => (
-                                                            <SelectItem
-                                                                key={value}
-                                                                value={value}
-                                                            >
-                                                                {t(labelKey)}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.appearance.user_dialog.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.user_dialog.vrchat_notes'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.user_dialog.vrchat_notes_description'
-                                        )}
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-week-starts-on"
+                                        className="w-56"
                                     >
-                                        <Switch
-                                            checked={!prefs.hideUserNotes}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'hideUserNotes',
-                                                    'hideUserNotes',
-                                                    !checked
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {weekStartOptions.map(
+                                                ([value, labelKey]) => (
+                                                    <SelectItem
+                                                        key={value}
+                                                        value={value}
+                                                    >
+                                                        {t(labelKey)}
+                                                    </SelectItem>
                                                 )
-                                            }
-                                        />
-                                    </Field>
+                                            )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.appearance.user_dialog.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.user_dialog.vrchat_notes'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.user_dialog.vrchat_notes_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={!prefs.hideUserNotes}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'hideUserNotes',
+                                            'hideUserNotes',
+                                            !checked
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.user_dialog.vrcx_memos'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.user_dialog.vrcx_memos_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={!prefs.hideUserMemos}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'hideUserMemos',
-                                                    'hideUserMemos',
-                                                    !checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.appearance.friend_log.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.friend_log.hide_unfriends'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.hideUnfriends}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'hideUnfriends',
-                                                    'hideUnfriends',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.user_dialog.vrcx_memos'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.user_dialog.vrcx_memos_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={!prefs.hideUserMemos}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'hideUserMemos',
+                                            'hideUserMemos',
+                                            !checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.appearance.friend_log.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.friend_log.hide_unfriends'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.hideUnfriends}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'hideUnfriends',
+                                            'hideUnfriends',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.appearance.user_colors.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.user_colors.random_colors_from_user_id'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.user_colors.random_colors_from_user_id_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.randomUserColours}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'randomUserColours',
+                                            'VRCX_randomUserColours',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <div className="rounded-lg border p-4">
+                                <div className="mb-3 flex items-center justify-between gap-3">
+                                    <div className="text-sm font-medium">
                                         {t(
                                             'view.settings.appearance.user_colors.header'
                                         )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.user_colors.random_colors_from_user_id'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.user_colors.random_colors_from_user_id_description'
-                                        )}
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => void resetTrustColors()}
                                     >
-                                        <Switch
-                                            checked={prefs.randomUserColours}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'randomUserColours',
-                                                    'VRCX_randomUserColours',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <div className="rounded-lg border p-4">
-                                        <div className="mb-3 flex items-center justify-between gap-3">
-                                            <div className="text-sm font-medium">
-                                                {t(
-                                                    'view.settings.appearance.user_colors.header'
-                                                )}
+                                        {t('dialog.shared_feed_filters.reset')}
+                                    </Button>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {TRUST_COLOR_ENTRIES.map((entry) => (
+                                        <div
+                                            key={entry.key}
+                                            className="flex flex-col gap-2 rounded-md border p-3"
+                                        >
+                                            <div className={entry.className}>
+                                                {t(entry.labelKey)}
                                             </div>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void resetTrustColors()
-                                                }
-                                            >
-                                                {t(
-                                                    'dialog.shared_feed_filters.reset'
-                                                )}
-                                            </Button>
-                                        </div>
-                                        <div className="grid gap-3 sm:grid-cols-2">
-                                            {TRUST_COLOR_ENTRIES.map(
-                                                (entry) => (
-                                                    <div
-                                                        key={entry.key}
-                                                        className="flex flex-col gap-2 rounded-md border p-3"
-                                                    >
-                                                        <div
-                                                            className={
-                                                                entry.className
-                                                            }
-                                                        >
-                                                            {t(entry.labelKey)}
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {entry.presets.map(
-                                                                (preset) => (
-                                                                    <Button
-                                                                        key={
-                                                                            preset
-                                                                        }
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="icon-sm"
-                                                                        className="size-6 p-0"
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                preset
-                                                                        }}
-                                                                        aria-label={
-                                                                            preset
-                                                                        }
-                                                                        onClick={() =>
-                                                                            void saveTrustColor(
-                                                                                entry.key,
-                                                                                preset
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                )
-                                                            )}
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Input
-                                                                type="color"
-                                                                className="h-8 w-12 p-1"
-                                                                value={
-                                                                    isValidTrustColor(
-                                                                        prefs
-                                                                            .trustColor?.[
-                                                                            entry
-                                                                                .key
-                                                                        ]
-                                                                    )
-                                                                        ? prefs
-                                                                              .trustColor[
-                                                                              entry
-                                                                                  .key
-                                                                          ]
-                                                                        : TRUST_COLOR_DEFAULTS[
-                                                                              entry
-                                                                                  .key
-                                                                          ]
-                                                                }
-                                                                onChange={(
-                                                                    event
-                                                                ) =>
-                                                                    void saveTrustColor(
-                                                                        entry.key,
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    )
-                                                                }
-                                                            />
-                                                            <Input
-                                                                value={
-                                                                    prefs
-                                                                        .trustColor?.[
-                                                                        entry
-                                                                            .key
-                                                                    ] ||
-                                                                    TRUST_COLOR_DEFAULTS[
-                                                                        entry
-                                                                            .key
-                                                                    ]
-                                                                }
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    const nextValue =
-                                                                        event
-                                                                            .target
-                                                                            .value;
-                                                                    setPrefs(
-                                                                        (
-                                                                            current
-                                                                        ) => ({
-                                                                            ...current,
-                                                                            trustColor:
-                                                                                {
-                                                                                    ...current.trustColor,
-                                                                                    [entry.key]:
-                                                                                        nextValue
-                                                                                }
-                                                                        })
-                                                                    );
-                                                                }}
-                                                                onBlur={(
-                                                                    event
-                                                                ) =>
-                                                                    void saveTrustColor(
-                                                                        entry.key,
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    )
-                                                                }
-                                                                className="font-mono"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )
-                                            )}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
-                    <SettingsTabContent value="media">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.screenshot_helper.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.screenshot_helper.description'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.screenshot_helper.enable'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.screenshot_helper.description_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.screenshotHelper}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setScreenshotHelperPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            screenshotHelper:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    screenshotHelper:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.screenshot_helper.modify_filename'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.screenshot_helper.modify_filename_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.screenshotHelperModifyFilename
-                                            }
-                                            disabled={!prefs.screenshotHelper}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setScreenshotHelperModifyFilenamePreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            screenshotHelperModifyFilename:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    screenshotHelperModifyFilename:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.screenshot_helper.copy_to_clipboard'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.screenshotHelperCopyToClipboard
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setScreenshotHelperCopyToClipboardPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            screenshotHelperCopyToClipboard:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    screenshotHelperCopyToClipboard:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.delete_all_screenshot_metadata.button'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                void deleteAllScreenshotMetadata()
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.delete_all_screenshot_metadata.button'
-                                            )}
-                                        </Button>
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.user_generated_content.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.user_generated_content.description'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <div className="flex flex-wrap gap-2">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                void backend.app.OpenUGCPhotosFolder(
-                                                    prefs.userGeneratedContentPath ||
-                                                        ''
-                                                )
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.user_generated_content.folder'
-                                            )}
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                void openUgcFolderSelector()
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.user_generated_content.set_folder'
-                                            )}
-                                        </Button>
-                                        {prefs.userGeneratedContentPath ? (
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void resetUgcFolder()
-                                                }
-                                            >
-                                                {t(
-                                                    'view.settings.advanced.advanced.user_generated_content.reset_override'
-                                                )}
-                                            </Button>
-                                        ) : null}
-                                    </div>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.save_instance_prints_to_file.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.save_instance_prints_to_file.header_tooltip'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.save_instance_prints_to_file.description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.saveInstancePrints}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setSaveInstancePrintsPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            saveInstancePrints:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    saveInstancePrints:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.save_instance_prints_to_file.crop'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.cropInstancePrints}
-                                            disabled={!prefs.saveInstancePrints}
-                                            onCheckedChange={(checked) =>
-                                                void handleCropInstancePrintsChange(
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.save_instance_stickers_to_file.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.save_instance_stickers_to_file.description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.saveInstanceStickers}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setSaveInstanceStickersPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            saveInstanceStickers:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    saveInstanceStickers:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.save_instance_emoji_to_file.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.save_instance_prints_to_file.header_tooltip'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.save_instance_emoji_to_file.description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.saveInstanceEmoji}
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setSaveInstanceEmojiPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            saveInstanceEmoji:
-                                                                checked
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    saveInstanceEmoji:
-                                                                        !checked
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
-                    <SettingsTabContent value="integrations">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.discord_presence.discord_presence.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription className="flex flex-col gap-2">
-                                        <div>
-                                            {t(
-                                                'view.settings.discord_presence.discord_presence.description'
-                                            )}
-                                        </div>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            className="text-muted-foreground h-auto justify-start p-0 text-left text-xs font-normal hover:text-primary"
-                                            onClick={() =>
-                                                setSystemHostOpen(
-                                                    'vrchatConfigOpen',
-                                                    true
-                                                )
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.discord_presence.discord_presence.enable_tooltip'
-                                            )}
-                                        </Button>
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.enable'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={discordPrefs.discordActive}
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordActive',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.world_integration'
-                                        )}
-                                        description={t(
-                                            'view.settings.discord_presence.discord_presence.world_integration_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                discordPrefs.discordWorldIntegration
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordWorldIntegration',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.instance_type_player_count'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                discordPrefs.discordInstance
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordInstance',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.show_current_platform'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                discordPrefs.discordShowPlatform
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive ||
-                                                !discordPrefs.discordInstance
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordShowPlatform',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.show_details_in_private'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                !discordPrefs.discordHideInvite
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordHideInvite',
-                                                    !checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.join_button'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                discordPrefs.discordJoinButton
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordJoinButton',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.show_images'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                !discordPrefs.discordHideImage
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordHideImage',
-                                                    !checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.discord_presence.discord_presence.display_world_name_as_discord_status'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                discordPrefs.discordWorldNameAsDiscordStatus
-                                            }
-                                            disabled={
-                                                !discordPrefs.discordActive
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveDiscordBoolPreference(
-                                                    'discordWorldNameAsDiscordStatus',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                </CardContent>
-                            </Card>
-
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.translation_api.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.translation_api.enable_tooltip'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.translation_api.enable'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.translation_api.enable_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                integrationPrefs.translationAPI
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setTranslationApiEnabledPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setIntegrationValue(
-                                                            'translationAPI',
-                                                            checked
-                                                        );
-                                                        return () =>
-                                                            setIntegrationValue(
-                                                                'translationAPI',
-                                                                !checked
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.translation_api.translation_api_key'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={openTranslationApiDialog}
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.translation_api.translation_api_key'
-                                            )}
-                                        </Button>
-                                    </Field>
-                                </CardContent>
-                            </Card>
-
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.youtube_api.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.youtube_api.enable_tooltip'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.youtube_api.enable'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.youtube_api.enable_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                integrationPrefs.youtubeAPI
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        setYoutubeApiEnabledPreference(
-                                                            checked
-                                                        ),
-                                                    () => {
-                                                        setIntegrationValue(
-                                                            'youtubeAPI',
-                                                            checked
-                                                        );
-                                                        return () =>
-                                                            setIntegrationValue(
-                                                                'youtubeAPI',
-                                                                !checked
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.youtube_api.youtube_api_key'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={openYoutubeApiDialog}
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.youtube_api.youtube_api_key'
-                                            )}
-                                        </Button>
-                                    </Field>
-                                </CardContent>
-                            </Card>
-
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.remote_database.header'
-                                        )}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {t(
-                                            'view.settings.advanced.advanced.remote_database.enable_description'
-                                        )}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.remote_database.enable'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.remote_database.enable_description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                avatarProviderConfig.enabled
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void commit(
-                                                    () =>
-                                                        saveAvatarProviderConfig(
-                                                            {
-                                                                ...avatarProviderConfigRef.current,
-                                                                enabled: checked
-                                                            }
-                                                        ),
-                                                    () => {
-                                                        const previous =
-                                                            avatarProviderConfigRef.current;
-                                                        applyAvatarProviderConfig(
-                                                            {
-                                                                ...avatarProviderConfigRef.current,
-                                                                enabled: checked
-                                                            }
-                                                        );
-                                                        return () =>
-                                                            applyAvatarProviderConfig(
-                                                                previous
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.remote_database.avatar_database_provider'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                setAvatarProviderDialogOpen(
-                                                    true
-                                                )
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.remote_database.avatar_database_provider'
-                                            )}
-                                        </Button>
-                                    </Field>
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
-                    <SettingsTabContent value="social">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.social.interaction.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.appearance.user_dialog.recent_action_cooldown'
-                                        )}
-                                        description={t(
-                                            'view.settings.appearance.user_dialog.recent_action_cooldown_description'
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Switch
-                                                checked={
-                                                    prefs.recentActionCooldownEnabled
-                                                }
-                                                onCheckedChange={(checked) =>
-                                                    void commit(
-                                                        () =>
-                                                            setRecentActionCooldownEnabledPreference(
-                                                                checked
-                                                            ),
-                                                        () => {
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    recentActionCooldownEnabled:
-                                                                        checked
-                                                                })
-                                                            );
-                                                            return () =>
-                                                                setPrefs(
-                                                                    (
-                                                                        current
-                                                                    ) => ({
-                                                                        ...current,
-                                                                        recentActionCooldownEnabled:
-                                                                            !checked
-                                                                    })
-                                                                );
+                                            <div className="flex flex-wrap gap-1">
+                                                {entry.presets.map((preset) => (
+                                                    <Button
+                                                        key={preset}
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="icon-sm"
+                                                        className="size-6 p-0"
+                                                        style={{
+                                                            backgroundColor:
+                                                                preset
+                                                        }}
+                                                        aria-label={preset}
+                                                        onClick={() =>
+                                                            void saveTrustColor(
+                                                                entry.key,
+                                                                preset
+                                                            )
                                                         }
-                                                    )
-                                                }
-                                            />
-                                            {prefs.recentActionCooldownEnabled ? (
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center gap-2">
                                                 <Input
-                                                    type="number"
-                                                    min={1}
-                                                    max={1440}
-                                                    className="w-28"
+                                                    type="color"
+                                                    className="h-8 w-12 p-1"
                                                     value={
-                                                        prefs.recentActionCooldownMinutes
+                                                        isValidTrustColor(
+                                                            prefs.trustColor?.[
+                                                                entry.key
+                                                            ]
+                                                        )
+                                                            ? prefs.trustColor[
+                                                                  entry.key
+                                                              ]
+                                                            : TRUST_COLOR_DEFAULTS[
+                                                                  entry.key
+                                                              ]
                                                     }
                                                     onChange={(event) =>
+                                                        void saveTrustColor(
+                                                            entry.key,
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                />
+                                                <Input
+                                                    value={
+                                                        prefs.trustColor?.[
+                                                            entry.key
+                                                        ] ||
+                                                        TRUST_COLOR_DEFAULTS[
+                                                            entry.key
+                                                        ]
+                                                    }
+                                                    onChange={(event) => {
+                                                        const nextValue =
+                                                            event.target.value;
                                                         setPrefs((current) => ({
                                                             ...current,
-                                                            recentActionCooldownMinutes:
-                                                                event.target
-                                                                    .value
-                                                        }))
-                                                    }
-                                                    onBlur={(event) =>
-                                                        void commit(
-                                                            async () => {
-                                                                const minutes =
-                                                                    await setRecentActionCooldownMinutesPreference(
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                setPrefs(
-                                                                    (
-                                                                        current
-                                                                    ) => ({
-                                                                        ...current,
-                                                                        recentActionCooldownMinutes:
-                                                                            minutes
-                                                                    })
-                                                                );
+                                                            trustColor: {
+                                                                ...current.trustColor,
+                                                                [entry.key]:
+                                                                    nextValue
                                                             }
+                                                        }));
+                                                    }}
+                                                    onBlur={(event) =>
+                                                        void saveTrustColor(
+                                                            entry.key,
+                                                            event.target.value
                                                         )
                                                     }
+                                                    className="font-mono"
                                                 />
-                                            ) : null}
+                                            </div>
                                         </div>
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.social.favorites.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.favorites.header'
-                                        )}
-                                        description={t(
-                                            'view.settings.general.favorites.header_tooltip'
-                                        )}
-                                    >
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    className="w-56 justify-between"
-                                                >
-                                                    <span className="truncate">
-                                                        {
-                                                            selectedFavoriteFriendGroupLabel
-                                                        }
-                                                    </span>
-                                                    <ChevronDownIcon
-                                                        data-icon="inline-end"
-                                                        className="opacity-50"
-                                                    />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                align="end"
-                                                className="w-56"
-                                            >
-                                                {favoriteFriendGroupOptions.length ? (
-                                                    <>
-                                                        <DropdownMenuGroup>
-                                                            {remoteFavoriteFriendGroupOptions.map(
-                                                                (group) => (
-                                                                    <DropdownMenuCheckboxItem
-                                                                        key={
-                                                                            group.value
-                                                                        }
-                                                                        checked={localFavoriteFriendsGroups.includes(
-                                                                            group.value
-                                                                        )}
-                                                                        onSelect={(
-                                                                            event
-                                                                        ) =>
-                                                                            event.preventDefault()
-                                                                        }
-                                                                        onCheckedChange={(
-                                                                            checked
-                                                                        ) =>
-                                                                            void toggleLocalFavoriteFriendsGroup(
-                                                                                group.value,
-                                                                                checked
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            group.label
-                                                                        }
-                                                                    </DropdownMenuCheckboxItem>
-                                                                )
-                                                            )}
-                                                        </DropdownMenuGroup>
-                                                        {remoteFavoriteFriendGroupOptions.length &&
-                                                        localFavoriteFriendGroupOptions.length ? (
-                                                            <DropdownMenuSeparator />
-                                                        ) : null}
-                                                        <DropdownMenuGroup>
-                                                            {localFavoriteFriendGroupOptions.map(
-                                                                (group) => (
-                                                                    <DropdownMenuCheckboxItem
-                                                                        key={
-                                                                            group.value
-                                                                        }
-                                                                        checked={localFavoriteFriendsGroups.includes(
-                                                                            group.value
-                                                                        )}
-                                                                        onSelect={(
-                                                                            event
-                                                                        ) =>
-                                                                            event.preventDefault()
-                                                                        }
-                                                                        onCheckedChange={(
-                                                                            checked
-                                                                        ) =>
-                                                                            void toggleLocalFavoriteFriendsGroup(
-                                                                                group.value,
-                                                                                checked
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            group.label
-                                                                        }
-                                                                    </DropdownMenuCheckboxItem>
-                                                                )
-                                                            )}
-                                                        </DropdownMenuGroup>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-muted-foreground px-2 py-1.5 text-sm">
-                                                        {t(
-                                                            'view.settings.general.favorites.group_placeholder'
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </Field>
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
-                    <SettingsTabContent value="notifications">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.notifications.notifications.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.layout'
-                                        )}
-                                        controlId="settings-notification-layout"
-                                    >
-                                        <Select
-                                            value={prefs.notificationLayout}
-                                            onValueChange={(value) =>
-                                                void commit(
-                                                    async () => {
-                                                        const nextLayout =
-                                                            await setNotificationLayoutPreference(
-                                                                value
-                                                            );
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            notificationLayout:
-                                                                nextLayout
-                                                        }));
-                                                    },
-                                                    () => {
-                                                        const previous =
-                                                            prefs.notificationLayout;
-                                                        setPrefs((current) => ({
-                                                            ...current,
-                                                            notificationLayout:
-                                                                value
-                                                        }));
-                                                        return () =>
-                                                            setPrefs(
-                                                                (current) => ({
-                                                                    ...current,
-                                                                    notificationLayout:
-                                                                        previous
-                                                                })
-                                                            );
-                                                    }
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-notification-layout"
-                                                className="w-56"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {notificationLayoutOptions.map(
-                                                        ([value, labelKey]) => (
-                                                            <SelectItem
-                                                                key={value}
-                                                                value={value}
-                                                            >
-                                                                {t(labelKey)}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.notification_filter'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                setFeedFilterDialogOpen(true)
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.notifications.notifications.notification_filter'
-                                            )}
-                                        </Button>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.test_notification'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                void backend.app.DesktopNotification(
-                                                    'VRCX-0',
-                                                    t(
-                                                        'view.settings.notifications.notifications.test_message'
-                                                    )
-                                                )
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.notifications.notifications.test_notification'
-                                            )}
-                                        </Button>
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.notifications.notifications.desktop_notifications.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.desktop_notifications.when_to_display'
-                                        )}
-                                        controlId="settings-desktop-toast"
-                                    >
-                                        <Select
-                                            value={prefs.desktopToast}
-                                            onValueChange={(value) =>
-                                                void saveStringPreference(
-                                                    'desktopToast',
-                                                    'desktopToast',
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-desktop-toast"
-                                                className="w-56"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {desktopToastOptions.map(
-                                                        ([value, labelKey]) => (
-                                                            <SelectItem
-                                                                key={value}
-                                                                value={value}
-                                                            >
-                                                                {t(labelKey)}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.desktop_notifications.desktop_notification_while_afk'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.afkDesktopToast}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'afkDesktopToast',
-                                                    'afkDesktopToast',
+                                    ))}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
+                <SettingsTabContent value="media">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.screenshot_helper.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.screenshot_helper.description'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.screenshot_helper.enable'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.screenshot_helper.description_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.screenshotHelper}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setScreenshotHelperPreference(
                                                     checked
-                                                )
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    screenshotHelper: checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        screenshotHelper:
+                                                            !checked
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.screenshot_helper.modify_filename'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.screenshot_helper.modify_filename_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={
+                                        prefs.screenshotHelperModifyFilename
+                                    }
+                                    disabled={!prefs.screenshotHelper}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setScreenshotHelperModifyFilenamePreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    screenshotHelperModifyFilename:
+                                                        checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        screenshotHelperModifyFilename:
+                                                            !checked
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.screenshot_helper.copy_to_clipboard'
+                                )}
+                            >
+                                <Switch
+                                    checked={
+                                        prefs.screenshotHelperCopyToClipboard
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setScreenshotHelperCopyToClipboardPreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    screenshotHelperCopyToClipboard:
+                                                        checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        screenshotHelperCopyToClipboard:
+                                                            !checked
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.delete_all_screenshot_metadata.button'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        void deleteAllScreenshotMetadata()
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.delete_all_screenshot_metadata.button'
+                                    )}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.user_generated_content.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.user_generated_content.description'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        void backend.app.OpenUGCPhotosFolder(
+                                            prefs.userGeneratedContentPath || ''
+                                        )
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.user_generated_content.folder'
+                                    )}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => void openUgcFolderSelector()}
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.user_generated_content.set_folder'
+                                    )}
+                                </Button>
+                                {prefs.userGeneratedContentPath ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => void resetUgcFolder()}
+                                    >
+                                        {t(
+                                            'view.settings.advanced.advanced.user_generated_content.reset_override'
+                                        )}
+                                    </Button>
+                                ) : null}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.save_instance_prints_to_file.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.save_instance_prints_to_file.header_tooltip'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.save_instance_prints_to_file.description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.saveInstancePrints}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setSaveInstancePrintsPreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    saveInstancePrints: checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        saveInstancePrints:
+                                                            !checked
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.save_instance_prints_to_file.crop'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.cropInstancePrints}
+                                    disabled={!prefs.saveInstancePrints}
+                                    onCheckedChange={(checked) =>
+                                        void handleCropInstancePrintsChange(
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.save_instance_stickers_to_file.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.save_instance_stickers_to_file.description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.saveInstanceStickers}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setSaveInstanceStickersPreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    saveInstanceStickers:
+                                                        checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        saveInstanceStickers:
+                                                            !checked
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.save_instance_emoji_to_file.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.save_instance_prints_to_file.header_tooltip'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.save_instance_emoji_to_file.description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.saveInstanceEmoji}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setSaveInstanceEmojiPreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    saveInstanceEmoji: checked
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        saveInstanceEmoji:
+                                                            !checked
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
+                <SettingsTabContent value="integrations">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.discord_presence.discord_presence.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription className="flex flex-col gap-2">
+                                <div>
+                                    {t(
+                                        'view.settings.discord_presence.discord_presence.description'
+                                    )}
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    className="text-muted-foreground hover:text-primary h-auto justify-start p-0 text-left text-xs font-normal"
+                                    onClick={() =>
+                                        setSystemHostOpen(
+                                            'vrchatConfigOpen',
+                                            true
+                                        )
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.discord_presence.discord_presence.enable_tooltip'
+                                    )}
+                                </Button>
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.enable'
+                                )}
+                            >
+                                <Switch
+                                    checked={discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordActive',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.world_integration'
+                                )}
+                                description={t(
+                                    'view.settings.discord_presence.discord_presence.world_integration_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={
+                                        discordPrefs.discordWorldIntegration
+                                    }
+                                    disabled={!discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordWorldIntegration',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.instance_type_player_count'
+                                )}
+                            >
+                                <Switch
+                                    checked={discordPrefs.discordInstance}
+                                    disabled={!discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordInstance',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.show_current_platform'
+                                )}
+                            >
+                                <Switch
+                                    checked={discordPrefs.discordShowPlatform}
+                                    disabled={
+                                        !discordPrefs.discordActive ||
+                                        !discordPrefs.discordInstance
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordShowPlatform',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.show_details_in_private'
+                                )}
+                            >
+                                <Switch
+                                    checked={!discordPrefs.discordHideInvite}
+                                    disabled={!discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordHideInvite',
+                                            !checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.join_button'
+                                )}
+                            >
+                                <Switch
+                                    checked={discordPrefs.discordJoinButton}
+                                    disabled={!discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordJoinButton',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.show_images'
+                                )}
+                            >
+                                <Switch
+                                    checked={!discordPrefs.discordHideImage}
+                                    disabled={!discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordHideImage',
+                                            !checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.discord_presence.discord_presence.display_world_name_as_discord_status'
+                                )}
+                            >
+                                <Switch
+                                    checked={
+                                        discordPrefs.discordWorldNameAsDiscordStatus
+                                    }
+                                    disabled={!discordPrefs.discordActive}
+                                    onCheckedChange={(checked) =>
+                                        void saveDiscordBoolPreference(
+                                            'discordWorldNameAsDiscordStatus',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.translation_api.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.translation_api.enable_tooltip'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.translation_api.enable'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.translation_api.enable_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={integrationPrefs.translationAPI}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setTranslationApiEnabledPreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setIntegrationValue(
+                                                    'translationAPI',
+                                                    checked
+                                                );
+                                                return () =>
+                                                    setIntegrationValue(
+                                                        'translationAPI',
+                                                        !checked
+                                                    );
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.translation_api.translation_api_key'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={openTranslationApiDialog}
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.translation_api.translation_api_key'
+                                    )}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.youtube_api.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.youtube_api.enable_tooltip'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.youtube_api.enable'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.youtube_api.enable_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={integrationPrefs.youtubeAPI}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                setYoutubeApiEnabledPreference(
+                                                    checked
+                                                ),
+                                            () => {
+                                                setIntegrationValue(
+                                                    'youtubeAPI',
+                                                    checked
+                                                );
+                                                return () =>
+                                                    setIntegrationValue(
+                                                        'youtubeAPI',
+                                                        !checked
+                                                    );
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.youtube_api.youtube_api_key'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={openYoutubeApiDialog}
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.youtube_api.youtube_api_key'
+                                    )}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.remote_database.header'
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'view.settings.advanced.advanced.remote_database.enable_description'
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.remote_database.enable'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.remote_database.enable_description'
+                                )}
+                            >
+                                <Switch
+                                    checked={avatarProviderConfig.enabled}
+                                    onCheckedChange={(checked) =>
+                                        void commit(
+                                            () =>
+                                                saveAvatarProviderConfig({
+                                                    ...avatarProviderConfigRef.current,
+                                                    enabled: checked
+                                                }),
+                                            () => {
+                                                const previous =
+                                                    avatarProviderConfigRef.current;
+                                                applyAvatarProviderConfig({
+                                                    ...avatarProviderConfigRef.current,
+                                                    enabled: checked
+                                                });
+                                                return () =>
+                                                    applyAvatarProviderConfig(
+                                                        previous
+                                                    );
+                                            }
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.remote_database.avatar_database_provider'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        setAvatarProviderDialogOpen(true)
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.remote_database.avatar_database_provider'
+                                    )}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
+                <SettingsTabContent value="social">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.social.interaction.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.appearance.user_dialog.recent_action_cooldown'
+                                )}
+                                description={t(
+                                    'view.settings.appearance.user_dialog.recent_action_cooldown_description'
+                                )}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Switch
+                                        checked={
+                                            prefs.recentActionCooldownEnabled
+                                        }
+                                        onCheckedChange={(checked) =>
+                                            void commit(
+                                                () =>
+                                                    setRecentActionCooldownEnabledPreference(
+                                                        checked
+                                                    ),
+                                                () => {
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        recentActionCooldownEnabled:
+                                                            checked
+                                                    }));
+                                                    return () =>
+                                                        setPrefs((current) => ({
+                                                            ...current,
+                                                            recentActionCooldownEnabled:
+                                                                !checked
+                                                        }));
+                                                }
+                                            )
+                                        }
+                                    />
+                                    {prefs.recentActionCooldownEnabled ? (
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            max={1440}
+                                            className="w-28"
+                                            value={
+                                                prefs.recentActionCooldownMinutes
+                                            }
+                                            onChange={(event) =>
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    recentActionCooldownMinutes:
+                                                        event.target.value
+                                                }))
+                                            }
+                                            onBlur={(event) =>
+                                                void commit(async () => {
+                                                    const minutes =
+                                                        await setRecentActionCooldownMinutesPreference(
+                                                            event.target.value
+                                                        );
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        recentActionCooldownMinutes:
+                                                            minutes
+                                                    }));
+                                                })
                                             }
                                         />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.notifications.notifications.text_to_speech.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.text_to_speech.when_to_play'
-                                        )}
-                                        controlId="settings-notification-tts"
-                                    >
-                                        <Select
-                                            value={prefs.notificationTTS}
-                                            onValueChange={(value) =>
-                                                void saveNotificationTtsMode(
-                                                    value
-                                                )
-                                            }
+                                    ) : null}
+                                </div>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.social.favorites.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.general.favorites.header'
+                                )}
+                                description={t(
+                                    'view.settings.general.favorites.header_tooltip'
+                                )}
+                            >
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-56 justify-between"
                                         >
-                                            <SelectTrigger
-                                                id="settings-notification-tts"
-                                                className="w-56"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {notificationTtsOptions.map(
-                                                        ([value, labelKey]) => (
-                                                            <SelectItem
-                                                                key={value}
-                                                                value={value}
-                                                            >
-                                                                {t(labelKey)}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.text_to_speech.tts_voice'
-                                        )}
-                                        controlId="settings-notification-tts-voice"
+                                            <span className="truncate">
+                                                {
+                                                    selectedFavoriteFriendGroupLabel
+                                                }
+                                            </span>
+                                            <ChevronDownIcon
+                                                data-icon="inline-end"
+                                                className="opacity-50"
+                                            />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        align="end"
+                                        className="w-56"
                                     >
-                                        <Select
-                                            value={prefs.notificationTTSVoice}
-                                            disabled={
-                                                prefs.notificationTTS ===
-                                                    'Never' || !ttsVoices.length
-                                            }
-                                            onValueChange={(value) =>
-                                                void saveNotificationTtsVoice(
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-notification-tts-voice"
-                                                className="w-72"
-                                            >
-                                                <SelectValue
-                                                    placeholder={
-                                                        ttsVoices.length
-                                                            ? undefined
-                                                            : 'No voices'
-                                                    }
-                                                />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {ttsVoices.map(
-                                                        (voice, index) => (
-                                                            <SelectItem
-                                                                key={`${voice.name}-${index}`}
-                                                                value={String(
-                                                                    index
+                                        {favoriteFriendGroupOptions.length ? (
+                                            <>
+                                                <DropdownMenuGroup>
+                                                    {remoteFavoriteFriendGroupOptions.map(
+                                                        (group) => (
+                                                            <DropdownMenuCheckboxItem
+                                                                key={
+                                                                    group.value
+                                                                }
+                                                                checked={localFavoriteFriendsGroups.includes(
+                                                                    group.value
                                                                 )}
+                                                                onSelect={(
+                                                                    event
+                                                                ) =>
+                                                                    event.preventDefault()
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    void toggleLocalFavoriteFriendsGroup(
+                                                                        group.value,
+                                                                        checked
+                                                                    )
+                                                                }
                                                             >
-                                                                {voice.name}
-                                                            </SelectItem>
+                                                                {group.label}
+                                                            </DropdownMenuCheckboxItem>
                                                         )
                                                     )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field
-                                        label={t(
-                                            'view.settings.notifications.notifications.text_to_speech.use_memo_nicknames'
+                                                </DropdownMenuGroup>
+                                                {remoteFavoriteFriendGroupOptions.length &&
+                                                localFavoriteFriendGroupOptions.length ? (
+                                                    <DropdownMenuSeparator />
+                                                ) : null}
+                                                <DropdownMenuGroup>
+                                                    {localFavoriteFriendGroupOptions.map(
+                                                        (group) => (
+                                                            <DropdownMenuCheckboxItem
+                                                                key={
+                                                                    group.value
+                                                                }
+                                                                checked={localFavoriteFriendsGroups.includes(
+                                                                    group.value
+                                                                )}
+                                                                onSelect={(
+                                                                    event
+                                                                ) =>
+                                                                    event.preventDefault()
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    void toggleLocalFavoriteFriendsGroup(
+                                                                        group.value,
+                                                                        checked
+                                                                    )
+                                                                }
+                                                            >
+                                                                {group.label}
+                                                            </DropdownMenuCheckboxItem>
+                                                        )
+                                                    )}
+                                                </DropdownMenuGroup>
+                                            </>
+                                        ) : (
+                                            <div className="text-muted-foreground px-2 py-1.5 text-sm">
+                                                {t(
+                                                    'view.settings.general.favorites.group_placeholder'
+                                                )}
+                                            </div>
                                         )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
+                <SettingsTabContent value="notifications">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.notifications.notifications.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.layout'
+                                )}
+                                controlId="settings-notification-layout"
+                            >
+                                <Select
+                                    value={prefs.notificationLayout}
+                                    onValueChange={(value) =>
+                                        void commit(
+                                            async () => {
+                                                const nextLayout =
+                                                    await setNotificationLayoutPreference(
+                                                        value
+                                                    );
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    notificationLayout:
+                                                        nextLayout
+                                                }));
+                                            },
+                                            () => {
+                                                const previous =
+                                                    prefs.notificationLayout;
+                                                setPrefs((current) => ({
+                                                    ...current,
+                                                    notificationLayout: value
+                                                }));
+                                                return () =>
+                                                    setPrefs((current) => ({
+                                                        ...current,
+                                                        notificationLayout:
+                                                            previous
+                                                    }));
+                                            }
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-notification-layout"
+                                        className="w-56"
                                     >
-                                        <Switch
-                                            checked={
-                                                prefs.notificationTTSNickName
-                                            }
-                                            disabled={
-                                                prefs.notificationTTS ===
-                                                'Never'
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'notificationTTSNickName',
-                                                    'notificationTTSNickName',
-                                                    checked
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {notificationLayoutOptions.map(
+                                                ([value, labelKey]) => (
+                                                    <SelectItem
+                                                        key={value}
+                                                        value={value}
+                                                    >
+                                                        {t(labelKey)}
+                                                    </SelectItem>
                                                 )
+                                            )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.notification_filter'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setFeedFilterDialogOpen(true)
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.notifications.notifications.notification_filter'
+                                    )}
+                                </Button>
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.test_notification'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        void backend.app.DesktopNotification(
+                                            'VRCX-0',
+                                            t(
+                                                'view.settings.notifications.notifications.test_message'
+                                            )
+                                        )
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.notifications.notifications.test_notification'
+                                    )}
+                                </Button>
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.notifications.notifications.desktop_notifications.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.desktop_notifications.when_to_display'
+                                )}
+                                controlId="settings-desktop-toast"
+                            >
+                                <Select
+                                    value={prefs.desktopToast}
+                                    onValueChange={(value) =>
+                                        void saveStringPreference(
+                                            'desktopToast',
+                                            'desktopToast',
+                                            value
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-desktop-toast"
+                                        className="w-56"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {desktopToastOptions.map(
+                                                ([value, labelKey]) => (
+                                                    <SelectItem
+                                                        key={value}
+                                                        value={value}
+                                                    >
+                                                        {t(labelKey)}
+                                                    </SelectItem>
+                                                )
+                                            )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.desktop_notifications.desktop_notification_while_afk'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.afkDesktopToast}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'afkDesktopToast',
+                                            'afkDesktopToast',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.notifications.notifications.text_to_speech.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.text_to_speech.when_to_play'
+                                )}
+                                controlId="settings-notification-tts"
+                            >
+                                <Select
+                                    value={prefs.notificationTTS}
+                                    onValueChange={(value) =>
+                                        void saveNotificationTtsMode(value)
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-notification-tts"
+                                        className="w-56"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {notificationTtsOptions.map(
+                                                ([value, labelKey]) => (
+                                                    <SelectItem
+                                                        key={value}
+                                                        value={value}
+                                                    >
+                                                        {t(labelKey)}
+                                                    </SelectItem>
+                                                )
+                                            )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.text_to_speech.tts_voice'
+                                )}
+                                controlId="settings-notification-tts-voice"
+                            >
+                                <Select
+                                    value={prefs.notificationTTSVoice}
+                                    disabled={
+                                        prefs.notificationTTS === 'Never' ||
+                                        !ttsVoices.length
+                                    }
+                                    onValueChange={(value) =>
+                                        void saveNotificationTtsVoice(value)
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-notification-tts-voice"
+                                        className="w-72"
+                                    >
+                                        <SelectValue
+                                            placeholder={
+                                                ttsVoices.length
+                                                    ? undefined
+                                                    : 'No voices'
                                             }
                                         />
-                                    </Field>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {ttsVoices.map((voice, index) => (
+                                                <SelectItem
+                                                    key={`${voice.name}-${index}`}
+                                                    value={String(index)}
+                                                >
+                                                    {voice.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
 
-                                    <Field
-                                        label={t(
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.text_to_speech.use_memo_nicknames'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.notificationTTSNickName}
+                                    disabled={prefs.notificationTTS === 'Never'}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'notificationTTSNickName',
+                                            'notificationTTSNickName',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+
+                            <Field
+                                label={t(
+                                    'view.settings.notifications.notifications.text_to_speech.tts_test_placeholder'
+                                )}
+                            >
+                                <Switch
+                                    checked={notificationTtsTestVisible}
+                                    disabled={prefs.notificationTTS === 'Never'}
+                                    onCheckedChange={(checked) =>
+                                        setNotificationTtsTestVisible(
+                                            checked === true
+                                        )
+                                    }
+                                />
+                            </Field>
+                            {notificationTtsTestVisible ? (
+                                <div className="flex w-full max-w-md flex-col gap-2 sm:flex-row">
+                                    <Input
+                                        value={notificationTtsTest}
+                                        disabled={
+                                            prefs.notificationTTS === 'Never'
+                                        }
+                                        placeholder={t(
                                             'view.settings.notifications.notifications.text_to_speech.tts_test_placeholder'
                                         )}
+                                        onChange={(event) =>
+                                            setNotificationTtsTest(
+                                                event.target.value
+                                            )
+                                        }
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={
+                                            prefs.notificationTTS === 'Never'
+                                        }
+                                        onClick={() =>
+                                            speakNotificationTts(
+                                                notificationTtsTest
+                                            )
+                                        }
                                     >
-                                        <Switch
-                                            checked={notificationTtsTestVisible}
-                                            disabled={
-                                                prefs.notificationTTS ===
-                                                'Never'
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                setNotificationTtsTestVisible(
-                                                    checked === true
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    {notificationTtsTestVisible ? (
-                                        <div className="flex w-full max-w-md flex-col gap-2 sm:flex-row">
-                                            <Input
-                                                value={notificationTtsTest}
-                                                disabled={
-                                                    prefs.notificationTTS ===
-                                                    'Never'
-                                                }
-                                                placeholder={t(
-                                                    'view.settings.notifications.notifications.text_to_speech.tts_test_placeholder'
-                                                )}
-                                                onChange={(event) =>
-                                                    setNotificationTtsTest(
-                                                        event.target.value
-                                                    )
-                                                }
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                disabled={
-                                                    prefs.notificationTTS ===
-                                                    'Never'
-                                                }
-                                                onClick={() =>
-                                                    speakNotificationTts(
-                                                        notificationTtsTest
-                                                    )
-                                                }
-                                            >
-                                                {t(
-                                                    'view.settings.notifications.notifications.text_to_speech.play'
-                                                )}
-                                            </Button>
-                                        </div>
-                                    ) : null}
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
-                    <SettingsTabContent value="advanced">
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
                                         {t(
-                                            'view.settings.advanced.advanced.vrchat_settings.header'
+                                            'view.settings.notifications.notifications.text_to_speech.play'
                                         )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.relaunch_vrchat.header'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.relaunch_vrchat.description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.relaunchVRChatAfterCrash
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'relaunchVRChatAfterCrash',
-                                                    'VRCX_relaunchVRChatAfterCrash',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
+                                    </Button>
+                                </div>
+                            ) : null}
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
+                <SettingsTabContent value="advanced">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.vrchat_settings.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.relaunch_vrchat.header'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.relaunch_vrchat.description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.relaunchVRChatAfterCrash}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'relaunchVRChatAfterCrash',
+                                            'VRCX_relaunchVRChatAfterCrash',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
 
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.vrchat_quit_fix.header'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.vrchat_quit_fix.description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.vrcQuitFix}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'vrcQuitFix',
-                                                    'vrcQuitFix',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.auto_cache_management.header'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.auto_cache_management.description'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.autoSweepVRChatCache}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'autoSweepVRChatCache',
-                                                    'VRCX_autoSweepVRChatCache',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.general.logging.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.cache_debug.udon_exception_logging'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.udonExceptionLogging}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'udonExceptionLogging',
-                                                    'VRCX_udonExceptionLogging',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.logging.resource_load'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.logResourceLoad}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'logResourceLoad',
-                                                    'logResourceLoad',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.logging.empty_avatar'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.logEmptyAvatars}
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'logEmptyAvatars',
-                                                    'logEmptyAvatars',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.general.logging.auto_login_delay'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.autoLoginDelayEnabled
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'autoLoginDelayEnabled',
-                                                    'VRCX_autoLoginDelayEnabled',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    {prefs.autoLoginDelayEnabled ? (
-                                        <Field
-                                            label={t(
-                                                'view.settings.general.logging.auto_login_delay_button'
-                                            )}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant="outline">
-                                                    {
-                                                        prefs.autoLoginDelaySeconds
-                                                    }
-                                                    s
-                                                </Badge>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        void promptAutoLoginDelaySeconds()
-                                                    }
-                                                >
-                                                    {t(
-                                                        'view.settings.general.logging.auto_login_delay_button'
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </Field>
-                                    ) : null}
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.app_launcher.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.app_launcher.folder'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.app_launcher.folder_tooltip'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                void backend.app.OpenShortcutFolder()
-                                            }
-                                        >
-                                            {t(
-                                                'view.settings.advanced.advanced.app_launcher.folder'
-                                            )}
-                                        </Button>
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.app_launcher.enable'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.app_launcher.folder_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={prefs.enableAppLauncher}
-                                            onCheckedChange={(checked) =>
-                                                void saveAppLauncherField(
-                                                    'enableAppLauncher',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.app_launcher.auto_close'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.enableAppLauncherAutoClose
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveAppLauncherField(
-                                                    'enableAppLauncherAutoClose',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.app_launcher.run_process_once'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.enableAppLauncherRunProcessOnce
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveAppLauncherField(
-                                                    'enableAppLauncherRunProcessOnce',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.launch_commands.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.launch_commands.show_confirmation_on_switch_avatar_enable'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.launch_commands.show_confirmation_on_switch_avatar_tooltip'
-                                        )}
-                                    >
-                                        <Switch
-                                            checked={
-                                                prefs.showConfirmationOnSwitchAvatar
-                                            }
-                                            onCheckedChange={(checked) =>
-                                                void saveBoolPreference(
-                                                    'showConfirmationOnSwitchAvatar',
-                                                    'showConfirmationOnSwitchAvatar',
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.cache_debug.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.cache_debug.header'
-                                        )}
-                                    >
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void clearVrcxCache()
-                                                }
-                                            >
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.clear_cache'
-                                                )}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void promptAutoClearVrcxCacheFrequency()
-                                                }
-                                            >
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.auto_clear_cache'
-                                                )}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void refreshCacheSize()
-                                                }
-                                            >
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.refresh_cache'
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </Field>
-                                    <div className="text-muted-foreground grid gap-1 rounded-lg border p-3 text-sm sm:grid-cols-2">
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.user_cache'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.userCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.world_cache'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.worldCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.avatar_cache'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.avatarCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.group_cache'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.groupCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>TanStack Query</span>
-                                            <span className="font-mono">
-                                                {cacheStats.queryCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.avatar_name_cache'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.avatarNameCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'view.settings.advanced.advanced.cache_debug.instance_cache'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.instanceCache}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>Favorite detail cache</span>
-                                            <span className="font-mono">
-                                                {
-                                                    cacheStats.favoriteDetailsCache
-                                                }
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>Favorite detail pending</span>
-                                            <span className="font-mono">
-                                                {
-                                                    cacheStats.favoriteDetailsPending
-                                                }
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between gap-3">
-                                            <span>
-                                                {t(
-                                                    'dialog.config_json.cache_size'
-                                                )}
-                                            </span>
-                                            <span className="font-mono">
-                                                {cacheStats.assetBundleCacheSize ||
-                                                    'Not refreshed'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <Field
-                                        label={`${t('view.settings.advanced.advanced.cache_debug.disable_gamelog')} ${t('view.settings.advanced.advanced.cache_debug.disable_gamelog_notice')}`}
-                                    >
-                                        <Switch
-                                            checked={prefs.gameLogDisabled}
-                                            onCheckedChange={(checked) =>
-                                                void handleGameLogDisabledChange(
-                                                    checked
-                                                )
-                                            }
-                                        />
-                                    </Field>
-
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced.advanced.database_cleanup.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.database_cleanup.auto_cleanup'
-                                        )}
-                                        description={t(
-                                            'view.settings.advanced.advanced.database_cleanup.auto_cleanup_description'
-                                        )}
-                                        controlId="settings-avatar-auto-cleanup"
-                                    >
-                                        <Select
-                                            value={prefs.avatarAutoCleanup}
-                                            onValueChange={(value) =>
-                                                void saveStringPreference(
-                                                    'avatarAutoCleanup',
-                                                    'avatarAutoCleanup',
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger
-                                                id="settings-avatar-auto-cleanup"
-                                                className="w-36"
-                                            >
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {avatarAutoCleanupOptions.map(
-                                                        (value) => (
-                                                            <SelectItem
-                                                                key={value}
-                                                                value={value}
-                                                            >
-                                                                {value === 'Off'
-                                                                    ? t(
-                                                                          'view.settings.advanced.advanced.database_cleanup.auto_cleanup_off'
-                                                                      )
-                                                                    : t(
-                                                                          `view.settings.advanced.advanced.database_cleanup.auto_cleanup_${value}`
-                                                                      )}
-                                                            </SelectItem>
-                                                        )
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.database_cleanup.purge_button'
-                                        )}
-                                    >
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                setPurgeDialogOpen(true)
-                                            }
-                                        >
-                                            <Trash2Icon data-icon="inline-start" />
-                                            {t(
-                                                'view.settings.advanced.advanced.database_cleanup.purge'
-                                            )}
-                                        </Button>
-                                    </Field>
-                                    <div className="flex flex-wrap gap-2">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                setSystemHostOpen(
-                                                    'launchOptionsOpen',
-                                                    true
-                                                )
-                                            }
-                                        >
-                                            {t('dialog.launch_options.header')}
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() =>
-                                                setSystemHostOpen(
-                                                    'registryBackupOpen',
-                                                    true
-                                                )
-                                            }
-                                        >
-                                            {t('dialog.registry_backup.header')}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced_groups.database.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.settings.advanced.advanced.sqlite_table_size.refresh'
-                                        )}
-                                    >
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.vrchat_quit_fix.header'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.vrchat_quit_fix.description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.vrcQuitFix}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'vrcQuitFix',
+                                            'vrcQuitFix',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.auto_cache_management.header'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.auto_cache_management.description'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.autoSweepVRChatCache}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'autoSweepVRChatCache',
+                                            'VRCX_autoSweepVRChatCache',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t('view.settings.general.logging.header')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.cache_debug.udon_exception_logging'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.udonExceptionLogging}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'udonExceptionLogging',
+                                            'VRCX_udonExceptionLogging',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.general.logging.resource_load'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.logResourceLoad}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'logResourceLoad',
+                                            'logResourceLoad',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.general.logging.empty_avatar'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.logEmptyAvatars}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'logEmptyAvatars',
+                                            'logEmptyAvatars',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.general.logging.auto_login_delay'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.autoLoginDelayEnabled}
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'autoLoginDelayEnabled',
+                                            'VRCX_autoLoginDelayEnabled',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            {prefs.autoLoginDelayEnabled ? (
+                                <Field
+                                    label={t(
+                                        'view.settings.general.logging.auto_login_delay_button'
+                                    )}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="outline">
+                                            {prefs.autoLoginDelaySeconds}s
+                                        </Badge>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
                                             onClick={() =>
-                                                void refreshSqliteTableSizes()
+                                                void promptAutoLoginDelaySeconds()
                                             }
                                         >
                                             {t(
-                                                'view.settings.advanced.advanced.sqlite_table_size.refresh'
+                                                'view.settings.general.logging.auto_login_delay_button'
                                             )}
                                         </Button>
-                                    </Field>
-                                    {Object.keys(sqliteTableSizes).length ? (
-                                        <div className="text-muted-foreground grid gap-1 rounded-lg border p-3 text-sm sm:grid-cols-2">
-                                            {sqliteTableSizeRows.map(
-                                                ([key, labelKey]) => (
-                                                    <div
-                                                        key={key}
-                                                        className="flex justify-between gap-3"
+                                    </div>
+                                </Field>
+                            ) : null}
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.app_launcher.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.app_launcher.folder'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.app_launcher.folder_tooltip'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        void backend.app.OpenShortcutFolder()
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.app_launcher.folder'
+                                    )}
+                                </Button>
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.app_launcher.enable'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.app_launcher.folder_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.enableAppLauncher}
+                                    onCheckedChange={(checked) =>
+                                        void saveAppLauncherField(
+                                            'enableAppLauncher',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.app_launcher.auto_close'
+                                )}
+                            >
+                                <Switch
+                                    checked={prefs.enableAppLauncherAutoClose}
+                                    onCheckedChange={(checked) =>
+                                        void saveAppLauncherField(
+                                            'enableAppLauncherAutoClose',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.app_launcher.run_process_once'
+                                )}
+                            >
+                                <Switch
+                                    checked={
+                                        prefs.enableAppLauncherRunProcessOnce
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        void saveAppLauncherField(
+                                            'enableAppLauncherRunProcessOnce',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.launch_commands.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.launch_commands.show_confirmation_on_switch_avatar_enable'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.launch_commands.show_confirmation_on_switch_avatar_tooltip'
+                                )}
+                            >
+                                <Switch
+                                    checked={
+                                        prefs.showConfirmationOnSwitchAvatar
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        void saveBoolPreference(
+                                            'showConfirmationOnSwitchAvatar',
+                                            'showConfirmationOnSwitchAvatar',
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.cache_debug.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.cache_debug.header'
+                                )}
+                            >
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => void clearVrcxCache()}
+                                    >
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.clear_cache'
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            void promptAutoClearVrcxCacheFrequency()
+                                        }
+                                    >
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.auto_clear_cache'
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => void refreshCacheSize()}
+                                    >
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.refresh_cache'
+                                        )}
+                                    </Button>
+                                </div>
+                            </Field>
+                            <div className="text-muted-foreground grid gap-1 rounded-lg border p-3 text-sm sm:grid-cols-2">
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.user_cache'
+                                        )}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.userCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.world_cache'
+                                        )}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.worldCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.avatar_cache'
+                                        )}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.avatarCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.group_cache'
+                                        )}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.groupCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>TanStack Query</span>
+                                    <span className="font-mono">
+                                        {cacheStats.queryCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.avatar_name_cache'
+                                        )}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.avatarNameCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t(
+                                            'view.settings.advanced.advanced.cache_debug.instance_cache'
+                                        )}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.instanceCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>Favorite detail cache</span>
+                                    <span className="font-mono">
+                                        {cacheStats.favoriteDetailsCache}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>Favorite detail pending</span>
+                                    <span className="font-mono">
+                                        {cacheStats.favoriteDetailsPending}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between gap-3">
+                                    <span>
+                                        {t('dialog.config_json.cache_size')}
+                                    </span>
+                                    <span className="font-mono">
+                                        {cacheStats.assetBundleCacheSize ||
+                                            'Not refreshed'}
+                                    </span>
+                                </div>
+                            </div>
+                            <Field
+                                label={`${t('view.settings.advanced.advanced.cache_debug.disable_gamelog')} ${t('view.settings.advanced.advanced.cache_debug.disable_gamelog_notice')}`}
+                            >
+                                <Switch
+                                    checked={prefs.gameLogDisabled}
+                                    onCheckedChange={(checked) =>
+                                        void handleGameLogDisabledChange(
+                                            checked
+                                        )
+                                    }
+                                />
+                            </Field>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced.advanced.database_cleanup.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.database_cleanup.auto_cleanup'
+                                )}
+                                description={t(
+                                    'view.settings.advanced.advanced.database_cleanup.auto_cleanup_description'
+                                )}
+                                controlId="settings-avatar-auto-cleanup"
+                            >
+                                <Select
+                                    value={prefs.avatarAutoCleanup}
+                                    onValueChange={(value) =>
+                                        void saveStringPreference(
+                                            'avatarAutoCleanup',
+                                            'avatarAutoCleanup',
+                                            value
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger
+                                        id="settings-avatar-auto-cleanup"
+                                        className="w-36"
+                                    >
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {avatarAutoCleanupOptions.map(
+                                                (value) => (
+                                                    <SelectItem
+                                                        key={value}
+                                                        value={value}
                                                     >
-                                                        <span>
-                                                            {t(labelKey)}
-                                                        </span>
-                                                        <span className="font-mono">
-                                                            {
-                                                                sqliteTableSizes[
-                                                                    key
-                                                                ]
-                                                            }
-                                                        </span>
-                                                    </div>
+                                                        {value === 'Off'
+                                                            ? t(
+                                                                  'view.settings.advanced.advanced.database_cleanup.auto_cleanup_off'
+                                                              )
+                                                            : t(
+                                                                  `view.settings.advanced.advanced.database_cleanup.auto_cleanup_${value}`
+                                                              )}
+                                                    </SelectItem>
                                                 )
                                             )}
-                                        </div>
-                                    ) : null}
-                                </CardContent>
-                            </Card>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.database_cleanup.purge_button'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setPurgeDialogOpen(true)}
+                                >
+                                    <Trash2Icon data-icon="inline-start" />
+                                    {t(
+                                        'view.settings.advanced.advanced.database_cleanup.purge'
+                                    )}
+                                </Button>
+                            </Field>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setSystemHostOpen(
+                                            'launchOptionsOpen',
+                                            true
+                                        )
+                                    }
+                                >
+                                    {t('dialog.launch_options.header')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setSystemHostOpen(
+                                            'registryBackupOpen',
+                                            true
+                                        )
+                                    }
+                                >
+                                    {t('dialog.registry_backup.header')}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                        <Card>
-                                <CardHeader>
-                                    <CardTitle>
-                                        {t(
-                                            'view.settings.advanced_groups.diagnostics.header'
-                                        )}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex flex-col">
-                                    <Field
-                                        label={t(
-                                            'view.profile.game_info.online_users'
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            {onlineVisitCount !== null ? (
-                                                <span className="text-muted-foreground text-sm">
-                                                    {t(
-                                                        'view.profile.game_info.user_online',
-                                                        {
-                                                            count: onlineVisitCount
-                                                        }
-                                                    )}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced_groups.database.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t(
+                                    'view.settings.advanced.advanced.sqlite_table_size.refresh'
+                                )}
+                            >
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        void refreshSqliteTableSizes()
+                                    }
+                                >
+                                    {t(
+                                        'view.settings.advanced.advanced.sqlite_table_size.refresh'
+                                    )}
+                                </Button>
+                            </Field>
+                            {Object.keys(sqliteTableSizes).length ? (
+                                <div className="text-muted-foreground grid gap-1 rounded-lg border p-3 text-sm sm:grid-cols-2">
+                                    {sqliteTableSizeRows.map(
+                                        ([key, labelKey]) => (
+                                            <div
+                                                key={key}
+                                                className="flex justify-between gap-3"
+                                            >
+                                                <span>{t(labelKey)}</span>
+                                                <span className="font-mono">
+                                                    {sqliteTableSizes[key]}
                                                 </span>
-                                            ) : null}
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void refreshOnlineVisits()
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            ) : null}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'view.settings.advanced_groups.diagnostics.header'
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col">
+                            <Field
+                                label={t('view.profile.game_info.online_users')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    {onlineVisitCount !== null ? (
+                                        <span className="text-muted-foreground text-sm">
+                                            {t(
+                                                'view.profile.game_info.user_online',
+                                                {
+                                                    count: onlineVisitCount
                                                 }
-                                            >
-                                                {t('common.actions.refresh')}
-                                            </Button>
-                                        </div>
-                                    </Field>
-                                    <Field
-                                        label={t('view.profile.config_json')}
-                                    >
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() =>
-                                                    void refreshConfigTreeData()
-                                                }
-                                            >
-                                                {t('common.actions.refresh')}
-                                            </Button>
-                                            {Object.keys(configTreeData)
-                                                .length ? (
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        setConfigTreeData({})
-                                                    }
-                                                >
-                                                    {t('common.actions.clear')}
-                                                </Button>
-                                            ) : null}
-                                        </div>
-                                    </Field>
-                                    {Object.keys(configTreeData).length ? (
-                                        <div className="bg-muted/30 max-h-[32rem] overflow-auto rounded-lg border p-3">
-                                            <JsonTreeView
-                                                data={configTreeData}
-                                            />
-                                        </div>
+                                            )}
+                                        </span>
                                     ) : null}
-                                </CardContent>
-                        </Card>
-                    </SettingsTabContent>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            void refreshOnlineVisits()
+                                        }
+                                    >
+                                        {t('common.actions.refresh')}
+                                    </Button>
+                                </div>
+                            </Field>
+                            <Field label={t('view.profile.config_json')}>
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            void refreshConfigTreeData()
+                                        }
+                                    >
+                                        {t('common.actions.refresh')}
+                                    </Button>
+                                    {Object.keys(configTreeData).length ? (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                                setConfigTreeData({})
+                                            }
+                                        >
+                                            {t('common.actions.clear')}
+                                        </Button>
+                                    ) : null}
+                                </div>
+                            </Field>
+                            {Object.keys(configTreeData).length ? (
+                                <div className="bg-muted/30 max-h-[32rem] overflow-auto rounded-lg border p-3">
+                                    <JsonTreeView data={configTreeData} />
+                                </div>
+                            ) : null}
+                        </CardContent>
+                    </Card>
+                </SettingsTabContent>
             </Tabs>
             <Dialog
                 open={customFontDialogOpen}
@@ -5264,6 +5021,9 @@ export function SettingsPage() {
                         <DialogTitle>
                             {t('dialog.translation_api.header')}
                         </DialogTitle>
+                        <DialogDescription>
+                            {t('dialog.translation_api.description')}
+                        </DialogDescription>
                     </DialogHeader>
                     <FieldGroup>
                         <Field
@@ -5668,6 +5428,9 @@ export function SettingsPage() {
                         <DialogTitle>
                             {t('dialog.avatar_database_provider.header')}
                         </DialogTitle>
+                        <DialogDescription>
+                            {t('dialog.avatar_database_provider.description')}
+                        </DialogDescription>
                     </DialogHeader>
                     <FieldGroup>
                         {avatarProviderConfig.providerList.length > 0 ? (
@@ -5678,8 +5441,8 @@ export function SettingsPage() {
                                         label={`${t('view.settings.advanced.advanced.remote_database.avatar_database_provider')} ${index + 1}`}
                                         controlId={`settings-avatar-provider-${index}`}
                                     >
-                                        <div className="flex gap-2">
-                                            <Input
+                                        <InputGroup>
+                                            <InputGroupInput
                                                 id={`settings-avatar-provider-${index}`}
                                                 name={`avatarProvider${index}`}
                                                 value={provider}
@@ -5696,27 +5459,34 @@ export function SettingsPage() {
                                                     )
                                                 }
                                             />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="icon"
-                                                aria-label={t(
-                                                    'common.actions.remove'
-                                                )}
-                                                onClick={() =>
-                                                    removeAvatarProvider(index)
-                                                }
-                                            >
-                                                <Trash2Icon data-icon="inline-start" />
-                                            </Button>
-                                        </div>
+                                            <InputGroupAddon align="inline-end">
+                                                <InputGroupButton
+                                                    type="button"
+                                                    size="icon-xs"
+                                                    aria-label={t(
+                                                        'common.actions.remove'
+                                                    )}
+                                                    onClick={() =>
+                                                        removeAvatarProvider(
+                                                            index
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2Icon data-icon="inline-start" />
+                                                </InputGroupButton>
+                                            </InputGroupAddon>
+                                        </InputGroup>
                                     </Field>
                                 )
                             )
                         ) : (
-                            <div className="text-muted-foreground rounded-lg border border-dashed p-3 text-sm">
-                                {t('search.avatar.no_provider')}
-                            </div>
+                            <Empty className="min-h-28">
+                                <EmptyHeader>
+                                    <EmptyTitle>
+                                        {t('search.avatar.no_provider')}
+                                    </EmptyTitle>
+                                </EmptyHeader>
+                            </Empty>
                         )}
                         <Field
                             label={t(

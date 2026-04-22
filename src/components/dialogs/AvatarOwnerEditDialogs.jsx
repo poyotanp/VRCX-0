@@ -10,11 +10,18 @@ import { Checkbox } from '@/ui/shadcn/checkbox';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle
 } from '@/ui/shadcn/dialog';
-import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldLegend,
+    FieldSet
+} from '@/ui/shadcn/field';
 import {
     Select,
     SelectContent,
@@ -339,28 +346,52 @@ export function AvatarContentTagsDialog({
             <DialogContent className="max-w-[min(92vw,49rem)]">
                 <DialogHeader>
                     <DialogTitle>Change Content Tags</DialogTitle>
+                    <DialogDescription>
+                        Apply content tags to this avatar or selected owned
+                        avatars.
+                    </DialogDescription>
                 </DialogHeader>
                 <FieldGroup>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                        {contentTagOptions.map((option) => (
-                            <Field key={option.value} orientation="horizontal">
-                                <Checkbox
-                                    id={`avatar-content-tag-${option.value}`}
-                                    checked={selectedTagsSet.has(option.value)}
-                                    onCheckedChange={() =>
-                                        toggleBuiltInTag(option.value)
-                                    }
-                                />
-                                <FieldLabel
-                                    htmlFor={`avatar-content-tag-${option.value}`}
+                    <FieldSet>
+                        <FieldLegend variant="label">
+                            Built-in content tags
+                        </FieldLegend>
+                        <FieldGroup
+                            data-slot="checkbox-group"
+                            className="grid gap-2 sm:grid-cols-2"
+                        >
+                            {contentTagOptions.map((option) => (
+                                <Field
+                                    key={option.value}
+                                    orientation="horizontal"
                                 >
-                                    {option.label}
-                                </FieldLabel>
-                            </Field>
-                        ))}
-                    </div>
+                                    <Checkbox
+                                        id={`avatar-content-tag-${option.value}`}
+                                        checked={selectedTagsSet.has(
+                                            option.value
+                                        )}
+                                        onCheckedChange={() =>
+                                            toggleBuiltInTag(option.value)
+                                        }
+                                    />
+                                    <FieldLabel
+                                        htmlFor={`avatar-content-tag-${option.value}`}
+                                    >
+                                        {option.label}
+                                    </FieldLabel>
+                                </Field>
+                            ))}
+                        </FieldGroup>
+                    </FieldSet>
                     <Field>
+                        <FieldLabel
+                            htmlFor="avatar-content-tags-csv"
+                            className="sr-only"
+                        >
+                            Raw content tags
+                        </FieldLabel>
                         <Textarea
+                            id="avatar-content-tags-csv"
                             rows={2}
                             value={selectedTagsCsv}
                             className="resize-none"
@@ -549,6 +580,9 @@ export function AvatarStylesDialog({
             <DialogContent className="max-w-[min(92vw,25rem)]">
                 <DialogHeader>
                     <DialogTitle>Change Styles and Author Tags</DialogTitle>
+                    <DialogDescription>
+                        Set avatar style metadata and author tags.
+                    </DialogDescription>
                 </DialogHeader>
                 <FieldGroup>
                     <Field>

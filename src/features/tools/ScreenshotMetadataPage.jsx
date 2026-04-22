@@ -107,6 +107,15 @@ function SearchSortHead({ label, sortKey, sort, onToggle }) {
     );
 }
 
+function openSearchResult(
+    row,
+    { setSelectedPath, setSearchViewMode, loadScreenshot }
+) {
+    setSelectedPath(row.filePath);
+    setSearchViewMode('detail');
+    void loadScreenshot(row.filePath, false);
+}
+
 function MetadataAuthorLink({ author, endpoint }) {
     const userId = String(author?.id || '').trim();
     const hint = String(author?.displayName || '').trim();
@@ -890,32 +899,6 @@ export function ScreenshotMetadataPage() {
                                                 ? 'selected'
                                                 : undefined
                                         }
-                                        className="cursor-pointer"
-                                        tabIndex={0}
-                                        aria-label={`Open screenshot ${row.dateLabel || row.fileName || row.filePath}`}
-                                        onKeyDown={(event) => {
-                                            if (
-                                                event.key !== 'Enter' &&
-                                                event.key !== ' '
-                                            ) {
-                                                return;
-                                            }
-                                            event.preventDefault();
-                                            setSelectedPath(row.filePath);
-                                            setSearchViewMode('detail');
-                                            void loadScreenshot(
-                                                row.filePath,
-                                                false
-                                            );
-                                        }}
-                                        onClick={() => {
-                                            setSelectedPath(row.filePath);
-                                            setSearchViewMode('detail');
-                                            void loadScreenshot(
-                                                row.filePath,
-                                                false
-                                            );
-                                        }}
                                     >
                                         <TableCell>{row.dateLabel}</TableCell>
                                         <TableCell>{row.world}</TableCell>
@@ -930,8 +913,22 @@ export function ScreenshotMetadataPage() {
                                             </span>
                                         </TableCell>
                                         <TableCell>{row.resolution}</TableCell>
-                                        <TableCell>
-                                            <ArrowRightIcon className="text-muted-foreground size-4" />
+                                        <TableCell className="text-right">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon-sm"
+                                                aria-label={`Open screenshot ${row.dateLabel || row.fileName || row.filePath}`}
+                                                onClick={() =>
+                                                    openSearchResult(row, {
+                                                        setSelectedPath,
+                                                        setSearchViewMode,
+                                                        loadScreenshot
+                                                    })
+                                                }
+                                            >
+                                                <ArrowRightIcon data-icon="inline-start" />
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
