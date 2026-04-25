@@ -21,7 +21,10 @@ import {
 } from '@/components/layout/navMenuModel.js';
 import { cn } from '@/lib/utils.js';
 import { configRepository } from '@/repositories/index.js';
-import { triggerToolByKey } from '@/services/toolActionService.js';
+import {
+    isToolCapabilityAvailable,
+    triggerToolByKey
+} from '@/services/toolActionService.js';
 import { getNavIconComponent } from '@/shared/constants/navIcons.js';
 import {
     getToolsByCategory,
@@ -29,6 +32,7 @@ import {
 } from '@/shared/constants/tools.js';
 import { useDashboardStore } from '@/state/dashboardStore.js';
 import { usePreferencesStore } from '@/state/preferencesStore.js';
+import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { Button } from '@/ui/shadcn/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
@@ -225,11 +229,21 @@ function useToolsCollapsedState() {
 export function ToolsPage() {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
+    const hostCapabilities = useRuntimeStore((state) => state.hostCapabilities);
     const dashboards = useDashboardStore((state) => state.dashboards);
     const ensureDashboardsLoaded = useDashboardStore(
         (state) => state.ensureLoaded
     );
-    const categories = toolsPageCategories;
+    const categories = useMemo(
+        () =>
+            toolsPageCategories
+                .map((category) => ({
+                    ...category,
+                    tools: category.tools.filter(isToolCapabilityAvailable)
+                }))
+                .filter((category) => category.tools.length > 0),
+        [hostCapabilities]
+    );
     const { collapsed, toggleCategoryCollapsed } = useToolsCollapsedState();
     const [navLayout, setNavLayout] = useState([]);
     const [navHiddenKeys, setNavHiddenKeys] = useState([]);

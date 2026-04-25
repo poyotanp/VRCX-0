@@ -98,6 +98,7 @@ const commandArgs: Record<string, string[]> = {
     app__flash_window: [],
     app__check_for_update_exe: [],
     app__check_legacy_vrcx_available: [],
+    app__get_legacy_vrcx_migration_status: [],
     app__request_legacy_migration: [],
     app__get_image: ['url', 'fileId', 'version'],
     app__get_extra_screenshot_data: ['path', 'carouselCache'],

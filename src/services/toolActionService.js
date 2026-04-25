@@ -4,6 +4,10 @@ import { backend } from '@/platform/index.js';
 import { toolDefinitionMap } from '@/shared/constants/tools.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import i18n from '@/services/i18nService.js';
+import {
+    getHostCapabilityUnavailableReason,
+    isHostCapabilityAvailable
+} from '@/services/hostCapabilityService.js';
 
 const toolRouteMap = {
     gallery: '/tools/gallery',
@@ -20,11 +24,30 @@ const toolDialogHostMap = {
     'edit-invite-messages': 'editInviteMessagesOpen'
 };
 
+export function isToolCapabilityAvailable(tool) {
+    return (
+        !tool?.requiredCapability ||
+        isHostCapabilityAvailable(tool.requiredCapability)
+    );
+}
+
+export function getToolCapabilityUnavailableReason(tool) {
+    if (!tool?.requiredCapability) {
+        return '';
+    }
+    return getHostCapabilityUnavailableReason(tool.requiredCapability);
+}
+
 export async function triggerToolByKey(toolKey, { navigate, t }) {
     const tool = toolDefinitionMap.get(toolKey);
     const action = tool?.action;
     if (!action) {
         toast.error(i18n.t('service.tool_action_service.generated_dynamic.unknown_tool_action_value', { value: toolKey }));
+        return;
+    }
+
+    if (!isToolCapabilityAvailable(tool)) {
+        toast.error(getToolCapabilityUnavailableReason(tool));
         return;
     }
 

@@ -59,8 +59,18 @@ export interface HostCapabilities {
     screenshotCache: HostCapabilityStatus;
 }
 
+export interface LegacyVrcxMigrationStatus {
+    detected: boolean;
+    available: boolean;
+    version?: number;
+    dbPath?: string;
+    configPath?: string;
+    reason?: string;
+}
+
 export interface AppBackendNamespace extends BackendNamespace {
     GetHostCapabilities(): Promise<HostCapabilities>;
+    GetLegacyVrcxMigrationStatus(): Promise<LegacyVrcxMigrationStatus>;
 }
 
 export type BackendEvents = typeof backendEvents;

@@ -44,6 +44,9 @@ export function ScreenshotMetadataPage() {
     const currentEndpoint = useRuntimeStore(
         (state) => state.auth.currentUserEndpoint
     );
+    const screenshotCacheStatus = useRuntimeStore(
+        (state) => state.hostCapabilities.screenshotCache
+    );
     const currentUserSnapshot = useRuntimeStore(
         (state) => state.auth.currentUserSnapshot
     );
@@ -490,6 +493,28 @@ export function ScreenshotMetadataPage() {
         if (event.dataTransfer) {
             event.dataTransfer.dropEffect = 'copy';
         }
+    }
+
+    if (!screenshotCacheStatus?.available) {
+        return (
+            <div className="screenshot-metadata-page x-container flex min-h-0 flex-1 flex-col overflow-hidden p-6">
+                <ScreenshotMetadataHeader
+                    backLabel={t('nav_tooltip.tools')}
+                    title={t('dialog.screenshot_metadata.header')}
+                    deleting={false}
+                    uploading={false}
+                    deletingLabel={t('view.tools.generated.deleting_metadata')}
+                    uploadingLabel={t(
+                        'view.tools.generated.uploading_screenshot'
+                    )}
+                    onBack={() => navigate('/tools')}
+                />
+                <div className="text-muted-foreground mt-4 rounded-md border p-4 text-sm">
+                    {screenshotCacheStatus?.reason ||
+                        'Screenshot cache is unavailable on this platform.'}
+                </div>
+            </div>
+        );
     }
 
     return (

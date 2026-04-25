@@ -3,6 +3,7 @@ pub mod database;
 pub mod discord_rpc;
 pub mod image_cache;
 pub mod ipc;
+pub mod legacy_vrcx;
 pub mod log_watcher;
 pub mod png;
 pub mod process_monitor;

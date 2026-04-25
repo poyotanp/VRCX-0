@@ -16,6 +16,7 @@ const toolDefinitions = [
         titleKey: 'view.tools.pictures.screenshot',
         descriptionKey: 'view.tools.pictures.screenshot_description',
         navEligible: true,
+        requiredCapability: 'screenshotCache',
         action: { type: 'route', routeName: 'screenshot-metadata' }
     },
     {
@@ -26,6 +27,7 @@ const toolDefinitions = [
         titleKey: 'view.tools.pictures.gallery',
         descriptionKey: 'view.tools.pictures.gallery_description',
         navEligible: true,
+        requiredCapability: 'screenshotCache',
         action: { type: 'route', routeName: 'gallery' }
     },
     {
@@ -36,6 +38,7 @@ const toolDefinitions = [
         titleKey: 'view.tools.pictures.pictures.vrc_photos',
         descriptionKey: 'view.tools.pictures.pictures.vrc_photos_description',
         navEligible: true,
+        requiredCapability: 'vrchatPathDiscovery',
         action: {
             type: 'app-api',
             method: 'OpenVrcPhotosFolder',
@@ -52,6 +55,7 @@ const toolDefinitions = [
         descriptionKey:
             'view.tools.pictures.pictures.steam_screenshots_description',
         navEligible: true,
+        requiredCapability: 'screenshotCache',
         action: {
             type: 'app-api',
             method: 'OpenVrcScreenshotsFolder',
@@ -82,6 +86,7 @@ const toolDefinitions = [
         titleKey: 'view.tools.shortcuts.vrchat_data',
         descriptionKey: 'view.tools.shortcuts.vrchat_data_description',
         navEligible: true,
+        requiredCapability: 'vrchatPathDiscovery',
         action: {
             type: 'app-api',
             method: 'OpenVrcAppDataFolder',
@@ -97,6 +102,7 @@ const toolDefinitions = [
         titleKey: 'view.tools.shortcuts.crash_dumps',
         descriptionKey: 'view.tools.shortcuts.crash_dumps_description',
         navEligible: true,
+        requiredCapability: 'vrchatPathDiscovery',
         action: {
             type: 'app-api',
             method: 'OpenCrashVrcCrashDumps',
@@ -112,6 +118,7 @@ const toolDefinitions = [
         titleKey: 'view.tools.system_tools.vrchat_config',
         descriptionKey: 'view.tools.system_tools.vrchat_config_description',
         navEligible: true,
+        requiredCapability: 'vrchatPathDiscovery',
         action: {
             type: 'store-action',
             target: 'advancedSettings',
@@ -126,6 +133,7 @@ const toolDefinitions = [
         titleKey: 'view.settings.advanced.advanced.launch_options',
         descriptionKey: 'view.tools.system_tools.launch_options_description',
         navEligible: true,
+        requiredCapability: 'gameLaunch',
         action: {
             type: 'store-action',
             target: 'launch',
@@ -140,6 +148,7 @@ const toolDefinitions = [
         titleKey: 'view.settings.advanced.advanced.vrc_registry_backup',
         descriptionKey: 'view.tools.system_tools.registry_backup_description',
         navEligible: true,
+        requiredCapability: 'registryPrefs',
         action: {
             type: 'store-action',
             target: 'vrcx',

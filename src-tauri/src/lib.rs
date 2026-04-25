@@ -333,6 +333,7 @@ pub fn run() {
             api::app::window::app__restart_application,
             api::app::updates::app__check_for_update_exe,
             api::app::updates::app__check_legacy_vrcx_available,
+            api::app::updates::app__get_legacy_vrcx_migration_status,
             api::app::updates::app__request_legacy_migration,
             api::app::clipboard::app__get_clipboard,
             api::app::clipboard::app__copy_image_to_clipboard,

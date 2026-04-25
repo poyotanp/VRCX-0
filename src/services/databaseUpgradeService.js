@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 import { backend } from '@/platform/index.js';
 import {
     configRepository,
@@ -184,31 +186,51 @@ async function runFullDatabaseUpgrade() {
     }
 }
 
+async function getLegacyMigrationStatus() {
+    try {
+        return await backend.app.GetLegacyVrcxMigrationStatus();
+    } catch (error) {
+        console.warn('Legacy VRCX migration status check failed:', error);
+    }
+
+    try {
+        const available = Boolean(await backend.app.CheckLegacyVrcxAvailable());
+        return {
+            detected: available,
+            available
+        };
+    } catch (error) {
+        console.warn('Legacy VRCX availability check failed:', error);
+        return {
+            detected: false,
+            available: false
+        };
+    }
+}
+
 export async function initializeDatabaseUpgradeFlow() {
     const failedUpgrade = await backend.sqlite.GetFailedUpgrade();
     if (failedUpgrade) {
         return blockOnFailedUpgrade(failedUpgrade);
     }
 
-    let legacyAvailable = false;
+    const legacyMigrationStatus = await getLegacyMigrationStatus();
 
-    try {
-        legacyAvailable = Boolean(await backend.app.CheckLegacyVrcxAvailable());
-    } catch (error) {
-        console.warn('Legacy VRCX availability check failed:', error);
-    }
-
-    if (legacyAvailable) {
+    if (legacyMigrationStatus.available) {
         setUpgradeState({
             open: true,
             phase: 'confirm-legacy-migration',
             fromVersion: 0,
-            toVersion: DATABASE_VERSION,
+            toVersion: 0,
             detail: 'A legacy VRCX installation was detected. Confirm migration to let the host copy legacy data and restart, or skip to continue with the current database.',
             legacyMigrationAvailable: true
         });
         useSessionStore.getState().setSessionState({ databaseReady: false });
         return false;
+    }
+
+    if (legacyMigrationStatus.detected && legacyMigrationStatus.reason) {
+        toast.warning(legacyMigrationStatus.reason);
     }
 
     return runFullDatabaseUpgrade();

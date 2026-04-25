@@ -17,7 +17,7 @@ import {
 function getDatabaseUpgradeTitle(phase) {
     switch (phase) {
         case 'confirm-legacy-migration':
-            return 'Legacy VRCX-0 Migration';
+            return 'Legacy VRCX Migration';
         case 'running':
             return 'Database Upgrade Running';
         case 'restarting':
@@ -57,7 +57,8 @@ export function DatabaseUpgradeDialog({ open }) {
                             'Local database migration status.'}
                     </DialogDescription>
                 </DialogHeader>
-                {databaseUpgrade.fromVersion || databaseUpgrade.toVersion ? (
+                {databaseUpgrade.phase !== 'confirm-legacy-migration' &&
+                (databaseUpgrade.fromVersion || databaseUpgrade.toVersion) ? (
                     <div className="bg-muted/30 text-muted-foreground rounded-md border p-3 text-sm">
                         {`Version ${databaseUpgrade.fromVersion || 0} -> ${databaseUpgrade.toVersion || 0}`}
                     </div>

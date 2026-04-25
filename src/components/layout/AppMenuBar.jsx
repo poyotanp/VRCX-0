@@ -12,8 +12,12 @@ import {
     formatZoomPercentage,
     normalizeZoomLevel
 } from '@/services/themeService.js';
-import { triggerToolByKey } from '@/services/toolActionService.js';
+import {
+    isToolCapabilityAvailable,
+    triggerToolByKey
+} from '@/services/toolActionService.js';
 import { links } from '@/shared/constants/link.js';
+import { toolDefinitionMap } from '@/shared/constants/tools.js';
 import { formatReleaseDisplayVersion } from '@/shared/utils/releaseVersion.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useShellStore } from '@/state/shellStore.js';
@@ -53,6 +57,12 @@ function MenuItem({ children, onSelect, ...props }) {
 }
 
 function ToolMenuItem({ toolKey, children, navigate, t }) {
+    useRuntimeStore((state) => state.hostCapabilities);
+    const tool = toolDefinitionMap.get(toolKey);
+    if (!isToolCapabilityAvailable(tool)) {
+        return null;
+    }
+
     return (
         <MenuItem
             onSelect={() => void triggerToolByKey(toolKey, { navigate, t })}
