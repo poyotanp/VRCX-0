@@ -53,6 +53,7 @@ const DISCORD_BOOL_PREFERENCE_KEYS = new Set([
     'discordWorldIntegration',
     'discordWorldNameAsDiscordStatus'
 ]);
+const VRCHAT_RICH_PRESENCE_CONFIG_KEY = 'disableRichPresence';
 
 function setDocumentLanguage(language) {
     document.documentElement.setAttribute('lang', language);
@@ -980,6 +981,11 @@ export async function setDiscordBoolPreference(key, value) {
     }
     const enabled = Boolean(value);
     await configRepository.setBool(key, enabled);
+    if (key === 'discordActive' && enabled) {
+        await disableVrchatRichPresence().catch((error) => {
+            console.warn('Failed to disable VRChat Rich Presence:', error);
+        });
+    }
     patchPreferences({ [key]: enabled });
     publishPreferenceChanged(key, enabled);
     void refreshDiscordPresence({ force: true }).catch((error) => {
@@ -989,4 +995,23 @@ export async function setDiscordBoolPreference(key, value) {
         );
     });
     return enabled;
+}
+
+async function disableVrchatRichPresence() {
+    const rawConfig = await backend.app.ReadConfigFile();
+    const config = rawConfig ? JSON.parse(rawConfig) : {};
+    if (config?.[VRCHAT_RICH_PRESENCE_CONFIG_KEY] === true) {
+        return;
+    }
+
+    await backend.app.WriteConfigFile(
+        JSON.stringify(
+            {
+                ...config,
+                [VRCHAT_RICH_PRESENCE_CONFIG_KEY]: true
+            },
+            null,
+            2
+        )
+    );
 }

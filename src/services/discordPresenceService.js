@@ -36,7 +36,6 @@ const i18nKeys = [
     'dialog.user.status.offline',
     'view.settings.discord_presence.rpc.desktop',
     'view.settings.discord_presence.rpc.vr',
-    'view.settings.discord_presence.rpc.powered_by_vrcx',
     'view.settings.discord_presence.rpc.private_world'
 ];
 
@@ -99,13 +98,10 @@ function clampGameSessionStartTime(runtimeState, startTime) {
     return startTime;
 }
 
-function createActivityAssets(bigIcon, poweredBy, statusImage, statusName) {
+function createActivityAssets(bigIcon, statusImage, statusName) {
     const assets = {};
     if (bigIcon) {
         assets.large_image = bigIcon;
-    }
-    if (poweredBy) {
-        assets.large_text = poweredBy;
     }
     if (statusImage) {
         assets.small_image = statusImage;
@@ -460,7 +456,6 @@ export async function refreshDiscordPresence({ force = false } = {}) {
     let appId = DEFAULT_APP_ID;
     let bigIcon = 'vrchat';
     let detailsUrl = locationDetails.worldLink;
-    const poweredBy = t('view.settings.discord_presence.rpc.powered_by_vrcx');
     let partyId = `${parsed.worldId}:${parsed.instanceName}`;
     let partySize = await getPartySize({
         currentUserId: auth.currentUserId,
@@ -537,7 +532,7 @@ export async function refreshDiscordPresence({ force = false } = {}) {
 
     const activity = compactObject({
         type: activityType,
-        name: details || 'VRChat',
+        name: 'VRChat',
         details,
         details_url: detailsUrl,
         state: stateText,
@@ -545,7 +540,6 @@ export async function refreshDiscordPresence({ force = false } = {}) {
         timestamps: createActivityTimestamps(startTime, endTime),
         assets: createActivityAssets(
             bigIcon,
-            poweredBy,
             statusInfo.statusImage,
             statusInfo.statusName
         ),
