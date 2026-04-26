@@ -323,7 +323,7 @@ export function useVrcNotificationPageActions({
                 endpoint
             });
             await expireNotificationLocally(notification);
-            toast.success(t('view.notification.generated.invite_sent'));
+            toast.success(t('message.invite.sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

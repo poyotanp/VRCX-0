@@ -65,12 +65,12 @@ export function WorldDialogTabPanels({ handlers, helpers, state, t }) {
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                     <span className="inline-flex items-center gap-1">
                         <UserIcon className="size-4" />
-                        {t('dialog.world.generated.public')}{' '}
+                        {t('dialog.world.tags.public')}{' '}
                         {world.publicOccupants ?? 0}
                     </span>
                     <span className="inline-flex items-center gap-1">
                         <UserIcon className="size-4" />
-                        {t('dialog.world.generated.private')}{' '}
+                        {t('dialog.world.tags.private')}{' '}
                         {world.privateOccupants ?? 0}
                     </span>
                     <span className="inline-flex items-center gap-1">

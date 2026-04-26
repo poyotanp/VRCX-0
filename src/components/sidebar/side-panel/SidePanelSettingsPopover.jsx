@@ -318,7 +318,7 @@ export function SidePanelSettingsPopover({
                                             {favoriteLoadStatus === 'running'
                                                 ? t('common.loading')
                                                 : t(
-                                                      'dialog.favorites.generated.no_favorite_groups_loaded'
+                                                      'view.favorite.generated.no_favorite_groups_loaded'
                                                   )}
                                         </div>
                                     )}

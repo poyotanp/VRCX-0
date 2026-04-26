@@ -235,7 +235,7 @@ export function Location({
                 parsedLocation.shortName || '',
                 currentEndpoint
             );
-            toast.success(t('common.generated.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

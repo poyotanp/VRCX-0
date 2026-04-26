@@ -342,11 +342,9 @@ export function buildGameLogColumns({
                                 variant="ghost"
                                 size="icon"
                                 aria-label={
-                                    shiftHeld
-                                        ? `${t('view.game_log.generated_modal.delete_game_log_row')} (${t('dialog.groups.generated.hold_shift')})`
-                                        : t(
-                                              'view.game_log.generated_modal.delete_game_log_row'
-                                          )
+                                    t(
+                                        'view.game_log.generated_modal.delete_game_log_row'
+                                    )
                                 }
                                 className="text-muted-foreground hover:text-destructive size-6 p-0"
                                 disabled={deletingGameLogKey === rowKey}

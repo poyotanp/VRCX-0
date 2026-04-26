@@ -98,7 +98,7 @@ export function useFriendsLocationsPageActions({
                 parsedLocation.shortName || '',
                 currentEndpoint
             );
-            toast.success(t('view.friend_list.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -168,7 +168,7 @@ export function useFriendsLocationsPageActions({
                     rsvp: true
                 }
             });
-            toast.success(t('view.friend_list.generated.invite_sent'));
+            toast.success(t('message.invite.sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

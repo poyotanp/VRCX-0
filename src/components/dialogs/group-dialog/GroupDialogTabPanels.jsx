@@ -385,7 +385,7 @@ export function GroupDialogTabPanels({ state, handlers }) {
                     ) : null}
                     {roles.length ? (
                         <EntityInfoBlock
-                            label={t('dialog.group.generated.roles')}
+                            label={t('dialog.group.info.roles')}
                             full
                         >
                             <div className="flex flex-wrap gap-1.5">

@@ -78,7 +78,7 @@ export function useWorldDialogOwnerActions({
             await saveWorldPatch(
                 { name: result.value },
                 {
-                    successMessage: t('dialog.world.generated.world_renamed'),
+                    successMessage: t('prompt.rename_world.message.success'),
                     errorMessage: t(
                         'dialog.world.generated_toast.failed_to_rename_world'
                     )

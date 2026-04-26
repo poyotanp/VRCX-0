@@ -488,7 +488,7 @@ export function useUserDialogSelfActions({
                     hidden,
                     showcased: hidden ? false : Boolean(badge.showcased)
                 }),
-            successMessage: t('dialog.user.generated.badge_updated'),
+            successMessage: t('message.badge.updated'),
             fallbackErrorMessage: t(
                 'dialog.user.generated_toast.failed_to_update_badge'
             ),
@@ -512,7 +512,7 @@ export function useUserDialogSelfActions({
                     hidden: showcased ? false : Boolean(badge.hidden),
                     showcased
                 }),
-            successMessage: t('dialog.user.generated.badge_updated'),
+            successMessage: t('message.badge.updated'),
             fallbackErrorMessage: t(
                 'dialog.user.generated_toast.failed_to_update_badge'
             ),

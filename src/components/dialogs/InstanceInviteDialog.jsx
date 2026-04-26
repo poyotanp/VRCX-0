@@ -326,7 +326,7 @@ export function InstanceInviteDialog({
             if (successCount) {
                 toast.success(
                     successCount === 1
-                        ? t('dialog.instance_invite.generated_toast.invite_sent')
+                        ? t('message.invite.sent')
                         : t('dialog.instance_invite.generated_toast.sent_value_invites', { value: successCount })
                 );
             }
@@ -357,7 +357,7 @@ export function InstanceInviteDialog({
         <Dialog open={Boolean(open)} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>{t('dialog.invite.generated.invite')}</DialogTitle>
+                    <DialogTitle>{t('dialog.invite.invite')}</DialogTitle>
                     <DialogDescription>
                         {t('dialog.invite.generated.choose_online_friends_to_invite_to_this_instance')}
                     </DialogDescription>
@@ -531,7 +531,7 @@ export function InstanceInviteDialog({
                         onClick={() => void sendInvites()}
                     >
                         {sending ? <Spinner data-icon="inline-start" /> : null}
-                        {t('dialog.invite.generated.invite')}
+                        {t('dialog.invite.invite')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

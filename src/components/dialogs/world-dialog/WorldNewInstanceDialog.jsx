@@ -541,7 +541,7 @@ export function WorldNewInstanceDialog({
                             disabled={submitting}
                             onClick={() => onCopy?.(activeCreated)}
                         >
-                            {t('dialog.world.generated.copy_url')}
+                            {t('dialog.world.info.copy_url')}
                         </Button>
                         <Button
                             type="button"

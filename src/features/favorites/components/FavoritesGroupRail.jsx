@@ -94,7 +94,7 @@ function GroupMenu({
                         <DropdownMenuItem
                             onSelect={() => onRemoteRename(group)}
                         >
-                            {t('view.favorite.generated.rename')}
+                            {t('view.favorite.rename_tooltip')}
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSub>
@@ -153,7 +153,7 @@ function GroupMenu({
             <DropdownMenuContent side="right" align="start" className="w-48">
                 <DropdownMenuGroup>
                     <DropdownMenuItem onSelect={() => onLocalRename(group)}>
-                        {t('view.favorite.generated.rename')}
+                        {t('view.favorite.rename_tooltip')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         variant="destructive"
@@ -296,7 +296,7 @@ const GroupRailSection = memo(function GroupRailSection({
                         onClick={onStartCreate}
                     >
                         <PlusIcon data-icon="inline-start" />
-                        <span>{t('view.favorite.generated.new_group')}</span>
+                        <span>{t('view.favorite.worlds.new_group')}</span>
                     </Button>
                 ) : null}
                 {showNewGroup && creating ? (
@@ -305,7 +305,7 @@ const GroupRailSection = memo(function GroupRailSection({
                         autoFocus
                         className="h-8 text-sm"
                         disabled={loading}
-                        placeholder={t('view.favorite.generated.new_group')}
+                        placeholder={t('view.favorite.worlds.new_group')}
                         onChange={(event) =>
                             onNewGroupNameChange(event.target.value)
                         }

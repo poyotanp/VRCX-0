@@ -117,7 +117,7 @@ export async function attachRunningVrchat(
             shortName: parsed.shortName || launchToken,
             endpoint
         });
-        toast.success(i18n.t('common.generated.generated.self_invite_sent'));
+        toast.success(i18n.t('message.invite.self_sent'));
     }
 }
 

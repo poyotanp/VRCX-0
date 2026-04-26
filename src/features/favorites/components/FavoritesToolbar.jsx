@@ -103,7 +103,7 @@ function FavoritesToolbar({
                                 }
                                 onClick={() => onSearchModeChange('name')}
                             >
-                                {t('view.favorite.generated.name')}
+                                {t('view.favorite.worlds.search_mode_name')}
                             </InputGroupButton>
                             <InputGroupButton
                                 type="button"
@@ -205,7 +205,7 @@ function FavoritesToolbar({
                             </DropdownMenuItem>
                             <DropdownMenuItem onSelect={onExport}>
                                 <DownloadIcon data-icon="inline-start" />
-                                {t('view.favorite.generated.export')}
+                                {t('view.favorite.export')}
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>

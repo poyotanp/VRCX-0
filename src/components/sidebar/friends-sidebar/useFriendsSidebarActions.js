@@ -86,7 +86,7 @@ export function useFriendsSidebarActions({
                 parsedLocation.shortName,
                 currentEndpoint
             );
-            toast.success(t('side_panel.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -156,7 +156,7 @@ export function useFriendsSidebarActions({
                 }
             });
             recordRecentAction(friendId, 'Invite');
-            toast.success(t('side_panel.generated.invite_sent'));
+            toast.success(t('message.invite.sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

@@ -351,7 +351,7 @@ export function LaunchDialogHost() {
             >
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>{t('dialog.launch.generated.launch')}</DialogTitle>
+                        <DialogTitle>{t('dialog.launch.header')}</DialogTitle>
                         <DialogDescription>
                             {t('dialog.launch.generated.open_copy_invite_or_self_invite_to_this_vrchat_instance')}
                         </DialogDescription>
@@ -384,7 +384,7 @@ export function LaunchDialogHost() {
                             />
                         ) : null}
                         <LaunchField
-                            label={t('dialog.launch.generated.location')}
+                            label={t('dialog.launch.location')}
                             value={details.location}
                             onCopy={() =>
                                 void copyField(details.location, 'Location')
@@ -402,7 +402,7 @@ export function LaunchDialogHost() {
                                 }
                                 onClick={() => setInviteOpen(true)}
                             >
-                                {t('dialog.launch.generated.invite')}
+                                {t('dialog.launch.invite')}
                             </Button>
                             {canOpenInstanceInGame ? (
                                 <Button
@@ -489,7 +489,7 @@ export function LaunchDialogHost() {
                                                 )
                                             }
                                         >
-                                            {t('dialog.launch.generated.launch')}
+                                            {t('dialog.launch.header')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onSelect={() =>

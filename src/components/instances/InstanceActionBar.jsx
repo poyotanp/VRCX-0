@@ -340,7 +340,7 @@ export function InstanceActionBar({
                 shortName || parsedInviteLocation.shortName,
                 endpoint
             );
-            toast.success(t('dialog.instance.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

@@ -282,7 +282,7 @@ export function createAvatarDialogActions({
                     ? response.json
                     : { ...avatar, name: result.value }
             );
-            toast.success(t('dialog.avatar.generated.avatar_renamed'));
+            toast.success(t('prompt.rename_avatar.message.success'));
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -393,7 +393,7 @@ export function createAvatarDialogActions({
                     ? t(
                           'dialog.avatar.generated_toast.avatar_deleted_but_current_user_snapshot_refresh'
                       )
-                    : t('dialog.avatar.generated_toast.avatar_deleted')
+                    : t('message.avatar.deleted')
             );
             const dialogState = useDialogStore.getState();
             if (dialogState.breadcrumbs.length > 1) {

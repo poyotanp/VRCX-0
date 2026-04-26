@@ -163,7 +163,7 @@ export function createAvatarModerationActions({
             setAvatarBlocked(enabled);
             toast.success(
                 enabled
-                    ? t('dialog.avatar.generated_toast.avatar_blocked')
+                    ? t('message.avatar.blocked')
                     : t('dialog.avatar.generated_toast.avatar_unblocked')
             );
         } catch (error) {

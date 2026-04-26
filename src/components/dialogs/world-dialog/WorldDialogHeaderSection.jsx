@@ -245,21 +245,21 @@ export function WorldDialogHeaderSection({ handlers, state, t }) {
                                     disabled={actionStatus === 'save-world'}
                                     onSelect={onRename}
                                 >
-                                    {t('dialog.world.generated.rename')}
+                                    {t('dialog.world.actions.rename')}
                                 </EntityActionItem>
                                 <EntityActionItem
                                     icon={PencilIcon}
                                     disabled={actionStatus === 'save-world'}
                                     onSelect={onChangeDescription}
                                 >
-                                    {t('dialog.world.generated.change_description')}
+                                    {t('dialog.world.actions.change_description')}
                                 </EntityActionItem>
                                 <EntityActionItem
                                     icon={PencilIcon}
                                     disabled={actionStatus === 'save-world'}
                                     onSelect={onChangeCapacity}
                                 >
-                                    {t('dialog.world.generated.change_capacity')}
+                                    {t('dialog.world.actions.change_capacity')}
                                 </EntityActionItem>
                                 <EntityActionItem
                                     icon={PencilIcon}
@@ -267,7 +267,7 @@ export function WorldDialogHeaderSection({ handlers, state, t }) {
                                     onSelect={onChangeRecommendedCapacity}
                                 >
                                     {t(
-                                        'dialog.world.generated.change_recommended_capacity'
+                                        'dialog.world.actions.change_recommended_capacity'
                                     )}
                                 </EntityActionItem>
                                 <EntityActionItem
@@ -298,7 +298,7 @@ export function WorldDialogHeaderSection({ handlers, state, t }) {
                                     disabled={actionStatus === 'image-upload'}
                                     onSelect={onChangeImage}
                                 >
-                                    {t('dialog.world.generated.change_image')}
+                                    {t('dialog.world.actions.change_image')}
                                 </EntityActionItem>
                                 {packageUrl ? (
                                     <EntityActionItem
@@ -306,7 +306,7 @@ export function WorldDialogHeaderSection({ handlers, state, t }) {
                                         onSelect={onOpenPackage}
                                     >
                                         {t(
-                                            'dialog.world.generated.download_unity_package'
+                                            'dialog.world.actions.download_package'
                                         )}
                                     </EntityActionItem>
                                 ) : null}

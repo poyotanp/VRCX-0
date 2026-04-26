@@ -171,7 +171,7 @@ export function useFavoritesItemActions({
                 parsedLocation.shortName || '',
                 currentEndpoint
             );
-            toast.success(t('view.favorite.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -243,7 +243,7 @@ export function useFavoritesItemActions({
                     rsvp: true
                 }
             });
-            toast.success(t('view.favorite.generated.invite_sent'));
+            toast.success(t('message.invite.sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

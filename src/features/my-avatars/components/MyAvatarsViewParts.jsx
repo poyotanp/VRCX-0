@@ -176,7 +176,7 @@ export function MyAvatarFilterPopover({
             <PopoverTrigger asChild>
                 <Button type="button" variant="outline" size="sm">
                     <ListFilterIcon data-icon="inline-start" />
-                    {t('view.my_avatars.generated.filter')}
+                    {t('view.my_avatars.filter')}
                     {activeFilterCount ? (
                         <Badge variant="secondary">{activeFilterCount}</Badge>
                     ) : null}

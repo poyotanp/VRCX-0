@@ -313,8 +313,8 @@ export function GroupDialogContent({ groupId, seedData = null }) {
             });
             toast.success(
                 nextStatus === 'requested'
-                    ? t('dialog.group.generated_toast.group_join_request_sent')
-                    : t('dialog.group.generated_toast.group_joined')
+                    ? t('message.group.join_request_sent')
+                    : t('message.group.joined')
             );
         } catch (error) {
             toast.error(
@@ -583,7 +583,7 @@ export function GroupDialogContent({ groupId, seedData = null }) {
             onVisibility={(visibility) =>
                 void updateGroupMemberProps(
                     { visibility },
-                    t('dialog.group.generated.group_visibility_updated')
+                    t('message.group.visibility_updated')
                 )
             }
             onBlock={(enabled) => void updateGroupBlock(enabled)}

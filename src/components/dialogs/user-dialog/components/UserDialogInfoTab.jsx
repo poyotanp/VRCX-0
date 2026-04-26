@@ -382,7 +382,7 @@ export function UserDialogInfoTab({
                 ) : (
                     <>
                         <EntityInfoBlock
-                            label={t('dialog.user.generated.join_count')}
+                            label={t('dialog.user.info.join_count')}
                             value={
                                 userJoinCount ? String(userJoinCount) : '\u2014'
                             }

@@ -38,12 +38,12 @@ export function useUserDialogGroupActions({
             return;
         }
         const result = await prompt({
-            title: t('dialog.user.generated_modal.invite_to_group'),
+            title: t('dialog.user.actions.invite_to_group'),
             description: t(
                 'dialog.user.generated_modal.enter_the_vrchat_group_id_to_invite_this_user_to'
             ),
             inputValue: '',
-            confirmText: t('dialog.user.generated_modal.invite'),
+            confirmText: t('dialog.user.actions.invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -84,7 +84,7 @@ export function useUserDialogGroupActions({
                 endpoint: currentEndpoint,
                 params: { visibility }
             });
-            toast.success(t('dialog.user.generated.group_visibility_updated'));
+            toast.success(t('message.group.visibility_updated'));
             await refreshGroupsAfterMembershipChange();
         } catch (error) {
             toast.error(

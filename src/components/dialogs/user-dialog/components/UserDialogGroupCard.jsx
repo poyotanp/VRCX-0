@@ -259,7 +259,7 @@ export function UserGroupCard({
                                 onSelect={() => onLeave?.(group)}
                             >
                                 <LogOutIcon />
-                                {t('dialog.user.generated.leave_group')}
+                                {t('dialog.user.groups.leave_group_tooltip')}
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>

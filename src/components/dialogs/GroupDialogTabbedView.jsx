@@ -389,7 +389,7 @@ export function GroupDialogTabbedView({
                 'dialog.group.generated_modal.enter_the_vrchat_user_id_to_invite'
             ),
             inputValue: '',
-            confirmText: t('dialog.group.generated_modal.invite'),
+            confirmText: t('dialog.invite_to_group.invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {

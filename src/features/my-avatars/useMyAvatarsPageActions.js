@@ -151,7 +151,7 @@ export function useMyAvatarsPageActions({
             {
                 name: nextName
             },
-            t('view.my_avatars.generated.avatar_renamed')
+            t('prompt.rename_avatar.message.success')
         );
     }
     async function changeAvatarDescription(avatar) {

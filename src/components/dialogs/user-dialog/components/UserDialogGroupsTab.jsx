@@ -253,7 +253,7 @@ export function UserDialogGroupsTab({
                                                     ? 'Selected'
                                                     : 'All'}{' '}
                                                 {t(
-                                                    'dialog.user.generated.groups'
+                                                    'dialog.user.groups.groups'
                                                 )}
                                             </DropdownMenuItem>
                                             <DropdownMenuItem

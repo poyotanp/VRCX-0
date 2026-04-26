@@ -170,7 +170,7 @@ export function useUserInviteActions({
             toast.success(
                 messageSlot !== null
                     ? t('dialog.user.generated_toast.invite_message_sent')
-                    : t('dialog.user.generated_toast.invite_sent')
+                    : t('message.invite.sent')
             );
             return true;
         } catch (error) {
@@ -207,7 +207,7 @@ export function useUserInviteActions({
         const result = await confirm({
             title: t('dialog.user.generated_modal.send_invite'),
             description: profile?.displayName || context.rosterUserId,
-            confirmText: t('dialog.user.generated_modal.invite'),
+            confirmText: t('dialog.user.actions.invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -293,7 +293,7 @@ export function useUserInviteActions({
         const result = await confirm({
             title: t('dialog.user.generated_modal.request_invite'),
             description: profile?.displayName || context.rosterUserId,
-            confirmText: t('dialog.user.generated_modal.request_invite_2'),
+            confirmText: t('dialog.user.actions.request_invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {

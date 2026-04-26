@@ -134,19 +134,19 @@ export function UserDialogWorldsTab({
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem value="name">
-                                    {t('dialog.user.generated.name')}
+                                    {t('dialog.user.worlds.sorting.name')}
                                 </SelectItem>
                                 <SelectItem value="updated">
-                                    {t('dialog.user.generated.updated')}
+                                    {t('dialog.user.worlds.sorting.updated')}
                                 </SelectItem>
                                 <SelectItem value="created">
-                                    {t('dialog.user.generated.created')}
+                                    {t('dialog.user.worlds.sorting.created')}
                                 </SelectItem>
                                 <SelectItem value="favorites">
-                                    {t('dialog.user.generated.favorites')}
+                                    {t('dialog.user.worlds.sorting.favorites')}
                                 </SelectItem>
                                 <SelectItem value="popularity">
-                                    {t('dialog.user.generated.popularity')}
+                                    {t('dialog.user.worlds.sorting.popularity')}
                                 </SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -298,10 +298,10 @@ export function UserDialogAvatarsTab({
                             <SelectContent>
                                 <SelectGroup>
                                     <SelectItem value="name">
-                                        {t('dialog.user.generated.name')}
+                                        {t('dialog.user.avatars.sort_by_name')}
                                     </SelectItem>
                                     <SelectItem value="update">
-                                        {t('dialog.user.generated.updated')}
+                                        {t('dialog.user.avatars.sort_by_update')}
                                     </SelectItem>
                                     <SelectItem value="createdAt">
                                         {t('dialog.user.avatars.sort_by_uploaded')}
@@ -323,13 +323,13 @@ export function UserDialogAvatarsTab({
                             <SelectContent>
                                 <SelectGroup>
                                     <SelectItem value="all">
-                                        {t('dialog.user.generated.all')}
+                                        {t('dialog.user.avatars.all')}
                                     </SelectItem>
                                     <SelectItem value="public">
-                                        {t('dialog.user.generated.public')}
+                                        {t('dialog.user.avatars.public')}
                                     </SelectItem>
                                     <SelectItem value="private">
-                                        {t('dialog.user.generated.private')}
+                                        {t('dialog.user.avatars.private')}
                                     </SelectItem>
                                 </SelectGroup>
                             </SelectContent>

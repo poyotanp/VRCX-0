@@ -574,7 +574,7 @@ export function WorldDialogContent({
                 });
             }
             toast.success(
-                isHomeWorld ? t('dialog.world.generated_toast.home_world_reset') : t('dialog.world.generated_toast.home_world_updated')
+                isHomeWorld ? t('dialog.world.generated_toast.home_world_reset') : t('message.world.home_updated')
             );
         } catch (error) {
             toast.error(
@@ -856,7 +856,7 @@ export function WorldDialogContent({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.world.generated_toast.failed_to_create_instance')
+                    : t('message.instance.create_failed')
             );
         } finally {
             actionStatusRef.current = 'idle';
@@ -888,7 +888,7 @@ export function WorldDialogContent({
                 created.shortName || created.secureOrShortName || '',
                 currentEndpoint
             );
-            toast.success(t('dialog.world.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -955,7 +955,7 @@ export function WorldDialogContent({
                 toast.warning(
                     t('dialog.world.generated.failed_open_instance_in_vrchat_falling_back_to_self_invite')
                 );
-                toast.success(t('dialog.world.generated.self_invite_sent'));
+                toast.success(t('message.invite.self_sent'));
                 return;
             }
             toast.success(t('dialog.world.generated.vrchat_launch_request_sent'));
@@ -1087,7 +1087,7 @@ export function WorldDialogContent({
                 onChangeCapacity={() =>
                     void ownerActions.changeWorldCapacity(
                         'capacity',
-                        t('dialog.world.generated.capacity')
+                        t('dialog.world.info.capacity')
                     )
                 }
                 onChangeRecommendedCapacity={() =>

@@ -54,7 +54,7 @@ async function blockOnFailedUpgrade(failedUpgrade) {
 
     await useModalStore.getState().alert({
         title: i18n.t(
-            'service.database_upgrade_service.generated.database_upgrade_failed'
+            'message.database.upgrade_failed_title'
         ),
         description: failedUpgradeDescription(failedUpgrade),
         dismissible: false
@@ -176,7 +176,7 @@ async function runFullDatabaseUpgrade() {
         });
         await useModalStore.getState().alert({
             title: i18n.t(
-                'service.database_upgrade_service.generated.database_upgrade_failed'
+                'message.database.upgrade_failed_title'
             ),
             description,
             dismissible: false

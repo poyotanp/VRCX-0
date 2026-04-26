@@ -159,7 +159,7 @@ export function useUserDialogActions({
         const result = await confirm({
             title: t('dialog.user.generated_modal.unfriend_user'),
             description: friend?.displayName || rosterUserId,
-            confirmText: t('dialog.user.generated_modal.unfriend'),
+            confirmText: t('dialog.user.actions.unfriend'),
             cancelText: t('common.actions.cancel'),
             destructive: true
         });

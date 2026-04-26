@@ -158,7 +158,7 @@ export function GroupModerationTabPanel({
                                 </TableHead>
                                 <TableHead>
                                     {t(
-                                        'dialog.group.generated.roles_description'
+                                        'dialog.group.info.roles_description'
                                     )}
                                 </TableHead>
                                 <TableHead className="w-44">

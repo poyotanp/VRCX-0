@@ -196,7 +196,7 @@ export function useFeedPageActions({
                 parsedLocation.shortName || '',
                 currentEndpoint
             );
-            toast.success(t('view.feed.generated.self_invite_sent'));
+            toast.success(t('message.invite.self_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -264,7 +264,7 @@ export function useFeedPageActions({
                     rsvp: true
                 }
             });
-            toast.success(t('view.feed.generated.invite_sent'));
+            toast.success(t('message.invite.sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error

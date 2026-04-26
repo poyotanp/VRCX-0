@@ -78,7 +78,7 @@ export function AvatarDialogTabbedView({
     const [activeTab, setActiveTab] = useState(() => lastAvatarDialogTab);
     const [galleryIndex, setGalleryIndex] = useState(0);
     const openImagePreview = useModalStore((state) => state.openImagePreview);
-    const avatarFallbackLabel = t('view.favorite.generated.avatar_fallback');
+    const avatarFallbackLabel = t('view.favorites.generated.avatar_fallback');
     const tabs = [
         { value: 'info', label: t('dialog.avatar.info.header') },
         { value: 'json', label: t('dialog.avatar.json.header') }
