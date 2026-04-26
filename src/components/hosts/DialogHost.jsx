@@ -119,6 +119,9 @@ export function DialogHost() {
                         initialActionNonce={
                             dialogPayload?.initialActionNonce ?? 0
                         }
+                        initialNewInstanceDefaults={
+                            dialogPayload?.initialNewInstanceDefaults ?? null
+                        }
                     />
                 ) : isAvatarDialog ? (
                     <AvatarDialogContent

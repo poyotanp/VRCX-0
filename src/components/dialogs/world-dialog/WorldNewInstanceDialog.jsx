@@ -47,13 +47,30 @@ const groupAccessTypeOptions = [
     { value: 'members', labelKey: 'dialog.new_instance.group_access_type_members' }
 ];
 
+function normalizeText(value) {
+    return typeof value === 'string'
+        ? value.trim()
+        : String(value ?? '').trim();
+}
+
+function groupIdForOption(group) {
+    return normalizeText(group?.groupId || group?.id);
+}
+
+function groupLabel(group) {
+    const groupId = groupIdForOption(group);
+    return normalizeText(group?.name || group?.displayName) || groupId;
+}
+
 export function WorldNewInstanceDialog({
     open,
     request,
     world,
     currentUserId = '',
+    groupOptions = [],
     submitting,
     onOpenChange,
+    onChange,
     onSubmit,
     onCopy,
     onSelfInvite,
@@ -95,7 +112,11 @@ export function WorldNewInstanceDialog({
     }, [currentUserId, open, request]);
 
     function patchForm(patch) {
-        setForm((current) => ({ ...current, ...patch }));
+        setForm((current) => {
+            const next = { ...current, ...patch };
+            onChange?.(next);
+            return next;
+        });
     }
 
     const legacyCreated =
@@ -110,12 +131,81 @@ export function WorldNewInstanceDialog({
     const activeCreated = request?.created || legacyCreated;
     const activeAccessType = activeCreated?.accessType || form.accessType;
     const activeOwnerId = activeCreated?.ownerId || currentUserId;
+    const selectedGroup =
+        groupOptions.find((group) => groupIdForOption(group) === form.groupId) ||
+        null;
+    const missingSelectedGroup =
+        form.groupId && !selectedGroup
+            ? {
+                  id: form.groupId,
+                  groupId: form.groupId,
+                  name: form.groupName || form.groupId
+              }
+            : null;
+    const visibleGroupOptions = missingSelectedGroup
+        ? [missingSelectedGroup, ...groupOptions]
+        : groupOptions;
     const inviteDisabled = Boolean(
         (activeAccessType === 'friends' || activeAccessType === 'invite') &&
         activeOwnerId &&
         currentUserId &&
         activeOwnerId !== currentUserId
     );
+
+    function patchGroupId(groupId) {
+        const group = groupOptions.find(
+            (option) => groupIdForOption(option) === groupId
+        );
+        patchForm({
+            groupId,
+            groupName: groupLabel(group) || groupId,
+            roleIds: ''
+        });
+    }
+
+    function renderGroupPicker(inputId, disabled = false) {
+        if (!visibleGroupOptions.length) {
+            return (
+                <Input
+                    id={inputId}
+                    value={form.groupId}
+                    disabled={disabled}
+                    onChange={(event) =>
+                        patchForm({
+                            groupId: event.target.value,
+                            groupName: '',
+                            roleIds: ''
+                        })
+                    }
+                />
+            );
+        }
+        return (
+            <Select
+                value={form.groupId}
+                disabled={disabled}
+                onValueChange={patchGroupId}
+            >
+                <SelectTrigger id={inputId}>
+                    <SelectValue
+                        placeholder={t('dialog.new_instance.group_placeholder')}
+                    />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        {visibleGroupOptions.map((group) => {
+                            const groupId = groupIdForOption(group);
+                            return (
+                                <SelectItem key={groupId} value={groupId}>
+                                    {groupLabel(group)}
+                                </SelectItem>
+                            );
+                        })}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+        );
+    }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -196,18 +286,12 @@ export function WorldNewInstanceDialog({
                                 <>
                                     <Field>
                                         <FieldLabel htmlFor="world-instance-group-id">
-                                            {t('dialog.group.info.id')}
+                                            {t('dialog.new_instance.group_id')}
                                         </FieldLabel>
-                                        <Input
-                                            id="world-instance-group-id"
-                                            value={form.groupId}
-                                            disabled={Boolean(request?.created)}
-                                            onChange={(event) =>
-                                                patchForm({
-                                                    groupId: event.target.value
-                                                })
-                                            }
-                                        />
+                                        {renderGroupPicker(
+                                            'world-instance-group-id',
+                                            Boolean(request?.created)
+                                        )}
                                     </Field>
                                     <Field>
                                         <FieldLabel>{t('dialog.new_instance.group_access_type')}</FieldLabel>
@@ -420,17 +504,9 @@ export function WorldNewInstanceDialog({
                                 <>
                                     <Field>
                                         <FieldLabel htmlFor="world-launch-group-id">
-                                            {t('dialog.group.info.id')}
+                                            {t('dialog.new_instance.group_id')}
                                         </FieldLabel>
-                                        <Input
-                                            id="world-launch-group-id"
-                                            value={form.groupId}
-                                            onChange={(event) =>
-                                                patchForm({
-                                                    groupId: event.target.value
-                                                })
-                                            }
-                                        />
+                                        {renderGroupPicker('world-launch-group-id')}
                                     </Field>
                                     <Field>
                                         <FieldLabel>{t('dialog.new_instance.group_access_type')}</FieldLabel>

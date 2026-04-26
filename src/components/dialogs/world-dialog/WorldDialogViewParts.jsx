@@ -152,6 +152,22 @@ export function normalizeInstanceGroup(value, fallbackId = '') {
     };
 }
 
+function instanceLocationForId(world, instanceId) {
+    const normalizedId = firstText(instanceId);
+    if (!normalizedId) {
+        return '';
+    }
+    if (normalizedId.includes(':')) {
+        return normalizedId;
+    }
+    return world?.id ? `${world.id}:${normalizedId}` : normalizedId;
+}
+
+function parsedGroupForInstanceLocation(location) {
+    const parsedLocation = parseLocation(location);
+    return parsedLocation.groupId || '';
+}
+
 export function resolveInstanceRows(world) {
     if (!Array.isArray(world?.instances)) {
         return [];
@@ -160,12 +176,31 @@ export function resolveInstanceRows(world) {
     return world.instances
         .map((entry) => {
             if (Array.isArray(entry)) {
+                const id = String(entry[0] || '').trim();
+                const location = instanceLocationForId(world, id);
+                const groupId = parsedGroupForInstanceLocation(location);
                 return {
-                    id: String(entry[0] || '').trim(),
-                    occupants: entry[1]
+                    id,
+                    occupants: entry[1],
+                    location,
+                    users: [],
+                    creatorUserId: '',
+                    creatorUser: null,
+                    creatorGroupId: groupId,
+                    creatorGroup: groupId
+                        ? normalizeInstanceGroup(groupId)
+                        : null
                 };
             }
             if (entry && typeof entry === 'object') {
+                const entryLocation =
+                    entry.location ||
+                    entry.tag ||
+                    instanceLocationForId(
+                        world,
+                        entry.id || entry.instanceId || ''
+                    );
+                const parsedEntryLocation = parseLocation(entryLocation);
                 const creatorId = firstText(
                     entry.$location?.userId,
                     entry.$location?.user_id,
@@ -201,7 +236,8 @@ export function resolveInstanceRows(world) {
                     entry.groupId,
                     entry.group_id,
                     entry.group?.id,
-                    entry.group?.groupId
+                    entry.group?.groupId,
+                    parsedEntryLocation.groupId
                 );
                 const creatorIsGroup = isGroupId(creatorId);
                 const creatorEntity =
@@ -227,10 +263,7 @@ export function resolveInstanceRows(world) {
                     ...entry,
                     id: String(entry.id || entry.instanceId || '').trim(),
                     occupants: entry.occupants,
-                    location:
-                        entry.location ||
-                        entry.tag ||
-                        (entry.id ? `${world.id}:${entry.id}` : ''),
+                    location: entryLocation,
                     users: normalizeInstanceUsers(
                         entry.users,
                         entry.players,
@@ -249,13 +282,18 @@ export function resolveInstanceRows(world) {
                         : null
                 };
             }
+            const id = String(entry || '').trim();
+            const location = instanceLocationForId(world, id);
+            const groupId = parsedGroupForInstanceLocation(location);
             return {
-                id: String(entry || '').trim(),
+                id,
                 occupants: '',
-                location: world?.id
-                    ? `${world.id}:${String(entry || '').trim()}`
-                    : String(entry || '').trim(),
-                users: []
+                location,
+                users: [],
+                creatorUserId: '',
+                creatorUser: null,
+                creatorGroupId: groupId,
+                creatorGroup: groupId ? normalizeInstanceGroup(groupId) : null
             };
         })
         .filter((entry) => entry.id);

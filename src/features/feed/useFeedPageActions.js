@@ -348,11 +348,13 @@ export function useFeedPageActions({
         location = '',
         worldId = '',
         worldName = '',
+        groupName = '',
         selfInvite = false
     } = {}) {
+        const parsedLocation = parseLocation(location);
         const target =
             normalizeId(worldId) ||
-            parseLocation(location).worldId ||
+            parsedLocation.worldId ||
             normalizeId(location);
         if (!target) {
             return;
@@ -360,7 +362,13 @@ export function useFeedPageActions({
         openWorldDialog({
             worldId: target,
             title: worldName || target,
-            initialAction: selfInvite ? 'newInstanceSelfInvite' : 'newInstance'
+            initialAction: selfInvite ? 'newInstanceSelfInvite' : 'newInstance',
+            initialNewInstanceDefaults: {
+                groupId: parsedLocation.groupId || '',
+                groupAccessType: parsedLocation.groupAccessType || '',
+                groupName,
+                region: parsedLocation.region || ''
+            }
         });
     }
     return {

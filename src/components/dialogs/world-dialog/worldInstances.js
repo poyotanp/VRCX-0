@@ -60,7 +60,15 @@ export function buildLegacyCreatedInstance({
         secureOrShortName: '',
         url: getLaunchURL(parsedLocation),
         accessType,
-        ownerId: legacyUserId
+        ownerId: parsedLocation.groupId || legacyUserId,
+        groupId: parsedLocation.groupId || '',
+        group: parsedLocation.groupId
+            ? {
+                  id: parsedLocation.groupId,
+                  groupId: parsedLocation.groupId,
+                  name: form.groupName || parsedLocation.groupId
+              }
+            : null
     };
 }
 
@@ -72,6 +80,13 @@ export function buildCreatedInstanceDetails(location, instance, fallback = {}) {
     const secureOrShortName =
         shortName || normalizeEntityId(instance?.secureName);
     const launchLocation = parsedLocation.tag || location;
+    const groupId =
+        normalizeEntityId(instance?.groupId) ||
+        normalizeEntityId(instance?.group_id) ||
+        normalizeEntityId(instance?.group?.id) ||
+        normalizeEntityId(instance?.group?.groupId) ||
+        normalizeEntityId(fallback.groupId) ||
+        normalizeEntityId(parsedLocation.groupId);
     return {
         location: launchLocation,
         shortName,
@@ -86,6 +101,11 @@ export function buildCreatedInstanceDetails(location, instance, fallback = {}) {
             normalizeEntityId(instance?.creatorId) ||
             normalizeEntityId(fallback.ownerId) ||
             normalizeEntityId(parsedLocation.userId),
+        groupId,
+        group:
+            instance?.group ||
+            fallback.group ||
+            (groupId ? { id: groupId, groupId, name: groupId } : null),
         url: getLaunchURL({
             ...parsedLocation,
             shortName

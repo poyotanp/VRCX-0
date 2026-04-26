@@ -18,6 +18,7 @@ import { backend } from '@/platform/tauri/index.js';
 import {
     configRepository,
     gameLogRepository,
+    groupProfileRepository,
     instanceRepository,
     mediaRepository,
     memoRepository,
@@ -74,11 +75,70 @@ function defaultWorldSideData() {
     };
 }
 
+function normalizeInstanceRegion(value) {
+    const region = normalizeEntityId(value);
+    switch (region) {
+        case 'us':
+        case 'US West':
+            return 'US West';
+        case 'use':
+        case 'US East':
+            return 'US East';
+        case 'eu':
+        case 'Europe':
+            return 'Europe';
+        case 'jp':
+        case 'Japan':
+            return 'Japan';
+        default:
+            return region;
+    }
+}
+
+function normalizeNewInstanceSeed(seed) {
+    if (!seed || typeof seed !== 'object') {
+        return {};
+    }
+    const groupId = normalizeEntityId(seed.groupId);
+    return {
+        ...(seed.accessType
+            ? { accessType: normalizeEntityId(seed.accessType) }
+            : {}),
+        ...(seed.region
+            ? { region: normalizeInstanceRegion(seed.region) }
+            : {}),
+        ...(groupId ? { accessType: 'group', groupId } : {}),
+        ...(seed.groupAccessType
+            ? { groupAccessType: normalizeEntityId(seed.groupAccessType) }
+            : {}),
+        ...(seed.groupName
+            ? { groupName: normalizeEntityId(seed.groupName) }
+            : {})
+    };
+}
+
+function groupOptionId(group) {
+    return normalizeEntityId(group?.groupId || group?.id);
+}
+
+function findGroupOption(groups, groupId) {
+    const normalizedGroupId = normalizeEntityId(groupId);
+    if (!normalizedGroupId) {
+        return null;
+    }
+    return (
+        (Array.isArray(groups) ? groups : []).find(
+            (group) => groupOptionId(group) === normalizedGroupId
+        ) || null
+    );
+}
+
 export function WorldDialogContent({
     worldId,
     seedData = null,
     initialAction = '',
-    initialActionNonce = 0
+    initialActionNonce = 0,
+    initialNewInstanceDefaults = null
 }) {
     const { t } = useTranslation();
 
@@ -114,6 +174,7 @@ export function WorldDialogContent({
         defaultWorldSideData()
     );
     const [newInstanceRequest, setNewInstanceRequest] = useState(null);
+    const [newInstanceGroups, setNewInstanceGroups] = useState([]);
     const [inviteRequest, setInviteRequest] = useState(null);
     const [imageCropRequest, setImageCropRequest] = useState(null);
     const [ownerEditor, setOwnerEditor] = useState('');
@@ -157,6 +218,46 @@ export function WorldDialogContent({
         setWorldSideData(defaultWorldSideData());
         handledInitialActionRef.current = '';
     }, [profileWorldId]);
+
+    useEffect(() => {
+        let active = true;
+
+        if (!currentUserId) {
+            setNewInstanceGroups([]);
+            return () => {
+                active = false;
+            };
+        }
+
+        groupProfileRepository
+            .getUserGroups({
+                userId: currentUserId,
+                endpoint: currentEndpoint
+            })
+            .then((groups) => {
+                if (!active) {
+                    return;
+                }
+                setNewInstanceGroups(
+                    (Array.isArray(groups) ? groups : [])
+                        .filter((group) => groupOptionId(group))
+                        .sort((left, right) =>
+                            normalizeEntityId(left?.name).localeCompare(
+                                normalizeEntityId(right?.name)
+                            )
+                        )
+                );
+            })
+            .catch(() => {
+                if (active) {
+                    setNewInstanceGroups([]);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [currentEndpoint, currentUserId]);
 
     useEffect(() => {
         let active = true;
@@ -388,11 +489,18 @@ export function WorldDialogContent({
 
         handledInitialActionRef.current = actionKey;
         if (normalizedInitialAction === 'newInstanceSelfInvite') {
-            void openNewInstanceDialog(true);
+            void openNewInstanceDialog(true, initialNewInstanceDefaults);
         } else if (normalizedInitialAction === 'newInstance') {
-            void openNewInstanceDialog(false);
+            void openNewInstanceDialog(false, initialNewInstanceDefaults);
         }
-    }, [initialAction, initialActionNonce, profileWorldId, world?.id]);
+    }, [
+        initialAction,
+        initialActionNonce,
+        initialNewInstanceDefaults,
+        newInstanceGroups,
+        profileWorldId,
+        world?.id
+    ]);
 
     const isInstanceLocation = normalizedWorldId.includes(':');
     const worldDialogShortName = isInstanceLocation
@@ -695,40 +803,60 @@ export function WorldDialogContent({
         await saveMemo(result.value);
     }
 
-    async function loadNewInstanceDefaults() {
+    async function loadNewInstanceDefaults(seed = null) {
         const [
             accessType,
             region,
             groupId,
             groupAccessType,
             ageGate,
-            queueEnabled
+            queueEnabled,
+            displayName,
+            instanceName,
+            legacyUserId
         ] = await Promise.all([
             configRepository.getString('instanceDialogAccessType', 'public'),
             configRepository.getString('instanceRegion', 'US West'),
             configRepository.getString('instanceDialogGroupId', ''),
             configRepository.getString('instanceDialogGroupAccessType', 'plus'),
             configRepository.getBool('instanceDialogAgeGate', false),
-            configRepository.getBool('instanceDialogQueueEnabled', true)
+            configRepository.getBool('instanceDialogQueueEnabled', true),
+            configRepository.getString('instanceDialogDisplayName', ''),
+            configRepository.getString('instanceDialogInstanceName', ''),
+            configRepository.getString('instanceDialogUserId', '')
         ]);
+        const seedDefaults = normalizeNewInstanceSeed(seed);
+        const selectedGroupId =
+            seedDefaults.groupId || normalizeEntityId(groupId) || '';
+        const selectedGroup = findGroupOption(
+            newInstanceGroups,
+            selectedGroupId
+        );
         return {
-            accessType: accessType || 'public',
-            region: region || 'US West',
-            groupId: groupId || '',
-            groupAccessType: groupAccessType || 'plus',
+            accessType:
+                seedDefaults.accessType ||
+                accessType ||
+                (selectedGroupId ? 'group' : 'public'),
+            region: seedDefaults.region || region || 'US West',
+            groupId: selectedGroupId,
+            groupName: selectedGroup?.name || seedDefaults.groupName || '',
+            groupAccessType:
+                seedDefaults.groupAccessType || groupAccessType || 'plus',
             queueEnabled: Boolean(queueEnabled),
             ageGate: Boolean(ageGate),
-            displayName: '',
-            roleIds: ''
+            displayName: displayName || '',
+            roleIds: '',
+            instanceName: instanceName || '',
+            legacyUserId: legacyUserId || currentUserId || ''
         };
     }
 
-    async function openNewInstanceDialog(selfInvite = false) {
+    async function openNewInstanceDialog(selfInvite = false, seed = null) {
         if (!world.id || actionStatusRef.current !== 'idle') {
             return;
         }
         try {
-            const defaults = await loadNewInstanceDefaults();
+            const defaults = await loadNewInstanceDefaults(seed);
             setNewInstanceRequest({ selfInvite, defaults });
         } catch (error) {
             toast.error(
@@ -737,6 +865,52 @@ export function WorldDialogContent({
                     : t('dialog.world.generated_toast.failed_to_load_new_instance_settings')
             );
         }
+    }
+
+    function saveNewInstanceDraft(form) {
+        if (!form || typeof form !== 'object') {
+            return;
+        }
+        void Promise.all([
+            configRepository.setString(
+                'instanceDialogAccessType',
+                form.accessType || 'public'
+            ),
+            configRepository.setString(
+                'instanceRegion',
+                form.region || 'US West'
+            ),
+            configRepository.setString(
+                'instanceDialogInstanceName',
+                form.instanceName || ''
+            ),
+            configRepository.setString(
+                'instanceDialogUserId',
+                form.legacyUserId === currentUserId
+                    ? ''
+                    : form.legacyUserId || ''
+            ),
+            configRepository.setString(
+                'instanceDialogGroupId',
+                form.groupId || ''
+            ),
+            configRepository.setString(
+                'instanceDialogGroupAccessType',
+                form.groupAccessType || 'plus'
+            ),
+            configRepository.setBool(
+                'instanceDialogQueueEnabled',
+                Boolean(form.queueEnabled)
+            ),
+            configRepository.setBool(
+                'instanceDialogAgeGate',
+                Boolean(form.ageGate)
+            ),
+            configRepository.setString(
+                'instanceDialogDisplayName',
+                form.displayName || ''
+            )
+        ]).catch(() => {});
     }
 
     async function createWorldInstance(form) {
@@ -782,8 +956,16 @@ export function WorldDialogContent({
                 configRepository.setBool(
                     'instanceDialogQueueEnabled',
                     Boolean(form.queueEnabled)
+                ),
+                configRepository.setString(
+                    'instanceDialogDisplayName',
+                    form.displayName || ''
                 )
             ]);
+            const selectedGroup = findGroupOption(
+                newInstanceGroups,
+                form.groupId
+            );
             const response = await instanceRepository.createInstance({
                 worldId: world.id,
                 ownerId: currentUserId,
@@ -811,7 +993,15 @@ export function WorldDialogContent({
                 currentEndpoint,
                 {
                     accessType: form.accessType || 'public',
-                    ownerId: currentUserId
+                    ownerId:
+                        form.accessType === 'group'
+                            ? normalizeEntityId(form.groupId)
+                            : currentUserId,
+                    groupId:
+                        form.accessType === 'group'
+                            ? normalizeEntityId(form.groupId)
+                            : '',
+                    group: selectedGroup
                 }
             );
             if (!isCurrentWorldTarget(targetWorldId, targetEndpoint)) {
@@ -1116,12 +1306,14 @@ export function WorldDialogContent({
                 request={newInstanceRequest}
                 world={world}
                 currentUserId={currentUserId}
+                groupOptions={newInstanceGroups}
                 submitting={actionStatus === 'new-instance'}
                 onOpenChange={(open) => {
                     if (!open && actionStatus !== 'new-instance') {
                         setNewInstanceRequest(null);
                     }
                 }}
+                onChange={saveNewInstanceDraft}
                 onSubmit={(form) => void createWorldInstance(form)}
                 onCopy={(created) => void copyCreatedInstance(created)}
                 onSelfInvite={(created) =>

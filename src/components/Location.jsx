@@ -264,7 +264,13 @@ export function Location({
         openWorldDialog({
             worldId: parsedLocation.worldId,
             title: worldDialogTitle,
-            initialAction: selfInvite ? 'newInstanceSelfInvite' : 'newInstance'
+            initialAction: selfInvite ? 'newInstanceSelfInvite' : 'newInstance',
+            initialNewInstanceDefaults: {
+                groupId: parsedLocation.groupId || '',
+                groupAccessType: parsedLocation.groupAccessType || '',
+                groupName,
+                region: parsedLocation.region || ''
+            }
         });
     }
 

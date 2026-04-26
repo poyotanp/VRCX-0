@@ -54,7 +54,8 @@ function FeedLocationLink({
                                   location:
                                       normalizedLocation || payload.location,
                                   worldId: worldTarget || payload.worldId,
-                                  worldName: worldName || payload.worldName
+                                  worldName: worldName || payload.worldName,
+                                  groupName: groupName || payload.groupName
                               })
                         : undefined
                 }

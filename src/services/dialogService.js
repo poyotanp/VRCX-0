@@ -132,7 +132,8 @@ export function openWorldDialog({
     title = '',
     description = '',
     seedData = null,
-    initialAction = ''
+    initialAction = '',
+    initialNewInstanceDefaults = null
 } = {}) {
     openEntityDialog({
         kind: 'world',
@@ -140,11 +141,12 @@ export function openWorldDialog({
         title,
         description,
         payload:
-            seedData || initialAction
+            seedData || initialAction || initialNewInstanceDefaults
                 ? {
                       seedData,
                       initialAction,
-                      initialActionNonce: initialAction ? Date.now() : 0
+                      initialActionNonce: initialAction ? Date.now() : 0,
+                      initialNewInstanceDefaults
                   }
                 : null
     });
