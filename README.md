@@ -1,226 +1,193 @@
 # VRCX-0
 
-**The first commit of this repository corresponds to the upstream project snapshot at the time of forking and is licensed under the MIT License.
-Any modifications, additions, or new code introduced in later commits are licensed under the GNU General Public License v3.0 (GPLv3).**
+The first commit of this repository corresponds to the upstream VRCX snapshot at the time of forking and is licensed under the MIT License.
+
+All modifications, additions, and new code introduced after the fork are licensed under the GNU General Public License v3.0 (GPLv3).
 
 ---
 
-## English
+## About
 
-### About
+**VRCX-0** is an independent fork of VRCX.
 
-**VRCX-0** is a fork of VRCX.
-
-I started contributing to VRCX in late 2024 and remained active until April 2026, working on a large portion of its development, including multiple frontend iterations.
+I contributed to VRCX from late 2024 to April 2026, working on a large part of its development, including multiple frontend iterations.
 
 As of April 2026, I am no longer part of the original project.
-VRCX-0 is where I continue the work — independently, and with a different set of priorities.
+
+VRCX-0 continues the work independently, with a new architecture and different development priorities.
 
 ---
 
-### Why VRCX-0?
+## Main Changes
 
-This project is not just a continuation, but a rethinking.
+VRCX-0 is being rebuilt with **Tauri + React**, replacing the previous CEF-based architecture.
 
-VRCX-0 is being rebuilt with **Tauri + React**, moving away from the previous CEF-based architecture.
-
-This allows:
+Main goals:
 
 - Lower memory usage
-- Smaller binary size
+- Smaller application size
 - Better performance
-- Improved accessibility (a11y)
-- Full keyboard navigation support
-- A more modern and maintainable ecosystem
+- Improved accessibility support
+- Full keyboard navigation
+- A more maintainable frontend stack
 
 ---
 
-### Differences from VRCX
+## Differences from VRCX
 
 - Rewritten with Tauri + React
 - Reduced resource usage
-- Different UI/UX direction
-- Independent roadmap and decisions
+- Different UI and interaction design
+- Independent roadmap and development decisions
 
 ---
 
-### Philosophy
+## Platform Support
 
-VRCX-0 focuses on clarity, performance, and practical usability.
+- **Windows**: supported
+- **Linux**: supported in test builds
+- **macOS**: supported in test builds
 
-Instead of simply adding more features, the goal is to refine core workflows and make the app feel faster, more predictable, and easier to use.
-
----
-
-### Platform Support
-
-Currently, due to the ongoing major refactor, **only Windows is supported**.
-
-Support for **Linux and macOS is planned** and will be added gradually as the project stabilizes.
+Linux and macOS builds are still being tested and may have platform-specific issues.
 
 ---
 
-### Quick Start
+## VROverlay
 
-#### Prerequisites
+VROverlay support is planned.
 
-Make sure you have the following installed:
-
-- **Node.js** (LTS recommended)
-- **Rust** (latest stable via rustup)
+It will be redesigned instead of directly reusing the old implementation, with a focus on better and more correct use cases.
 
 ---
 
-#### Run
+## Quick Start
 
-```bash id="9n1z9h"
-# clone
+### Requirements
+
+- **Node.js** LTS recommended
+- **Rust** latest stable via rustup
+
+### Run
+
+```bash
 git clone https://github.com/Map1en/VRCX-0
-
 cd VRCX-0
 
-# install
 npm install
-
-# run (dev)
 npm run tauri:dev
 ```
 
 ---
 
-### Data Migration
+## Data Migration
 
-VRCX-0 will **automatically migrate your existing VRCX database and configuration** on first run.
+On first run, VRCX-0 automatically migrates existing VRCX database and configuration data.
 
-- Your original VRCX data remains untouched
-- No manual setup required
-- You can start using it immediately
-
----
-
-### Current Status
-
-This project is actively evolving.
-
-Core functionality is in place, and the application is usable, but there are still areas being refined and improved over time.
+- Original VRCX data is not modified
+- No manual setup is required
+- Existing users can start from their current data
 
 ---
 
-### Support
+## Current Status
 
-If you're interested in the direction of VRCX-0:
+VRCX-0 is usable and under active development.
 
-- ⭐ Star the repo
-- 👀 Follow updates
-- 🧪 Try it and share feedback
+Core functionality is available. Some features, platform support, and UI details are still being adjusted.
+
+# VRCX-0
+
+本仓库的第一个提交对应 fork 时的上游 VRCX 项目快照，并遵循 MIT License。
+
+fork 之后新增、修改或重写的代码均遵循 GNU General Public License v3.0（GPLv3）。
 
 ---
 
-## 中文
+## 项目说明
 
-### 项目说明
+**VRCX-0** 是 VRCX 的独立分支项目。
 
-**VRCX-0** 是 VRCX 的一个分支项目。
-
-我从 2024 年末开始参与 VRCX 的开发，并持续到 2026 年 4 月，期间参与并主导了大量功能开发和前端重构。
+我从 2024 年末开始参与 VRCX 开发，并持续到 2026 年 4 月，期间参与了大量功能开发和多轮前端迭代。
 
 从 2026 年 4 月起，我已不再参与原项目。
-VRCX-0 是我独立继续开发的版本，会按照新的思路推进。
+
+VRCX-0 会作为独立项目继续开发，使用新的架构，并按照不同的开发优先级推进。
 
 ---
 
-### 为什么做 VRCX-0？
+## 主要变化
 
-这不是简单延续，而是一次重构方向。
+VRCX-0 正在使用 **Tauri + React** 重构，替代原有的 CEF 架构。
 
-项目正在迁移到 **Tauri + React**，替代原有的 CEF 架构，从而带来：
+主要目标包括：
 
-- 更低的内存占用
-- 更小的程序体积
-- 更好的性能表现
-- 更完善的无障碍支持（a11y）
-- 完整的键盘操作支持
-- 更现代、可维护性更强的生态
+- 降低内存占用
+- 减小程序体积
+- 提升性能
+- 改善无障碍支持
+- 支持完整键盘操作
+- 使用更容易维护的前端技术栈
 
 ---
 
-### 与 VRCX 的区别
+## 与 VRCX 的区别
 
 - 基于 Tauri + React 重写
 - 更低资源占用
-- 不同的 UI / 交互方向
-- 独立的开发路线
+- 不同的 UI 和交互设计
+- 独立的开发路线和决策
 
 ---
 
-### 设计理念
+## 平台支持
 
-VRCX-0 更关注清晰、性能和实际使用体验。
+- **Windows**：支持
+- **Linux**：测试构建支持
+- **macOS**：测试构建支持
 
-相比单纯堆功能，我更倾向于优化核心流程，让整体使用更流畅、更可控。
-
----
-
-### 平台支持
-
-目前由于处于大规模重构阶段，**暂时仅支持 Windows**。
-
-后续会逐步添加 **Linux 和 macOS 支持**。
+Linux 和 macOS 版本仍在测试中，可能存在平台相关问题。
 
 ---
 
-### 快速开始
+## VROverlay
 
-#### 前置环境
+VROverlay 以后会支持。
 
-请先安装以下环境：
-
-- **Node.js**（建议 LTS 版本）
-- **Rust**（通过 rustup 安装最新稳定版）
+它不会直接沿用旧实现，而是会根据更好、更正确的使用场景重新设计。
 
 ---
 
-#### 运行项目
+## 快速开始
 
-```bash id="p3m0rk"
-# 克隆项目
+### 前置环境
+
+- **Node.js**，建议使用 LTS 版本
+- **Rust**，建议通过 rustup 安装最新稳定版
+
+### 运行项目
+
+```bash
 git clone https://github.com/Map1en/VRCX-0
-
 cd VRCX-0
 
-# 安装依赖
 npm install
-
-# 启动开发环境
 npm run tauri:dev
 ```
 
 ---
 
-### 数据迁移
+## 数据迁移
 
-VRCX-0 在首次运行时会**自动迁移原有 VRCX 的数据库和配置**：
+VRCX-0 首次运行时会自动迁移现有 VRCX 的数据库和配置。
 
-- 不会影响原有 VRCX 数据
-- 无需手动配置
-- 启动即可使用
-
----
-
-### 当前状态
-
-项目仍在持续开发中。
-
-整体已经可用，但仍有一些细节在逐步优化和完善。
+- 不会修改原有 VRCX 数据
+- 不需要手动配置
+- 可以直接从现有数据开始使用
 
 ---
 
-### 支持与关注
+## 当前状态
 
-如果你对这个方向感兴趣：
+VRCX-0 已经可以使用，并且仍在持续开发中。
 
-- ⭐ 点个 Star
-- 👀 关注更新
-- 🧪 试用并反馈
-
----
+核心功能已经可用，部分功能、平台支持和界面细节还在继续调整。
