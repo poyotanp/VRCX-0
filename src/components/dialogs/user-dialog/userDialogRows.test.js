@@ -277,7 +277,7 @@ describe('userDialogRows', () => {
         expect(summarizeEntityRow('wrld_hidden')).toBe('\u2014');
         expect(
             summarizeEntityRow({ name: 'World', $favoriteGroup: 'Favorites' })
-        ).toBe('Favorites: World');
+        ).toBe('World');
         expect(worldOccupantSubtitle({ occupants: 12 })).toBe('(12)');
         expect(
             resolveStatusStateText({ state: 'active', status: 'join me' })

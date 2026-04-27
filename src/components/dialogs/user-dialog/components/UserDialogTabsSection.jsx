@@ -32,8 +32,6 @@ export function UserDialogTabsSection({
     filteredMutualFriends,
     filteredProfileGroups,
     filteredProfileWorlds,
-    groupActionId,
-    groupEditMode,
     groupSearchActive,
     hideUserMemos,
     hideUserNotes,
@@ -71,11 +69,7 @@ export function UserDialogTabsSection({
     representedGroup,
     representedGroupStatus,
     search,
-    selectedGroupCount,
-    selectedGroupIds,
-    selectedUserGroups,
     remainingGroupCountText,
-    setGroupEditMode,
     setGroupSort,
     setMutualSort,
     setSearch,
@@ -90,8 +84,7 @@ export function UserDialogTabsSection({
     visiblePresenceLocation,
     visibleProfileAvatars,
     worldOrder,
-    worldSort,
-    groupActions
+    worldSort
 }) {
     const tabsWithCounts = tabs
         .filter((tab) => !tab.hidden)
@@ -177,27 +170,10 @@ export function UserDialogTabsSection({
                 loadTab={loadTab}
                 search={search}
                 setSearch={setSearch}
-                groupEditMode={groupEditMode}
                 effectiveGroupSort={effectiveGroupSort}
                 setGroupSort={setGroupSort}
                 isCurrentUser={isCurrentUser}
-                groupActionId={groupActionId}
-                setGroupEditMode={setGroupEditMode}
-                clearSelectedGroups={groupActions.clearSelectedGroups}
-                selectVisibleGroups={groupActions.selectVisibleGroups}
-                selectedGroupCount={selectedGroupCount}
-                changeSelectedGroupsVisibility={
-                    groupActions.changeSelectedGroupsVisibility
-                }
-                exportUserGroups={groupActions.exportUserGroups}
-                selectedUserGroups={selectedUserGroups}
-                leaveSelectedGroups={groupActions.leaveSelectedGroups}
                 groupSearchActive={groupSearchActive}
-                selectedGroupIds={selectedGroupIds}
-                changeGroupVisibility={groupActions.changeGroupVisibility}
-                leaveUserGroup={groupActions.leaveUserGroup}
-                moveGroupInGameOrder={groupActions.moveGroupInGameOrder}
-                setGroupSelected={groupActions.setGroupSelected}
                 userGroupSections={userGroupSections}
                 ownGroupCountText={ownGroupCountText}
                 remainingGroupCountText={remainingGroupCountText}

@@ -7,7 +7,6 @@ import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { Button } from '@/ui/shadcn/button';
 import { Spinner } from '@/ui/shadcn/spinner';
 
-import { groupIdForRow } from '../userDialogGroupRows.js';
 import {
     summarizeEntityRow,
     userRowSubtitle,
@@ -23,15 +22,7 @@ export function EntityList({
     rows,
     kind = '',
     loading = false,
-    error = '',
-    editableGroups = false,
-    selectableGroups = false,
-    selectedGroupIds = null,
-    groupActionId = '',
-    onGroupVisibilityChange,
-    onGroupLeave,
-    onGroupMove,
-    onGroupSelectionChange
+    error = ''
 }) {
     const currentEndpoint = useRuntimeStore(
         (state) => state.auth.currentUserEndpoint
@@ -50,27 +41,14 @@ export function EntityList({
     const nowMs = Date.now();
 
     return (
-        <div className="flex flex-wrap items-start">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] items-start gap-1">
             {rows.map((row, index) => {
                 if (kind === 'group') {
-                    const groupId = groupIdForRow(row);
                     return (
                         <UserGroupCard
                             key={`${row?.id || row?.groupId || row?.name || 'group'}:${index}`}
                             group={row}
                             currentEndpoint={currentEndpoint}
-                            editable={editableGroups}
-                            selectable={selectableGroups}
-                            selected={Boolean(selectedGroupIds?.has(groupId))}
-                            busy={Boolean(
-                                groupActionId &&
-                                (groupActionId === groupId ||
-                                    groupActionId === '__bulk_groups__')
-                            )}
-                            onVisibilityChange={onGroupVisibilityChange}
-                            onLeave={onGroupLeave}
-                            onMove={onGroupMove}
-                            onSelectionChange={onGroupSelectionChange}
                         />
                     );
                 }
@@ -102,7 +80,7 @@ export function EntityList({
                         key={`${row?.id || row?.userId || label}:${index}`}
                         type="button"
                         variant="ghost"
-                        className="h-auto w-44 justify-start gap-2 px-1.5 py-1.5 text-left font-normal"
+                        className="h-auto min-w-0 justify-start gap-2 px-1.5 py-1.5 text-left font-normal"
                         onClick={() => openRow(row, kind)}
                     >
                         <span className="relative size-9 shrink-0">
@@ -171,15 +149,7 @@ export function EntityList({
 export function UserGroupSection({
     title,
     rows,
-    countText,
-    editableGroups = false,
-    selectableGroups = false,
-    selectedGroupIds = null,
-    groupActionId = '',
-    onGroupVisibilityChange,
-    onGroupLeave,
-    onGroupMove,
-    onGroupSelectionChange
+    countText
 }) {
     if (!rows.length) {
         return null;
@@ -196,14 +166,6 @@ export function UserGroupSection({
             <EntityList
                 rows={rows}
                 kind="group"
-                editableGroups={editableGroups}
-                selectableGroups={selectableGroups}
-                selectedGroupIds={selectedGroupIds}
-                groupActionId={groupActionId}
-                onGroupVisibilityChange={onGroupVisibilityChange}
-                onGroupLeave={onGroupLeave}
-                onGroupMove={onGroupMove}
-                onGroupSelectionChange={onGroupSelectionChange}
             />
         </section>
     );

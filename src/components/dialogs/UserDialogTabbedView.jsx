@@ -221,7 +221,6 @@ export function UserDialogTabbedView({
         previousDisplayNames,
         statusStateText,
         userGroupSections,
-        selectedGroupCount,
         ownGroupCountText,
         remainingGroupCountText,
         userTimeSpent,
@@ -528,9 +527,6 @@ export function UserDialogTabbedView({
                         filteredMutualFriends={filteredMutualFriends}
                         filteredProfileGroups={filteredProfileGroups}
                         filteredProfileWorlds={filteredProfileWorlds}
-                        groupActionId={groupActions.groupActionId}
-                        groupActions={groupActions}
-                        groupEditMode={groupActions.groupEditMode}
                         groupSearchActive={groupSearchActive}
                         hideUserMemos={hideUserMemos}
                         hideUserNotes={hideUserNotes}
@@ -571,10 +567,6 @@ export function UserDialogTabbedView({
                         representedGroup={representedGroup}
                         representedGroupStatus={representedGroupStatus}
                         search={search}
-                        selectedGroupCount={selectedGroupCount}
-                        selectedGroupIds={selectedGroupIds}
-                        selectedUserGroups={selectedUserGroups}
-                        setGroupEditMode={groupActions.setGroupEditMode}
                         setGroupSort={setGroupSort}
                         setMutualSort={setMutualSort}
                         setSearch={setSearch}

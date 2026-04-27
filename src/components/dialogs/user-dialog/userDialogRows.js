@@ -60,7 +60,7 @@ export function summarizeEntityRow(row, fallback = DASH) {
         row.groupName ||
         row.avatarName ||
         fallback;
-    return row.$favoriteGroup ? `${row.$favoriteGroup}: ${label}` : label;
+    return label;
 }
 
 export function groupDisplayName(row, fallback = 'Group') {
@@ -220,6 +220,19 @@ export function formatDate(value) {
     return new Intl.DateTimeFormat(undefined, {
         dateStyle: 'medium',
         timeStyle: 'short'
+    }).format(date);
+}
+
+export function formatDateOnly(value) {
+    if (!value) {
+        return DASH;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return DASH;
+    }
+    return new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium'
     }).format(date);
 }
 

@@ -1,20 +1,4 @@
-import {
-    DownloadIcon,
-    EyeIcon,
-    LogOutIcon,
-    SettingsIcon,
-    UsersIcon
-} from 'lucide-react';
-
 import { userDialogGroupSortingOptions } from '@/shared/constants/user.js';
-import { Button } from '@/ui/shadcn/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from '@/ui/shadcn/dropdown-menu';
 import {
     Select,
     SelectContent,
@@ -39,46 +23,15 @@ export function UserDialogGroupsTab({
     loadTab,
     search,
     setSearch,
-    groupEditMode,
     effectiveGroupSort,
     setGroupSort,
     isCurrentUser,
-    groupActionId,
-    setGroupEditMode,
-    clearSelectedGroups,
-    selectVisibleGroups,
-    selectedGroupCount,
-    changeSelectedGroupsVisibility,
-    exportUserGroups,
-    selectedUserGroups,
-    leaveSelectedGroups,
     groupSearchActive,
-    selectedGroupIds,
-    changeGroupVisibility,
-    leaveUserGroup,
-    moveGroupInGameOrder,
-    setGroupSelected,
     userGroupSections,
     ownGroupCountText,
     remainingGroupCountText,
     t
 }) {
-    const editableGroups = isCurrentUser && groupEditMode;
-    const groupMoveHandler = groupEditMode
-        ? (group, direction) => void moveGroupInGameOrder(group, direction)
-        : undefined;
-    const sharedGroupListProps = {
-        editableGroups,
-        selectableGroups: groupEditMode,
-        selectedGroupIds,
-        groupActionId,
-        onGroupVisibilityChange: (group, visibility) =>
-            void changeGroupVisibility(group, visibility),
-        onGroupLeave: (group) => void leaveUserGroup(group),
-        onGroupMove: groupMoveHandler,
-        onGroupSelectionChange: setGroupSelected
-    };
-
     return (
         <EntityDialogTabContent value="groups" className="flex flex-col gap-2">
             <UserDialogSearchHeader
@@ -93,188 +46,36 @@ export function UserDialogGroupsTab({
                 setSearch={setSearch}
                 t={t}
             >
-                {!groupEditMode ? (
-                    <>
-                        <span className="text-muted-foreground text-sm">
-                            {t('dialog.user.groups.sort_by')}
-                        </span>
-                        <Select
-                            value={effectiveGroupSort}
-                            onValueChange={setGroupSort}
-                            disabled={remoteStatus.groups === 'running'}
-                        >
-                            <SelectTrigger size="sm" className="w-36">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {Object.entries(
-                                        userDialogGroupSortingOptions
-                                    ).map(([key, option]) => (
-                                        <SelectItem
-                                            key={key}
-                                            value={option.value}
-                                            disabled={
-                                                option.value === 'inGame' &&
-                                                !isCurrentUser
-                                            }
-                                        >
-                                            {t(option.name)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </>
-                ) : null}
-                {isCurrentUser ? (
-                    <>
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant={groupEditMode ? 'secondary' : 'outline'}
-                            disabled={groupActionId === '__bulk_groups__'}
-                            onClick={() => {
-                                const nextGroupEditMode = !groupEditMode;
-                                setGroupEditMode(nextGroupEditMode);
-                                if (nextGroupEditMode) {
-                                    setGroupSort('inGame');
-                                }
-                                clearSelectedGroups();
-                            }}
-                        >
-                            {groupEditMode ? 'Done' : 'Edit'}
-                        </Button>
-                        {groupEditMode ? (
-                            <>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={
-                                        groupActionId === '__bulk_groups__' ||
-                                        !filteredProfileGroups.length
-                                    }
-                                    onClick={() =>
-                                        selectVisibleGroups(
-                                            filteredProfileGroups
-                                        )
-                                    }
-                                >
-                                    {t('dialog.user.generated.select_visible')}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={
-                                        groupActionId === '__bulk_groups__' ||
-                                        !selectedGroupCount
-                                    }
-                                    onClick={clearSelectedGroups}
-                                >
-                                    {t('dialog.user.generated.clear_selected')}
-                                </Button>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={
-                                                groupActionId ===
-                                                '__bulk_groups__'
-                                            }
-                                        >
-                                            <SettingsIcon data-icon="inline-start" />
-                                            {t(
-                                                'dialog.user.generated.bulk_actions'
-                                            )}
-                                            {selectedGroupCount ? (
-                                                <span className="text-muted-foreground text-xs">
-                                                    ({selectedGroupCount})
-                                                </span>
-                                            ) : null}
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start">
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem
-                                                disabled={!selectedGroupCount}
-                                                onSelect={() =>
-                                                    void changeSelectedGroupsVisibility(
-                                                        'visible'
-                                                    )
-                                                }
-                                            >
-                                                <EyeIcon />
-                                                {t(
-                                                    'dialog.user.generated.set_selected_visible'
-                                                )}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                disabled={!selectedGroupCount}
-                                                onSelect={() =>
-                                                    void changeSelectedGroupsVisibility(
-                                                        'hidden'
-                                                    )
-                                                }
-                                            >
-                                                <EyeIcon />
-                                                {t(
-                                                    'dialog.user.generated.set_selected_hidden'
-                                                )}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                disabled={!selectedGroupCount}
-                                                onSelect={() =>
-                                                    void changeSelectedGroupsVisibility(
-                                                        'friends'
-                                                    )
-                                                }
-                                            >
-                                                <UsersIcon />
-                                                {t(
-                                                    'dialog.user.generated.set_selected_friends'
-                                                )}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onSelect={() =>
-                                                    exportUserGroups(
-                                                        selectedUserGroups
-                                                    )
-                                                }
-                                            >
-                                                <DownloadIcon />
-                                                {t(
-                                                    'dialog.user.generated.export'
-                                                )}{' '}
-                                                {selectedGroupCount
-                                                    ? 'Selected'
-                                                    : 'All'}{' '}
-                                                {t(
-                                                    'dialog.user.groups.groups'
-                                                )}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                variant="destructive"
-                                                disabled={!selectedGroupCount}
-                                                onSelect={() =>
-                                                    void leaveSelectedGroups()
-                                                }
-                                            >
-                                                <LogOutIcon />
-                                                {t(
-                                                    'dialog.user.generated.leave_selected'
-                                                )}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </>
-                        ) : null}
-                    </>
-                ) : null}
+                <span className="text-muted-foreground text-sm">
+                    {t('dialog.user.groups.sort_by')}
+                </span>
+                <Select
+                    value={effectiveGroupSort}
+                    onValueChange={setGroupSort}
+                    disabled={remoteStatus.groups === 'running'}
+                >
+                    <SelectTrigger size="sm" className="w-36">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            {Object.entries(userDialogGroupSortingOptions).map(
+                                ([key, option]) => (
+                                    <SelectItem
+                                        key={key}
+                                        value={option.value}
+                                        disabled={
+                                            option.value === 'inGame' &&
+                                            !isCurrentUser
+                                        }
+                                    >
+                                        {t(option.name)}
+                                    </SelectItem>
+                                )
+                            )}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
             </UserDialogSearchHeader>
             {remoteStatus.groups === 'running' || remoteErrors.groups ? (
                 <EntityList
@@ -284,11 +85,7 @@ export function UserDialogGroupsTab({
                     error={remoteErrors.groups}
                 />
             ) : groupSearchActive ? (
-                <EntityList
-                    rows={filteredProfileGroups}
-                    kind="group"
-                    {...sharedGroupListProps}
-                />
+                <EntityList rows={filteredProfileGroups} kind="group" />
             ) : userGroupSections.ownGroups.length ||
               userGroupSections.mutualGroups.length ||
               userGroupSections.remainingGroups.length ? (
@@ -297,18 +94,15 @@ export function UserDialogGroupsTab({
                         title={t('dialog.user.groups.own_groups')}
                         rows={userGroupSections.ownGroups}
                         countText={ownGroupCountText}
-                        {...sharedGroupListProps}
                     />
                     <UserGroupSection
                         title={t('dialog.user.groups.mutual_groups')}
                         rows={userGroupSections.mutualGroups}
-                        {...sharedGroupListProps}
                     />
                     <UserGroupSection
                         title={t('dialog.user.groups.groups')}
                         rows={userGroupSections.remainingGroups}
                         countText={remainingGroupCountText}
-                        {...sharedGroupListProps}
                     />
                 </div>
             ) : (

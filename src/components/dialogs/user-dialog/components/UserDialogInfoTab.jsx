@@ -29,6 +29,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 import { EntityDialogTabContent } from '../../EntityDialogScaffold.jsx';
 import {
     formatDate,
+    formatDateOnly,
     formatStatsDate,
     formatStatsDuration
 } from '../userDialogRows.js';
@@ -539,7 +540,7 @@ function UserDialogActivitySummaryPanel({
                 />
                 <InfoStat
                     label={t('dialog.user.info.date_joined')}
-                    value={profile.date_joined}
+                    value={formatDateOnly(profile.date_joined)}
                     subtle
                 />
                 {isCurrentUser ? (

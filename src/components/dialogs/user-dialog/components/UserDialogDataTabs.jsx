@@ -2,7 +2,6 @@ import { ChevronLeftIcon, UserIcon } from 'lucide-react';
 
 import { UserActivityPanel } from '@/components/dialogs/UserActivityPanel.jsx';
 import { Button } from '@/ui/shadcn/button';
-import { Input } from '@/ui/shadcn/input';
 import {
     Select,
     SelectContent,
@@ -94,93 +93,79 @@ export function UserDialogWorldsTab({
     t
 }) {
     return (
-        <EntityDialogTabContent value="worlds" className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-muted-foreground text-sm">
-                        {filteredProfileWorlds.length}/{profileWorlds.length}
-                    </div>
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={remoteStatus.worlds === 'running'}
-                        onClick={() => void loadTab('worlds', { force: true })}
-                    >
-                        {t('common.actions.refresh')}
-                    </Button>
-                    <Input
-                        value={search.worlds}
-                        onChange={(event) =>
-                            setSearch((current) => ({
-                                ...current,
-                                worlds: event.target.value
-                            }))
-                        }
-                        placeholder={t('dialog.user.generated.search_worlds')}
-                        className="ml-auto h-8 w-40"
-                    />
-                    <span className="text-muted-foreground text-sm">
-                        {t('dialog.user.worlds.sort_by')}
-                    </span>
-                    <Select
-                        value={worldSort}
-                        onValueChange={changeWorldSort}
-                        disabled={remoteStatus.worlds === 'running'}
-                    >
-                        <SelectTrigger size="sm" className="w-32">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="name">
-                                    {t('dialog.user.worlds.sorting.name')}
-                                </SelectItem>
-                                <SelectItem value="updated">
-                                    {t('dialog.user.worlds.sorting.updated')}
-                                </SelectItem>
-                                <SelectItem value="created">
-                                    {t('dialog.user.worlds.sorting.created')}
-                                </SelectItem>
-                                <SelectItem value="favorites">
-                                    {t('dialog.user.worlds.sorting.favorites')}
-                                </SelectItem>
-                                <SelectItem value="popularity">
-                                    {t('dialog.user.worlds.sorting.popularity')}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-muted-foreground text-sm">
-                        {t('dialog.user.generated.order_by')}
-                    </span>
-                    <Select
-                        value={worldOrder}
-                        onValueChange={changeWorldOrder}
-                        disabled={remoteStatus.worlds === 'running'}
-                    >
-                        <SelectTrigger size="sm" className="w-36">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="descending">
-                                    {t('dialog.user.worlds.order.descending')}
-                                </SelectItem>
-                                <SelectItem value="ascending">
-                                    {t('dialog.user.worlds.order.ascending')}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <EntityList
-                    rows={filteredProfileWorlds}
-                    kind="world"
-                    loading={remoteStatus.worlds === 'running'}
-                    error={remoteErrors.worlds}
-                />
-            </div>
+        <EntityDialogTabContent value="worlds" className="flex flex-col gap-2">
+            <UserDialogSearchHeader
+                searchKey="worlds"
+                tab="worlds"
+                rows={profileWorlds}
+                filteredRows={filteredProfileWorlds}
+                placeholder={t('dialog.user.generated.search_worlds')}
+                remoteStatus={remoteStatus}
+                loadTab={loadTab}
+                search={search}
+                setSearch={setSearch}
+                t={t}
+            >
+                <span className="text-muted-foreground text-sm">
+                    {t('dialog.user.worlds.sort_by')}
+                </span>
+                <Select
+                    value={worldSort}
+                    onValueChange={changeWorldSort}
+                    disabled={remoteStatus.worlds === 'running'}
+                >
+                    <SelectTrigger size="sm" className="w-32">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem value="name">
+                                {t('dialog.user.worlds.sorting.name')}
+                            </SelectItem>
+                            <SelectItem value="updated">
+                                {t('dialog.user.worlds.sorting.updated')}
+                            </SelectItem>
+                            <SelectItem value="created">
+                                {t('dialog.user.worlds.sorting.created')}
+                            </SelectItem>
+                            <SelectItem value="favorites">
+                                {t('dialog.user.worlds.sorting.favorites')}
+                            </SelectItem>
+                            <SelectItem value="popularity">
+                                {t('dialog.user.worlds.sorting.popularity')}
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                <span className="text-muted-foreground text-sm">
+                    {t('dialog.user.generated.order_by')}
+                </span>
+                <Select
+                    value={worldOrder}
+                    onValueChange={changeWorldOrder}
+                    disabled={remoteStatus.worlds === 'running'}
+                >
+                    <SelectTrigger size="sm" className="w-36">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectItem value="descending">
+                                {t('dialog.user.worlds.order.descending')}
+                            </SelectItem>
+                            <SelectItem value="ascending">
+                                {t('dialog.user.worlds.order.ascending')}
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </UserDialogSearchHeader>
+            <EntityList
+                rows={filteredProfileWorlds}
+                kind="world"
+                loading={remoteStatus.worlds === 'running'}
+                error={remoteErrors.worlds}
+            />
         </EntityDialogTabContent>
     );
 }
@@ -258,30 +243,18 @@ export function UserDialogAvatarsTab({
                     {currentAvatarDisplayName || 'Avatar'}
                 </Button>
             ) : null}
-            <div className="flex flex-wrap items-center gap-2">
-                <div className="text-muted-foreground text-sm">
-                    {visibleProfileAvatars.length}/{profileAvatars.length}
-                </div>
-                <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={remoteStatus.avatars === 'running'}
-                    onClick={() => void loadTab('avatars', { force: true })}
-                >
-                    {t('common.actions.refresh')}
-                </Button>
-                <Input
-                    value={search.avatars}
-                    onChange={(event) =>
-                        setSearch((current) => ({
-                            ...current,
-                            avatars: event.target.value
-                        }))
-                    }
-                    placeholder={t('dialog.user.generated.search_avatars')}
-                    className="ml-auto h-8 w-40"
-                />
+            <UserDialogSearchHeader
+                searchKey="avatars"
+                tab="avatars"
+                rows={profileAvatars}
+                filteredRows={visibleProfileAvatars}
+                placeholder={t('dialog.user.generated.search_avatars')}
+                remoteStatus={remoteStatus}
+                loadTab={loadTab}
+                search={search}
+                setSearch={setSearch}
+                t={t}
+            >
                 {profile.id === currentUserId ? (
                     <>
                         <span className="text-muted-foreground text-sm">
@@ -336,7 +309,7 @@ export function UserDialogAvatarsTab({
                         </Select>
                     </>
                 ) : null}
-            </div>
+            </UserDialogSearchHeader>
             <EntityList
                 rows={visibleProfileAvatars}
                 kind="avatar"
