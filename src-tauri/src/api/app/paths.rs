@@ -25,14 +25,18 @@ pub(super) fn vrchat_config_path() -> PathBuf {
 }
 
 pub(super) fn vrchat_app_data() -> PathBuf {
-    if cfg!(target_os = "linux") {
+    #[cfg(target_os = "linux")]
+    {
         return crate::domain::vrchat_paths::discover_linux_vrchat_paths()
             .map(|paths| paths.app_data)
             .unwrap_or_default();
     }
 
-    let local_app_data = std::env::var("LOCALAPPDATA").unwrap_or_default();
-    PathBuf::from(local_app_data).join("..\\LocalLow\\VRChat\\VRChat")
+    #[cfg(not(target_os = "linux"))]
+    {
+        let local_app_data = std::env::var("LOCALAPPDATA").unwrap_or_default();
+        PathBuf::from(local_app_data).join("..\\LocalLow\\VRChat\\VRChat")
+    }
 }
 
 #[tauri::command]
@@ -101,40 +105,45 @@ pub fn app__get_vrchat_cache_location() -> Result<String, AppError> {
 }
 
 fn vrchat_screenshots_location() -> String {
-    if cfg!(target_os = "linux") {
-        return linux_vrchat_screenshots_location();
+    #[cfg(target_os = "linux")]
+    {
+        linux_vrchat_screenshots_location()
     }
 
-    let steam_path = get_steam_path();
-    if steam_path.is_empty() {
-        return String::new();
-    }
-    let userdata = PathBuf::from(&steam_path).join("userdata");
-    if !userdata.exists() {
-        return String::new();
-    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        let steam_path = get_steam_path();
+        if steam_path.is_empty() {
+            return String::new();
+        }
+        let userdata = PathBuf::from(&steam_path).join("userdata");
+        if !userdata.exists() {
+            return String::new();
+        }
 
-    let mut best_path = String::new();
-    let mut best_time = std::time::SystemTime::UNIX_EPOCH;
+        let mut best_path = String::new();
+        let mut best_time = std::time::SystemTime::UNIX_EPOCH;
 
-    if let Ok(entries) = std::fs::read_dir(&userdata) {
-        for entry in entries.flatten() {
-            let screenshots_dir = entry.path().join("760\\remote\\438100\\screenshots");
-            if screenshots_dir.exists() {
-                if let Ok(meta) = std::fs::metadata(&screenshots_dir) {
-                    if let Ok(modified) = meta.modified() {
-                        if modified > best_time {
-                            best_time = modified;
-                            best_path = screenshots_dir.to_string_lossy().into_owned();
+        if let Ok(entries) = std::fs::read_dir(&userdata) {
+            for entry in entries.flatten() {
+                let screenshots_dir = entry.path().join("760\\remote\\438100\\screenshots");
+                if screenshots_dir.exists() {
+                    if let Ok(meta) = std::fs::metadata(&screenshots_dir) {
+                        if let Ok(modified) = meta.modified() {
+                            if modified > best_time {
+                                best_time = modified;
+                                best_path = screenshots_dir.to_string_lossy().into_owned();
+                            }
                         }
                     }
                 }
             }
         }
+        best_path
     }
-    best_path
 }
 
+#[cfg(target_os = "linux")]
 fn linux_vrchat_screenshots_location() -> String {
     let mut best_path = String::new();
     let mut best_time = std::time::SystemTime::UNIX_EPOCH;
@@ -180,6 +189,7 @@ pub fn app__get_vrchat_screenshots_location() -> Result<String, AppError> {
     Ok(vrchat_screenshots_location())
 }
 
+#[cfg(not(target_os = "linux"))]
 pub(super) fn get_steam_path() -> String {
     #[cfg(target_os = "windows")]
     {
@@ -194,11 +204,15 @@ pub(super) fn get_steam_path() -> String {
         return String::new();
     }
 
-    String::new()
+    #[cfg(not(target_os = "windows"))]
+    {
+        String::new()
+    }
 }
 
 pub(super) fn vrchat_crashes_location() -> PathBuf {
-    if cfg!(target_os = "linux") {
+    #[cfg(target_os = "linux")]
+    {
         if let Ok(paths) = crate::domain::vrchat_paths::discover_linux_vrchat_paths() {
             return paths
                 .proton_prefix
@@ -218,7 +232,8 @@ pub(super) fn vrchat_crashes_location() -> PathBuf {
 }
 
 fn default_vrchat_photos_location() -> PathBuf {
-    if cfg!(target_os = "linux") {
+    #[cfg(target_os = "linux")]
+    {
         if let Ok(paths) = crate::domain::vrchat_paths::discover_linux_vrchat_paths() {
             return paths
                 .proton_prefix

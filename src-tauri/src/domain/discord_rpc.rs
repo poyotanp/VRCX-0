@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 use crate::error::AppError;
 
 const DEFAULT_APP_ID: &str = "883308884863901717";
+#[cfg(windows)]
 const DISCORD_IPC_OPCODE_HANDSHAKE: u32 = 0;
 const DISCORD_IPC_OPCODE_FRAME: u32 = 1;
 

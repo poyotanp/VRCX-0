@@ -37,8 +37,6 @@ pub enum HostCapability {
     GameLogWatcher,
     GameProcessMonitor,
     VrchatPathDiscovery,
-    SteamLibraryDiscovery,
-    SteamRuntimeIntegration,
     RegistryPrefs,
     GameLaunch,
     Ipc,
@@ -53,15 +51,6 @@ impl CapabilityStatus {
             enabled: true,
             available: true,
             reason: None,
-        }
-    }
-
-    fn pending(reason: &str) -> Self {
-        Self {
-            supported: true,
-            enabled: false,
-            available: false,
-            reason: Some(reason.to_string()),
         }
     }
 
@@ -91,8 +80,6 @@ impl HostCapabilities {
             HostCapability::GameLogWatcher => &self.game_log_watcher,
             HostCapability::GameProcessMonitor => &self.game_process_monitor,
             HostCapability::VrchatPathDiscovery => &self.vrchat_path_discovery,
-            HostCapability::SteamLibraryDiscovery => &self.steam_library_discovery,
-            HostCapability::SteamRuntimeIntegration => &self.steam_runtime_integration,
             HostCapability::RegistryPrefs => &self.registry_prefs,
             HostCapability::GameLaunch => &self.game_launch,
             HostCapability::Ipc => &self.ipc,
@@ -108,8 +95,6 @@ impl HostCapability {
             HostCapability::GameLogWatcher => "GameLog watcher",
             HostCapability::GameProcessMonitor => "Game process monitor",
             HostCapability::VrchatPathDiscovery => "VRChat path discovery",
-            HostCapability::SteamLibraryDiscovery => "Steam library discovery",
-            HostCapability::SteamRuntimeIntegration => "Steam runtime integration",
             HostCapability::RegistryPrefs => "VRChat registry preferences",
             HostCapability::GameLaunch => "Game launch",
             HostCapability::Ipc => "IPC",
@@ -151,6 +136,7 @@ pub fn current_host_capabilities() -> HostCapabilities {
             vrchat_launch_pipe: available.clone(),
             screenshot_cache: available,
         },
+        #[cfg(target_os = "linux")]
         "linux" => linux_host_capabilities(platform, &available),
         "macos" => HostCapabilities {
             platform: platform.to_string(),
@@ -250,46 +236,6 @@ fn linux_host_capabilities(platform: &str, available: &CapabilityStatus) -> Host
         ipc: CapabilityStatus::unsupported("IPC", "Linux"),
         vrchat_launch_pipe,
         screenshot_cache,
-    }
-}
-
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-fn linux_host_capabilities(platform: &str, available: &CapabilityStatus) -> HostCapabilities {
-    pending_linux_host_capabilities(platform, available)
-}
-
-#[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
-fn linux_host_capabilities(platform: &str, available: &CapabilityStatus) -> HostCapabilities {
-    pending_linux_host_capabilities(platform, available)
-}
-
-#[cfg(any(
-    target_os = "windows",
-    target_os = "macos",
-    not(any(target_os = "windows", target_os = "linux", target_os = "macos"))
-))]
-fn pending_linux_host_capabilities(
-    platform: &str,
-    available: &CapabilityStatus,
-) -> HostCapabilities {
-    let pending = CapabilityStatus::pending("Linux implementation pending");
-    HostCapabilities {
-        platform: platform.to_string(),
-        local_database: available.clone(),
-        websocket_runtime: available.clone(),
-        game_log_watcher: pending.clone(),
-        game_process_monitor: pending.clone(),
-        vrchat_path_discovery: pending.clone(),
-        steam_library_discovery: pending,
-        steam_runtime_integration: CapabilityStatus::unsupported(
-            "Steam runtime integration",
-            "Linux",
-        ),
-        registry_prefs: CapabilityStatus::unsupported("VRChat registry preferences", "Linux"),
-        game_launch: CapabilityStatus::unsupported("Game launch", "Linux"),
-        ipc: CapabilityStatus::unsupported("IPC", "Linux"),
-        vrchat_launch_pipe: CapabilityStatus::unsupported("VRChat launch pipe", "Linux"),
-        screenshot_cache: CapabilityStatus::unsupported("Screenshot cache", "Linux"),
     }
 }
 

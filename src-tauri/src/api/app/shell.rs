@@ -150,6 +150,7 @@ pub fn app__open_folder_and_select_item(
 
     #[cfg(not(target_os = "linux"))]
     {
+        let _ = is_folder;
         std::process::Command::new("explorer.exe")
             .arg("/select,")
             .arg(&path)

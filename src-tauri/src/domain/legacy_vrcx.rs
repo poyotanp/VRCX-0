@@ -192,6 +192,7 @@ fn legacy_vrcx_dirs() -> Vec<PathBuf> {
     dedupe_paths(dirs)
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn home_dir() -> Option<PathBuf> {
     std::env::var_os("HOME")
         .map(PathBuf::from)

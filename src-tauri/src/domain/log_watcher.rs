@@ -42,10 +42,12 @@ impl LogWatcher {
         }
     }
 
+    #[cfg(target_os = "windows")]
     pub fn start(&self, log_dir: PathBuf, app_handle: AppHandle) {
         self.start_with_mode(log_dir, app_handle, false);
     }
 
+    #[cfg(target_os = "linux")]
     pub fn start_without_process_monitor(&self, log_dir: PathBuf, app_handle: AppHandle) {
         self.start_with_mode(log_dir, app_handle, true);
     }
