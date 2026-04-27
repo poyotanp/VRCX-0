@@ -48,8 +48,7 @@ jobs:
                       artifact_name: linux-appimage
                       artifact_path: |
                           src-tauri/target/release/bundle/appimage/*.AppImage
-                          src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz
-                          src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz.sig
+                          src-tauri/target/release/bundle/appimage/*.AppImage.sig
                           src-tauri/target/release/bundle/appimage/vrcx-0-updater-linux-x86_64-*.json
                     - label: macOS DMG (Apple Silicon)
                       os: macos-15
@@ -128,17 +127,13 @@ jobs:
             - name: Create Linux updater manifest
               if: runner.os == 'Linux'
               run: |
+                  find src-tauri/target/release/bundle/appimage -maxdepth 1 -type f | sort
                   appimage_path="$(find src-tauri/target/release/bundle/appimage -maxdepth 1 -name '*.AppImage' | sort | head -n 1)"
                   if [[ -z "$appimage_path" ]]; then
                       echo "No AppImage artifact found" >&2
                       exit 1
                   fi
-                  updater_path="$(find src-tauri/target/release/bundle/appimage -maxdepth 1 -name '*.AppImage.tar.gz' | sort | head -n 1)"
-                  if [[ -z "$updater_path" ]]; then
-                      echo "No AppImage updater archive found" >&2
-                      exit 1
-                  fi
-                  signature_path="${updater_path}.sig"
+                  signature_path="${appimage_path}.sig"
                   if [[ ! -f "$signature_path" ]]; then
                       echo "No AppImage signature found at $signature_path" >&2
                       exit 1
@@ -147,7 +142,7 @@ jobs:
                       --version "${{ steps.version.outputs.build_version }}" \
                       --tag "${{ steps.version.outputs.tag }}" \
                       --target "linux-x86_64-${{ inputs.channel }}" \
-                      --asset-name "$(basename "$updater_path")" \
+                      --asset-name "$(basename "$appimage_path")" \
                       --signature-file "$signature_path" \
                       --out "src-tauri/target/release/bundle/appimage/vrcx-0-updater-linux-x86_64-${{ inputs.channel }}.json"
 
