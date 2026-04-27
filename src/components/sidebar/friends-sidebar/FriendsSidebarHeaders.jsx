@@ -68,7 +68,7 @@ export function FriendSectionHeader({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-between aria-expanded:bg-transparent aria-expanded:text-inherit dark:aria-expanded:bg-transparent"
+                    className="w-full justify-between aria-expanded:bg-transparent aria-expanded:text-inherit aria-expanded:hover:bg-muted aria-expanded:hover:text-foreground dark:aria-expanded:bg-transparent dark:aria-expanded:hover:bg-muted/50"
                 >
                     <span className="min-w-0 flex-1 truncate text-left">
                         {title}

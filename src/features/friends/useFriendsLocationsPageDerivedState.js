@@ -420,6 +420,7 @@ export function useFriendsLocationsPageDerivedState({
                 .filter((group) => group.friends.length > 0);
             return buildSameInstanceSections({
                 sameInstanceGroups: filteredSameGroups,
+                displayInstanceInfo: false,
                 favoriteIds,
                 favoriteGroupLabelsByFriendId
             });
@@ -497,6 +498,7 @@ export function useFriendsLocationsPageDerivedState({
     );
     const cardGridRowHeight = densityConfig.rowHeight;
     const cardRowHeight = cardGridRowHeight + cardGridGap;
+    const sectionHeaderGap = cardGridGap;
     const virtualRows = useMemo(() => {
         const rows = [];
         for (const section of visibleSections) {
@@ -525,7 +527,7 @@ export function useFriendsLocationsPageDerivedState({
                 rows.push({
                     type: 'header',
                     key: `header:${section.key}`,
-                    height: 64,
+                    height: 48,
                     section
                 });
             }
@@ -534,17 +536,19 @@ export function useFriendsLocationsPageDerivedState({
                 index < friends.length;
                 index += cardGridColumns
             ) {
+                const topGap = showHeader && index === 0 ? sectionHeaderGap : 0;
                 rows.push({
                     type: 'cards',
                     key: `cards:${section.key}:${index}`,
-                    height: cardRowHeight,
+                    height: cardRowHeight + topGap,
+                    topGap,
                     section,
                     friends: friends.slice(index, index + cardGridColumns)
                 });
             }
         }
         return rows;
-    }, [cardGridColumns, cardRowHeight, visibleSections]);
+    }, [cardGridColumns, cardRowHeight, sectionHeaderGap, visibleSections]);
     const positionedRows = useMemo(() => {
         let top = 0;
         const rows = virtualRows.map((row) => {

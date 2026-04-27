@@ -74,10 +74,13 @@ export function FriendsLocationsVirtualList({ controller }) {
                     {visibleVirtualRows.map((row) => (
                         <div
                             key={row.key}
-                            className="absolute right-0 left-0"
+                            className="absolute right-0 left-0 box-border"
                             style={{
                                 height: `${row.height}px`,
-                                transform: `translateY(${row.top}px)`
+                                transform: `translateY(${row.top}px)`,
+                                paddingTop: row.topGap
+                                    ? `${row.topGap}px`
+                                    : undefined
                             }}
                         >
                             {row.type === 'header' ? (

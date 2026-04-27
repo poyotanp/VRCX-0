@@ -31,17 +31,17 @@ export function FriendsLocationsSectionHeader({
     t
 }) {
     return (
-        <div className="bg-muted/20 flex h-full min-h-0 flex-col gap-2 overflow-hidden rounded-xl border px-3 py-2 md:flex-row md:items-center md:justify-between">
-            <div className="flex min-w-0 flex-col gap-1 overflow-hidden">
-                <div className="flex flex-wrap items-center gap-2">
-                    <LayersIcon className="text-muted-foreground size-4" />
-                    <div className="min-w-0 truncate font-medium">
+        <div className="bg-card/50 flex h-full min-h-0 flex-col gap-1.5 overflow-hidden rounded-lg border px-3 py-2 md:flex-row md:items-center md:justify-between">
+            <div className="flex min-w-0 flex-1 flex-col gap-1 overflow-hidden">
+                <div className="flex min-w-0 items-center gap-2">
+                    <LayersIcon className="text-muted-foreground size-4 shrink-0" />
+                    <div className="min-w-0 flex-1 truncate font-medium">
                         {section.rawLocation &&
                         !section.key.startsWith('instance:offline') ? (
                             <Location
                                 location={section.rawLocation}
                                 hint={section.title}
-                                link={false}
+                                link
                                 asButton={false}
                                 disableTooltip
                             />
@@ -49,20 +49,17 @@ export function FriendsLocationsSectionHeader({
                             section.title
                         )}
                     </div>
-                    <Badge variant="outline">{section.friends.length}</Badge>
+                    <Badge variant="outline" className="shrink-0">
+                        {section.friends.length}
+                    </Badge>
                 </div>
-                {section.description ? (
-                    <div className="text-muted-foreground line-clamp-1 text-xs break-words">
-                        {section.description}
-                    </div>
-                ) : null}
             </div>
             {section.worldId || section.groupId ? (
-                <div className="flex shrink-0 flex-wrap gap-2">
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                     {section.worldId ? (
                         <Button
                             type="button"
-                            size="sm"
+                            size="xs"
                             variant="outline"
                             onClick={() => onOpenWorld(section)}
                         >
@@ -73,7 +70,7 @@ export function FriendsLocationsSectionHeader({
                     {section.groupId ? (
                         <Button
                             type="button"
-                            size="sm"
+                            size="xs"
                             variant="outline"
                             onClick={() => onOpenGroup(section)}
                         >
