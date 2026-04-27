@@ -769,10 +769,13 @@
                 "application": {
                     "header": "應用程式",
                     "startup": "在 Windows 啟動時啟動",
+                    "startup_system": "隨系統啟動",
+                    "startup_system_description": "建立桌面環境自動啟動項目，並使用 --autostart 參數啟動 VRCX-0。",
                     "minimized": "以最小化啟動",
                     "tray": "最小化到系統列",
                     "disable_vr_overlay_gpu_acceleration": "停用 VR 嵌入介面 GPU 加速",
-                    "proxy": "代理設定"
+                    "proxy": "代理設定",
+                    "startup_linux": "建立桌面環境自動啟動項目，並使用 --autostart 參數啟動 VRCX-0。"
                 },
                 "favorites": {
                     "header": "VRCX-0 最愛好友",

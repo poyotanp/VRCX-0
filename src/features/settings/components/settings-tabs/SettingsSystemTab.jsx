@@ -14,6 +14,7 @@ import { SettingsTabContent } from '../SettingsViewParts.jsx';
 export function SettingsSystemTab({
     t,
     versionText,
+    hostPlatform = 'unknown',
     isStartAtWindowsStartup,
     isStartAsMinimizedState,
     isCloseToTray,
@@ -25,6 +26,20 @@ export function SettingsSystemTab({
     onProxySettings,
     onOpenSourceNotice
 }) {
+    const startupLabel =
+        hostPlatform === 'linux'
+            ? t('view.settings.general.application.startup_system', {
+                  defaultValue: 'Start at System Startup'
+              })
+            : t('view.settings.general.application.startup');
+    const startupDescription =
+        hostPlatform === 'linux'
+            ? t('view.settings.general.application.startup_system_description', {
+                  defaultValue:
+                      'Creates a desktop autostart entry that launches VRCX-0 with --autostart.'
+              })
+            : '';
+
     return (
         <SettingsTabContent value="system">
             <Card>
@@ -65,7 +80,8 @@ export function SettingsSystemTab({
                 </CardHeader>
                 <CardContent className="flex flex-col">
                     <Field
-                        label={t('view.settings.general.application.startup')}
+                        label={startupLabel}
+                        description={startupDescription}
                     >
                         <Switch
                             checked={isStartAtWindowsStartup}

@@ -1315,6 +1315,8 @@
                 "application": {
                     "header": "Application",
                     "startup": "Start at Windows Startup",
+                    "startup_system": "Start at System Startup",
+                    "startup_system_description": "Creates a desktop autostart entry that launches VRCX-0 with --autostart.",
                     "minimized": "Start Minimized at System Startup",
                     "tray": "Minimize to Tray When Closing",
                     "disable_vr_overlay_gpu_acceleration": "Disable VR Overlay GPU Acceleration",

@@ -133,6 +133,9 @@ export function useSettingsPageController() {
     const isGameRunning = useRuntimeStore(
         (state) => state.gameState.isGameRunning
     );
+    const hostPlatform = useRuntimeStore(
+        (state) => state.hostCapabilities.platform
+    );
     const setSystemHostOpen = useRuntimeStore(
         (state) => state.setSystemHostOpen
     );
@@ -478,6 +481,7 @@ export function useSettingsPageController() {
             SettingsSystemTab,
             t,
             formatReleaseDisplayVersion,
+            hostPlatform,
             prefs,
             openExternalLink,
             savePreferenceValue,

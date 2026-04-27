@@ -12,7 +12,6 @@ use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
 use tauri::Manager;
 use tauri::WindowEvent;
-#[cfg(target_os = "windows")]
 use tauri_plugin_autostart::ManagerExt as _;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
@@ -159,6 +158,12 @@ pub fn run() {
         Some(vec!["--autostart"]),
     ));
 
+    #[cfg(target_os = "linux")]
+    let builder = builder.plugin(tauri_plugin_autostart::init(
+        tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+        Some(vec!["--autostart"]),
+    ));
+
     builder
         .on_window_event(|window, event| {
             if window.label() != "main" {
@@ -193,7 +198,7 @@ pub fn run() {
             app_state.update_manager.check_and_install_update();
             app.manage(app_state);
 
-            #[cfg(windows)]
+            #[cfg(target_os = "windows")]
             if let Some(webview) = app.get_webview_window("main") {
                 if let Err(error) = webview.with_webview(|platform_webview| {
                     // Disable WebView2's browser-provided menu while preserving DOM contextmenu events.
@@ -222,6 +227,15 @@ pub fn run() {
             }
 
             #[cfg(target_os = "windows")]
+            {
+                if db_config_bool(&state, "config:vrcx_startatwindowsstartup") == Some(true)
+                    && !app.autolaunch().is_enabled().unwrap_or(false)
+                {
+                    let _ = app.autolaunch().enable();
+                }
+            }
+
+            #[cfg(target_os = "linux")]
             {
                 if db_config_bool(&state, "config:vrcx_startatwindowsstartup") == Some(true)
                     && !app.autolaunch().is_enabled().unwrap_or(false)

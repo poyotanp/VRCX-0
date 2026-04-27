@@ -995,11 +995,13 @@
                 "application": {
                     "header": "首选项",
                     "startup": "在 Windows 启动时自动启动",
+                    "startup_system": "随系统启动",
+                    "startup_system_description": "创建桌面环境自启动项，并使用 --autostart 参数启动 VRCX-0。",
                     "minimized": "以最小化的形式启动",
                     "tray": "最小化到系统托盘",
                     "disable_vr_overlay_gpu_acceleration": "禁用 VR 叠加界面的GPU加速",
                     "proxy": "代理服务器设置",
-                    "startup_linux": "向 VRCX.desktop 启动文件添加 “--startup” 参数，以便在系统启动时将 VRCX 以最小化窗口的方式启动。"
+                    "startup_linux": "创建桌面环境自启动项，并使用 --autostart 参数启动 VRCX-0。"
                 },
                 "favorites": {
                     "header": "筛选好友分组",

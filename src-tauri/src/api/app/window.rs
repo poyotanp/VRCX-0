@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 
 use tauri::AppHandle;
-#[cfg(target_os = "windows")]
 use tauri_plugin_autostart::ManagerExt as _;
 
 use crate::error::AppError;
@@ -112,18 +111,22 @@ pub fn app__restart_application(
 
 #[tauri::command]
 pub fn app__set_startup(app_handle: AppHandle, _enabled: bool) -> Result<(), AppError> {
-    #[cfg(target_os = "windows")]
-    {
-        let autolaunch = app_handle.autolaunch();
-        if _enabled {
-            autolaunch
-                .enable()
-                .map_err(|e| AppError::Custom(format!("enable autostart: {e}")))?;
-        } else {
-            autolaunch
-                .disable()
-                .map_err(|e| AppError::Custom(format!("disable autostart: {e}")))?;
-        }
+    if !(cfg!(target_os = "windows") || cfg!(target_os = "linux")) {
+        return Err(AppError::Custom(format!(
+            "Autostart is not supported on {}",
+            crate::api::app::host_capabilities::current_platform()
+        )));
+    }
+
+    let autolaunch = app_handle.autolaunch();
+    if _enabled {
+        autolaunch
+            .enable()
+            .map_err(|e| AppError::Custom(format!("enable autostart: {e}")))?;
+    } else {
+        autolaunch
+            .disable()
+            .map_err(|e| AppError::Custom(format!("disable autostart: {e}")))?;
     }
     Ok(())
 }

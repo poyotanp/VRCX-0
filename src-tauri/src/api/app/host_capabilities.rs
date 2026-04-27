@@ -221,6 +221,13 @@ fn linux_host_capabilities(platform: &str, available: &CapabilityStatus) -> Host
         Ok(_) => available.clone(),
         Err(reason) => CapabilityStatus::unavailable(&reason),
     };
+    let vrchat_launch_pipe = match crate::domain::linux_registry::discover_linux_registry_context()
+    {
+        Ok(_) => available.clone(),
+        Err(reason) => CapabilityStatus::unavailable(&format!(
+            "VRChat launch pipe bridge unavailable: {reason}"
+        )),
+    };
     let screenshot_cache = match crate::domain::vrchat_paths::discover_linux_screenshot_cache() {
         Ok(_) => available.clone(),
         Err(reason) => CapabilityStatus::unavailable(&reason),
@@ -241,9 +248,7 @@ fn linux_host_capabilities(platform: &str, available: &CapabilityStatus) -> Host
         registry_prefs,
         game_launch,
         ipc: CapabilityStatus::unsupported("IPC", "Linux"),
-        vrchat_launch_pipe: CapabilityStatus::unavailable(
-            "VRChat launch pipe bridge is not implemented on Linux",
-        ),
+        vrchat_launch_pipe,
         screenshot_cache,
     }
 }

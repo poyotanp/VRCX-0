@@ -3,6 +3,7 @@ export function SettingsSystemSection({ system }) {
         SettingsSystemTab,
         t,
         formatReleaseDisplayVersion,
+        hostPlatform,
         prefs,
         openExternalLink,
         savePreferenceValue,
@@ -17,6 +18,7 @@ export function SettingsSystemSection({ system }) {
         <SettingsSystemTab
             t={t}
             versionText={formatReleaseDisplayVersion(VERSION || '') || '-'}
+            hostPlatform={hostPlatform}
             isStartAtWindowsStartup={prefs.isStartAtWindowsStartup}
             isStartAsMinimizedState={prefs.isStartAsMinimizedState}
             isCloseToTray={prefs.isCloseToTray}
