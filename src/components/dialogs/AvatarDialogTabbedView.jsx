@@ -14,7 +14,6 @@ import { openUserDialog } from '@/services/dialogService.js';
 import { replaceVrcPackageUrl } from '@/shared/utils/urlUtils.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { Button } from '@/ui/shadcn/button';
-import { Card, CardContent, CardHeader } from '@/ui/shadcn/card';
 import { Separator } from '@/ui/shadcn/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
@@ -26,6 +25,8 @@ import {
     EntityDialogScaffold,
     EntityDialogTabContent,
     EntityDialogTabs,
+    EntityDialogTwoColumnLayout,
+    EntityOverviewCard,
     EntityRawJson
 } from './EntityDialogScaffold.jsx';
 
@@ -193,11 +194,8 @@ function AvatarDialogOverviewSection({
     );
 
     return (
-        <Card
-            size="sm"
-            className="min-w-0 overflow-visible border shadow-none ring-0"
-        >
-            <CardHeader className="gap-3">
+        <EntityOverviewCard
+            media={
                 <Button
                     type="button"
                     variant="ghost"
@@ -222,66 +220,58 @@ function AvatarDialogOverviewSection({
                         </span>
                     )}
                 </Button>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-3">
-                <div className="flex min-w-0 flex-col gap-2">
+            }
+        >
+            <div className="flex min-w-0 flex-col gap-2">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={!avatar.name}
+                    className="hover:text-primary h-auto min-w-0 justify-start overflow-hidden p-0 text-left text-lg leading-tight font-semibold whitespace-normal disabled:pointer-events-none disabled:opacity-100"
+                    onClick={avatar.name ? onTitleClick : undefined}
+                >
+                    <span className="line-clamp-2 min-w-0 break-words">
+                        {avatar.name || avatarFallbackLabel}
+                    </span>
+                </Button>
+                {avatar.authorName ? (
                     <Button
                         type="button"
                         variant="ghost"
-                        disabled={!avatar.name}
-                        className="hover:text-primary h-auto min-w-0 justify-start overflow-hidden p-0 text-left text-lg leading-tight font-semibold whitespace-normal disabled:pointer-events-none disabled:opacity-100"
-                        onClick={avatar.name ? onTitleClick : undefined}
+                        disabled={!avatar.authorId}
+                        className="text-muted-foreground hover:text-primary h-auto max-w-full min-w-0 justify-start overflow-hidden p-0 text-left font-mono text-sm disabled:pointer-events-none disabled:opacity-100"
+                        onClick={avatar.authorId ? onAuthorClick : undefined}
                     >
-                        <span className="line-clamp-2 min-w-0 break-words">
-                            {avatar.name || avatarFallbackLabel}
-                        </span>
+                        <span className="truncate">{avatar.authorName}</span>
                     </Button>
-                    {avatar.authorName ? (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            disabled={!avatar.authorId}
-                            className="text-muted-foreground hover:text-primary h-auto max-w-full min-w-0 justify-start overflow-hidden p-0 text-left font-mono text-sm disabled:pointer-events-none disabled:opacity-100"
-                            onClick={
-                                avatar.authorId ? onAuthorClick : undefined
-                            }
-                        >
-                            <span className="truncate">
-                                {avatar.authorName}
-                            </span>
-                        </Button>
-                    ) : null}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                    {actions}
-                </div>
-
-                {badges ? (
-                    <div className="flex flex-wrap gap-1.5">{badges}</div>
                 ) : null}
+            </div>
 
-                {avatar.description ? (
-                    <>
-                        <Separator />
-                        <div className="text-muted-foreground max-h-28 overflow-auto text-sm break-words whitespace-pre-wrap">
-                            {avatar.description}
-                        </div>
-                    </>
-                ) : null}
+            <div className="flex flex-wrap items-center gap-2">{actions}</div>
 
-                <Separator />
-                <AvatarOverviewReferences
-                    avatar={avatar}
-                    avatarUrl={avatarUrl}
-                    onCopyAvatarId={onCopyAvatarId}
-                    onCopyAvatarUrl={onCopyAvatarUrl}
-                    onOpenAvatarUrl={onOpenAvatarUrl}
-                    t={t}
-                />
-            </CardContent>
-        </Card>
+            {badges ? (
+                <div className="flex flex-wrap gap-1.5">{badges}</div>
+            ) : null}
+
+            {avatar.description ? (
+                <>
+                    <Separator />
+                    <div className="text-muted-foreground max-h-28 overflow-auto text-sm break-words whitespace-pre-wrap">
+                        {avatar.description}
+                    </div>
+                </>
+            ) : null}
+
+            <Separator />
+            <AvatarOverviewReferences
+                avatar={avatar}
+                avatarUrl={avatarUrl}
+                onCopyAvatarId={onCopyAvatarId}
+                onCopyAvatarUrl={onCopyAvatarUrl}
+                onOpenAvatarUrl={onOpenAvatarUrl}
+                t={t}
+            />
+        </EntityOverviewCard>
     );
 }
 
@@ -440,8 +430,9 @@ export function AvatarDialogTabbedView({
 
     return (
         <EntityDialogScaffold className="gap-3">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden min-[880px]:grid min-[880px]:grid-cols-[20rem_minmax(0,1fr)]">
-                <div className="max-h-[44vh] min-h-0 min-w-0 shrink-0 overflow-auto p-px min-[880px]:max-h-none min-[880px]:shrink min-[880px]:overflow-y-auto">
+            <EntityDialogTwoColumnLayout
+                railMaxHeight="44vh"
+                rail={
                     <AvatarDialogOverviewSection
                         avatar={avatar}
                         avatarFallbackLabel={avatarFallbackLabel}
@@ -524,57 +515,56 @@ export function AvatarDialogTabbedView({
                             />
                         }
                     />
-                </div>
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                    <EntityDialogTabs
-                        value={activeTab}
-                        onValueChange={changeTab}
-                        tabs={tabs}
-                    >
-                        <AvatarDialogInfoTab
-                            avatar={avatar}
-                            memo={memo}
-                            detail={detail}
-                            tags={{
-                                localTags,
-                                contentTags,
-                                authorTags,
-                                otherTags
+                }
+            >
+                <EntityDialogTabs
+                    value={activeTab}
+                    onValueChange={changeTab}
+                    tabs={tabs}
+                >
+                    <AvatarDialogInfoTab
+                        avatar={avatar}
+                        memo={memo}
+                        detail={detail}
+                        tags={{
+                            localTags,
+                            contentTags,
+                            authorTags,
+                            otherTags
+                        }}
+                        platformInfo={platformInfo}
+                        onOpenAuthor={openAvatarAuthor}
+                        onSaveMemo={onSaveMemo}
+                    />
+                    {hasGalleryTab ? (
+                        <AvatarDialogGalleryTab
+                            canManageAvatar={canManageAvatar}
+                            actionStatus={actionStatus}
+                            media={{
+                                galleryImages,
+                                currentGalleryImage,
+                                galleryIndex,
+                                listings
                             }}
-                            platformInfo={platformInfo}
-                            onOpenAuthor={openAvatarAuthor}
-                            onSaveMemo={onSaveMemo}
+                            onOpenGalleryPreview={openGalleryPreview}
+                            onGalleryIndexChange={setGalleryIndex}
+                            onUploadGallery={onUploadGallery}
                         />
-                        {hasGalleryTab ? (
-                            <AvatarDialogGalleryTab
-                                canManageAvatar={canManageAvatar}
-                                actionStatus={actionStatus}
-                                media={{
-                                    galleryImages,
-                                    currentGalleryImage,
-                                    galleryIndex,
-                                    listings
-                                }}
-                                onOpenGalleryPreview={openGalleryPreview}
-                                onGalleryIndexChange={setGalleryIndex}
-                                onUploadGallery={onUploadGallery}
-                            />
-                        ) : null}
-                        <EntityDialogTabContent value="json">
-                            <EntityRawJson
-                                value={{
-                                    avatar,
-                                    memo,
-                                    avatarBlocked,
-                                    galleryImages,
-                                    platformInfo,
-                                    fileAnalysis
-                                }}
-                            />
-                        </EntityDialogTabContent>
-                    </EntityDialogTabs>
-                </div>
-            </div>
+                    ) : null}
+                    <EntityDialogTabContent value="json">
+                        <EntityRawJson
+                            value={{
+                                avatar,
+                                memo,
+                                avatarBlocked,
+                                galleryImages,
+                                platformInfo,
+                                fileAnalysis
+                            }}
+                        />
+                    </EntityDialogTabContent>
+                </EntityDialogTabs>
+            </EntityDialogTwoColumnLayout>
         </EntityDialogScaffold>
     );
 }

@@ -3,22 +3,29 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import {
+    getEventGroupId,
+    getEventId
+} from '@/components/hosts/tools-dialogs/toolsDialogUtils.js';
+import {
     convertFileUrlToImageUrl,
     copyTextToClipboard,
     openExternalLink
 } from '@/lib/entityMedia.js';
 import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
 import {
-    getEventGroupId,
-    getEventId
-} from '@/components/hosts/tools-dialogs/toolsDialogUtils.js';
-import { groupProfileRepository, toolsRepository } from '@/repositories/index.js';
+    groupProfileRepository,
+    toolsRepository
+} from '@/repositories/index.js';
 import { openUserDialog } from '@/services/dialogService.js';
 import { replaceBioSymbols } from '@/shared/utils/base/string.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 
-import { EntityDialogScaffold } from './EntityDialogScaffold.jsx';
+import {
+    EntityDialogScaffold,
+    EntityDialogTwoColumnLayout
+} from './EntityDialogScaffold.jsx';
+import { downloadJsonFile } from './group-dialog/groupDialogDownloads.js';
 import {
     filterGroupMembers,
     filterGroupPosts,
@@ -26,7 +33,6 @@ import {
 } from './group-dialog/groupDialogFilters.js';
 import { GroupDialogHeaderSection } from './group-dialog/GroupDialogHeaderSection.jsx';
 import { GroupDialogTabPanels } from './group-dialog/GroupDialogTabPanels.jsx';
-import { downloadJsonFile } from './group-dialog/groupDialogDownloads.js';
 import {
     firstArray,
     hasGroupModerationPermission,
@@ -57,7 +63,9 @@ function extractGroupEventRows(value) {
 }
 
 function followingEventIds(value) {
-    return new Set(extractGroupEventRows(value).map(getEventId).filter(Boolean));
+    return new Set(
+        extractGroupEventRows(value).map(getEventId).filter(Boolean)
+    );
 }
 
 function normalizeGroupEvent(
@@ -68,9 +76,7 @@ function normalizeGroupEvent(
     const eventId = getEventId(event);
     const resolvedFollowing =
         isFollowing ??
-        (followingIds?.has(eventId)
-            ? true
-            : event?.userInterest?.isFollowing);
+        (followingIds?.has(eventId) ? true : event?.userInterest?.isFollowing);
 
     return {
         ...event,
@@ -727,20 +733,17 @@ export function GroupDialogTabbedView({
 
     return (
         <EntityDialogScaffold className="gap-3">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden min-[880px]:grid min-[880px]:grid-cols-[19rem_minmax(0,1fr)]">
-                <div className="max-h-[42vh] min-h-0 min-w-0 shrink-0 overflow-auto p-px min-[880px]:max-h-none min-[880px]:shrink min-[880px]:overflow-y-auto">
+            <EntityDialogTwoColumnLayout
+                railWidth="19rem"
+                rail={
                     <GroupDialogHeaderSection
                         state={headerState}
                         handlers={headerHandlers}
                     />
-                </div>
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                    <GroupDialogTabPanels
-                        state={tabState}
-                        handlers={tabHandlers}
-                    />
-                </div>
-            </div>
+                }
+            >
+                <GroupDialogTabPanels state={tabState} handlers={tabHandlers} />
+            </EntityDialogTwoColumnLayout>
             <GroupPostEditorDialog
                 open={Boolean(postEditor)}
                 onOpenChange={(open) => {

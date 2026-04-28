@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/ui/shadcn/button';
+import { Card, CardContent, CardHeader } from '@/ui/shadcn/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,6 +35,73 @@ function EntityDialogScaffold({ className, children }) {
         >
             {children}
         </div>
+    );
+}
+
+function EntityDialogTwoColumnLayout({
+    rail,
+    children,
+    railWidth = '20rem',
+    railMaxHeight = '42vh',
+    className,
+    railClassName,
+    contentClassName
+}) {
+    return (
+        <div
+            className={cn(
+                'flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden min-[880px]:grid min-[880px]:grid-cols-[var(--entity-dialog-rail-width)_minmax(0,1fr)]',
+                className
+            )}
+            style={{
+                '--entity-dialog-rail-width': railWidth,
+                '--entity-dialog-rail-max-height': railMaxHeight
+            }}
+        >
+            <div
+                className={cn(
+                    'max-h-[var(--entity-dialog-rail-max-height)] min-h-0 min-w-0 shrink-0 overflow-auto p-px min-[880px]:max-h-none min-[880px]:shrink min-[880px]:overflow-y-auto',
+                    railClassName
+                )}
+            >
+                {rail}
+            </div>
+            <div
+                className={cn(
+                    'flex min-h-0 min-w-0 flex-1 flex-col',
+                    contentClassName
+                )}
+            >
+                {children}
+            </div>
+        </div>
+    );
+}
+
+function EntityOverviewCard({
+    media,
+    children,
+    className,
+    headerClassName,
+    contentClassName
+}) {
+    return (
+        <Card
+            size="sm"
+            className={cn(
+                'min-w-0 overflow-visible border shadow-none ring-0',
+                className
+            )}
+        >
+            <CardHeader className={cn('gap-3', headerClassName)}>
+                {media}
+            </CardHeader>
+            <CardContent
+                className={cn('flex flex-col gap-3', contentClassName)}
+            >
+                {children}
+            </CardContent>
+        </Card>
     );
 }
 
@@ -465,8 +533,10 @@ export {
     EntityDialogScaffold,
     EntityDialogTabContent,
     EntityDialogTabs,
+    EntityDialogTwoColumnLayout,
     EntityInfoBlock,
     EntityInfoGrid,
     EntityMemoTextarea,
+    EntityOverviewCard,
     EntityRawJson
 };

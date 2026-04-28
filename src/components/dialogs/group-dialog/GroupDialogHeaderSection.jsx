@@ -25,14 +25,15 @@ import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/shadcn/avatar';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/shadcn/card';
+import { CardTitle } from '@/ui/shadcn/card';
 import { Separator } from '@/ui/shadcn/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
     EntityActionDropdown,
     EntityActionItem,
-    EntityActionSeparator
+    EntityActionSeparator,
+    EntityOverviewCard
 } from '../EntityDialogScaffold.jsx';
 import { GroupTitleLanguages } from './GroupDialogViewParts.jsx';
 
@@ -135,11 +136,8 @@ export function GroupDialogHeaderSection({ state, handlers }) {
     const PrimaryIcon = primaryAction.icon;
 
     return (
-        <Card
-            size="sm"
-            className="min-w-0 overflow-visible border shadow-none ring-0"
-        >
-            <CardHeader className="gap-3">
+        <EntityOverviewCard
+            media={
                 <Button
                     type="button"
                     variant="ghost"
@@ -160,314 +158,298 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                         </AvatarFallback>
                     </Avatar>
                 </Button>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-3">
-                <div className="flex min-w-0 items-start gap-2">
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                        <CardTitle className="flex min-w-0 flex-wrap items-center gap-1.5 text-lg leading-tight">
-                            {onCopyGroupName && group.name ? (
+            }
+        >
+            <div className="flex min-w-0 items-start gap-2">
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <CardTitle className="flex min-w-0 flex-wrap items-center gap-1.5 text-lg leading-tight">
+                        {onCopyGroupName && group.name ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="hover:text-primary h-auto min-w-0 justify-start p-0 text-left text-lg leading-tight font-semibold break-words whitespace-normal"
+                                onClick={onCopyGroupName}
+                            >
+                                {groupTitle}
+                            </Button>
+                        ) : (
+                            <span className="min-w-0 break-words">
+                                {groupTitle}
+                            </span>
+                        )}
+                        <GroupTitleLanguages
+                            languages={languageRows}
+                            limit={2}
+                        />
+                    </CardTitle>
+                    {subtitle ? (
+                        <div className="text-muted-foreground font-mono text-xs break-all">
+                            {subtitle}
+                        </div>
+                    ) : null}
+                    {group.ownerId ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
                                 <Button
                                     type="button"
                                     variant="ghost"
-                                    className="hover:text-primary h-auto min-w-0 justify-start p-0 text-left text-lg leading-tight font-semibold break-words whitespace-normal"
-                                    onClick={onCopyGroupName}
+                                    className="text-muted-foreground hover:text-primary h-auto max-w-full justify-start gap-1 p-0 text-xs font-normal"
+                                    onClick={onOpenOwner}
                                 >
-                                    {groupTitle}
+                                    <UserIcon data-icon="inline-start" />
+                                    <span className="truncate">
+                                        {t('dialog.group.generated.owner')}{' '}
+                                        {ownerLinkLabel}
+                                    </span>
                                 </Button>
-                            ) : (
-                                <span className="min-w-0 break-words">
-                                    {groupTitle}
-                                </span>
-                            )}
-                            <GroupTitleLanguages
-                                languages={languageRows}
-                                limit={2}
-                            />
-                        </CardTitle>
-                        {subtitle ? (
-                            <div className="text-muted-foreground font-mono text-xs break-all">
-                                {subtitle}
-                            </div>
-                        ) : null}
-                        {group.ownerId ? (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        className="text-muted-foreground hover:text-primary h-auto max-w-full justify-start gap-1 p-0 text-xs font-normal"
-                                        onClick={onOpenOwner}
-                                    >
-                                        <UserIcon data-icon="inline-start" />
-                                        <span className="truncate">
-                                            {t('dialog.group.generated.owner')}{' '}
-                                            {ownerLinkLabel}
-                                        </span>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {t(
-                                        'dialog.group.generated.open_group_owner_profile'
-                                    )}
-                                </TooltipContent>
-                            </Tooltip>
-                        ) : null}
-                    </div>
-                    <EntityActionDropdown busy={actionStatus !== 'idle'}>
-                        <EntityActionItem
-                            icon={RefreshCwIcon}
-                            disabled={actionStatus === 'refresh'}
-                            onSelect={onRefresh}
-                        >
-                            {t('common.actions.refresh')}
-                        </EntityActionItem>
-                        {groupUrl ? (
-                            <>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {t(
+                                    'dialog.group.generated.open_group_owner_profile'
+                                )}
+                            </TooltipContent>
+                        </Tooltip>
+                    ) : null}
+                </div>
+                <EntityActionDropdown busy={actionStatus !== 'idle'}>
+                    <EntityActionItem
+                        icon={RefreshCwIcon}
+                        disabled={actionStatus === 'refresh'}
+                        onSelect={onRefresh}
+                    >
+                        {t('common.actions.refresh')}
+                    </EntityActionItem>
+                    {groupUrl ? (
+                        <>
+                            <EntityActionItem
+                                icon={Share2Icon}
+                                onSelect={() => void onCopyGroupUrl()}
+                            >
+                                {t('dialog.group.actions.share')}
+                            </EntityActionItem>
+                            <EntityActionItem
+                                icon={ExternalLinkIcon}
+                                onSelect={onOpenGroupPage}
+                            >
+                                {t('common.actions.open_link')}
+                            </EntityActionItem>
+                            <EntityActionItem
+                                icon={CopyIcon}
+                                onSelect={() => void onCopyGroupId()}
+                            >
+                                {t('dialog.group.info.id_tooltip')}
+                            </EntityActionItem>
+                        </>
+                    ) : null}
+                    {isMember ? (
+                        <>
+                            <EntityActionSeparator />
+                            <EntityActionItem
+                                icon={TagIcon}
+                                disabled={
+                                    actionStatus === 'represent' ||
+                                    isPrivateGroup
+                                }
+                                onSelect={onRepresentToggle}
+                            >
+                                {t(
+                                    isRepresenting
+                                        ? 'dialog.group.actions.unrepresent_tooltip'
+                                        : 'dialog.group.actions.represent_tooltip'
+                                )}
+                            </EntityActionItem>
+                            <EntityActionItem
+                                icon={
+                                    isSubscribedToAnnouncements
+                                        ? BellOffIcon
+                                        : BellIcon
+                                }
+                                disabled={actionStatus === 'member-props'}
+                                onSelect={onSubscribeToggle}
+                            >
+                                {t(
+                                    isSubscribedToAnnouncements
+                                        ? 'dialog.group.actions.unsubscribe'
+                                        : 'dialog.group.actions.subscribe'
+                                )}
+                            </EntityActionItem>
+                            {canInviteToGroup ? (
                                 <EntityActionItem
-                                    icon={Share2Icon}
-                                    onSelect={() => void onCopyGroupUrl()}
-                                >
-                                    {t('dialog.group.actions.share')}
-                                </EntityActionItem>
-                                <EntityActionItem
-                                    icon={ExternalLinkIcon}
-                                    onSelect={onOpenGroupPage}
-                                >
-                                    {t('common.actions.open_link')}
-                                </EntityActionItem>
-                                <EntityActionItem
-                                    icon={CopyIcon}
-                                    onSelect={() => void onCopyGroupId()}
-                                >
-                                    {t('dialog.group.info.id_tooltip')}
-                                </EntityActionItem>
-                            </>
-                        ) : null}
-                        {isMember ? (
-                            <>
-                                <EntityActionSeparator />
-                                <EntityActionItem
-                                    icon={TagIcon}
+                                    icon={MessageSquareIcon}
                                     disabled={
-                                        actionStatus === 'represent' ||
-                                        isPrivateGroup
+                                        remoteStatus.members === 'running'
                                     }
-                                    onSelect={onRepresentToggle}
+                                    onSelect={() => void onInviteUserToGroup()}
                                 >
-                                    {t(
-                                        isRepresenting
-                                            ? 'dialog.group.actions.unrepresent_tooltip'
-                                            : 'dialog.group.actions.represent_tooltip'
-                                    )}
+                                    {t('dialog.group.actions.invite_to_group')}
                                 </EntityActionItem>
+                            ) : null}
+                            {canManagePosts ? (
                                 <EntityActionItem
-                                    icon={
-                                        isSubscribedToAnnouncements
-                                            ? BellOffIcon
-                                            : BellIcon
-                                    }
-                                    disabled={actionStatus === 'member-props'}
-                                    onSelect={onSubscribeToggle}
+                                    icon={TicketIcon}
+                                    disabled={remoteStatus.posts === 'running'}
+                                    onSelect={() => void onCreateGroupPost()}
                                 >
-                                    {t(
-                                        isSubscribedToAnnouncements
-                                            ? 'dialog.group.actions.unsubscribe'
-                                            : 'dialog.group.actions.subscribe'
-                                    )}
+                                    {t('dialog.group.actions.create_post')}
                                 </EntityActionItem>
-                                {canInviteToGroup ? (
+                            ) : null}
+                            {canModerateGroup ? (
+                                <EntityActionItem
+                                    icon={SettingsIcon}
+                                    onSelect={onOpenModeration}
+                                >
+                                    {t('dialog.group.actions.moderation_tools')}
+                                </EntityActionItem>
+                            ) : null}
+                            {canSetVisibility ? (
+                                <>
+                                    <EntityActionSeparator />
                                     <EntityActionItem
-                                        icon={MessageSquareIcon}
+                                        icon={UserIcon}
                                         disabled={
-                                            remoteStatus.members === 'running'
+                                            actionStatus === 'member-props'
                                         }
                                         onSelect={() =>
-                                            void onInviteUserToGroup()
+                                            onVisibilityChange('visible')
                                         }
                                     >
+                                        {memberVisibility === 'visible'
+                                            ? 'Selected: '
+                                            : ''}
                                         {t(
-                                            'dialog.group.actions.invite_to_group'
+                                            'dialog.group.actions.visibility_everyone'
                                         )}
                                     </EntityActionItem>
-                                ) : null}
-                                {canManagePosts ? (
                                     <EntityActionItem
-                                        icon={TicketIcon}
+                                        icon={UserIcon}
                                         disabled={
-                                            remoteStatus.posts === 'running'
+                                            actionStatus === 'member-props'
                                         }
                                         onSelect={() =>
-                                            void onCreateGroupPost()
+                                            onVisibilityChange('friends')
                                         }
                                     >
-                                        {t('dialog.group.actions.create_post')}
-                                    </EntityActionItem>
-                                ) : null}
-                                {canModerateGroup ? (
-                                    <EntityActionItem
-                                        icon={SettingsIcon}
-                                        onSelect={onOpenModeration}
-                                    >
+                                        {memberVisibility === 'friends'
+                                            ? 'Selected: '
+                                            : ''}
                                         {t(
-                                            'dialog.group.actions.moderation_tools'
+                                            'dialog.group.actions.visibility_friends'
                                         )}
                                     </EntityActionItem>
-                                ) : null}
-                                {canSetVisibility ? (
-                                    <>
-                                        <EntityActionSeparator />
-                                        <EntityActionItem
-                                            icon={UserIcon}
-                                            disabled={
-                                                actionStatus === 'member-props'
-                                            }
-                                            onSelect={() =>
-                                                onVisibilityChange('visible')
-                                            }
-                                        >
-                                            {memberVisibility === 'visible'
-                                                ? 'Selected: '
-                                                : ''}
-                                            {t(
-                                                'dialog.group.actions.visibility_everyone'
-                                            )}
-                                        </EntityActionItem>
-                                        <EntityActionItem
-                                            icon={UserIcon}
-                                            disabled={
-                                                actionStatus === 'member-props'
-                                            }
-                                            onSelect={() =>
-                                                onVisibilityChange('friends')
-                                            }
-                                        >
-                                            {memberVisibility === 'friends'
-                                                ? 'Selected: '
-                                                : ''}
-                                            {t(
-                                                'dialog.group.actions.visibility_friends'
-                                            )}
-                                        </EntityActionItem>
-                                        <EntityActionItem
-                                            icon={UserIcon}
-                                            disabled={
-                                                actionStatus === 'member-props'
-                                            }
-                                            onSelect={() =>
-                                                onVisibilityChange('hidden')
-                                            }
-                                        >
-                                            {memberVisibility === 'hidden'
-                                                ? 'Selected: '
-                                                : ''}
-                                            {t(
-                                                'dialog.group.actions.visibility_hidden'
-                                            )}
-                                        </EntityActionItem>
-                                    </>
-                                ) : null}
-                                <EntityActionSeparator />
-                                <EntityActionItem
-                                    icon={LogOutIcon}
-                                    destructive
-                                    disabled={actionStatus === 'leave'}
-                                    onSelect={onLeave}
-                                >
-                                    {t('dialog.group.actions.leave')}
-                                </EntityActionItem>
-                            </>
-                        ) : (
-                            <>
-                                <EntityActionSeparator />
-                                <EntityActionItem
-                                    icon={
-                                        isBlocked ? ShieldIcon : ShieldOffIcon
-                                    }
-                                    destructive={isBlocked}
-                                    disabled={actionStatus === 'block'}
-                                    onSelect={onBlockToggle}
-                                >
-                                    {t(
-                                        isBlocked
-                                            ? 'dialog.group.actions.unblock'
-                                            : 'dialog.group.actions.block'
-                                    )}
-                                </EntityActionItem>
-                            </>
-                        )}
-                    </EntityActionDropdown>
-                </div>
+                                    <EntityActionItem
+                                        icon={UserIcon}
+                                        disabled={
+                                            actionStatus === 'member-props'
+                                        }
+                                        onSelect={() =>
+                                            onVisibilityChange('hidden')
+                                        }
+                                    >
+                                        {memberVisibility === 'hidden'
+                                            ? 'Selected: '
+                                            : ''}
+                                        {t(
+                                            'dialog.group.actions.visibility_hidden'
+                                        )}
+                                    </EntityActionItem>
+                                </>
+                            ) : null}
+                            <EntityActionSeparator />
+                            <EntityActionItem
+                                icon={LogOutIcon}
+                                destructive
+                                disabled={actionStatus === 'leave'}
+                                onSelect={onLeave}
+                            >
+                                {t('dialog.group.actions.leave')}
+                            </EntityActionItem>
+                        </>
+                    ) : (
+                        <>
+                            <EntityActionSeparator />
+                            <EntityActionItem
+                                icon={isBlocked ? ShieldIcon : ShieldOffIcon}
+                                destructive={isBlocked}
+                                disabled={actionStatus === 'block'}
+                                onSelect={onBlockToggle}
+                            >
+                                {t(
+                                    isBlocked
+                                        ? 'dialog.group.actions.unblock'
+                                        : 'dialog.group.actions.block'
+                                )}
+                            </EntityActionItem>
+                        </>
+                    )}
+                </EntityActionDropdown>
+            </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                    {showPrivacyBadge ? (
-                        <Badge variant="outline">
-                            <ShieldIcon data-icon="inline-start" />
-                            {group.privacy}
-                        </Badge>
-                    ) : null}
-                    {joinState ? (
-                        <Badge variant="outline">{joinState}</Badge>
-                    ) : null}
-                    {showMembershipBadge ? (
-                        <Badge variant="secondary">
-                            {group.membershipStatus}
-                        </Badge>
-                    ) : null}
-                    {group.isVerified ? (
-                        <Badge>
-                            <BadgeCheckIcon data-icon="inline-start" />
-                            {t('dialog.group.tags.verified')}
-                        </Badge>
-                    ) : null}
-                </div>
-
-                <Button
-                    type="button"
-                    className="w-full"
-                    variant={primaryAction.variant}
-                    disabled={primaryAction.disabled}
-                    onClick={primaryAction.onClick}
-                >
-                    <PrimaryIcon data-icon="inline-start" />
-                    <span className="truncate">{primaryAction.label}</span>
-                </Button>
-
-                <Separator />
-
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                    <GroupRailMetric
-                        label={t('dialog.group.info.members')}
-                        value={group.memberCount}
-                    />
-                    <GroupRailMetric
-                        label={t('dashboard.widget.feed_online')}
-                        value={group.onlineMemberCount}
-                    />
-                    <GroupRailMetric
-                        label={t('dialog.group.generated.privacy')}
-                        value={group.privacy}
-                    />
-                    <GroupRailMetric
-                        label={t('dialog.group.generated.membership')}
-                        value={memberStatus || group.membershipStatus}
-                    />
-                </div>
-
-                {detail ? (
-                    <>
-                        <Separator />
-                        <div className="text-muted-foreground text-xs">
-                            {isValidElement(detail)
-                                ? detail
-                                : userFacingErrorMessage(
-                                      detail,
-                                      'Failed to load group details.'
-                                  )}
-                        </div>
-                    </>
+            <div className="flex flex-wrap gap-1.5">
+                {showPrivacyBadge ? (
+                    <Badge variant="outline">
+                        <ShieldIcon data-icon="inline-start" />
+                        {group.privacy}
+                    </Badge>
                 ) : null}
-            </CardContent>
-        </Card>
+                {joinState ? (
+                    <Badge variant="outline">{joinState}</Badge>
+                ) : null}
+                {showMembershipBadge ? (
+                    <Badge variant="secondary">{group.membershipStatus}</Badge>
+                ) : null}
+                {group.isVerified ? (
+                    <Badge>
+                        <BadgeCheckIcon data-icon="inline-start" />
+                        {t('dialog.group.tags.verified')}
+                    </Badge>
+                ) : null}
+            </div>
+
+            <Button
+                type="button"
+                className="w-full"
+                variant={primaryAction.variant}
+                disabled={primaryAction.disabled}
+                onClick={primaryAction.onClick}
+            >
+                <PrimaryIcon data-icon="inline-start" />
+                <span className="truncate">{primaryAction.label}</span>
+            </Button>
+
+            <Separator />
+
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                <GroupRailMetric
+                    label={t('dialog.group.info.members')}
+                    value={group.memberCount}
+                />
+                <GroupRailMetric
+                    label={t('dashboard.widget.feed_online')}
+                    value={group.onlineMemberCount}
+                />
+                <GroupRailMetric
+                    label={t('dialog.group.generated.privacy')}
+                    value={group.privacy}
+                />
+                <GroupRailMetric
+                    label={t('dialog.group.generated.membership')}
+                    value={memberStatus || group.membershipStatus}
+                />
+            </div>
+
+            {detail ? (
+                <>
+                    <Separator />
+                    <div className="text-muted-foreground text-xs">
+                        {isValidElement(detail)
+                            ? detail
+                            : userFacingErrorMessage(
+                                  detail,
+                                  'Failed to load group details.'
+                              )}
+                    </div>
+                </>
+            ) : null}
+        </EntityOverviewCard>
     );
 }

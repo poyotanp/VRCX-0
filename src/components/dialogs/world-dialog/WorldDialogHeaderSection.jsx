@@ -25,7 +25,6 @@ import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
 import { cn } from '@/lib/utils.js';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
-import { Card, CardContent, CardHeader } from '@/ui/shadcn/card';
 import { Separator } from '@/ui/shadcn/separator';
 import { Spinner } from '@/ui/shadcn/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
@@ -34,7 +33,8 @@ import {
     EntityActionDropdown,
     EntityActionItem,
     EntityActionSeparator,
-    EntityActionSub
+    EntityActionSub,
+    EntityOverviewCard
 } from '../EntityDialogScaffold.jsx';
 import { useWorldDescriptionTranslation } from './useWorldDescriptionTranslation.js';
 import { PlatformBadge } from './WorldDialogViewParts.jsx';
@@ -437,11 +437,8 @@ export function WorldDialogOverviewSection({ handlers, state, t }) {
         : '';
 
     return (
-        <Card
-            size="sm"
-            className="min-w-0 overflow-visible border shadow-none ring-0"
-        >
-            <CardHeader className="gap-3">
+        <EntityOverviewCard
+            media={
                 <Button
                     type="button"
                     variant="ghost"
@@ -466,162 +463,158 @@ export function WorldDialogOverviewSection({ handlers, state, t }) {
                         </span>
                     )}
                 </Button>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-3">
-                <div className="flex min-w-0 flex-col gap-2">
-                    <div className="flex min-w-0 items-start gap-2 overflow-hidden">
-                        {isHomeWorld ? (
-                            <HomeIcon className="mt-0.5 size-5 shrink-0" />
-                        ) : null}
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            disabled={!world.name}
-                            className="hover:text-primary h-auto min-w-0 flex-1 justify-start overflow-hidden p-0 text-left text-lg leading-tight font-semibold whitespace-normal disabled:pointer-events-none disabled:opacity-100"
-                            onClick={world.name ? onCopyWorldName : undefined}
-                        >
-                            <span className="line-clamp-2 min-w-0 break-all">
-                                {world.name || 'World'}
-                            </span>
-                        </Button>
-                    </div>
-                    {world.authorName ? (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            disabled={!world.authorId}
-                            className="text-muted-foreground hover:text-primary h-auto max-w-full min-w-0 justify-start overflow-hidden p-0 text-left font-mono text-sm disabled:pointer-events-none disabled:opacity-100"
-                            onClick={world.authorId ? onOpenAuthor : undefined}
-                        >
-                            <span className="truncate">{world.authorName}</span>
-                        </Button>
+            }
+        >
+            <div className="flex min-w-0 flex-col gap-2">
+                <div className="flex min-w-0 items-start gap-2 overflow-hidden">
+                    {isHomeWorld ? (
+                        <HomeIcon className="mt-0.5 size-5 shrink-0" />
                     ) : null}
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={!world.name}
+                        className="hover:text-primary h-auto min-w-0 flex-1 justify-start overflow-hidden p-0 text-left text-lg leading-tight font-semibold whitespace-normal disabled:pointer-events-none disabled:opacity-100"
+                        onClick={world.name ? onCopyWorldName : undefined}
+                    >
+                        <span className="line-clamp-2 min-w-0 break-all">
+                            {world.name || 'World'}
+                        </span>
+                    </Button>
                 </div>
+                {world.authorName ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={!world.authorId}
+                        className="text-muted-foreground hover:text-primary h-auto max-w-full min-w-0 justify-start overflow-hidden p-0 text-left font-mono text-sm disabled:pointer-events-none disabled:opacity-100"
+                        onClick={world.authorId ? onOpenAuthor : undefined}
+                    >
+                        <span className="truncate">{world.authorName}</span>
+                    </Button>
+                ) : null}
+            </div>
 
-                <WorldOverviewActions handlers={handlers} state={state} t={t} />
+            <WorldOverviewActions handlers={handlers} state={state} t={t} />
 
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                    <WorldOverviewMetric
-                        label={t('dialog.world.info.players')}
-                        value={world.occupants}
-                    />
-                    <WorldOverviewMetric
-                        label={t('dialog.world.info.visits')}
-                        value={world.visits}
-                    />
-                    <WorldOverviewMetric
-                        label={t('dialog.world.info.favorites')}
-                        value={favoritesText}
-                    />
-                    <WorldOverviewMetric
-                        label={t('dialog.world.info.heat')}
-                        value={world.heat}
-                    />
-                    <WorldOverviewMetric
-                        label={t('dialog.world.info.popularity')}
-                        value={world.popularity}
-                    />
-                </div>
-
-                <WorldOverviewFacts
-                    onCopyWorldId={onCopyWorldId}
-                    onCopyWorldUrl={onCopyWorldUrl}
-                    onOpenWorldPage={onOpenWorldPage}
-                    t={t}
-                    world={world}
-                    worldUrl={worldUrl}
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <WorldOverviewMetric
+                    label={t('dialog.world.info.players')}
+                    value={world.occupants}
                 />
+                <WorldOverviewMetric
+                    label={t('dialog.world.info.visits')}
+                    value={world.visits}
+                />
+                <WorldOverviewMetric
+                    label={t('dialog.world.info.favorites')}
+                    value={favoritesText}
+                />
+                <WorldOverviewMetric
+                    label={t('dialog.world.info.heat')}
+                    value={world.heat}
+                />
+                <WorldOverviewMetric
+                    label={t('dialog.world.info.popularity')}
+                    value={world.popularity}
+                />
+            </div>
 
-                <div className="flex flex-wrap gap-1.5">
+            <WorldOverviewFacts
+                onCopyWorldId={onCopyWorldId}
+                onCopyWorldUrl={onCopyWorldUrl}
+                onOpenWorldPage={onOpenWorldPage}
+                t={t}
+                world={world}
+                worldUrl={worldUrl}
+            />
+
+            <div className="flex flex-wrap gap-1.5">
+                <Badge
+                    variant={
+                        world.releaseStatus === 'public' ? 'default' : 'outline'
+                    }
+                    className="max-w-full"
+                >
+                    <span className="truncate">{releaseLabel}</span>
+                </Badge>
+                {world.$isCached ? (
+                    <Button
+                        type="button"
+                        size="xs"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={onOpenCache}
+                    >
+                        {world.$cacheSize
+                            ? `${world.$cacheSize} ${t('dialog.world.tags.cache')}`
+                            : t('dialog.world.tags.cache')}
+                    </Button>
+                ) : null}
+                {hasPersistData ? (
+                    <Badge variant="outline">
+                        {t('dialog.world.info.persistent_data')}
+                    </Badge>
+                ) : null}
+                {platformRows.map((platform) => (
+                    <PlatformBadge key={platform} name={platform} />
+                ))}
+                {visibleTags.map((tag) => (
                     <Badge
-                        variant={
-                            world.releaseStatus === 'public'
-                                ? 'default'
-                                : 'outline'
-                        }
+                        key={tag.key}
+                        variant="outline"
                         className="max-w-full"
                     >
-                        <span className="truncate">{releaseLabel}</span>
+                        <span className="truncate">{tag.label}</span>
                     </Badge>
-                    {world.$isCached ? (
-                        <Button
-                            type="button"
-                            size="xs"
-                            variant="outline"
-                            className="rounded-full"
-                            onClick={onOpenCache}
-                        >
-                            {world.$cacheSize
-                                ? `${world.$cacheSize} ${t('dialog.world.tags.cache')}`
-                                : t('dialog.world.tags.cache')}
-                        </Button>
-                    ) : null}
-                    {hasPersistData ? (
-                        <Badge variant="outline">
-                            {t('dialog.world.info.persistent_data')}
-                        </Badge>
-                    ) : null}
-                    {platformRows.map((platform) => (
-                        <PlatformBadge key={platform} name={platform} />
-                    ))}
-                    {visibleTags.map((tag) => (
-                        <Badge
-                            key={tag.key}
-                            variant="outline"
-                            className="max-w-full"
-                        >
-                            <span className="truncate">{tag.label}</span>
-                        </Badge>
-                    ))}
-                </div>
+                ))}
+            </div>
 
-                {world.description ? (
-                    <>
-                        <Separator />
-                        <div className="relative min-w-0">
-                            <div className="text-muted-foreground max-h-28 overflow-auto pr-8 text-sm whitespace-pre-wrap">
-                                {visibleDescription}
-                            </div>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        size="icon-xs"
-                                        variant="ghost"
-                                        className="absolute top-0 right-0"
-                                        disabled={descriptionTranslationLoading}
-                                        aria-label={descriptionActionLabel}
-                                        onClick={() =>
-                                            void toggleDescriptionTranslation()
-                                        }
-                                    >
-                                        {descriptionTranslationLoading ? (
-                                            <Spinner data-icon="inline-start" />
-                                        ) : (
-                                            <LanguagesIcon data-icon="inline-start" />
-                                        )}
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {descriptionActionLabel}
-                                </TooltipContent>
-                            </Tooltip>
+            {world.description ? (
+                <>
+                    <Separator />
+                    <div className="relative min-w-0">
+                        <div className="text-muted-foreground max-h-28 overflow-auto pr-8 text-sm whitespace-pre-wrap">
+                            {visibleDescription}
                         </div>
-                    </>
-                ) : null}
-
-                {detail ? (
-                    <div className="text-muted-foreground text-xs">
-                        {isValidElement(detail)
-                            ? detail
-                            : userFacingErrorMessage(
-                                  detail,
-                                  'The requested data could not be loaded.'
-                              )}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    type="button"
+                                    size="icon-xs"
+                                    variant="ghost"
+                                    className="absolute top-0 right-0"
+                                    disabled={descriptionTranslationLoading}
+                                    aria-label={descriptionActionLabel}
+                                    onClick={() =>
+                                        void toggleDescriptionTranslation()
+                                    }
+                                >
+                                    {descriptionTranslationLoading ? (
+                                        <Spinner data-icon="inline-start" />
+                                    ) : (
+                                        <LanguagesIcon data-icon="inline-start" />
+                                    )}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {descriptionActionLabel}
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
-                ) : null}
-            </CardContent>
-        </Card>
+                </>
+            ) : null}
+
+            {detail ? (
+                <div className="text-muted-foreground text-xs">
+                    {isValidElement(detail)
+                        ? detail
+                        : userFacingErrorMessage(
+                              detail,
+                              'The requested data could not be loaded.'
+                          )}
+                </div>
+            ) : null}
+        </EntityOverviewCard>
     );
 }

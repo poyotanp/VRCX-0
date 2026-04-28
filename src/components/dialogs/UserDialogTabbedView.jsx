@@ -22,7 +22,10 @@ import { useFriendRosterStore } from '@/state/friendRosterStore.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 
-import { EntityDialogScaffold } from './EntityDialogScaffold.jsx';
+import {
+    EntityDialogScaffold,
+    EntityDialogTwoColumnLayout
+} from './EntityDialogScaffold.jsx';
 import { UserDialogHeaderSection } from './user-dialog/components/UserDialogHeaderSection.jsx';
 import { UserDialogTabsSection } from './user-dialog/components/UserDialogTabsSection.jsx';
 import { buildUserDialogLocationUsers } from './user-dialog/userDialogLocationUsers.js';
@@ -30,9 +33,9 @@ import {
     isOfflineLikeValue,
     normalizedText
 } from './user-dialog/userDialogRows.js';
+import { buildUserDialogProfileSummary } from './user-dialog/userDialogViewData.js';
 import { useUserDialogGroupActions } from './user-dialog/useUserDialogGroupActions.js';
 import { useUserDialogTabData } from './user-dialog/useUserDialogTabData.js';
-import { buildUserDialogProfileSummary } from './user-dialog/userDialogViewData.js';
 
 const VRC_PLUS_SUMMARY_SNAPSHOT = Object.freeze({ $isVRCPlus: true });
 
@@ -125,10 +128,10 @@ export function UserDialogTabbedView({
     const isLocalUserVrcPlusSupporter = useRuntimeStore((state) =>
         Boolean(
             state.auth.currentUserSnapshot?.$isVRCPlus ||
-                state.auth.currentUserSnapshot?.tags?.includes?.(
-                    'system_supporter'
-                ) ||
-                globalThis?.$debug?.debugVrcPlus
+            state.auth.currentUserSnapshot?.tags?.includes?.(
+                'system_supporter'
+            ) ||
+            globalThis?.$debug?.debugVrcPlus
         )
     );
     const inGameGroupOrder = useRuntimeStore(
@@ -417,12 +420,14 @@ export function UserDialogTabbedView({
 
     return (
         <EntityDialogScaffold className="gap-3">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden sm:grid sm:grid-cols-[20rem_minmax(0,1fr)]">
-                <div className="max-h-[42vh] min-h-0 min-w-0 shrink-0 overflow-auto p-px sm:max-h-none sm:shrink sm:overflow-y-auto">
+            <EntityDialogTwoColumnLayout
+                rail={
                     <UserDialogHeaderSection
                         actionStatus={actionStatus}
                         avatarOverrideState={avatarOverrideState}
-                        canInviteFromCurrentLocation={canInviteFromCurrentLocation}
+                        canInviteFromCurrentLocation={
+                            canInviteFromCurrentLocation
+                        }
                         currentAvatarTarget={currentAvatarTarget}
                         currentUserBoopingEnabled={currentUserBoopingEnabled}
                         detail={detail}
@@ -437,8 +442,12 @@ export function UserDialogTabbedView({
                         moderationState={moderationState}
                         onAvatarOverride={onAvatarOverride}
                         onBoop={onBoop}
-                        onCopyUserId={() => void copyUserText(profile.id, 'User ID')}
-                        onCopyUserUrl={() => void copyUserText(userUrl, 'User URL')}
+                        onCopyUserId={() =>
+                            void copyUserText(profile.id, 'User ID')
+                        }
+                        onCopyUserUrl={() =>
+                            void copyUserText(userUrl, 'User URL')
+                        }
                         onEditMemo={onEditMemo}
                         onEditSelfProfileDetails={onEditSelfProfileDetails}
                         onEditSelfStatus={onEditSelfStatus}
@@ -464,7 +473,10 @@ export function UserDialogTabbedView({
                         onOpenImagePreview={openImagePreview}
                         onOpenUserIcon={() =>
                             openImagePreview({
-                                url: convertFileUrlToImageUrl(profile.userIcon, 512),
+                                url: convertFileUrlToImageUrl(
+                                    profile.userIcon,
+                                    512
+                                ),
                                 title: profileTitle
                             })
                         }
@@ -482,7 +494,8 @@ export function UserDialogTabbedView({
                             profile.displayName || profile.username
                                 ? () =>
                                       void copyUserText(
-                                          profile.displayName || profile.username,
+                                          profile.displayName ||
+                                              profile.username,
                                           'Display name'
                                       )
                                 : undefined
@@ -513,84 +526,83 @@ export function UserDialogTabbedView({
                         userSubtitle={userSubtitle}
                         userUrl={userUrl}
                     />
-                </div>
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-                    <UserDialogTabsSection
-                        activeTab={activeTab}
-                        avatarReleaseStatus={avatarReleaseStatus}
-                        avatarSort={avatarSort}
-                        bioLinks={bioLinks}
-                        changeAvatarReleaseStatus={changeAvatarReleaseStatus}
-                        changeAvatarSort={changeAvatarSort}
-                        changeTab={changeTab}
-                        changeWorldOrder={changeWorldOrder}
-                        changeWorldSort={changeWorldSort}
-                        currentAvatarDialogArgs={currentAvatarDialogArgs}
-                        currentAvatarDisplayName={currentAvatarDisplayName}
-                        currentAvatarTarget={currentAvatarTarget}
-                        currentEndpoint={currentEndpoint}
-                        currentUserId={currentUserId}
-                        effectiveGroupSort={effectiveGroupSort}
-                        favoriteWorlds={favoriteWorlds}
-                        filteredFavoriteWorlds={filteredFavoriteWorlds}
-                        filteredMutualFriends={filteredMutualFriends}
-                        filteredProfileGroups={filteredProfileGroups}
-                        filteredProfileWorlds={filteredProfileWorlds}
-                        groupSearchActive={groupSearchActive}
-                        hideUserMemos={hideUserMemos}
-                        hideUserNotes={hideUserNotes}
-                        isCurrentUser={isCurrentUser}
-                        isFavorite={isFavorite}
-                        isFriend={isFriend}
-                        lastSeen={lastSeen}
-                        loadTab={loadTab}
-                        locationFriendCount={locationFriendCount}
-                        locationInstance={locationInstance}
-                        locationInstanceUsers={locationInstanceUsers}
-                        locationOwnerId={locationOwnerId}
-                        locationPlayerCount={locationPlayerCount}
-                        locationWorldTitle={locationWorldTitle}
-                        memo={memo}
-                        moderationState={moderationState}
-                        mutualFriends={mutualFriends}
-                        mutualSort={mutualSort}
-                        onEditMemo={onEditMemo}
-                        onOpenInstanceHistory={openInstanceHistory}
-                        onPreviousInstancesChange={onPreviousInstancesChange}
-                        onRefreshLocation={onRefreshLocation}
-                        openAvatarDialog={openAvatarDialog}
-                        openGroupDialog={openGroupDialog}
-                        ownGroupCountText={ownGroupCountText}
-                        previousInstances={previousInstances}
-                        profile={profile}
-                        profileAvatars={profileAvatars}
-                        profileGroups={profileGroups}
-                        profileWorlds={profileWorlds}
-                        remainingGroupCountText={remainingGroupCountText}
-                        remoteData={remoteData}
-                        remoteErrors={remoteErrors}
-                        remoteStatus={remoteStatus}
-                        representedGroup={representedGroup}
-                        representedGroupStatus={representedGroupStatus}
-                        search={search}
-                        setGroupSort={setGroupSort}
-                        setMutualSort={setMutualSort}
-                        setSearch={setSearch}
-                        tabCounts={tabCounts}
-                        tabs={tabs}
-                        t={t}
-                        userGroupSections={userGroupSections}
-                        userJoinCount={userJoinCount}
-                        userTimeSpent={userTimeSpent}
-                        visibleHomeLocationTarget={visibleHomeLocationTarget}
-                        visibleMutualFriends={visibleMutualFriends}
-                        visiblePresenceLocation={visiblePresenceLocation}
-                        visibleProfileAvatars={visibleProfileAvatars}
-                        worldOrder={worldOrder}
-                        worldSort={worldSort}
-                    />
-                </div>
-            </div>
+                }
+            >
+                <UserDialogTabsSection
+                    activeTab={activeTab}
+                    avatarReleaseStatus={avatarReleaseStatus}
+                    avatarSort={avatarSort}
+                    bioLinks={bioLinks}
+                    changeAvatarReleaseStatus={changeAvatarReleaseStatus}
+                    changeAvatarSort={changeAvatarSort}
+                    changeTab={changeTab}
+                    changeWorldOrder={changeWorldOrder}
+                    changeWorldSort={changeWorldSort}
+                    currentAvatarDialogArgs={currentAvatarDialogArgs}
+                    currentAvatarDisplayName={currentAvatarDisplayName}
+                    currentAvatarTarget={currentAvatarTarget}
+                    currentEndpoint={currentEndpoint}
+                    currentUserId={currentUserId}
+                    effectiveGroupSort={effectiveGroupSort}
+                    favoriteWorlds={favoriteWorlds}
+                    filteredFavoriteWorlds={filteredFavoriteWorlds}
+                    filteredMutualFriends={filteredMutualFriends}
+                    filteredProfileGroups={filteredProfileGroups}
+                    filteredProfileWorlds={filteredProfileWorlds}
+                    groupSearchActive={groupSearchActive}
+                    hideUserMemos={hideUserMemos}
+                    hideUserNotes={hideUserNotes}
+                    isCurrentUser={isCurrentUser}
+                    isFavorite={isFavorite}
+                    isFriend={isFriend}
+                    lastSeen={lastSeen}
+                    loadTab={loadTab}
+                    locationFriendCount={locationFriendCount}
+                    locationInstance={locationInstance}
+                    locationInstanceUsers={locationInstanceUsers}
+                    locationOwnerId={locationOwnerId}
+                    locationPlayerCount={locationPlayerCount}
+                    locationWorldTitle={locationWorldTitle}
+                    memo={memo}
+                    moderationState={moderationState}
+                    mutualFriends={mutualFriends}
+                    mutualSort={mutualSort}
+                    onEditMemo={onEditMemo}
+                    onOpenInstanceHistory={openInstanceHistory}
+                    onPreviousInstancesChange={onPreviousInstancesChange}
+                    onRefreshLocation={onRefreshLocation}
+                    openAvatarDialog={openAvatarDialog}
+                    openGroupDialog={openGroupDialog}
+                    ownGroupCountText={ownGroupCountText}
+                    previousInstances={previousInstances}
+                    profile={profile}
+                    profileAvatars={profileAvatars}
+                    profileGroups={profileGroups}
+                    profileWorlds={profileWorlds}
+                    remainingGroupCountText={remainingGroupCountText}
+                    remoteData={remoteData}
+                    remoteErrors={remoteErrors}
+                    remoteStatus={remoteStatus}
+                    representedGroup={representedGroup}
+                    representedGroupStatus={representedGroupStatus}
+                    search={search}
+                    setGroupSort={setGroupSort}
+                    setMutualSort={setMutualSort}
+                    setSearch={setSearch}
+                    tabCounts={tabCounts}
+                    tabs={tabs}
+                    t={t}
+                    userGroupSections={userGroupSections}
+                    userJoinCount={userJoinCount}
+                    userTimeSpent={userTimeSpent}
+                    visibleHomeLocationTarget={visibleHomeLocationTarget}
+                    visibleMutualFriends={visibleMutualFriends}
+                    visiblePresenceLocation={visiblePresenceLocation}
+                    visibleProfileAvatars={visibleProfileAvatars}
+                    worldOrder={worldOrder}
+                    worldSort={worldSort}
+                />
+            </EntityDialogTwoColumnLayout>
         </EntityDialogScaffold>
     );
 }
