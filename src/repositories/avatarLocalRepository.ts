@@ -158,15 +158,19 @@ async function addAvatarTimeSpent(
     timeSpent: unknown
 ) {
     const normalizedAvatarId = normalizeId(avatarId);
+    const normalizedTimeSpent = parseInteger(timeSpent, 0);
     if (!normalizedAvatarId) {
         return;
     }
 
     await sqliteRepository.executeNonQuery(
-        `UPDATE ${avatarHistoryTableName(userId)} SET time = time + @timeSpent WHERE avatar_id = @avatarId`,
+        `INSERT INTO ${avatarHistoryTableName(userId)} (avatar_id, created_at, time)
+         VALUES (@avatarId, @createdAt, @timeSpent)
+         ON CONFLICT(avatar_id) DO UPDATE SET time = time + @timeSpent`,
         {
             '@avatarId': normalizedAvatarId,
-            '@timeSpent': parseInteger(timeSpent, 0)
+            '@createdAt': new Date().toJSON(),
+            '@timeSpent': normalizedTimeSpent
         }
     );
 }

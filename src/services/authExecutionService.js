@@ -22,6 +22,10 @@ import {
     refreshSavedAuthSnapshot
 } from './authSnapshotService.js';
 import { clearEntityQueryCache } from '@/lib/entityQueryCache.js';
+import {
+    buildAvatarWearSnapshotUpdate,
+    persistAvatarWearTransition
+} from './avatarWearTimeService.js';
 import i18n from './i18nService.js';
 import { stopRealtimeTransport } from './realtimeTransportService.js';
 import { bootstrapAuthenticatedSession } from './sessionBootstrapService.js';
@@ -139,13 +143,23 @@ function setCurrentUserRuntimeAuth(
     avatarProfileRepository.clearAvatarNameCache();
     useFriendRosterStore.getState().resetRoster();
     useFavoriteStore.getState().resetFavorites();
+    const runtimeStore = useRuntimeStore.getState();
+    const { snapshot: nextSnapshot, transition } =
+        buildAvatarWearSnapshotUpdate({
+            previousSnapshot: runtimeStore.auth.currentUserSnapshot,
+            nextSnapshot: user,
+            isGameRunning: runtimeStore.gameState.isGameRunning,
+            userId: user?.id
+        });
+
     useRuntimeStore.getState().setAuthBootstrap({
-        currentUserId: user?.id ?? null,
-        currentUserDisplayName: getCurrentUserDisplayName(user),
+        currentUserId: nextSnapshot?.id ?? null,
+        currentUserDisplayName: getCurrentUserDisplayName(nextSnapshot),
         currentUserEndpoint: endpoint,
         currentUserWebsocket: websocket,
-        currentUserSnapshot: user ?? null
+        currentUserSnapshot: nextSnapshot ?? null
     });
+    persistAvatarWearTransition(transition);
 }
 
 async function getLocalizedAuthPrompt(mode) {

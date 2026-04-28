@@ -5,6 +5,10 @@ import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useShellStore } from '@/state/shellStore.js';
 
 import {
+    buildAvatarWearSnapshotUpdate,
+    persistAvatarWearTransition
+} from './avatarWearTimeService.js';
+import {
     applyCurrentUserLocationEvent
 } from './realtime-presence/currentUserLocationFallback.js';
 import { dispatchRealtimePresenceMessage } from './realtime-presence/dispatcher.js';
@@ -41,7 +45,16 @@ function patchCurrentUserSnapshot(patch) {
         return;
     }
 
-    setCurrentUserSnapshot(runtimeStore, { ...snapshot, ...patch });
+    const { snapshot: nextSnapshot, transition } =
+        buildAvatarWearSnapshotUpdate({
+            previousSnapshot: snapshot,
+            nextSnapshot: { ...snapshot, ...patch },
+            isGameRunning: runtimeStore.gameState.isGameRunning,
+            userId: runtimeStore.auth.currentUserId
+        });
+
+    setCurrentUserSnapshot(runtimeStore, nextSnapshot);
+    persistAvatarWearTransition(transition);
 }
 
 function syncCurrentUserFriendState(userId, stateBucket) {

@@ -1,9 +1,9 @@
 import { backend } from '@/platform/index.js';
+import { configRepository, gameLogRepository } from '@/repositories/index.js';
 import {
-    avatarLocalRepository,
-    configRepository,
-    gameLogRepository
-} from '@/repositories/index.js';
+    startCurrentAvatarWearTimer,
+    stopCurrentAvatarWearTimer
+} from '@/services/avatarWearTimeService.js';
 import { refreshDiscordPresence } from '@/services/discordPresenceService.js';
 import {
     finalizeCurrentGameLogSession,
@@ -92,35 +92,30 @@ async function launchVrchat(location, desktopMode) {
     }
 }
 
-async function persistGameStopSession(previousGameState, currentUserSnapshot) {
+async function persistGameStopSession(previousGameState) {
     const startedAt = Date.parse(previousGameState.lastGameStartedAt || '');
-    if (!Number.isFinite(startedAt)) {
-        return;
-    }
-
     const offlineAt = Date.now();
-    const sessionDuration = Math.max(0, offlineAt - startedAt);
-    if (sessionDuration <= 0) {
-        return;
+
+    if (Number.isFinite(startedAt)) {
+        const sessionDuration = Math.max(0, offlineAt - startedAt);
+        if (sessionDuration > 0) {
+            await Promise.all([
+                configRepository.setString(
+                    'lastGameSessionMs',
+                    String(sessionDuration)
+                ),
+                configRepository.setString(
+                    'lastGameOfflineAt',
+                    String(offlineAt)
+                )
+            ]);
+        }
     }
 
-    await Promise.all([
-        configRepository.setString(
-            'lastGameSessionMs',
-            String(sessionDuration)
-        ),
-        configRepository.setString('lastGameOfflineAt', String(offlineAt))
-    ]);
-
-    const currentAvatar = currentUserSnapshot?.currentAvatar;
-    const currentUserId = useRuntimeStore.getState().auth.currentUserId;
-    if (currentAvatar && currentUserId) {
-        await avatarLocalRepository.addAvatarTimeSpent(
-            currentUserId,
-            currentAvatar,
-            sessionDuration
-        );
-    }
+    await stopCurrentAvatarWearTimer({
+        fallbackStartedAt: Number.isFinite(startedAt) ? startedAt : 0,
+        now: offlineAt
+    });
 }
 
 async function sweepVrchatCacheIfEnabled() {
@@ -250,7 +245,7 @@ async function handleGameStopped(previousGameState, currentUserSnapshot) {
     });
 
     const results = await Promise.allSettled([
-        persistGameStopSession(previousGameState, currentUserSnapshot),
+        persistGameStopSession(previousGameState),
         sweepVrchatCacheIfEnabled(),
         scheduleCrashRelaunchIfNeeded(previousGameState)
     ]);
@@ -422,6 +417,7 @@ export async function handleGameRunningUpdate(payload = {}) {
         if (gameRunningChanged) {
             resetGameLogIngestSessionState();
             resetNowPlayingState();
+            startCurrentAvatarWearTimer();
         }
         clearCrashRelaunchTimer();
         scheduleDebugLoggingCheck(1000);

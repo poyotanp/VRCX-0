@@ -9,6 +9,7 @@ import {
     avatarProfileRepository,
     vrchatAuthRepository
 } from '@/repositories/index.js';
+import { getCurrentAvatarLiveWearTime } from '@/services/avatarWearTimeService.js';
 import {
     IMAGE_UPLOAD_ACCEPT
 } from '@/shared/utils/imageUpload.js';
@@ -261,7 +262,8 @@ export function AvatarDialogContent({ avatarId, seedData = null }) {
             .getAvatarProfile({
                 avatarId: normalizedAvatarId,
                 endpoint: currentEndpoint,
-                dialog: true
+                dialog: true,
+                currentUserId
             })
             .then((nextAvatar) => {
                 if (!active) {
@@ -319,7 +321,7 @@ export function AvatarDialogContent({ avatarId, seedData = null }) {
         return () => {
             active = false;
         };
-    }, [currentEndpoint, normalizedAvatarId, seedData]);
+    }, [currentEndpoint, currentUserId, normalizedAvatarId, seedData]);
 
     if (loadStatus === 'running' && !avatar) {
         return (
@@ -373,7 +375,8 @@ export function AvatarDialogContent({ avatarId, seedData = null }) {
         $isCached: avatarSideData.cache.inCache || avatar.$isCached,
         $cacheSize: avatarSideData.cache.cacheSize,
         $cacheLocked: avatarSideData.cache.cacheLocked,
-        $cachePath: avatarSideData.cache.cachePath
+        $cachePath: avatarSideData.cache.cachePath,
+        $timeSpent: getCurrentAvatarLiveWearTime(avatar.id, avatar.$timeSpent)
     };
 
     function applyCurrentAvatarUpdate(nextAvatar) {

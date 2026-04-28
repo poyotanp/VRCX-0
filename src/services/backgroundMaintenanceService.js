@@ -29,6 +29,10 @@ import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useSessionStore } from '@/state/sessionStore.js';
 
 import { refreshDiscordPresence as updateDiscordPresence } from './discordPresenceService.js';
+import {
+    buildAvatarWearSnapshotUpdate,
+    persistAvatarWearTransition
+} from './avatarWearTimeService.js';
 import { bootstrapFavorites } from './favoriteBootstrapService.js';
 import {
     bootstrapFriendRoster,
@@ -330,16 +334,27 @@ export async function refreshCurrentUser() {
         return;
     }
 
+    const runtimeStore = useRuntimeStore.getState();
+    const { snapshot: nextSnapshot, transition } =
+        buildAvatarWearSnapshotUpdate({
+            previousSnapshot: runtimeStore.auth.currentUserSnapshot,
+            nextSnapshot: user,
+            isGameRunning: runtimeStore.gameState.isGameRunning,
+            userId: user.id
+        });
+
     useRuntimeStore.getState().setAuthBootstrap({
-        currentUserId: user.id,
-        currentUserDisplayName: user.displayName || user.username || user.id,
+        currentUserId: nextSnapshot.id,
+        currentUserDisplayName:
+            nextSnapshot.displayName || nextSnapshot.username || nextSnapshot.id,
         currentUserEndpoint,
         currentUserWebsocket,
-        currentUserSnapshot: user
+        currentUserSnapshot: nextSnapshot
     });
+    persistAvatarWearTransition(transition);
     syncFriendRosterStateFromCurrentUserSnapshot(
-        user,
-        `Friend roster states refreshed for ${user.displayName || user.username || user.id}.`
+        nextSnapshot,
+        `Friend roster states refreshed for ${nextSnapshot.displayName || nextSnapshot.username || nextSnapshot.id}.`
     );
 }
 
