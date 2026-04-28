@@ -65,6 +65,31 @@ async function getGroupCalendars(
     });
 }
 
+async function getGroupCalendar(
+    { groupId },
+    { endpoint = '', force = false } = {}
+) {
+    return fetchCachedData({
+        queryKey: queryKeys.groupCalendarList(
+            'group',
+            { groupId },
+            endpoint
+        ),
+        policy: entityQueryPolicies.groupCollection,
+        force,
+        queryFn: async () => {
+            const response = await execute(
+                `calendar/${encodeURIComponent(groupId)}`,
+                {
+                    endpoint,
+                    method: 'GET'
+                }
+            );
+            return response.json;
+        }
+    });
+}
+
 async function getFollowingGroupCalendars(
     params = {},
     { endpoint = '', force = false } = {}
@@ -219,6 +244,7 @@ async function editInviteMessage(
 
 const toolsRepository = Object.freeze({
     execute,
+    getGroupCalendar,
     getGroupCalendars,
     getFollowingGroupCalendars,
     getFeaturedGroupCalendars,
@@ -235,6 +261,7 @@ const toolsRepository = Object.freeze({
 
 export {
     execute,
+    getGroupCalendar,
     getGroupCalendars,
     getFollowingGroupCalendars,
     getFeaturedGroupCalendars,

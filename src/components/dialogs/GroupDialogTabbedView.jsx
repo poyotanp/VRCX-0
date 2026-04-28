@@ -7,8 +7,14 @@ import {
     copyTextToClipboard,
     openExternalLink
 } from '@/lib/entityMedia.js';
-import { groupProfileRepository } from '@/repositories/index.js';
+import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
+import {
+    getEventGroupId,
+    getEventId
+} from '@/components/hosts/tools-dialogs/toolsDialogUtils.js';
+import { groupProfileRepository, toolsRepository } from '@/repositories/index.js';
 import { openUserDialog } from '@/services/dialogService.js';
+import { replaceBioSymbols } from '@/shared/utils/base/string.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 
@@ -31,10 +37,52 @@ import { GroupModerationToolsDialog } from './group-dialog/GroupModerationToolsD
 import { GroupPostEditorDialog } from './group-dialog/GroupPostEditorDialog.jsx';
 import { useGroupDialogLanguageRows } from './group-dialog/useGroupDialogLanguageRows.js';
 import { useGroupDialogPosts } from './group-dialog/useGroupDialogPosts.js';
-let lastGroupDialogTab = 'info';
+let lastGroupDialogTab = 'overview';
 
-function resolveGroupDialogTab(tabs, preferred, fallback = 'info') {
+function resolveGroupDialogTab(tabs, preferred, fallback = 'overview') {
     return tabs.some((tab) => tab.value === preferred) ? preferred : fallback;
+}
+
+function extractGroupEventRows(value) {
+    if (Array.isArray(value)) {
+        return value;
+    }
+    if (Array.isArray(value?.results)) {
+        return value.results;
+    }
+    if (Array.isArray(value?.json?.results)) {
+        return value.json.results;
+    }
+    return [];
+}
+
+function followingEventIds(value) {
+    return new Set(extractGroupEventRows(value).map(getEventId).filter(Boolean));
+}
+
+function normalizeGroupEvent(
+    event,
+    fallbackGroupId = '',
+    { followingIds = null, isFollowing = null } = {}
+) {
+    const eventId = getEventId(event);
+    const resolvedFollowing =
+        isFollowing ??
+        (followingIds?.has(eventId)
+            ? true
+            : event?.userInterest?.isFollowing);
+
+    return {
+        ...event,
+        groupId: event?.groupId || fallbackGroupId,
+        ownerId: event?.ownerId || event?.groupId || fallbackGroupId,
+        userInterest: {
+            ...(event?.userInterest || {}),
+            isFollowing: Boolean(resolvedFollowing)
+        },
+        title: replaceBioSymbols(event?.title || ''),
+        description: replaceBioSymbols(event?.description || '')
+    };
 }
 
 export function GroupDialogTabbedView({
@@ -73,7 +121,7 @@ export function GroupDialogTabbedView({
     const openImagePreview = useModalStore((state) => state.openImagePreview);
     const prompt = useModalStore((state) => state.prompt);
     const confirm = useModalStore((state) => state.confirm);
-    const [activeTab, setActiveTab] = useState('info');
+    const [activeTab, setActiveTab] = useState('overview');
     const [remoteData, setRemoteData] = useState({
         posts: [],
         members: [],
@@ -81,6 +129,9 @@ export function GroupDialogTabbedView({
     });
     const [remoteStatus, setRemoteStatus] = useState({});
     const [remoteErrors, setRemoteErrors] = useState({});
+    const [groupEvents, setGroupEvents] = useState([]);
+    const [groupEventsStatus, setGroupEventsStatus] = useState('idle');
+    const [groupEventsError, setGroupEventsError] = useState('');
     const [search, setSearch] = useState({ posts: '', members: '' });
     const [memberSort, setMemberSort] = useState('joinedAt:desc');
     const [memberRoleId, setMemberRoleId] = useState('');
@@ -96,6 +147,7 @@ export function GroupDialogTabbedView({
         groupId: group.id,
         gallerySignature
     });
+    const groupEventsRequestRef = useRef(0);
     const tabs = getGroupDialogTabs(t);
     const posts =
         remoteStatus.posts === 'ready'
@@ -138,6 +190,10 @@ export function GroupDialogTabbedView({
         setRemoteData({ posts: [], members: [], photos: [] });
         setRemoteStatus({});
         setRemoteErrors({});
+        groupEventsRequestRef.current += 1;
+        setGroupEvents([]);
+        setGroupEventsStatus('idle');
+        setGroupEventsError('');
         setSearch({ posts: '', members: '' });
         setMemberSort('joinedAt:desc');
         setMemberRoleId('');
@@ -274,6 +330,99 @@ export function GroupDialogTabbedView({
         }
     }
 
+    async function loadGroupEvents({ force = false } = {}) {
+        if (!group.id) {
+            return;
+        }
+
+        const requestId = groupEventsRequestRef.current + 1;
+        groupEventsRequestRef.current = requestId;
+        setGroupEventsStatus('running');
+        setGroupEventsError('');
+        try {
+            const [response, followingResponse] = await Promise.all([
+                toolsRepository.getGroupCalendar(
+                    { groupId: group.id },
+                    { endpoint: currentEndpoint, force }
+                ),
+                toolsRepository
+                    .getFollowingGroupCalendars(
+                        { n: 100, offset: 0 },
+                        { endpoint: currentEndpoint, force }
+                    )
+                    .catch(() => [])
+            ]);
+            if (requestId !== groupEventsRequestRef.current) {
+                return;
+            }
+            const followingIds = followingEventIds(followingResponse);
+            setGroupEvents(
+                extractGroupEventRows(response).map((event) =>
+                    normalizeGroupEvent(event, group.id, { followingIds })
+                )
+            );
+            setGroupEventsStatus('ready');
+        } catch (error) {
+            if (requestId !== groupEventsRequestRef.current) {
+                return;
+            }
+            setGroupEventsStatus('error');
+            setGroupEventsError(
+                userFacingErrorMessage(
+                    error,
+                    t('dialog.group.events.failed_to_load')
+                )
+            );
+        }
+    }
+
+    async function toggleGroupEventFollow(event) {
+        const eventId = getEventId(event);
+        const eventGroupId = getEventGroupId(event) || group.id;
+        if (!eventId || !eventGroupId) {
+            return;
+        }
+        const nextFollowing = !event?.userInterest?.isFollowing;
+        try {
+            const nextEvent = await toolsRepository.followGroupEvent(
+                {
+                    groupId: eventGroupId,
+                    eventId,
+                    isFollowing: nextFollowing
+                },
+                { endpoint: currentEndpoint }
+            );
+            setGroupEvents((current) =>
+                current.map((row) =>
+                    getEventId(row) === eventId
+                        ? normalizeGroupEvent(
+                              {
+                                  ...row,
+                                  ...nextEvent,
+                                  userInterest: {
+                                      ...(row?.userInterest || {}),
+                                      ...(nextEvent?.userInterest || {}),
+                                      isFollowing: nextFollowing
+                                  }
+                              },
+                              eventGroupId,
+                              { isFollowing: nextFollowing }
+                          )
+                        : row
+                )
+            );
+        } catch (error) {
+            toast.error(
+                userFacingErrorMessage(
+                    error,
+                    t(
+                        'host.tools_dialogs.generated_toast.failed_to_update_group_event_follow_state'
+                    )
+                )
+            );
+        }
+    }
+
     function changeTab(tab) {
         lastGroupDialogTab = resolveGroupDialogTab(tabs, tab);
         setActiveTab(lastGroupDialogTab);
@@ -289,6 +438,13 @@ export function GroupDialogTabbedView({
         memberRoleId,
         memberSort
     ]);
+
+    useEffect(() => {
+        if (!group.id) {
+            return;
+        }
+        void loadGroupEvents();
+    }, [currentEndpoint, group.id]);
 
     useEffect(() => {
         if (activeTab === 'members') {
@@ -488,6 +644,7 @@ export function GroupDialogTabbedView({
         isRepresenting,
         isSubscribedToAnnouncements,
         languageRows,
+        joinState,
         memberStatus,
         memberVisibility,
         ownerLinkLabel,
@@ -527,6 +684,9 @@ export function GroupDialogTabbedView({
         },
         filteredPosts,
         group,
+        groupEvents,
+        groupEventsError,
+        groupEventsStatus,
         groupTitle,
         groupUrl,
         joinState,
@@ -558,18 +718,29 @@ export function GroupDialogTabbedView({
         onPreviousInstancesChange,
         onPreviewImage: previewImage,
         onPreviewRowImage: previewRowImage,
+        onRefreshEvents: () => void loadGroupEvents({ force: true }),
         onRefreshMembers: () => void loadTab('members', { force: true }),
         onSearchMembersChange: handleSearchMembersChange,
-        onSearchPostsChange: handleSearchPostsChange
+        onSearchPostsChange: handleSearchPostsChange,
+        onToggleEventFollow: (event) => void toggleGroupEventFollow(event)
     };
 
     return (
-        <EntityDialogScaffold>
-            <GroupDialogHeaderSection
-                state={headerState}
-                handlers={headerHandlers}
-            />
-            <GroupDialogTabPanels state={tabState} handlers={tabHandlers} />
+        <EntityDialogScaffold className="gap-3">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden min-[880px]:grid min-[880px]:grid-cols-[19rem_minmax(0,1fr)]">
+                <div className="max-h-[42vh] min-h-0 min-w-0 shrink-0 overflow-auto p-px min-[880px]:max-h-none min-[880px]:shrink min-[880px]:overflow-y-auto">
+                    <GroupDialogHeaderSection
+                        state={headerState}
+                        handlers={headerHandlers}
+                    />
+                </div>
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                    <GroupDialogTabPanels
+                        state={tabState}
+                        handlers={tabHandlers}
+                    />
+                </div>
+            </div>
             <GroupPostEditorDialog
                 open={Boolean(postEditor)}
                 onOpenChange={(open) => {

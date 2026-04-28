@@ -1,15 +1,18 @@
-import { PlayIcon } from 'lucide-react';
-import { toast } from 'sonner';
-
+import { UsersIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { LocationWorld } from '@/components/LocationWorld.jsx';
-import { userImage } from '@/lib/entityMedia.js';
-import { openUserDialog, openWorldDialog } from '@/services/dialogService.js';
-import { tryOpenLaunchLocation } from '@/services/directAccessService.js';
-import { parseLocation } from '@/shared/utils/locationParser.js';
-import { Button } from '@/ui/shadcn/button';
 
-import { EntityInfoBlock } from '../EntityDialogScaffold.jsx';
+import { InstanceActionBar } from '@/components/instances/InstanceActionBar.jsx';
+import { LocationWorld } from '@/components/LocationWorld.jsx';
+import { parseLocation } from '@/shared/utils/locationParser.js';
+import {
+    Empty,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle
+} from '@/ui/shadcn/empty';
+
+import { InstanceUserTiles } from '../world-dialog/WorldDialogViewParts.jsx';
 import { firstArray, firstText } from './groupDialogUtils.js';
 
 function getInstanceLocation(instance) {
@@ -85,172 +88,164 @@ function getInstanceUsers(instance) {
         : [];
 }
 
-export function GroupInstanceRows({ instances, currentUserId, endpoint = '' }) {
-    const { t } = useTranslation();
-
-    if (!instances.length) {
-        return null;
+function firstKnownValue(...values) {
+    for (const value of values) {
+        if (value !== null && typeof value !== 'undefined' && value !== '') {
+            return value;
+        }
     }
+    return undefined;
+}
 
-    async function launch(location) {
-        if (!location) {
-            return;
-        }
-        try {
-            const opened = await tryOpenLaunchLocation(
-                location,
-                parseLocation(location).shortName || '',
-                endpoint
-            );
-            if (opened) {
-                toast.success(
-                    t('dialog.group.generated.vrchat_launch_request_sent')
-                );
-                return;
-            }
-            openWorldDialog({
-                worldId: parseLocation(location).worldId || location
-            });
-        } catch (error) {
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : t(
-                          'dialog.group.generated_toast.failed_to_launch_instance'
-                      )
-            );
-        }
+function isUserId(value) {
+    return String(value || '').startsWith('usr_');
+}
+
+function normalizeGroupInstance(instance, location, users) {
+    const ownerId = getInstanceOwnerId(instance);
+    const ownerName = isUserId(ownerId) ? getInstanceOwnerName(instance) : '';
+    const parsedLocation = parseLocation(location);
+    const title = getInstanceTitle(instance);
+
+    return {
+        ...(instance.ref || {}),
+        ...instance,
+        location,
+        tag: location,
+        shortName: instance.shortName || parsedLocation.shortName || '',
+        launchToken:
+            instance.shortName ||
+            instance.secureName ||
+            parsedLocation.shortName ||
+            '',
+        users,
+        creatorUserId: isUserId(ownerId) ? ownerId : '',
+        creatorUser:
+            isUserId(ownerId) && (ownerId || ownerName)
+                ? {
+                      id: ownerId,
+                      userId: ownerId,
+                      displayName: ownerName || ownerId
+                  }
+                : null,
+        worldName: title || instance.worldName || instance.world?.name || ''
+    };
+}
+
+export function GroupInstanceRows({ instances, currentUserId }) {
+    const { t } = useTranslation();
+    const rows = Array.isArray(instances) ? instances : [];
+
+    if (!rows.length) {
+        return (
+            <Empty className="min-h-32 border">
+                <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                        <UsersIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>
+                        {t('dialog.group.overview.no_active_instances')}
+                    </EmptyTitle>
+                    <EmptyDescription>
+                        {t(
+                            'dialog.group.overview.no_active_instances_description'
+                        )}
+                    </EmptyDescription>
+                </EmptyHeader>
+            </Empty>
+        );
     }
 
     return (
-        <EntityInfoBlock label={t('dialog.group.info.instances')} full>
-            <div className="mt-1 flex flex-col gap-2">
-                {instances.map((instance, index) => {
-                    const location = getInstanceLocation(instance);
-                    const parsedLocation = parseLocation(location);
-                    const users = getInstanceUsers(instance);
-                    return (
-                        <div
-                            key={`${location || getInstanceTitle(instance)}:${index}`}
-                            className="w-full"
-                        >
-                            <div className="flex flex-wrap items-center gap-2 text-sm">
-                                {location ? (
-                                    <span className="text-muted-foreground min-w-0 truncate text-xs">
-                                        <LocationWorld
-                                            locationObject={{
-                                                ...instance,
-                                                ...(instance.ref || {}),
-                                                tag: location,
-                                                location
-                                            }}
-                                            currentUserId={currentUserId}
-                                            worldDialogShortName={
-                                                parsedLocation.shortName || ''
-                                            }
-                                            grouphint={
-                                                instance.groupName ||
-                                                instance.group?.name ||
-                                                ''
-                                            }
-                                            instanceOwner={getInstanceOwnerId(
-                                                instance
-                                            )}
-                                            instanceOwnerName={getInstanceOwnerName(
-                                                instance
-                                            )}
-                                            playerCount={
-                                                instance.playerCount ??
-                                                instance.userCount ??
-                                                instance.occupants ??
-                                                users.length
-                                            }
-                                            capacity={
-                                                instance.capacity ??
-                                                instance.ref?.capacity ??
-                                                undefined
-                                            }
-                                            hint={getInstanceTitle(instance)}
-                                        />
-                                    </span>
-                                ) : null}
-                                {location ? (
-                                    <Button
-                                        type="button"
-                                        size="icon-sm"
-                                        variant="ghost"
-                                        aria-label="Launch instance"
-                                        onClick={() => void launch(location)}
-                                    >
-                                        <PlayIcon data-icon="inline-start" />
-                                    </Button>
-                                ) : null}
+        <div className="flex flex-col gap-2">
+            {rows.map((instance, index) => {
+                const location = getInstanceLocation(instance);
+                const parsedLocation = parseLocation(location);
+                const users = getInstanceUsers(instance);
+                const normalizedInstance = normalizeGroupInstance(
+                    instance,
+                    location,
+                    users
+                );
+                const playerCount = firstKnownValue(
+                    instance.playerCount,
+                    instance.userCount,
+                    instance.occupants,
+                    users.length
+                );
+                const capacity = firstKnownValue(
+                    instance.capacity,
+                    instance.ref?.capacity,
+                    instance.ref?.world?.capacity,
+                    instance.world?.capacity
+                );
+                const worldName =
+                    normalizedInstance.worldName ||
+                    instance.worldName ||
+                    instance.world?.name ||
+                    '';
+                const launchToken =
+                    normalizedInstance.launchToken ||
+                    parsedLocation.shortName ||
+                    '';
+
+                return (
+                    <div
+                        key={`${location || getInstanceTitle(instance) || 'instance'}:${index}`}
+                        className="bg-muted/10 rounded-md border px-2.5 py-2 text-sm transition-colors hover:bg-muted/25"
+                    >
+                        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="min-w-0 flex-1 overflow-hidden pr-1">
+                                <LocationWorld
+                                    className="max-w-full min-w-0 text-sm"
+                                    locationObject={normalizedInstance}
+                                    currentUserId={currentUserId}
+                                    worldDialogShortName={launchToken}
+                                    grouphint={
+                                        instance.groupName ||
+                                        instance.group?.name ||
+                                        ''
+                                    }
+                                    instanceOwner={
+                                        isUserId(getInstanceOwnerId(instance))
+                                            ? getInstanceOwnerId(instance)
+                                            : ''
+                                    }
+                                    instanceOwnerName={
+                                        isUserId(getInstanceOwnerId(instance))
+                                            ? getInstanceOwnerName(instance)
+                                            : ''
+                                    }
+                                    playerCount={playerCount}
+                                    capacity={capacity}
+                                    showGroupName={false}
+                                    showPlayerSummary={false}
+                                    hint={worldName}
+                                />
                             </div>
-                            {users.length ? (
-                                <div className="mt-1 flex flex-wrap items-start">
-                                    {users.map((user, userIndex) => (
-                                        <Button
-                                            key={`${user?.id || user?.userId || user?.displayName || 'user'}:${userIndex}`}
-                                            type="button"
-                                            variant="ghost"
-                                            className="box-border h-auto w-44 justify-start p-1.5 text-left text-sm"
-                                            onClick={() => {
-                                                const userId =
-                                                    user?.id ||
-                                                    user?.userId ||
-                                                    user?.user_id ||
-                                                    user?.user?.id ||
-                                                    user?.user?.userId;
-                                                if (userId) {
-                                                    openUserDialog({
-                                                        userId,
-                                                        title:
-                                                            user?.displayName ||
-                                                            user?.user
-                                                                ?.displayName ||
-                                                            undefined,
-                                                        seedData:
-                                                            user?.user || user
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <img
-                                                src={userImage(
-                                                    user,
-                                                    true,
-                                                    '64'
-                                                )}
-                                                alt=""
-                                                className="mr-2.5 size-9 shrink-0 rounded-full object-cover"
-                                            />
-                                            <span className="min-w-0 flex-1 overflow-hidden">
-                                                <span className="block truncate leading-5 font-medium">
-                                                    {user?.displayName ||
-                                                        user?.display_name ||
-                                                        user?.username ||
-                                                        user?.user
-                                                            ?.displayName ||
-                                                        user?.user?.username ||
-                                                        'User'}
-                                                </span>
-                                                <span className="text-muted-foreground block truncate text-xs">
-                                                    {user?.location ===
-                                                    'traveling'
-                                                        ? 'traveling'
-                                                        : user?.status ||
-                                                          user?.user?.status ||
-                                                          ''}
-                                                </span>
-                                            </span>
-                                        </Button>
-                                    ))}
-                                </div>
-                            ) : null}
+                            <InstanceActionBar
+                                className="min-w-0 shrink-0 flex-wrap justify-start sm:justify-end"
+                                location={location}
+                                launchLocation={location}
+                                inviteLocation={location}
+                                instanceLocation={location}
+                                shortName={launchToken}
+                                worldName={worldName}
+                                instance={normalizedInstance}
+                                friendCount={
+                                    Number(instance.friendCount) || undefined
+                                }
+                                playerCount={playerCount}
+                                capacity={capacity}
+                                instanceInfoPlacement="start"
+                                instanceCountAlign="left"
+                                instanceSummaryOrder="markers-first"
+                            />
                         </div>
-                    );
-                })}
-            </div>
-        </EntityInfoBlock>
+                        <InstanceUserTiles instance={normalizedInstance} />
+                    </div>
+                );
+            })}
+        </div>
     );
 }

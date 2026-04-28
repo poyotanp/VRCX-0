@@ -25,7 +25,7 @@ import {
 
 import { getEndpoint, getEventGroupId, getEventId } from './toolsDialogUtils.js';
 
-async function getCalendarIcs(event) {
+async function getCalendarIcs(event, t) {
     const groupId = getEventGroupId(event);
     const eventId = getEventId(event);
     if (!groupId || !eventId) {
@@ -57,15 +57,15 @@ async function getCalendarIcs(event) {
     }
 }
 
-async function openCalendarEvent(event) {
-    const content = await getCalendarIcs(event);
+async function openCalendarEvent(event, t) {
+    const content = await getCalendarIcs(event, t);
     if (content) {
         await backend.app.OpenCalendarFile(content);
     }
 }
 
-async function downloadEventIcs(event) {
-    const content = await getCalendarIcs(event);
+async function downloadEventIcs(event, t) {
+    const content = await getCalendarIcs(event, t);
     if (!content) {
         return;
     }
@@ -283,7 +283,10 @@ export function GroupEventCard({
                                             ? 'Unfollow event'
                                             : 'Follow event'
                                     }
-                                    onClick={stopAndRun(onToggleFollow)}
+                                    disabled={!onToggleFollow}
+                                    onClick={stopAndRun(() =>
+                                        onToggleFollow?.()
+                                    )}
                                 >
                                     <StarIcon data-icon="inline-start" />
                                 </Button>
@@ -295,7 +298,7 @@ export function GroupEventCard({
                                 size="sm"
                                 variant="outline"
                                 onClick={stopAndRun(
-                                    () => void openCalendarEvent(event)
+                                    () => void openCalendarEvent(event, t)
                                 )}
                             >
                                 <CalendarIcon data-icon="inline-start" />
@@ -308,7 +311,7 @@ export function GroupEventCard({
                                 size="sm"
                                 variant="outline"
                                 onClick={stopAndRun(
-                                    () => void downloadEventIcs(event)
+                                    () => void downloadEventIcs(event, t)
                                 )}
                             >
                                 <DownloadIcon data-icon="inline-start" />
@@ -323,7 +326,7 @@ export function GroupEventCard({
             <PopoverContent
                 side="right"
                 align="start"
-                className="w-125 p-3"
+                className="w-[min(31.25rem,calc(100vw-2rem))] p-3"
                 onMouseEnter={openPopover}
                 onMouseLeave={scheduleClosePopover}
             >
@@ -337,7 +340,7 @@ export function GroupEventCard({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => void openCalendarEvent(event)}
+                        onClick={() => void openCalendarEvent(event, t)}
                     >
                         <CalendarIcon data-icon="inline-start" />
                         {t(
@@ -347,7 +350,7 @@ export function GroupEventCard({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => void downloadEventIcs(event)}
+                        onClick={() => void downloadEventIcs(event, t)}
                     >
                         <DownloadIcon data-icon="inline-start" />
                         {t('dialog.group_calendar.event_card.download_ics')}

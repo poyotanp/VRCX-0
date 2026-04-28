@@ -11,14 +11,22 @@ export function normalizeGroupLanguages(group, languageOptionMap = new Map()) {
     return normalizeProfileLanguageRows(group, languageOptionMap);
 }
 
-export function GroupTitleLanguages({ languages }) {
+export function GroupTitleLanguages({ languages, limit = Infinity }) {
     if (!languages.length) {
         return null;
     }
 
+    const visibleLanguages = Number.isFinite(limit)
+        ? languages.slice(0, limit)
+        : languages;
+    const hiddenLanguages = Number.isFinite(limit)
+        ? languages.slice(limit)
+        : [];
+    const hiddenLabel = hiddenLanguages.map(languageOptionLabel).join(', ');
+
     return (
-        <span className="inline-flex shrink-0 flex-wrap items-center gap-1">
-            {languages.map((language) => {
+        <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1">
+            {visibleLanguages.map((language) => {
                 const key = String(
                     language?.key || language?.value || ''
                 ).trim();
@@ -37,6 +45,16 @@ export function GroupTitleLanguages({ languages }) {
                     </Tooltip>
                 );
             })}
+            {hiddenLanguages.length ? (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Badge variant="outline" className="shrink-0 text-xs">
+                            +{hiddenLanguages.length}
+                        </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>{hiddenLabel}</TooltipContent>
+                </Tooltip>
+            ) : null}
         </span>
     );
 }

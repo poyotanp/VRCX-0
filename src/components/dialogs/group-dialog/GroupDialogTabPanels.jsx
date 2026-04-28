@@ -1,4 +1,10 @@
-import { DownloadIcon, ExternalLinkIcon, EyeIcon } from 'lucide-react';
+import {
+    DownloadIcon,
+    ExternalLinkIcon,
+    EyeIcon,
+    ImageIcon
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatDateFilter } from '@/lib/dateTime.js';
@@ -14,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/ui/shadcn/select';
+import { Skeleton } from '@/ui/shadcn/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
@@ -31,10 +38,31 @@ import {
     announcementUserLabel,
     firstArray
 } from './groupDialogUtils.js';
+import { GroupEventsTab, GroupEventSummary } from './GroupDialogEvents.jsx';
 import { GroupInstanceRows } from './GroupInstanceRows.jsx';
 import { RowList } from './GroupRowList.jsx';
 
-function GroupAnnouncementInfo({ group, onPreviewImage, onOpenUser }) {
+function GroupBannerFallback() {
+    return (
+        <Skeleton className="text-muted-foreground flex aspect-[6/1] w-full items-center justify-center rounded-md">
+            <ImageIcon className="size-6" />
+        </Skeleton>
+    );
+}
+
+function GroupOverviewSection({ title, action = null, children }) {
+    return (
+        <section className="bg-card/40 flex min-w-0 flex-col gap-2 rounded-md border p-3">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="truncate text-sm font-medium">{title}</div>
+                {action}
+            </div>
+            <div className="min-w-0">{children}</div>
+        </section>
+    );
+}
+
+function GroupAnnouncementPanel({ group, onPreviewImage, onOpenUser }) {
     const { t } = useTranslation();
 
     const announcement = group.announcement;
@@ -45,39 +73,42 @@ function GroupAnnouncementInfo({ group, onPreviewImage, onOpenUser }) {
     }
 
     return (
-        <EntityInfoBlock label={t('dialog.group.info.announcement')} full>
-            <span className="block truncate text-sm">
-                {announcement.title || 'Announcement'}
+        <div className="min-w-0 text-sm">
+            <span className="block truncate font-medium">
+                {announcement.title || t('dialog.group.info.announcement')}
             </span>
-            {announcement.imageUrl ? (
-                <Button
-                    type="button"
-                    variant="ghost"
-                    className="mt-1.5 mr-1.5 h-auto p-0 align-top"
-                    aria-label={`Preview ${announcement.title || 'announcement'} image`}
-                    onClick={() =>
-                        onPreviewImage(
-                            convertFileUrlToImageUrl(
+            <div className="mt-1.5 flex min-w-0 items-start gap-2">
+                {announcement.imageUrl ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-auto shrink-0 p-0"
+                        aria-label={`Preview ${announcement.title || 'announcement'} image`}
+                        onClick={() =>
+                            onPreviewImage(
+                                convertFileUrlToImageUrl(
+                                    announcement.imageUrl,
+                                    1024
+                                ),
+                                announcement.title ||
+                                    t('dialog.group.info.announcement')
+                            )
+                        }
+                    >
+                        <img
+                            src={convertFileUrlToImageUrl(
                                 announcement.imageUrl,
-                                1024
-                            ),
-                            announcement.title || 'Announcement'
-                        )
-                    }
-                >
-                    <img
-                        src={convertFileUrlToImageUrl(
-                            announcement.imageUrl,
-                            128
-                        )}
-                        alt=""
-                        className="size-16 rounded-md object-cover"
-                    />
-                </Button>
-            ) : null}
-            <pre className="text-muted-foreground inline-block align-top font-sans text-xs whitespace-pre-wrap">
-                {announcement.text || '—'}
-            </pre>
+                                128
+                            )}
+                            alt=""
+                            className="size-16 rounded-md object-cover"
+                        />
+                    </Button>
+                ) : null}
+                <pre className="text-muted-foreground max-h-40 min-w-0 flex-1 overflow-auto font-sans text-xs whitespace-pre-wrap">
+                    {announcement.text || '\u2014'}
+                </pre>
+            </div>
             <div className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                 {roleNames.length ? (
                     <Tooltip>
@@ -177,7 +208,7 @@ function GroupAnnouncementInfo({ group, onPreviewImage, onOpenUser }) {
                     </span>
                 ) : null}
             </div>
-        </EntityInfoBlock>
+        </div>
     );
 }
 
@@ -189,11 +220,13 @@ export function GroupDialogTabPanels({ state, handlers }) {
         activeTab,
         bannerUrl,
         canManagePosts,
-        currentEndpoint,
         currentUserId,
         filteredMembers,
         filteredPosts,
         group,
+        groupEvents,
+        groupEventsError,
+        groupEventsStatus,
         groupTitle,
         groupUrl,
         joinState,
@@ -223,9 +256,11 @@ export function GroupDialogTabPanels({ state, handlers }) {
         onPreviousInstancesChange,
         onPreviewImage,
         onPreviewRowImage,
+        onRefreshEvents,
         onRefreshMembers,
         onSearchMembersChange,
-        onSearchPostsChange
+        onSearchPostsChange,
+        onToggleEventFollow
     } = handlers;
     const members = filteredMembers.source || [];
     const memberRows = filteredMembers.rows || [];
@@ -233,6 +268,11 @@ export function GroupDialogTabPanels({ state, handlers }) {
     const links = Array.isArray(group.links) ? group.links : [];
     const tags = Array.isArray(group.tags) ? group.tags : [];
     const roles = Array.isArray(group.roles) ? group.roles : [];
+    const [bannerFailed, setBannerFailed] = useState(false);
+
+    useEffect(() => {
+        setBannerFailed(false);
+    }, [bannerUrl]);
 
     return (
         <EntityDialogTabs
@@ -240,167 +280,237 @@ export function GroupDialogTabPanels({ state, handlers }) {
             onValueChange={onChangeTab}
             tabs={tabs}
         >
-            <EntityDialogTabContent value="info">
-                {bannerUrl ? (
+            <EntityDialogTabContent
+                value="overview"
+                className="flex flex-col gap-4 px-px pt-3 pb-px"
+            >
+                {bannerUrl && !bannerFailed ? (
                     <Button
                         type="button"
                         variant="ghost"
-                        className="bg-muted mb-3 h-auto w-full overflow-hidden rounded-md p-0"
-                        aria-label={`Preview ${groupTitle} banner`}
+                        className="bg-muted h-auto w-full overflow-hidden rounded-md p-0"
+                        aria-label={t(
+                            'dialog.group.overview.preview_banner',
+                            { value: groupTitle }
+                        )}
                         onClick={() => onPreviewImage(bannerUrl, groupTitle)}
                     >
                         <img
                             src={bannerUrl}
                             alt={group.name || 'Group banner'}
                             className="aspect-[6/1] w-full object-cover"
+                            onError={() => setBannerFailed(true)}
                         />
                     </Button>
+                ) : (
+                    <GroupBannerFallback />
+                )}
+
+                {group.description ? (
+                    <GroupOverviewSection
+                        title={t('dialog.group.overview.description')}
+                    >
+                        <div className="text-muted-foreground max-h-32 overflow-auto text-sm whitespace-pre-wrap">
+                            {group.description}
+                        </div>
+                    </GroupOverviewSection>
                 ) : null}
-                <EntityInfoGrid>
+
+                <GroupOverviewSection title={t('dialog.group.info.instances')}>
                     <GroupInstanceRows
                         instances={activeInstances}
                         currentUserId={currentUserId}
-                        endpoint={currentEndpoint}
                     />
-                    <GroupAnnouncementInfo
+                </GroupOverviewSection>
+
+                {group.announcement?.id || group.announcement?.title ? (
+                    <GroupOverviewSection
+                        title={t('dialog.group.info.announcement')}
+                    >
+                        <GroupAnnouncementPanel
+                            group={group}
+                            onPreviewImage={onPreviewImage}
+                            onOpenUser={onOpenUser}
+                        />
+                    </GroupOverviewSection>
+                ) : null}
+
+                {group.rules ? (
+                    <GroupOverviewSection title={t('dialog.group.info.rules')}>
+                        <pre className="text-muted-foreground max-h-40 overflow-auto font-sans text-sm whitespace-pre-wrap">
+                            {group.rules}
+                        </pre>
+                    </GroupOverviewSection>
+                ) : null}
+
+                <GroupOverviewSection
+                    title={t('dialog.group.overview.recent_events')}
+                    action={
+                        <Button
+                            type="button"
+                            size="xs"
+                            variant="outline"
+                            onClick={() => onChangeTab('events')}
+                        >
+                            {t('dialog.group.overview.open_events')}
+                        </Button>
+                    }
+                >
+                    <GroupEventSummary
+                        events={groupEvents}
+                        status={groupEventsStatus}
+                        error={groupEventsError}
                         group={group}
-                        onPreviewImage={onPreviewImage}
-                        onOpenUser={onOpenUser}
+                        onOpenEvents={() => onChangeTab('events')}
+                        t={t}
                     />
-                    {group.rules ? (
+                </GroupOverviewSection>
+
+                <GroupOverviewSection title={t('dialog.group.overview.basics')}>
+                    <EntityInfoGrid className="px-0">
                         <EntityInfoBlock
-                            label={t('dialog.group.info.rules')}
-                            full
-                        >
-                            <pre className="text-muted-foreground font-sans text-xs whitespace-pre-wrap">
-                                {group.rules}
-                            </pre>
-                        </EntityInfoBlock>
-                    ) : null}
-                    <EntityInfoBlock
-                        label={t('dialog.group.info.members')}
-                        value={`${group.memberCount || 0} (${group.onlineMemberCount || 0})`}
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.info.created_at')}
-                        value={
-                            group.createdAt || group.created_at
-                                ? formatDateFilter(
-                                      group.createdAt || group.created_at,
-                                      'long'
-                                  )
-                                : '—'
-                        }
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.info.last_visited')}
-                        value={
-                            previousInstances[0]?.created_at ||
-                            previousInstances[0]?.createdAt
-                                ? formatDateFilter(
-                                      previousInstances[0]?.created_at ||
-                                          previousInstances[0]?.createdAt,
-                                      'long'
-                                  )
-                                : '—'
-                        }
-                        onClick={
-                            previousInstances.length
-                                ? () => onChangeTab('instance-history')
-                                : undefined
-                        }
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.generated.join_state')}
-                        value={joinState || '—'}
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.generated.membership')}
-                        value={memberStatus || group.membershipStatus || '—'}
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.generated.languages')}
-                        value={languages.join(', ') || '—'}
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.generated.privacy')}
-                        value={group.privacy || '—'}
-                    />
-                    {links.length ? (
+                            label={t('dialog.group.info.members')}
+                            value={`${group.memberCount || 0} (${group.onlineMemberCount || 0})`}
+                        />
                         <EntityInfoBlock
-                            label={t('dialog.group.info.links')}
-                            full
-                        >
-                            <div className="flex flex-wrap gap-1.5">
-                                {links.map((link) => (
-                                    <Button
-                                        key={link}
-                                        type="button"
-                                        variant="link"
-                                        size="xs"
-                                        className="h-auto max-w-full min-w-0 justify-start p-0 text-left break-all whitespace-normal"
-                                        onClick={() => onOpenLink(link)}
-                                    >
-                                        <ExternalLinkIcon data-icon="inline-start" />
-                                        <span className="min-w-0 break-all">
-                                            {link}
-                                        </span>
-                                    </Button>
-                                ))}
-                            </div>
-                        </EntityInfoBlock>
-                    ) : null}
-                    <EntityInfoBlock
-                        label="URL"
-                        value={groupUrl || '—'}
-                        mono
-                        wide
-                        onClick={groupUrl ? handlers.onCopyGroupUrl : undefined}
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.info.id')}
-                        value={group.id}
-                        mono
-                        wide
-                    />
-                    <EntityInfoBlock
-                        label={t('dialog.group.generated.owner_2')}
-                        value={ownerLabel || '—'}
-                        wide
-                        onClick={group.ownerId ? onOpenOwner : undefined}
-                    />
-                    {tags.length ? (
+                            label={t('dialog.group.info.created_at')}
+                            value={
+                                group.createdAt || group.created_at
+                                    ? formatDateFilter(
+                                          group.createdAt || group.created_at,
+                                          'long'
+                                      )
+                                    : '—'
+                            }
+                        />
                         <EntityInfoBlock
-                            label={t('dialog.avatar.info.tags')}
-                            full
-                        >
-                            <div className="flex flex-wrap gap-1.5">
-                                {tags.map((tag) => (
-                                    <Badge key={tag} variant="outline">
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </EntityInfoBlock>
-                    ) : null}
-                    {roles.length ? (
+                            label={t('dialog.group.info.last_visited')}
+                            value={
+                                previousInstances[0]?.created_at ||
+                                previousInstances[0]?.createdAt
+                                    ? formatDateFilter(
+                                          previousInstances[0]?.created_at ||
+                                              previousInstances[0]?.createdAt,
+                                          'long'
+                                      )
+                                    : '—'
+                            }
+                            onClick={
+                                previousInstances.length
+                                    ? () => onChangeTab('instance-history')
+                                    : undefined
+                            }
+                        />
                         <EntityInfoBlock
-                            label={t('dialog.group.info.roles')}
-                            full
-                        >
-                            <div className="flex flex-wrap gap-1.5">
-                                {roles.map((role) => (
-                                    <Badge
-                                        key={role.id || role.name}
-                                        variant="outline"
-                                    >
-                                        {role.name || 'Role'}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </EntityInfoBlock>
-                    ) : null}
-                </EntityInfoGrid>
+                            label={t('dialog.group.generated.join_state')}
+                            value={joinState || '—'}
+                        />
+                        <EntityInfoBlock
+                            label={t('dialog.group.generated.membership')}
+                            value={
+                                memberStatus || group.membershipStatus || '—'
+                            }
+                        />
+                        <EntityInfoBlock
+                            label={t('dialog.group.generated.languages')}
+                            value={languages.join(', ') || '—'}
+                        />
+                        <EntityInfoBlock
+                            label={t('dialog.group.generated.privacy')}
+                            value={group.privacy || '—'}
+                        />
+                        {links.length ? (
+                            <EntityInfoBlock
+                                label={t('dialog.group.info.links')}
+                                full
+                            >
+                                <div className="flex flex-wrap gap-1.5">
+                                    {links.map((link) => (
+                                        <Button
+                                            key={link}
+                                            type="button"
+                                            variant="link"
+                                            size="xs"
+                                            className="h-auto max-w-full min-w-0 justify-start p-0 text-left break-all whitespace-normal"
+                                            onClick={() => onOpenLink(link)}
+                                        >
+                                            <ExternalLinkIcon data-icon="inline-start" />
+                                            <span className="min-w-0 break-all">
+                                                {link}
+                                            </span>
+                                        </Button>
+                                    ))}
+                                </div>
+                            </EntityInfoBlock>
+                        ) : null}
+                        <EntityInfoBlock
+                            label="URL"
+                            value={groupUrl || '—'}
+                            mono
+                            wide
+                            onClick={
+                                groupUrl ? handlers.onCopyGroupUrl : undefined
+                            }
+                        />
+                        <EntityInfoBlock
+                            label={t('dialog.group.info.id')}
+                            value={group.id}
+                            mono
+                            wide
+                        />
+                        <EntityInfoBlock
+                            label={t('dialog.group.generated.owner_2')}
+                            value={ownerLabel || '—'}
+                            wide
+                            onClick={group.ownerId ? onOpenOwner : undefined}
+                        />
+                        {tags.length ? (
+                            <EntityInfoBlock
+                                label={t('dialog.avatar.info.tags')}
+                                full
+                            >
+                                <div className="flex flex-wrap gap-1.5">
+                                    {tags.map((tag) => (
+                                        <Badge key={tag} variant="outline">
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </EntityInfoBlock>
+                        ) : null}
+                        {roles.length ? (
+                            <EntityInfoBlock
+                                label={t('dialog.group.info.roles')}
+                                full
+                            >
+                                <div className="flex flex-wrap gap-1.5">
+                                    {roles.map((role) => (
+                                        <Badge
+                                            key={role.id || role.name}
+                                            variant="outline"
+                                        >
+                                            {role.name || 'Role'}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </EntityInfoBlock>
+                        ) : null}
+                    </EntityInfoGrid>
+                </GroupOverviewSection>
+            </EntityDialogTabContent>
+            <EntityDialogTabContent
+                value="events"
+                className="flex flex-col gap-3 px-px pt-3 pb-px"
+            >
+                <GroupEventsTab
+                    events={groupEvents}
+                    status={groupEventsStatus}
+                    error={groupEventsError}
+                    group={group}
+                    onRefresh={onRefreshEvents}
+                    onToggleFollow={onToggleEventFollow}
+                    t={t}
+                />
             </EntityDialogTabContent>
             <EntityDialogTabContent
                 value="instance-history"
@@ -571,6 +681,7 @@ export function GroupDialogTabPanels({ state, handlers }) {
                     value={{
                         group,
                         posts,
+                        events: groupEvents,
                         instances: activeInstances,
                         members,
                         galleries: firstArray(group.galleries),

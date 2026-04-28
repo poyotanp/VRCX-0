@@ -12,25 +12,51 @@ import {
     Share2Icon,
     ShieldIcon,
     ShieldOffIcon,
+    TagIcon,
     TicketIcon,
     UserIcon,
     UsersIcon,
     XIcon
 } from 'lucide-react';
+import { isValidElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage
+} from '@/ui/shadcn/avatar';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle
+} from '@/ui/shadcn/card';
+import { Separator } from '@/ui/shadcn/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
     EntityActionDropdown,
     EntityActionItem,
-    EntityActionSeparator,
-    EntityDialogHeader
+    EntityActionSeparator
 } from '../EntityDialogScaffold.jsx';
 import { GroupTitleLanguages } from './GroupDialogViewParts.jsx';
+
+function GroupRailMetric({ label, value }) {
+    return (
+        <div className="min-w-0">
+            <div className="text-muted-foreground truncate text-xs">
+                {label}
+            </div>
+            <div className="truncate text-sm font-medium tabular-nums">
+                {value ?? '—'}
+            </div>
+        </div>
+    );
+}
 
 export function GroupDialogHeaderSection({ state, handlers }) {
     const { t } = useTranslation();
@@ -53,6 +79,7 @@ export function GroupDialogHeaderSection({ state, handlers }) {
         isRepresenting,
         isSubscribedToAnnouncements,
         languageRows,
+        joinState,
         memberStatus,
         memberVisibility,
         ownerLinkLabel,
@@ -80,39 +107,112 @@ export function GroupDialogHeaderSection({ state, handlers }) {
         onVisibilityChange
     } = handlers;
 
+    const subtitle =
+        group.shortCode && group.discriminator
+            ? `${group.shortCode}.${group.discriminator}`
+            : group.url || '';
+    const primaryAction =
+        memberStatus === 'requested'
+            ? {
+                  icon: XIcon,
+                  label: t('dialog.group.actions.cancel_join_request_tooltip'),
+                  disabled: actionStatus === 'cancel-request',
+                  onClick: onCancelRequest,
+                  variant: 'outline'
+              }
+            : !isMember
+              ? {
+                    icon: LogInIcon,
+                    label: t('dialog.group.actions.join_group_tooltip'),
+                    disabled: !canJoin || actionStatus === 'join',
+                    onClick: onJoin,
+                    variant: 'default'
+                }
+              : {
+                    icon: TagIcon,
+                    label: t(
+                        isRepresenting
+                            ? 'dialog.group.actions.unrepresent_tooltip'
+                            : 'dialog.group.actions.represent_tooltip'
+                    ),
+                    disabled:
+                        actionStatus === 'represent' ||
+                        (!isRepresenting && isPrivateGroup),
+                    onClick: onRepresentToggle,
+                    variant: isRepresenting ? 'secondary' : 'outline'
+                };
+    const PrimaryIcon = primaryAction.icon;
+
     return (
-        <EntityDialogHeader
-            imageUrl={iconUrl}
-            imageAlt={group.name || 'Group'}
-            imageClassName="size-32"
-            imagePlaceholder={
-                <UsersIcon className="text-muted-foreground size-8" />
-            }
-            onImageClick={iconUrl ? onPreviewIcon : null}
-            title={groupTitle}
-            onTitleClick={group.name ? onCopyGroupName : undefined}
-            titleMeta={<GroupTitleLanguages languages={languageRows} />}
-            subtitle={
-                group.shortCode && group.discriminator
-                    ? `${group.shortCode}.${group.discriminator}`
-                    : group.url || ''
-            }
-            description={group.description}
-            detail={
-                group.ownerId || detail ? (
-                    <div className="flex flex-col items-start gap-1">
+        <Card
+            size="sm"
+            className="min-w-0 overflow-hidden border shadow-none ring-0"
+        >
+            <CardHeader className="gap-3">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={!iconUrl || !onPreviewIcon}
+                    onClick={iconUrl ? onPreviewIcon : undefined}
+                    className="bg-muted mx-auto aspect-square h-auto w-full max-w-64 overflow-hidden rounded-lg border p-0 disabled:pointer-events-none disabled:opacity-100"
+                >
+                    <Avatar className="size-full rounded-lg after:rounded-lg">
+                        {iconUrl ? (
+                            <AvatarImage
+                                src={iconUrl}
+                                alt={group.name || 'Group'}
+                                className="rounded-lg object-cover"
+                            />
+                        ) : null}
+                        <AvatarFallback className="rounded-lg [&>svg]:size-10">
+                            <UsersIcon />
+                        </AvatarFallback>
+                    </Avatar>
+                </Button>
+            </CardHeader>
+
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex min-w-0 items-start gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <CardTitle className="flex min-w-0 flex-wrap items-center gap-1.5 text-lg leading-tight">
+                            {onCopyGroupName && group.name ? (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    className="hover:text-primary h-auto min-w-0 justify-start p-0 text-left text-lg leading-tight font-semibold break-words whitespace-normal"
+                                    onClick={onCopyGroupName}
+                                >
+                                    {groupTitle}
+                                </Button>
+                            ) : (
+                                <span className="min-w-0 break-words">
+                                    {groupTitle}
+                                </span>
+                            )}
+                            <GroupTitleLanguages
+                                languages={languageRows}
+                                limit={2}
+                            />
+                        </CardTitle>
+                        {subtitle ? (
+                            <div className="text-muted-foreground font-mono text-xs break-all">
+                                {subtitle}
+                            </div>
+                        ) : null}
                         {group.ownerId ? (
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button
                                         type="button"
                                         variant="ghost"
-                                        className="text-muted-foreground hover:text-primary h-auto justify-start gap-1 p-0 text-xs font-normal"
+                                        className="text-muted-foreground hover:text-primary h-auto max-w-full justify-start gap-1 p-0 text-xs font-normal"
                                         onClick={onOpenOwner}
                                     >
                                         <UserIcon data-icon="inline-start" />
-                                        {t('dialog.group.generated.owner')}{' '}
-                                        {ownerLinkLabel}
+                                        <span className="truncate">
+                                            {t('dialog.group.generated.owner')}{' '}
+                                            {ownerLinkLabel}
+                                        </span>
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -122,76 +222,7 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                                 </TooltipContent>
                             </Tooltip>
                         ) : null}
-                        {detail ? (
-                            <span>
-                                {userFacingErrorMessage(
-                                    detail,
-                                    'Failed to load group details.'
-                                )}
-                            </span>
-                        ) : null}
                     </div>
-                ) : null
-            }
-            badges={
-                <>
-                    {showPrivacyBadge ? (
-                        <Badge variant="outline">
-                            <ShieldIcon data-icon="inline-start" />
-                            {group.privacy}
-                        </Badge>
-                    ) : null}
-                    {showMembershipBadge ? (
-                        <Badge variant="secondary">
-                            {group.membershipStatus}
-                        </Badge>
-                    ) : null}
-                    {group.isVerified ? (
-                        <Badge>
-                            <BadgeCheckIcon data-icon="inline-start" />
-                            {t('dialog.group.tags.verified')}
-                        </Badge>
-                    ) : null}
-                        <Badge variant="outline">
-                            <UsersIcon data-icon="inline-start" />
-                            {group.memberCount}{' '}
-                            {t('dialog.group.info.members')}
-                        </Badge>
-                    {group.onlineMemberCount > 0 ? (
-                        <Badge variant="outline">
-                            <UsersIcon data-icon="inline-start" />
-                            {group.onlineMemberCount}{' '}
-                            {t('dashboard.widget.feed_online')}
-                        </Badge>
-                    ) : null}
-                </>
-            }
-            actions={
-                <>
-                    {memberStatus === 'requested' ? (
-                        <Button
-                            type="button"
-                            size="icon-lg"
-                            variant="outline"
-                            className="rounded-full"
-                            aria-label="Cancel join request"
-                            disabled={actionStatus === 'cancel-request'}
-                            onClick={onCancelRequest}
-                        >
-                            <XIcon data-icon="inline-start" />
-                        </Button>
-                    ) : !isMember ? (
-                        <Button
-                            type="button"
-                            size="icon-lg"
-                            className="rounded-full"
-                            aria-label="Join group"
-                            disabled={!canJoin || actionStatus === 'join'}
-                            onClick={onJoin}
-                        >
-                            <LogInIcon data-icon="inline-start" />
-                        </Button>
-                    ) : null}
                     <EntityActionDropdown busy={actionStatus !== 'idle'}>
                         <EntityActionItem
                             icon={RefreshCwIcon}
@@ -226,7 +257,7 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                             <>
                                 <EntityActionSeparator />
                                 <EntityActionItem
-                                    icon={ShieldIcon}
+                                    icon={TagIcon}
                                     disabled={
                                         actionStatus === 'represent' ||
                                         isPrivateGroup
@@ -371,8 +402,77 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                             </>
                         )}
                     </EntityActionDropdown>
-                </>
-            }
-        />
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                    {showPrivacyBadge ? (
+                        <Badge variant="outline">
+                            <ShieldIcon data-icon="inline-start" />
+                            {group.privacy}
+                        </Badge>
+                    ) : null}
+                    {joinState ? (
+                        <Badge variant="outline">{joinState}</Badge>
+                    ) : null}
+                    {showMembershipBadge ? (
+                        <Badge variant="secondary">
+                            {group.membershipStatus}
+                        </Badge>
+                    ) : null}
+                    {group.isVerified ? (
+                        <Badge>
+                            <BadgeCheckIcon data-icon="inline-start" />
+                            {t('dialog.group.tags.verified')}
+                        </Badge>
+                    ) : null}
+                </div>
+
+                <Button
+                    type="button"
+                    className="w-full"
+                    variant={primaryAction.variant}
+                    disabled={primaryAction.disabled}
+                    onClick={primaryAction.onClick}
+                >
+                    <PrimaryIcon data-icon="inline-start" />
+                    <span className="truncate">{primaryAction.label}</span>
+                </Button>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                    <GroupRailMetric
+                        label={t('dialog.group.info.members')}
+                        value={group.memberCount}
+                    />
+                    <GroupRailMetric
+                        label={t('dashboard.widget.feed_online')}
+                        value={group.onlineMemberCount}
+                    />
+                    <GroupRailMetric
+                        label={t('dialog.group.generated.privacy')}
+                        value={group.privacy}
+                    />
+                    <GroupRailMetric
+                        label={t('dialog.group.generated.membership')}
+                        value={memberStatus || group.membershipStatus}
+                    />
+                </div>
+
+                {detail ? (
+                    <>
+                        <Separator />
+                        <div className="text-muted-foreground text-xs">
+                            {isValidElement(detail)
+                                ? detail
+                                : userFacingErrorMessage(
+                                      detail,
+                                      'Failed to load group details.'
+                                  )}
+                        </div>
+                    </>
+                ) : null}
+            </CardContent>
+        </Card>
     );
 }

@@ -156,6 +156,7 @@ export function LocationWorld({
     hint = '',
     interactive = true,
     instanceClickAction = 'launch',
+    showGroupName = true,
     showPlayerSummary = true,
     className = ''
 }) {
@@ -315,7 +316,7 @@ export function LocationWorld({
                     </span>
                 </span>
             )}
-            {groupName ? (
+            {showGroupName && groupName ? (
                 interactive ? (
                     <Button
                         type="button"
