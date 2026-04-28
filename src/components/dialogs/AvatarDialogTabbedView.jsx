@@ -1,8 +1,8 @@
 import { CopyIcon, ExternalLinkIcon, ImageIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { useTranslation } from 'react-i18next';
 import { getPlatformInfo } from '@/lib/avatarPlatform.js';
 import {
     convertFileUrlToImageUrl,
@@ -14,23 +14,20 @@ import { openUserDialog } from '@/services/dialogService.js';
 import { replaceVrcPackageUrl } from '@/shared/utils/urlUtils.js';
 import { useModalStore } from '@/state/modalStore.js';
 import { Button } from '@/ui/shadcn/button';
+import { Card, CardContent, CardHeader } from '@/ui/shadcn/card';
 import { Separator } from '@/ui/shadcn/separator';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger
-} from '@/ui/shadcn/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
+import { AvatarDialogGalleryTab } from './avatar-dialog/components/AvatarDialogGalleryTab.jsx';
+import { AvatarDialogHeaderActions } from './avatar-dialog/components/AvatarDialogHeaderActions.jsx';
+import { AvatarDialogHeaderBadges } from './avatar-dialog/components/AvatarDialogHeaderBadges.jsx';
+import { AvatarDialogInfoTab } from './avatar-dialog/components/AvatarDialogInfoTab.jsx';
 import {
     EntityDialogScaffold,
     EntityDialogTabContent,
     EntityDialogTabs,
     EntityRawJson
 } from './EntityDialogScaffold.jsx';
-import { AvatarDialogGalleryTab } from './avatar-dialog/components/AvatarDialogGalleryTab.jsx';
-import { AvatarDialogHeaderActions } from './avatar-dialog/components/AvatarDialogHeaderActions.jsx';
-import { AvatarDialogHeaderBadges } from './avatar-dialog/components/AvatarDialogHeaderBadges.jsx';
-import { AvatarDialogInfoTab } from './avatar-dialog/components/AvatarDialogInfoTab.jsx';
 
 function firstArray(...values) {
     return values.find((value) => Array.isArray(value)) || [];
@@ -154,7 +151,9 @@ function AvatarOverviewReferences({
                             <TooltipTrigger asChild>
                                 <Button
                                     type="button"
-                                    aria-label={t('dialog.avatar.info.copy_url')}
+                                    aria-label={t(
+                                        'dialog.avatar.info.copy_url'
+                                    )}
                                     size="icon-xs"
                                     variant="ghost"
                                     className="shrink-0"
@@ -189,83 +188,100 @@ function AvatarDialogOverviewSection({
     onOpenAvatarUrl,
     t
 }) {
-    const imageClickable = Boolean((imageUrl || avatar.imageUrl) && onImageClick);
+    const imageClickable = Boolean(
+        (imageUrl || avatar.imageUrl) && onImageClick
+    );
 
     return (
-        <aside className="flex min-h-0 min-w-0 flex-col gap-3">
-            <Button
-                type="button"
-                variant="ghost"
-                disabled={!imageClickable}
-                onClick={onImageClick}
-                className={cn(
-                    'bg-muted aspect-[4/3] h-auto w-full overflow-hidden rounded-md border p-0 disabled:pointer-events-none',
-                    imageClickable ? 'cursor-pointer' : 'cursor-default'
-                )}
-            >
-                {imageUrl ? (
-                    <img
-                        src={imageUrl}
-                        alt={avatar.name || avatar.id || avatarFallbackLabel}
-                        className="size-full object-cover"
-                    />
-                ) : (
-                    <span className="flex size-full items-center justify-center">
-                        <ImageIcon className="text-muted-foreground size-10" />
-                    </span>
-                )}
-            </Button>
-
-            <div className="flex min-w-0 flex-col gap-2">
+        <Card
+            size="sm"
+            className="min-w-0 overflow-visible border shadow-none ring-0"
+        >
+            <CardHeader className="gap-3">
                 <Button
                     type="button"
                     variant="ghost"
-                    disabled={!avatar.name}
-                    className="hover:text-primary h-auto min-w-0 justify-start overflow-hidden p-0 text-left text-lg leading-tight font-semibold whitespace-normal disabled:pointer-events-none disabled:opacity-100"
-                    onClick={avatar.name ? onTitleClick : undefined}
+                    disabled={!imageClickable}
+                    onClick={onImageClick}
+                    className={cn(
+                        'bg-muted aspect-[4/3] h-auto w-full overflow-hidden rounded-lg border p-0 disabled:pointer-events-none',
+                        imageClickable ? 'cursor-pointer' : 'cursor-default'
+                    )}
                 >
-                    <span className="line-clamp-2 min-w-0 break-words">
-                        {avatar.name || avatarFallbackLabel}
-                    </span>
+                    {imageUrl ? (
+                        <img
+                            src={imageUrl}
+                            alt={
+                                avatar.name || avatar.id || avatarFallbackLabel
+                            }
+                            className="size-full object-cover"
+                        />
+                    ) : (
+                        <span className="flex size-full items-center justify-center">
+                            <ImageIcon className="text-muted-foreground size-10" />
+                        </span>
+                    )}
                 </Button>
-                {avatar.authorName ? (
+            </CardHeader>
+
+            <CardContent className="flex flex-col gap-3">
+                <div className="flex min-w-0 flex-col gap-2">
                     <Button
                         type="button"
                         variant="ghost"
-                        disabled={!avatar.authorId}
-                        className="text-muted-foreground hover:text-primary h-auto max-w-full min-w-0 justify-start overflow-hidden p-0 text-left font-mono text-sm disabled:pointer-events-none disabled:opacity-100"
-                        onClick={avatar.authorId ? onAuthorClick : undefined}
+                        disabled={!avatar.name}
+                        className="hover:text-primary h-auto min-w-0 justify-start overflow-hidden p-0 text-left text-lg leading-tight font-semibold whitespace-normal disabled:pointer-events-none disabled:opacity-100"
+                        onClick={avatar.name ? onTitleClick : undefined}
                     >
-                        <span className="truncate">{avatar.authorName}</span>
+                        <span className="line-clamp-2 min-w-0 break-words">
+                            {avatar.name || avatarFallbackLabel}
+                        </span>
                     </Button>
+                    {avatar.authorName ? (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={!avatar.authorId}
+                            className="text-muted-foreground hover:text-primary h-auto max-w-full min-w-0 justify-start overflow-hidden p-0 text-left font-mono text-sm disabled:pointer-events-none disabled:opacity-100"
+                            onClick={
+                                avatar.authorId ? onAuthorClick : undefined
+                            }
+                        >
+                            <span className="truncate">
+                                {avatar.authorName}
+                            </span>
+                        </Button>
+                    ) : null}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    {actions}
+                </div>
+
+                {badges ? (
+                    <div className="flex flex-wrap gap-1.5">{badges}</div>
                 ) : null}
-            </div>
 
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+                {avatar.description ? (
+                    <>
+                        <Separator />
+                        <div className="text-muted-foreground max-h-28 overflow-auto text-sm break-words whitespace-pre-wrap">
+                            {avatar.description}
+                        </div>
+                    </>
+                ) : null}
 
-            {badges ? (
-                <div className="flex flex-wrap gap-1.5">{badges}</div>
-            ) : null}
-
-            {avatar.description ? (
-                <>
-                    <Separator />
-                    <div className="text-muted-foreground max-h-28 overflow-auto text-sm break-words whitespace-pre-wrap">
-                        {avatar.description}
-                    </div>
-                </>
-            ) : null}
-
-            <Separator />
-            <AvatarOverviewReferences
-                avatar={avatar}
-                avatarUrl={avatarUrl}
-                onCopyAvatarId={onCopyAvatarId}
-                onCopyAvatarUrl={onCopyAvatarUrl}
-                onOpenAvatarUrl={onOpenAvatarUrl}
-                t={t}
-            />
-        </aside>
+                <Separator />
+                <AvatarOverviewReferences
+                    avatar={avatar}
+                    avatarUrl={avatarUrl}
+                    onCopyAvatarId={onCopyAvatarId}
+                    onCopyAvatarUrl={onCopyAvatarUrl}
+                    onOpenAvatarUrl={onOpenAvatarUrl}
+                    t={t}
+                />
+            </CardContent>
+        </Card>
     );
 }
 

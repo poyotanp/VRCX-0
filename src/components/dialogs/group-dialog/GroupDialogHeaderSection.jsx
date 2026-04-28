@@ -22,19 +22,10 @@ import { isValidElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage
-} from '@/ui/shadcn/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/ui/shadcn/avatar';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from '@/ui/shadcn/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/ui/shadcn/card';
 import { Separator } from '@/ui/shadcn/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
@@ -146,7 +137,7 @@ export function GroupDialogHeaderSection({ state, handlers }) {
     return (
         <Card
             size="sm"
-            className="min-w-0 overflow-hidden border shadow-none ring-0"
+            className="min-w-0 overflow-visible border shadow-none ring-0"
         >
             <CardHeader className="gap-3">
                 <Button
@@ -295,7 +286,9 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                                             void onInviteUserToGroup()
                                         }
                                     >
-                                        {t('dialog.group.actions.invite_to_group')}
+                                        {t(
+                                            'dialog.group.actions.invite_to_group'
+                                        )}
                                     </EntityActionItem>
                                 ) : null}
                                 {canManagePosts ? (
@@ -316,7 +309,9 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                                         icon={SettingsIcon}
                                         onSelect={onOpenModeration}
                                     >
-                                        {t('dialog.group.actions.moderation_tools')}
+                                        {t(
+                                            'dialog.group.actions.moderation_tools'
+                                        )}
                                     </EntityActionItem>
                                 ) : null}
                                 {canSetVisibility ? (
