@@ -45,6 +45,8 @@ import { collectMyAvatarTags, filterMyAvatars } from './myAvatarsFilters.js';
 import {
     MY_AVATARS_DEFAULT_CARD_SCALE,
     MY_AVATARS_DEFAULT_COLUMN_VISIBILITY,
+    MY_AVATARS_GRID_DENSITY_CONFIG_KEY,
+    MY_AVATARS_LEGACY_GRID_DENSITY_CONFIG_KEY,
     MY_AVATARS_DEFAULT_PAGE_SIZES,
     MY_AVATARS_VIEW_MODES,
     readPersistedMyAvatarsState,
@@ -189,7 +191,11 @@ export function useMyAvatarsPageController({ embedded = false } = {}) {
             getTablePageSizesPreference(MY_AVATARS_DEFAULT_PAGE_SIZES),
             getTablePageSizePreference(20),
             configRepository.getString('MyAvatarsViewMode', 'grid'),
-            configRepository.getString('VRCX_MyAvatarsGridDensity', ''),
+            configRepository.getString(MY_AVATARS_GRID_DENSITY_CONFIG_KEY, ''),
+            configRepository.getString(
+                MY_AVATARS_LEGACY_GRID_DENSITY_CONFIG_KEY,
+                ''
+            ),
             configRepository.getString(
                 'VRCX_MyAvatarsCardScale',
                 String(MY_AVATARS_DEFAULT_CARD_SCALE)
@@ -201,6 +207,7 @@ export function useMyAvatarsPageController({ embedded = false } = {}) {
                     nextPageSize,
                     nextViewMode,
                     nextGridDensity,
+                    nextLegacyGridDensity,
                     nextLegacyCardScale
                 ]) => {
                     if (!active) {
@@ -240,6 +247,7 @@ export function useMyAvatarsPageController({ embedded = false } = {}) {
                     setGridDensity(
                         resolveMyAvatarsGridDensity({
                             persistedDensity: nextGridDensity,
+                            legacyGridDensity: nextLegacyGridDensity,
                             legacyCardScale: nextLegacyCardScale
                         })
                     );
@@ -318,7 +326,7 @@ export function useMyAvatarsPageController({ embedded = false } = {}) {
         const nextDensity = sanitizeMyAvatarsGridDensity(value);
         setGridDensity(nextDensity);
         void configRepository.setString(
-            'VRCX_MyAvatarsGridDensity',
+            MY_AVATARS_GRID_DENSITY_CONFIG_KEY,
             nextDensity
         );
     }

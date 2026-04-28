@@ -30,6 +30,7 @@ function updateMetricsIfChanged(setViewportMetrics, nextMetrics) {
 
 export function useScrollViewportMetrics({ enabled = true } = {}) {
     const viewportRef = useRef(null);
+    const [viewportElement, setViewportElement] = useState(null);
     const [viewportMetrics, setViewportMetrics] = useState(
         EMPTY_VIEWPORT_METRICS
     );
@@ -55,12 +56,26 @@ export function useScrollViewportMetrics({ enabled = true } = {}) {
         );
     }, []);
 
+    const setViewportRef = useCallback(
+        (node) => {
+            viewportRef.current = node;
+            setViewportElement(node);
+            if (enabled && node) {
+                updateMetricsIfChanged(
+                    setViewportMetrics,
+                    readViewportMetrics(node)
+                );
+            }
+        },
+        [enabled]
+    );
+
     useEffect(() => {
         if (!enabled) {
             return undefined;
         }
 
-        const node = viewportRef.current;
+        const node = viewportElement;
         if (!node) {
             return undefined;
         }
@@ -86,11 +101,11 @@ export function useScrollViewportMetrics({ enabled = true } = {}) {
                 window.removeEventListener('resize', updateViewportMetrics);
             }
         };
-    }, [enabled, updateViewportMetrics]);
+    }, [enabled, updateViewportMetrics, viewportElement]);
 
     return {
         resetScrollTop,
         viewportMetrics,
-        viewportRef
+        viewportRef: setViewportRef
     };
 }

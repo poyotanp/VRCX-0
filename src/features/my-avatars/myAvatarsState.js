@@ -5,18 +5,21 @@ export const MY_AVATARS_RELEASE_STATUS_OPTIONS = ['all', 'public', 'private'];
 export const MY_AVATARS_PLATFORM_OPTIONS = ['all', 'pc', 'android', 'ios'];
 export const MY_AVATARS_DEFAULT_CARD_SCALE = 0.6;
 export const MY_AVATARS_DEFAULT_CARD_SPACING = 1;
-export const MY_AVATARS_DEFAULT_GRID_DENSITY = 'compact';
+export const MY_AVATARS_GRID_DENSITY_CONFIG_KEY = 'VRCX_MyAvatarsGridDensityV2';
+export const MY_AVATARS_LEGACY_GRID_DENSITY_CONFIG_KEY =
+    'VRCX_MyAvatarsGridDensity';
+export const MY_AVATARS_DEFAULT_GRID_DENSITY = 'standard';
 export const MY_AVATARS_GRID_DENSITY_OPTIONS = Object.freeze([
     {
-        value: 'compact',
+        value: 'standard',
         labelKey: 'view.my_avatars.generated.grid_density_standard'
     },
     {
-        value: 'dense',
+        value: 'compact',
         labelKey: 'view.my_avatars.generated.grid_density_compact'
     },
     {
-        value: 'micro',
+        value: 'dense',
         labelKey: 'view.my_avatars.generated.grid_density_dense'
     }
 ]);
@@ -51,6 +54,11 @@ const COLUMN_ID_ALIASES = {
 const GRID_DENSITY_VALUES = new Set(
     MY_AVATARS_GRID_DENSITY_OPTIONS.map((option) => option.value)
 );
+const LEGACY_GRID_DENSITY_ALIASES = Object.freeze({
+    compact: 'standard',
+    dense: 'compact',
+    micro: 'dense'
+});
 const SORT_COLUMN_IDS = [
     'name',
     'customTags',
@@ -211,13 +219,18 @@ export function sanitizeMyAvatarsGridDensity(value) {
 
 export function resolveMyAvatarsGridDensity({
     persistedDensity,
+    legacyGridDensity,
     legacyCardScale
 } = {}) {
-    const normalized = typeof persistedDensity === 'string'
-        ? persistedDensity.trim()
-        : '';
+    const normalized =
+        typeof persistedDensity === 'string' ? persistedDensity.trim() : '';
     if (GRID_DENSITY_VALUES.has(normalized)) {
         return normalized;
+    }
+    const normalizedLegacyDensity =
+        typeof legacyGridDensity === 'string' ? legacyGridDensity.trim() : '';
+    if (LEGACY_GRID_DENSITY_ALIASES[normalizedLegacyDensity]) {
+        return LEGACY_GRID_DENSITY_ALIASES[normalizedLegacyDensity];
     }
 
     const legacyScale = Number.parseFloat(legacyCardScale);
@@ -225,10 +238,10 @@ export function resolveMyAvatarsGridDensity({
         return MY_AVATARS_DEFAULT_GRID_DENSITY;
     }
     if (legacyScale <= 0.45) {
-        return 'micro';
+        return 'dense';
     }
     if (legacyScale <= 0.55) {
-        return 'dense';
+        return 'compact';
     }
     return MY_AVATARS_DEFAULT_GRID_DENSITY;
 }

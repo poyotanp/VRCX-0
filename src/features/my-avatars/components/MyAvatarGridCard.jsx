@@ -82,17 +82,11 @@ export function AvatarActionMenuItems({
             </Group>
             <Separator />
             <Group>
-                <Item
-                    disabled={disabled}
-                    {...actionItemProps('manageTags')}
-                >
+                <Item disabled={disabled} {...actionItemProps('manageTags')}>
                     <TagIcon />
                     {t('dialog.avatar.actions.manage_tags')}
                 </Item>
-                <Item
-                    disabled={disabled}
-                    {...actionItemProps('editDetails')}
-                >
+                <Item disabled={disabled} {...actionItemProps('editDetails')}>
                     <PencilIcon />
                     {t('dialog.avatar.actions.edit_details')}
                 </Item>
@@ -103,20 +97,14 @@ export function AvatarActionMenuItems({
                     <TagIcon />
                     {t('dialog.avatar.actions.change_content_tags')}
                 </Item>
-                <Item
-                    disabled={disabled}
-                    {...actionItemProps('changeImage')}
-                >
+                <Item disabled={disabled} {...actionItemProps('changeImage')}>
                     <ImageIcon />
                     {t('dialog.avatar.actions.change_image')}
                 </Item>
             </Group>
             <Separator />
             <Group>
-                <Item
-                    disabled={disabled}
-                    {...actionItemProps(releaseAction)}
-                >
+                <Item disabled={disabled} {...actionItemProps(releaseAction)}>
                     <UserIcon />
                     {avatar?.releaseStatus === 'public'
                         ? t('dialog.avatar.actions.make_private')
@@ -151,7 +139,21 @@ export function MyAvatarGridCard({
     const visibleTags = tags.slice(0, densityConfig.maxVisibleTags);
     const hiddenTagCount = Math.max(0, tags.length - visibleTags.length);
     const platformDotClassName =
-        'size-2.5 rounded-full border border-background/80 opacity-80 shadow-sm';
+        'size-2.5 -ml-1 rounded-full border border-background/80 opacity-80 shadow-sm first:ml-0';
+    const avatarName =
+        avatar?.name || t('view.my_avatars.generated.untitled_avatar');
+    const overlayPaddingTop = tags.length
+        ? densityConfig.overlayPaddingTop
+        : densityConfig.overlayNameOnlyPaddingTop;
+    const overlayStyle = {
+        gap: `${densityConfig.overlayGap}px`,
+        padding: `${overlayPaddingTop}px ${densityConfig.overlayPaddingX}px ${densityConfig.overlayPaddingY}px`
+    };
+    const avatarNameStyle = {
+        fontSize: `${densityConfig.nameFontSize}px`,
+        lineHeight: densityConfig.nameLineHeight,
+        textShadow: '0 1px 2px rgb(0 0 0 / 0.9), 0 0 10px rgb(0 0 0 / 0.65)'
+    };
 
     return (
         <ContextMenu>
@@ -197,16 +199,20 @@ export function MyAvatarGridCard({
                                     variant="secondary"
                                     className="absolute top-1 left-1 max-w-[calc(100%-2rem)] truncate rounded-sm px-1.5 py-0 text-xs"
                                 >
-                                    {t('view.my_avatars.generated.current_avatar')}
+                                    {t(
+                                        'view.my_avatars.generated.current_avatar'
+                                    )}
                                 </Badge>
                             ) : null}
                             {canWear ? (
-                                <div className="from-background/85 absolute right-0 bottom-0 left-0 translate-y-full bg-gradient-to-t to-transparent px-2 py-1 text-xs font-medium transition-transform group-hover/card:translate-y-0 group-focus-within/card:translate-y-0">
-                                    {t('view.my_avatars.generated.click_to_wear')}
+                                <div className="bg-background/85 text-foreground absolute top-1 left-1 max-w-[calc(100%-2rem)] -translate-y-1 rounded-sm px-1.5 py-0 text-xs font-medium opacity-0 shadow-sm backdrop-blur-[1px] transition-all group-focus-within/card:translate-y-0 group-focus-within/card:opacity-100 group-hover/card:translate-y-0 group-hover/card:opacity-100">
+                                    {t(
+                                        'view.my_avatars.generated.click_to_wear'
+                                    )}
                                 </div>
                             ) : null}
                             {platforms?.isQuest || platforms?.isIos ? (
-                                <div className="absolute top-1 right-1 flex -space-x-1">
+                                <div className="absolute top-1 right-1 flex">
                                     {platforms?.isPC ? (
                                         <span
                                             className={cn(
@@ -233,71 +239,51 @@ export function MyAvatarGridCard({
                                     ) : null}
                                 </div>
                             ) : null}
-                        </div>
-                        <div
-                            className="flex min-h-0 flex-col"
-                            style={{
-                                gap: `${densityConfig.bodyGap}px`,
-                                padding: `${densityConfig.bodyPaddingY}px ${densityConfig.bodyPaddingX}px`
-                            }}
-                        >
-                            <span
-                                className="line-clamp-2 block overflow-hidden"
-                                style={{
-                                    fontSize: `${densityConfig.nameFontSize}px`,
-                                    lineHeight: densityConfig.nameLineHeight,
-                                    minHeight: `${densityConfig.nameFontSize * densityConfig.nameLineHeight * densityConfig.nameLines}px`
-                                }}
+                            <div
+                                className="absolute right-0 bottom-0 left-0 flex min-w-0 flex-col bg-gradient-to-t from-black/85 via-black/35 to-transparent"
+                                style={overlayStyle}
                             >
-                                {avatar?.name ||
-                                    t(
-                                        'view.my_avatars.generated.untitled_avatar'
-                                    )}
-                            </span>
-                            {tags.length ? (
-                                <div
-                                    className="flex flex-nowrap gap-0.5 overflow-hidden"
-                                    style={{
-                                        maxHeight: `${densityConfig.tagHeight}px`
-                                    }}
+                                <span
+                                    className="block truncate font-semibold text-white"
+                                    style={avatarNameStyle}
                                 >
-                                    {visibleTags.map((entry) => {
-                                        const color = getTagColor(entry.tag);
-                                        return (
+                                    {avatarName}
+                                </span>
+                                {tags.length ? (
+                                    <div className="flex min-w-0 flex-nowrap gap-1 overflow-hidden">
+                                        {visibleTags.map((entry) => {
+                                            const color = getTagColor(
+                                                entry.tag
+                                            );
+                                            return (
+                                                <Badge
+                                                    key={`${avatar.id}:${entry.tag}`}
+                                                    variant="outline"
+                                                    className="bg-background/75 shrink-0 truncate rounded-sm px-1 py-0 leading-tight shadow-sm backdrop-blur-[1px]"
+                                                    style={{
+                                                        fontSize: `${densityConfig.tagFontSize}px`,
+                                                        borderColor: color.bg,
+                                                        color: color.text
+                                                    }}
+                                                >
+                                                    {entry.tag}
+                                                </Badge>
+                                            );
+                                        })}
+                                        {hiddenTagCount ? (
                                             <Badge
-                                                key={`${avatar.id}:${entry.tag}`}
                                                 variant="outline"
-                                                className="shrink-0 rounded-sm px-1 py-0 leading-tight"
+                                                className="bg-background/75 text-foreground/90 shrink-0 rounded-sm px-1 py-0 leading-tight shadow-sm backdrop-blur-[1px]"
                                                 style={{
-                                                    fontSize: `${densityConfig.tagFontSize}px`,
-                                                    borderColor: color.bg,
-                                                    color: color.text
+                                                    fontSize: `${densityConfig.tagFontSize}px`
                                                 }}
                                             >
-                                                {entry.tag}
+                                                +{hiddenTagCount}
                                             </Badge>
-                                        );
-                                    })}
-                                    {hiddenTagCount ? (
-                                        <Badge
-                                            variant="secondary"
-                                            className="shrink-0 rounded-sm px-1 py-0 leading-tight"
-                                            style={{
-                                                fontSize: `${densityConfig.tagFontSize}px`
-                                            }}
-                                        >
-                                            +{hiddenTagCount}
-                                        </Badge>
-                                    ) : null}
-                                </div>
-                            ) : (
-                                <div
-                                    aria-hidden="true"
-                                    style={{
-                                        height: `${densityConfig.tagHeight}px`
-                                    }}
-                                />
-                            )}
+                                        ) : null}
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
                     </Button>
                     <DropdownMenu>
@@ -306,7 +292,7 @@ export function MyAvatarGridCard({
                                 type="button"
                                 variant="secondary"
                                 size="icon-xs"
-                                className="absolute top-1 right-1 opacity-0 shadow-sm transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100 data-[state=open]:opacity-100"
+                                className="absolute top-1 right-1 opacity-0 shadow-sm transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 data-[state=open]:opacity-100"
                                 aria-label={t(
                                     'view.my_avatars.generated.open_avatar_actions'
                                 )}
@@ -325,7 +311,7 @@ export function MyAvatarGridCard({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                             align="end"
-                            className="w-max min-w-52 max-w-[90vw]"
+                            className="w-max max-w-[90vw] min-w-52"
                         >
                             <AvatarActionMenuItems
                                 avatar={avatar}
@@ -340,7 +326,7 @@ export function MyAvatarGridCard({
                     </DropdownMenu>
                 </div>
             </ContextMenuTrigger>
-            <ContextMenuContent className="w-max min-w-52 max-w-[90vw]">
+            <ContextMenuContent className="w-max max-w-[90vw] min-w-52">
                 <AvatarActionMenuItems
                     avatar={avatar}
                     isActive={isActive}

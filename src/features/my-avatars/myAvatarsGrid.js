@@ -1,58 +1,59 @@
 import {
-    MY_AVATARS_DEFAULT_GRID_DENSITY,
-    sanitizeMyAvatarsGridDensity
-} from './myAvatarsState.js';
-import {
     getVisibleKnownSizeRows,
     positionKnownSizeRows
 } from '@/lib/knownSizeVirtualRows.js';
 
+import {
+    MY_AVATARS_DEFAULT_GRID_DENSITY,
+    sanitizeMyAvatarsGridDensity
+} from './myAvatarsState.js';
+
 const MY_AVATARS_GRID_DENSITY_CONFIGS = Object.freeze({
-    compact: Object.freeze({
-        value: 'compact',
+    standard: Object.freeze({
+        value: 'standard',
         gridGap: 8,
         gridMinWidth: 180,
-        imageHeightRatio: 0.38,
-        bodyPaddingX: 8,
-        bodyPaddingY: 6,
-        bodyGap: 2,
+        imageHeightRatio: 0.66,
+        overlayPaddingX: 8,
+        overlayPaddingY: 7,
+        overlayPaddingTop: 24,
+        overlayNameOnlyPaddingTop: 16,
+        overlayGap: 4,
         nameFontSize: 13,
         nameLineHeight: 1.15,
-        nameLines: 2,
         tagFontSize: 9,
-        tagHeight: 16,
         maxVisibleTags: 2,
         rowPaddingY: 4
     }),
-    dense: Object.freeze({
-        value: 'dense',
+    compact: Object.freeze({
+        value: 'compact',
         gridGap: 7,
         gridMinWidth: 150,
-        imageHeightRatio: 0.34,
-        bodyPaddingX: 7,
-        bodyPaddingY: 5,
-        bodyGap: 2,
+        imageHeightRatio: 0.64,
+        overlayPaddingX: 7,
+        overlayPaddingY: 6,
+        overlayPaddingTop: 22,
+        overlayNameOnlyPaddingTop: 14,
+        overlayGap: 4,
         nameFontSize: 12,
         nameLineHeight: 1.12,
-        nameLines: 2,
         tagFontSize: 8,
-        tagHeight: 14,
         maxVisibleTags: 1,
         rowPaddingY: 3
     }),
-    micro: Object.freeze({
-        value: 'micro',
+    dense: Object.freeze({
+        value: 'dense',
         gridGap: 6,
         gridMinWidth: 125,
-        imageHeightRatio: 0.3,
-        bodyPaddingX: 6,
-        bodyPaddingY: 4,
-        bodyGap: 1,
+        imageHeightRatio: 0.6,
+        overlayPaddingX: 6,
+        overlayPaddingY: 5,
+        overlayPaddingTop: 18,
+        overlayNameOnlyPaddingTop: 12,
+        overlayGap: 3,
         nameFontSize: 11,
         nameLineHeight: 1.1,
-        nameLines: 2,
         tagFontSize: 8,
-        tagHeight: 12,
         maxVisibleTags: 0,
         rowPaddingY: 3
     })
@@ -87,18 +88,8 @@ export function getMyAvatarsGridMetrics({
                           gridColumnCount
                   )
                 : gridMinWidth;
-        const cardNameHeight =
-            densityConfig.nameFontSize *
-            densityConfig.nameLineHeight *
-            densityConfig.nameLines;
-        const cardBodyHeight =
-            densityConfig.bodyPaddingY * 2 +
-            cardNameHeight +
-            densityConfig.bodyGap +
-            densityConfig.tagHeight;
         const gridRowHeight = Math.ceil(
             gridColumnWidth * densityConfig.imageHeightRatio +
-                cardBodyHeight +
                 densityConfig.rowPaddingY +
                 gridGap
         );
@@ -127,16 +118,9 @@ export function getMyAvatarsGridMetrics({
                       gridColumnCount
               )
             : gridMinWidth;
-    const cardNameFontSize = Math.max(12, Math.round(22 * cardScale));
-    const cardNameHeight = cardNameFontSize * 2.75;
-    const cardBodyPaddingY = Math.round(6 * cardScale) * 2;
-    const cardTagsHeight = Math.max(14, Math.round(22 * cardScale));
-    const cardBodyGap = 2;
-    const cardBodyHeight =
-        cardBodyPaddingY + cardNameHeight + cardBodyGap + cardTagsHeight;
     const rowPaddingY = 4;
     const gridRowHeight = Math.ceil(
-        gridColumnWidth * 0.4 + cardBodyHeight + rowPaddingY + gridGap
+        gridColumnWidth * 0.66 + rowPaddingY + gridGap
     );
 
     return {
