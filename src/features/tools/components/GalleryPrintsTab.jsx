@@ -1,10 +1,4 @@
-import {
-    EyeIcon,
-    ImageIcon,
-    RefreshCwIcon,
-    Trash2Icon,
-    UploadIcon
-} from 'lucide-react';
+import { ImageIcon, RefreshCwIcon, Trash2Icon, UploadIcon } from 'lucide-react';
 
 import { formatDateFilter } from '@/lib/dateTime.js';
 import { getPrintFileName } from '@/shared/utils/gallery.js';
@@ -24,6 +18,7 @@ export function GalleryPrintsTab({
     uploadingTab,
     mutatingKey,
     isVrcPlusSupporter,
+    gridDensityConfig,
     printUploadNote,
     printCropBorder,
     onRefresh,
@@ -34,8 +29,11 @@ export function GalleryPrintsTab({
     onDeletePrint
 }) {
     return (
-        <TabsContent value="prints" className="min-h-0">
-            <Card>
+        <TabsContent
+            value="prints"
+            className="mt-2 min-h-0 flex-1 data-[state=active]:flex data-[state=inactive]:hidden"
+        >
+            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <CardHeader className="gap-4">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <div>
@@ -94,11 +92,11 @@ export function GalleryPrintsTab({
                         </Field>
                     </FieldGroup>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 min-h-0 flex-1 overflow-y-auto">
                     {loading ? (
                         <LoadingState />
                     ) : prints.length > 0 ? (
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className={gridDensityConfig.printsGridClass}>
                             {prints.map((print) => {
                                 const imageUrl = print?.files?.image || '';
                                 const isMutating =
@@ -135,8 +133,16 @@ export function GalleryPrintsTab({
                                                 <ImageIcon className="size-8" />
                                             </div>
                                         )}
-                                        <CardContent className="flex flex-col gap-3 p-4">
-                                            <div className="flex flex-col gap-1">
+                                        <CardContent
+                                            className={
+                                                gridDensityConfig.contentClass
+                                            }
+                                        >
+                                            <div
+                                                className={
+                                                    gridDensityConfig.metaClass
+                                                }
+                                            >
                                                 <div className="line-clamp-1 text-sm font-medium">
                                                     {print.note || print.id}
                                                 </div>
@@ -159,29 +165,17 @@ export function GalleryPrintsTab({
                                                     </div>
                                                 ) : null}
                                             </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={!imageUrl}
-                                                    onClick={() =>
-                                                        onPreview({
-                                                            id: print.id,
-                                                            url: imageUrl,
-                                                            title: getPrintFileName(
-                                                                print
-                                                            )
-                                                        })
-                                                    }
-                                                >
-                                                    <EyeIcon data-icon="inline-start" />
-                                                    {t(
-                                                        'view.tools.generated.preview'
-                                                    )}
-                                                </Button>
+                                            <div
+                                                className={
+                                                    gridDensityConfig.actionsClass
+                                                }
+                                            >
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
+                                                    className={
+                                                        gridDensityConfig.actionButtonClass
+                                                    }
                                                     disabled={isMutating}
                                                     onClick={() =>
                                                         onDeletePrint(print.id)

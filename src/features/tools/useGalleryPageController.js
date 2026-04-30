@@ -24,8 +24,40 @@ import {
     FILE_TABS,
     UPLOAD_ASPECT_RATIOS
 } from './galleryConstants.js';
+import {
+    getGalleryGridDensityConfig,
+    sanitizeGalleryGridDensity
+} from './galleryDensity.js';
 import { useGalleryPageActions } from './useGalleryPageActions.js';
 const MAX_IMAGE_UPLOAD_BYTES = 20_000_000;
+const GALLERY_GRID_DENSITY_STORAGE_KEY = 'VRCX_GalleryGridDensity';
+
+function readGalleryGridDensityPreference() {
+    if (typeof window === 'undefined') {
+        return sanitizeGalleryGridDensity();
+    }
+
+    try {
+        return sanitizeGalleryGridDensity(
+            window.localStorage.getItem(GALLERY_GRID_DENSITY_STORAGE_KEY)
+        );
+    } catch {
+        return sanitizeGalleryGridDensity();
+    }
+}
+
+function writeGalleryGridDensityPreference(value) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.localStorage.setItem(GALLERY_GRID_DENSITY_STORAGE_KEY, value);
+    } catch {
+        // Grid density is a display preference only.
+    }
+}
+
 function buildProfilePicOverride(endpoint, fileId) {
     if (!fileId) {
         return '';
@@ -121,13 +153,13 @@ export function useGalleryPageController() {
         (state) => state.auth.currentUserSnapshot
     );
     const confirm = useModalStore((state) => state.confirm);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const prompt = useModalStore((state) => state.prompt);
     const [activeTab, setActiveTab] = useState('gallery');
     const [assets, setAssets] = useState(EMPTY_ASSETS);
     const [loadingByTab, setLoadingByTab] = useState({});
     const [uploadingTab, setUploadingTab] = useState('');
     const [mutatingKey, setMutatingKey] = useState('');
-    const [preview, setPreview] = useState(null);
     const [cropRequest, setCropRequest] = useState(null);
     const [printUploadNote, setPrintUploadNote] = useState('');
     const [printCropBorder, setPrintCropBorder] = useState(true);
@@ -136,10 +168,17 @@ export function useGalleryPageController() {
     const [emojiAnimType, setEmojiAnimType] = useState(false);
     const [emojiAnimationStyle, setEmojiAnimationStyle] = useState('Stop');
     const [emojiAnimLoopPingPong, setEmojiAnimLoopPingPong] = useState(false);
+    const [gridDensity, setGridDensity] = useState(() =>
+        readGalleryGridDensityPreference()
+    );
     const [galleryLimits, setGalleryLimits] = useState({
         maxUserEmoji: null,
         maxUserStickers: null
     });
+    const gridDensityConfig = useMemo(
+        () => getGalleryGridDensityConfig(gridDensity),
+        [gridDensity]
+    );
     const profilePicOverride = currentUserSnapshot?.profilePicOverride || '';
     const userIcon = currentUserSnapshot?.userIcon || '';
     const isVrcPlusSupporter = Boolean(
@@ -265,12 +304,20 @@ export function useGalleryPageController() {
         validateImageFile,
         withUploadTimeout
     });
+    function changeGridDensity(nextValue) {
+        const nextDensity = sanitizeGalleryGridDensity(nextValue);
+        setGridDensity(nextDensity);
+        writeGalleryGridDensityPreference(nextDensity);
+    }
+
     return {
         GalleryHeader,
         t,
         uploadInputRef,
         uploadingTab,
         uploadSelectedFile,
+        gridDensity,
+        changeGridDensity,
         navigate,
         refreshAll,
         GalleryTabsSection,
@@ -286,7 +333,6 @@ export function useGalleryPageController() {
         setEmojiAnimFrameCount,
         setEmojiAnimLoopPingPong,
         setEmojiAnimType,
-        setPreview,
         setPrintCropBorder,
         setPrintUploadNote,
         redeemReward,
@@ -300,10 +346,10 @@ export function useGalleryPageController() {
         emojiAnimationStyle,
         emojiAnimType,
         galleryLimits,
+        gridDensityConfig,
         isVrcPlusSupporter,
         loadingByTab,
         mutatingKey,
-        preview,
         printCropBorder,
         printUploadNote,
         profilePicOverride,
@@ -313,6 +359,7 @@ export function useGalleryPageController() {
         cropRequest,
         setCropRequest,
         confirmCroppedUpload,
+        openImagePreview,
         uploadAuthTargetRef
     };
 }

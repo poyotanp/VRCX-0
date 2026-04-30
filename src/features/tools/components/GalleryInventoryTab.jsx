@@ -29,14 +29,18 @@ export function GalleryInventoryTab({
     items,
     loading,
     mutatingKey,
+    gridDensityConfig,
     onRefresh,
     onRedeem,
     onPreview,
     onConsumeBundle
 }) {
     return (
-        <TabsContent value="inventory" className="min-h-0">
-            <Card>
+        <TabsContent
+            value="inventory"
+            className="mt-2 min-h-0 flex-1 data-[state=active]:flex data-[state=inactive]:hidden"
+        >
+            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <CardHeader className="gap-4">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <div>
@@ -65,11 +69,11 @@ export function GalleryInventoryTab({
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 min-h-0 flex-1 overflow-y-auto">
                     {loading ? (
                         <LoadingState />
                     ) : items.length > 0 ? (
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        <div className={gridDensityConfig.inventoryGridClass}>
                             {items.map((item) => {
                                 const isMutating =
                                     mutatingKey === `inventory:${item.id}`;
@@ -104,8 +108,16 @@ export function GalleryInventoryTab({
                                                 <ImageIcon className="size-8" />
                                             </div>
                                         )}
-                                        <CardContent className="flex flex-col gap-3 p-4">
-                                            <div className="flex flex-col gap-1">
+                                        <CardContent
+                                            className={
+                                                gridDensityConfig.contentClass
+                                            }
+                                        >
+                                            <div
+                                                className={
+                                                    gridDensityConfig.metaClass
+                                                }
+                                            >
                                                 <div className="line-clamp-1 text-sm font-medium">
                                                     {item.name || item.id}
                                                 </div>
@@ -132,6 +144,9 @@ export function GalleryInventoryTab({
                                             {item.itemType === 'bundle' ? (
                                                 <Button
                                                     size="sm"
+                                                    className={
+                                                        gridDensityConfig.actionButtonClass
+                                                    }
                                                     disabled={isMutating}
                                                     onClick={() =>
                                                         onConsumeBundle(item.id)

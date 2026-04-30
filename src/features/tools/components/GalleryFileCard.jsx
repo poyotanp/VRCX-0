@@ -1,4 +1,4 @@
-import { CheckIcon, EyeIcon, ImageIcon, Trash2Icon } from 'lucide-react';
+import { CheckIcon, ImageIcon, Trash2Icon } from 'lucide-react';
 
 import { cn } from '@/lib/utils.js';
 import { extractFileId } from '@/shared/utils/fileUtils.js';
@@ -13,6 +13,19 @@ function getLatestFileUrl(file) {
     return versions.at(-1)?.file?.url ?? '';
 }
 
+function getUsefulDisplayName(file) {
+    const displayName = String(file?.displayName || '').trim();
+    const name = String(file?.name || '').trim();
+    const id = String(file?.id || '').trim();
+    const visibleName = displayName || name;
+
+    if (!visibleName || visibleName === id || /^file_[\w-]+_blob$/i.test(visibleName)) {
+        return '';
+    }
+
+    return visibleName;
+}
+
 export function GalleryFileCard({
     t,
     tab,
@@ -23,11 +36,14 @@ export function GalleryFileCard({
     mutatingKey,
     isVrcPlusSupporter,
     currentUserId,
+    densityConfig,
     onPreview,
     onSetProfileField,
     onDeleteFile
 }) {
     const imageUrl = getLatestFileUrl(file);
+    const displayName = getUsefulDisplayName(file);
+    const hasMetadata = Boolean(displayName || tab === 'emojis');
     const activeFileId =
         tab === 'gallery'
             ? extractFileId(profilePicOverride)
@@ -58,7 +74,13 @@ export function GalleryFileCard({
                     type="button"
                     variant="ghost"
                     className="h-auto w-full rounded-none p-0"
-                    onClick={() => onPreview({ id: file.id, url: imageUrl })}
+                    onClick={() =>
+                        onPreview({
+                            id: file.id,
+                            title: displayName || t(definition.titleKey),
+                            url: imageUrl
+                        })
+                    }
                 >
                     <GalleryEmojiImage
                         file={tab === 'emojis' ? file : null}
@@ -77,59 +99,48 @@ export function GalleryFileCard({
                     <ImageIcon className="size-8" />
                 </div>
             )}
-            <CardContent className="flex flex-col gap-3 p-4">
-                <div className="flex flex-col gap-1">
-                    <div className="line-clamp-1 text-sm font-medium">
-                        {file.displayName || file.name || file.id}
+            <CardContent className={densityConfig.contentClass}>
+                {hasMetadata ? (
+                    <div className={densityConfig.metaClass}>
+                        {displayName ? (
+                            <div className="line-clamp-1 text-sm font-medium">
+                                {displayName}
+                            </div>
+                        ) : null}
+                        {tab === 'emojis' ? (
+                            <div className="text-muted-foreground flex flex-wrap gap-1 text-xs">
+                                {file.loopStyle ? (
+                                    <Badge variant="outline">
+                                        {file.loopStyle}
+                                    </Badge>
+                                ) : null}
+                                {file.animationStyle ? (
+                                    <Badge variant="outline">
+                                        {file.animationStyle}
+                                    </Badge>
+                                ) : null}
+                                {file.framesOverTime ? (
+                                    <Badge variant="outline">
+                                        {file.framesOverTime}
+                                        {t('view.tools.generated.fps')}
+                                    </Badge>
+                                ) : null}
+                                {file.frames ? (
+                                    <Badge variant="outline">
+                                        {file.frames}
+                                        {t('view.tools.generated.frames')}
+                                    </Badge>
+                                ) : null}
+                            </div>
+                        ) : null}
                     </div>
-                    <div className="text-muted-foreground text-xs">
-                        {Array.isArray(file.versions)
-                            ? `${file.versions.length} version(s)`
-                            : 'No version data'}
-                    </div>
-                    {tab === 'emojis' ? (
-                        <div className="text-muted-foreground flex flex-wrap gap-1 text-xs">
-                            {file.loopStyle ? (
-                                <Badge variant="outline">
-                                    {file.loopStyle}
-                                </Badge>
-                            ) : null}
-                            {file.animationStyle ? (
-                                <Badge variant="outline">
-                                    {file.animationStyle}
-                                </Badge>
-                            ) : null}
-                            {file.framesOverTime ? (
-                                <Badge variant="outline">
-                                    {file.framesOverTime}
-                                    {t('view.tools.generated.fps')}
-                                </Badge>
-                            ) : null}
-                            {file.frames ? (
-                                <Badge variant="outline">
-                                    {file.frames}
-                                    {t('view.tools.generated.frames')}
-                                </Badge>
-                            ) : null}
-                        </div>
-                    ) : null}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!imageUrl}
-                        onClick={() =>
-                            onPreview({ id: file.id, url: imageUrl })
-                        }
-                    >
-                        <EyeIcon data-icon="inline-start" />
-                        {t('view.tools.generated.preview')}
-                    </Button>
+                ) : null}
+                <div className={densityConfig.actionsClass}>
                     {profileField ? (
                         <Button
                             variant={isCurrent ? 'default' : 'outline'}
                             size="sm"
+                            className={densityConfig.actionButtonClass}
                             disabled={
                                 !isVrcPlusSupporter ||
                                 isMutating ||
@@ -146,6 +157,7 @@ export function GalleryFileCard({
                     <Button
                         variant="destructive"
                         size="sm"
+                        className={densityConfig.actionButtonClass}
                         disabled={isMutating}
                         onClick={() => onDeleteFile(tab, file.id)}
                     >

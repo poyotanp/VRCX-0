@@ -1,14 +1,10 @@
 import { ImageCropDialog } from '@/components/media/ImageCropDialog.jsx';
 
-import { GalleryPreviewDialog } from './GalleryPreviewDialog.jsx';
-
 export function GalleryDialogs({
     cropRequest,
     onClearCropRequest,
     onConfirmCrop,
     onResetUploadAuthTarget,
-    onClosePreview,
-    preview,
     t
 }) {
     return (
@@ -25,12 +21,6 @@ export function GalleryDialogs({
                     }
                 }}
                 onConfirm={onConfirmCrop}
-            />
-
-            <GalleryPreviewDialog
-                t={t}
-                preview={preview}
-                onClose={onClosePreview}
             />
         </>
     );

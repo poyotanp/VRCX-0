@@ -4,6 +4,8 @@ export function GalleryPageView({
     uploadInputRef,
     uploadingTab,
     uploadSelectedFile,
+    gridDensity,
+    changeGridDensity,
     navigate,
     refreshAll,
     GalleryTabsSection,
@@ -19,7 +21,6 @@ export function GalleryPageView({
     setEmojiAnimFrameCount,
     setEmojiAnimLoopPingPong,
     setEmojiAnimType,
-    setPreview,
     setPrintCropBorder,
     setPrintUploadNote,
     redeemReward,
@@ -33,10 +34,10 @@ export function GalleryPageView({
     emojiAnimationStyle,
     emojiAnimType,
     galleryLimits,
+    gridDensityConfig,
     isVrcPlusSupporter,
     loadingByTab,
     mutatingKey,
-    preview,
     printCropBorder,
     printUploadNote,
     profilePicOverride,
@@ -46,6 +47,7 @@ export function GalleryPageView({
     cropRequest,
     setCropRequest,
     confirmCroppedUpload,
+    openImagePreview,
     uploadAuthTargetRef
 }) {
     return (
@@ -55,6 +57,8 @@ export function GalleryPageView({
                 uploadInputRef={uploadInputRef}
                 uploadingTab={uploadingTab}
                 onUploadChange={(event) => void uploadSelectedFile(event)}
+                gridDensity={gridDensity}
+                onGridDensityChange={changeGridDensity}
                 onBack={() => navigate('/tools')}
                 onRefreshAll={() => void refreshAll()}
             />
@@ -78,7 +82,7 @@ export function GalleryPageView({
                     onEmojiAnimFrameCountChange: setEmojiAnimFrameCount,
                     onEmojiAnimLoopPingPongChange: setEmojiAnimLoopPingPong,
                     onEmojiAnimTypeChange: setEmojiAnimType,
-                    onPreview: setPreview,
+                    onPreview: openImagePreview,
                     onPrintCropBorderChange: setPrintCropBorder,
                     onPrintUploadNoteChange: setPrintUploadNote,
                     onRedeem: () => void redeemReward(),
@@ -96,10 +100,10 @@ export function GalleryPageView({
                     emojiAnimationStyle,
                     emojiAnimType,
                     galleryLimits,
+                    gridDensityConfig,
                     isVrcPlusSupporter,
                     loadingByTab,
                     mutatingKey,
-                    preview,
                     printCropBorder,
                     printUploadNote,
                     profilePicOverride,
@@ -116,8 +120,6 @@ export function GalleryPageView({
                 onResetUploadAuthTarget={() => {
                     uploadAuthTargetRef.current = null;
                 }}
-                onClosePreview={() => setPreview(null)}
-                preview={preview}
                 t={t}
             />
         </div>

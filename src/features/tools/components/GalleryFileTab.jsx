@@ -25,6 +25,7 @@ export function GalleryFileTab({
     emojiAnimFps,
     emojiAnimFrameCount,
     emojiAnimLoopPingPong,
+    gridDensityConfig,
     onRefresh,
     onBeginUpload,
     onClearProfileField,
@@ -39,8 +40,11 @@ export function GalleryFileTab({
     onDeleteFile
 }) {
     return (
-        <TabsContent value={tab} className="min-h-0">
-            <Card>
+        <TabsContent
+            value={tab}
+            className="mt-2 min-h-0 flex-1 data-[state=active]:flex data-[state=inactive]:hidden"
+        >
+            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <CardHeader className="gap-4">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <div>
@@ -123,11 +127,11 @@ export function GalleryFileTab({
                         />
                     ) : null}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 min-h-0 flex-1 overflow-y-auto">
                     {loading ? (
                         <LoadingState />
                     ) : files.length > 0 ? (
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        <div className={gridDensityConfig.fileGridClass}>
                             {files.map((file) => (
                                 <GalleryFileCard
                                     key={file.id}
@@ -140,6 +144,7 @@ export function GalleryFileTab({
                                     mutatingKey={mutatingKey}
                                     isVrcPlusSupporter={isVrcPlusSupporter}
                                     currentUserId={currentUserId}
+                                    densityConfig={gridDensityConfig}
                                     onPreview={onPreview}
                                     onSetProfileField={onSetProfileField}
                                     onDeleteFile={onDeleteFile}

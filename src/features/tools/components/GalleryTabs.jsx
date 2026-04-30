@@ -55,6 +55,7 @@ export function GalleryTabs({
                     emojiAnimFps={fileTab.emojiAnimFps}
                     emojiAnimFrameCount={fileTab.emojiAnimFrameCount}
                     emojiAnimLoopPingPong={fileTab.emojiAnimLoopPingPong}
+                    gridDensityConfig={fileTab.gridDensityConfig}
                     onRefresh={fileTab.onRefresh}
                     onBeginUpload={fileTab.onBeginUpload}
                     onClearProfileField={fileTab.onClearProfileField}

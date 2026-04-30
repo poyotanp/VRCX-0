@@ -3441,6 +3441,13 @@
             "emoji": "Emoji",
             "redeem": "Redeem",
             "create_animated_emoji": "Animated Emoji Generator",
+            "grid_settings": "Grid settings",
+            "grid_density": "Grid density",
+            "density_options": {
+                "standard": "Standard",
+                "compact": "Compact",
+                "dense": "Dense"
+            },
             "crop_image": "Confirm Upload"
         },
         "image_crop": {
