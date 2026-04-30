@@ -2,16 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 
 import {
     instanceRepository,
-    playerListRepository
+    playerListRepository,
+    userProfileRepository
 } from '@/repositories/index.js';
 import { checkCanInvite } from '@/shared/utils/invite.js';
 import { parseLocation } from '@/shared/utils/location.js';
 
 import {
     buildCachedInstanceMap,
+    createLocationUserRow,
     isSameLocationTag,
     locationCacheKey,
     mergeLocationUser,
+    mergeLocationUserRows,
     pushLocationUserSource,
     resolveCurrentInviteLocation,
     resolvePresenceLocation,
@@ -24,6 +27,8 @@ import {
     resolveOwnerSeed
 } from './userDialogLocationOwner.js';
 import { normalizeUserId } from './userProfileFields.js';
+
+const locationUserProfileFetchConcurrency = 4;
 
 export function createEmptyUserDialogLocationPanel(location = '') {
     return {
@@ -43,6 +48,97 @@ function sortLocationUsers(users) {
             sensitivity: 'base'
         })
     );
+}
+
+function locationUserHasImage(user) {
+    return Boolean(
+        user?.profilePicOverrideThumbnail ||
+        user?.profilePicOverride ||
+        user?.thumbnailUrl ||
+        user?.currentAvatarThumbnailImageUrl ||
+        user?.currentAvatarImageUrl
+    );
+}
+
+function locationUserId(user) {
+    return normalizeUserId(
+        user?.id ||
+            user?.userId ||
+            user?.user_id ||
+            user?.targetUserId ||
+            user?.target_user_id
+    );
+}
+
+function mergeProfileIntoLocationUser(user, profile) {
+    const row = createLocationUserRow(profile, {
+        id: locationUserId(user),
+        userId: locationUserId(user),
+        displayName: user?.displayName,
+        subtitle: user?.$subtitle || user?.subtitle || '',
+        joinedAt: user?.joinedAt || user?.joined_at || user?.$location_at || ''
+    });
+    return mergeLocationUserRows(user, row);
+}
+
+async function enrichLocationUsersWithProfiles({
+    endpoint,
+    knownUsersById,
+    shouldContinue = () => true,
+    users
+}) {
+    const nextUsers = [...users];
+    const fetchTargets = [];
+
+    for (let index = 0; index < nextUsers.length; index += 1) {
+        const user = nextUsers[index];
+        const userId = locationUserId(user);
+        if (!userId.startsWith('usr_') || locationUserHasImage(user)) {
+            continue;
+        }
+
+        const knownUser = knownUsersById.get(userId);
+        if (locationUserHasImage(knownUser)) {
+            nextUsers[index] = mergeProfileIntoLocationUser(user, knownUser);
+            continue;
+        }
+
+        fetchTargets.push({ index, userId });
+    }
+
+    if (!fetchTargets.length) {
+        return nextUsers;
+    }
+
+    const queue = [...fetchTargets];
+    const workers = Array.from(
+        {
+            length: Math.min(locationUserProfileFetchConcurrency, queue.length)
+        },
+        async () => {
+            while (queue.length && shouldContinue()) {
+                const target = queue.shift();
+                try {
+                    const profile = await userProfileRepository.getUserProfile({
+                        userId: target.userId,
+                        endpoint
+                    });
+                    if (!shouldContinue()) {
+                        return;
+                    }
+                    nextUsers[target.index] = mergeProfileIntoLocationUser(
+                        nextUsers[target.index],
+                        profile
+                    );
+                } catch {
+                    // Keep the lightweight row when the profile endpoint is unavailable.
+                }
+            }
+        }
+    );
+
+    await Promise.all(workers);
+    return nextUsers;
 }
 
 export function useUserDialogLocationPanel({
@@ -334,6 +430,31 @@ export function useUserDialogLocationPanel({
                                     playerSnapshot?.context?.playerCount ||
                                     users.length
                             ) || users.length
+                    });
+
+                    enrichLocationUsersWithProfiles({
+                        endpoint: currentEndpoint,
+                        knownUsersById,
+                        shouldContinue: () => active,
+                        users
+                    }).then((enrichedUsers) => {
+                        if (!active) {
+                            return;
+                        }
+                        setLocationPanel((current) => {
+                            if (
+                                !isSameLocationTag(
+                                    current.location,
+                                    activeLocation
+                                )
+                            ) {
+                                return current;
+                            }
+                            return {
+                                ...current,
+                                users: enrichedUsers
+                            };
+                        });
                     });
                 }
             )

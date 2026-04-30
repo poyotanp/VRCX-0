@@ -159,15 +159,17 @@ export function createLocationUserRow(user, fallback = {}) {
         typeof user === 'string'
             ? { id: user, userId: user, displayName: user }
             : user || {};
+    const nestedUser =
+        source.user && typeof source.user === 'object' ? source.user : {};
     const userId = normalizeUserId(
         source.id ||
             source.userId ||
             source.user_id ||
             source.targetUserId ||
             source.target_user_id ||
-            source.user?.id ||
-            source.user?.userId ||
-            source.user?.user_id ||
+            nestedUser.id ||
+            nestedUser.userId ||
+            nestedUser.user_id ||
             fallback.id ||
             fallback.userId ||
             fallback.user_id
@@ -177,10 +179,38 @@ export function createLocationUserRow(user, fallback = {}) {
         normalizeUserId(fallback.displayName || fallback.display_name) ||
         userId;
     return {
+        ...nestedUser,
         ...(source && typeof source === 'object' ? source : {}),
         id: userId,
         userId,
         displayName,
+        userIcon:
+            source.userIcon || nestedUser.userIcon || fallback.userIcon || '',
+        profilePicOverrideThumbnail:
+            source.profilePicOverrideThumbnail ||
+            nestedUser.profilePicOverrideThumbnail ||
+            fallback.profilePicOverrideThumbnail ||
+            '',
+        profilePicOverride:
+            source.profilePicOverride ||
+            nestedUser.profilePicOverride ||
+            fallback.profilePicOverride ||
+            '',
+        thumbnailUrl:
+            source.thumbnailUrl ||
+            nestedUser.thumbnailUrl ||
+            fallback.thumbnailUrl ||
+            '',
+        currentAvatarThumbnailImageUrl:
+            source.currentAvatarThumbnailImageUrl ||
+            nestedUser.currentAvatarThumbnailImageUrl ||
+            fallback.currentAvatarThumbnailImageUrl ||
+            '',
+        currentAvatarImageUrl:
+            source.currentAvatarImageUrl ||
+            nestedUser.currentAvatarImageUrl ||
+            fallback.currentAvatarImageUrl ||
+            '',
         $subtitle: fallback.subtitle || '',
         $location_at:
             source?.$location_at ||
@@ -261,10 +291,36 @@ export function createLocationGroupRow(group, fallback = {}) {
     };
 }
 
+function isPresentValue(value) {
+    return value !== undefined && value !== null && value !== '';
+}
+
+export function mergeLocationUserRows(existing, incoming) {
+    if (!existing) {
+        return incoming;
+    }
+    if (!incoming) {
+        return existing;
+    }
+
+    const merged = { ...incoming, ...existing };
+    for (const [key, value] of Object.entries(incoming)) {
+        if (!isPresentValue(merged[key]) && isPresentValue(value)) {
+            merged[key] = value;
+        }
+    }
+    return merged;
+}
+
 export function mergeLocationUser(rowsById, user, fallback = {}) {
     const row = createLocationUserRow(user, fallback);
     const key = row.id || `display:${row.displayName}`;
-    if (!key || rowsById.has(key)) {
+    if (!key) {
+        return;
+    }
+    const existing = rowsById.get(key);
+    if (existing) {
+        rowsById.set(key, mergeLocationUserRows(existing, row));
         return;
     }
     rowsById.set(key, row);
