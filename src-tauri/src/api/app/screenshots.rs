@@ -57,9 +57,14 @@ pub fn app__delete_all_screenshot_metadata(state: State<'_, AppState>) -> Result
 pub fn app__add_screenshot_metadata(
     path: String,
     metadata_string: String,
-    _world_id: String,
-    _change_filename: Option<bool>,
+    world_id: String,
+    change_filename: Option<bool>,
 ) -> Result<String, AppError> {
     require_host_capability(HostCapability::ScreenshotCache)?;
-    Ok(screenshot::add_screenshot_metadata(&path, &metadata_string))
+    Ok(screenshot::add_screenshot_metadata(
+        &path,
+        &metadata_string,
+        &world_id,
+        change_filename.unwrap_or(false),
+    ))
 }

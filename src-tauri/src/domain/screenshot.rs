@@ -1,9 +1,13 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use std::time::Duration;
 
 use crate::domain::png;
 use crate::domain::vrchat_paths;
 use crate::error::AppError;
+
+const SCREENSHOT_READY_RETRY_COUNT: usize = 10;
+const SCREENSHOT_READY_RETRY_DELAY: Duration = Duration::from_secs(1);
 
 #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -157,6 +161,42 @@ pub fn is_png_file(path: &str) -> bool {
         return false;
     }
     sig == [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]
+}
+
+fn is_vrchat_screenshot_path(path: &Path) -> bool {
+    let is_png = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("png"));
+    let has_vrchat_prefix = path
+        .file_stem()
+        .and_then(|file_stem| file_stem.to_str())
+        .is_some_and(|file_stem| file_stem.starts_with("VRChat_"));
+
+    is_png && has_vrchat_prefix
+}
+
+fn sleep_before_next_screenshot_attempt(attempt: usize) {
+    if attempt + 1 < SCREENSHOT_READY_RETRY_COUNT {
+        std::thread::sleep(SCREENSHOT_READY_RETRY_DELAY);
+    }
+}
+
+fn can_decode_image(path: &Path) -> bool {
+    std::fs::read(path)
+        .ok()
+        .and_then(|data| image::load_from_memory(&data).ok())
+        .is_some()
+}
+
+fn path_string(path: &Path) -> String {
+    path.to_string_lossy().into_owned()
+}
+
+fn screenshot_path_with_world_id(path: &Path, world_id: &str) -> Option<PathBuf> {
+    let file_stem = path.file_stem()?.to_str()?;
+    let extension = path.extension()?.to_str()?;
+    Some(path.with_file_name(format!("{file_stem}_{world_id}.{extension}")))
 }
 
 use std::io::{Read, Seek};
@@ -535,12 +575,59 @@ pub fn delete_all_screenshot_metadata(cache: &MetadataCacheDb) {
     cache.clear_all();
 }
 
-pub fn add_screenshot_metadata(path: &str, metadata_string: &str) -> String {
-    if has_vrcx_metadata(path) {
-        return path.to_string();
+pub fn add_screenshot_metadata(
+    path: &str,
+    metadata_string: &str,
+    world_id: &str,
+    change_filename: bool,
+) -> String {
+    let original_path = PathBuf::from(path);
+    if !is_vrchat_screenshot_path(&original_path) {
+        return String::new();
     }
-    write_vrcx_metadata(metadata_string, path);
-    path.to_string()
+
+    let mut current_path = original_path;
+    let mut renamed = false;
+
+    for attempt in 0..SCREENSHOT_READY_RETRY_COUNT {
+        let current_path_string = path_string(&current_path);
+        if !is_png_file(&current_path_string) || !can_decode_image(&current_path) {
+            sleep_before_next_screenshot_attempt(attempt);
+            continue;
+        }
+
+        if has_vrcx_metadata(&current_path_string) {
+            return current_path_string;
+        }
+
+        if change_filename && !renamed {
+            let Some(next_path) = screenshot_path_with_world_id(&current_path, world_id) else {
+                return String::new();
+            };
+
+            if next_path != current_path {
+                match std::fs::rename(&current_path, &next_path) {
+                    Ok(()) => {
+                        current_path = next_path;
+                    }
+                    Err(_) => {
+                        sleep_before_next_screenshot_attempt(attempt);
+                        continue;
+                    }
+                }
+            }
+            renamed = true;
+        }
+
+        let current_path_string = path_string(&current_path);
+        if write_vrcx_metadata(metadata_string, &current_path_string) {
+            return current_path_string;
+        }
+
+        sleep_before_next_screenshot_attempt(attempt);
+    }
+
+    String::new()
 }
 
 #[derive(Clone, Copy)]
