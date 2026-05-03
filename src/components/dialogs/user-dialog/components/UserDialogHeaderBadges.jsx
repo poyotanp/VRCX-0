@@ -6,7 +6,6 @@ import { Button } from '@/ui/shadcn/button';
 import { Checkbox } from '@/ui/shadcn/checkbox';
 import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/shadcn/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import { formatStatsDate } from '../userDialogRows.js';
 
@@ -79,25 +78,17 @@ export function UserDialogHeaderBadges({
                 {platform.label}
             </Badge>
             {profile.discordId ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="xs"
-                            className="h-5 rounded-4xl px-2 py-0.5 text-xs"
-                            aria-label={t('dialog.user.tags.open_in_discord')}
-                            onClick={() =>
-                                onOpenDiscordProfile(profile.discordId)
-                            }
-                        >
-                            {t('dialog.user.tags.discord')}
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        {t('dialog.user.tags.open_in_discord')}
-                    </TooltipContent>
-                </Tooltip>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    className="h-5 rounded-4xl px-2 py-0.5 text-xs"
+                    aria-label={t('dialog.user.tags.open_in_discord')}
+                    title={t('dialog.user.tags.open_in_discord')}
+                    onClick={() => onOpenDiscordProfile(profile.discordId)}
+                >
+                    {t('dialog.user.tags.discord')}
+                </Button>
             ) : null}
         </>
     );
@@ -136,32 +127,26 @@ export function UserDialogHeaderMediaBadges({
                         <Popover
                             key={badge.badgeId || badge.id || badge.badgeName}
                         >
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            aria-label={badgeTitle}
-                                            className="size-8 rounded-sm p-0"
-                                            onClick={(event) =>
-                                                event.stopPropagation()
-                                            }
-                                        >
-                                            <img
-                                                src={badge.badgeImageUrl}
-                                                alt={badge.badgeName || ''}
-                                                className={cn(
-                                                    'size-8 rounded-sm object-cover',
-                                                    badge.hidden && 'grayscale'
-                                                )}
-                                            />
-                                        </Button>
-                                    </PopoverTrigger>
-                                </TooltipTrigger>
-                                <TooltipContent>{badgeTitle}</TooltipContent>
-                            </Tooltip>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label={badgeTitle}
+                                    title={badgeTitle}
+                                    className="size-8 rounded-sm p-0"
+                                    onClick={(event) => event.stopPropagation()}
+                                >
+                                    <img
+                                        src={badge.badgeImageUrl}
+                                        alt={badge.badgeName || ''}
+                                        className={cn(
+                                            'size-8 rounded-sm object-cover',
+                                            badge.hidden && 'grayscale'
+                                        )}
+                                    />
+                                </Button>
+                            </PopoverTrigger>
                             <PopoverContent
                                 side="bottom"
                                 className="flex w-72 flex-col gap-3"

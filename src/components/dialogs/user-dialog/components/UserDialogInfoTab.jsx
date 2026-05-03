@@ -16,10 +16,8 @@ import { cn } from '@/lib/utils.js';
 import { getFaviconUrl } from '@/shared/utils/urlUtils.js';
 import { Button } from '@/ui/shadcn/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/shadcn/card';
-import { ScrollArea } from '@/ui/shadcn/scroll-area';
 import { Separator } from '@/ui/shadcn/separator';
 import { Spinner } from '@/ui/shadcn/spinner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import { EntityDialogTabContent } from '../../EntityDialogScaffold.jsx';
 import {
@@ -117,11 +115,11 @@ function InfoStatGrid({ children, className }) {
 
 function TextScroll({ children, className = 'h-52' }) {
     return (
-        <ScrollArea className={cn('rounded-md', className)}>
+        <div className={cn('overflow-auto rounded-md', className)}>
             <pre className="text-muted-foreground m-0 min-w-0 font-sans text-xs whitespace-pre-wrap">
                 {children || '\u2014'}
             </pre>
-        </ScrollArea>
+        </div>
     );
 }
 
@@ -192,6 +190,7 @@ function UserDialogPresenceSection({ presence, presenceActions, profile, t }) {
                             endpoint={currentEndpoint}
                             hint={locationWorldTitle}
                             instanceClickAction="world"
+                            disableTooltip
                             showPlayerSummary={false}
                         />
                         <InstanceActionBar
@@ -210,6 +209,7 @@ function UserDialogPresenceSection({ presence, presenceActions, profile, t }) {
                             refreshTooltip={t(
                                 'dialog.user.info.refresh_instance_info'
                             )}
+                            disableTooltip
                             showHistory={Boolean(previousInstances.length)}
                             onRefresh={presenceActions?.onRefreshLocation}
                             onHistory={presenceActions?.onShowInstanceHistory}
@@ -219,6 +219,7 @@ function UserDialogPresenceSection({ presence, presenceActions, profile, t }) {
                     <Location
                         location={visiblePresenceLocation}
                         hint={locationWorldTitle}
+                        disableTooltip
                         enableContextMenu
                         showLaunchActions
                     />
@@ -408,6 +409,7 @@ function UserDialogProfileLinksPanel({
                     <InfoStat label={t('dialog.user.info.home_location')}>
                         <Location
                             location={visibleHomeLocationTarget}
+                            disableTooltip
                             enableContextMenu
                             showLaunchActions
                         />
@@ -440,56 +442,48 @@ function UserDialogBioPanel({
                     {visibleBio}
                 </TextScroll>
                 {profile.bio ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                type="button"
-                                size="icon-xs"
-                                variant="ghost"
-                                className="absolute top-1 right-1"
-                                disabled={bioTranslationLoading}
-                                aria-label={bioActionLabel}
-                                onClick={() => void toggleBioTranslation()}
-                            >
-                                {bioTranslationLoading ? (
-                                    <Spinner data-icon="inline-start" />
-                                ) : (
-                                    <LanguagesIcon data-icon="inline-start" />
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{bioActionLabel}</TooltipContent>
-                    </Tooltip>
+                    <Button
+                        type="button"
+                        size="icon-xs"
+                        variant="ghost"
+                        className="absolute top-1 right-1"
+                        disabled={bioTranslationLoading}
+                        aria-label={bioActionLabel}
+                        title={bioActionLabel}
+                        onClick={() => void toggleBioTranslation()}
+                    >
+                        {bioTranslationLoading ? (
+                            <Spinner data-icon="inline-start" />
+                        ) : (
+                            <LanguagesIcon data-icon="inline-start" />
+                        )}
+                    </Button>
                 ) : null}
             </div>
             {bioLinks.length ? (
                 <div className="flex flex-wrap gap-1.5">
                     {bioLinks.map((link) => (
-                        <Tooltip key={link}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon-xs"
-                                    aria-label={t(
-                                        'dialog.user.info.open_bio_link',
-                                        { link }
-                                    )}
-                                    onClick={() => openExternalLink(link)}
-                                >
-                                    {getFaviconUrl(link) ? (
-                                        <img
-                                            src={getFaviconUrl(link)}
-                                            alt=""
-                                            className="size-4"
-                                        />
-                                    ) : (
-                                        <ExternalLinkIcon data-icon="inline-start" />
-                                    )}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{link}</TooltipContent>
-                        </Tooltip>
+                        <Button
+                            key={link}
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            aria-label={t('dialog.user.info.open_bio_link', {
+                                link
+                            })}
+                            title={link}
+                            onClick={() => openExternalLink(link)}
+                        >
+                            {getFaviconUrl(link) ? (
+                                <img
+                                    src={getFaviconUrl(link)}
+                                    alt=""
+                                    className="size-4"
+                                />
+                            ) : (
+                                <ExternalLinkIcon data-icon="inline-start" />
+                            )}
+                        </Button>
                     ))}
                 </div>
             ) : null}

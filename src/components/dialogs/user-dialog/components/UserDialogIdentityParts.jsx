@@ -8,7 +8,6 @@ import {
     HoverCardContent,
     HoverCardTrigger
 } from '@/ui/shadcn/hover-card';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import { formatStatsDate } from '../userDialogRows.js';
 import { languageOptionLabel } from '../userProfileFields.js';
@@ -26,19 +25,14 @@ export function UserTitleLanguages({ languages }) {
                 ).trim();
                 const label = languageOptionLabel(language);
                 return (
-                    <Tooltip key={`${key}:${language?.value || ''}`}>
-                        <TooltipTrigger asChild>
-                            <Badge
-                                variant="outline"
-                                className="h-auto min-h-5 max-w-full shrink justify-start text-left text-xs leading-tight whitespace-normal"
-                            >
-                                <span className="min-w-0 break-words">
-                                    {label}
-                                </span>
-                            </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>{label}</TooltipContent>
-                    </Tooltip>
+                    <Badge
+                        key={`${key}:${language?.value || ''}`}
+                        variant="outline"
+                        className="h-auto min-h-5 max-w-full shrink justify-start text-left text-xs leading-tight whitespace-normal"
+                        title={label}
+                    >
+                        <span className="min-w-0 break-words">{label}</span>
+                    </Badge>
                 );
             })}
         </span>

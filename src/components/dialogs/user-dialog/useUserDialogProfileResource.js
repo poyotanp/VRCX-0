@@ -18,6 +18,97 @@ function resolveProfileUserId(profile) {
     );
 }
 
+const SNAPSHOT_DEFAULT_FIELDS = [
+    '$location',
+    '$location_at',
+    '$online_for',
+    '$travelingToTime',
+    '$active_for'
+];
+
+function hasOwnField(source, field) {
+    return Object.prototype.hasOwnProperty.call(source, field);
+}
+
+function stripSyntheticSnapshotDefaults(profile, snapshot) {
+    if (!profile || !snapshot || typeof snapshot !== 'object') {
+        return profile;
+    }
+
+    let nextProfile = profile;
+    for (const field of SNAPSHOT_DEFAULT_FIELDS) {
+        if (!hasOwnField(snapshot, field) && hasOwnField(nextProfile, field)) {
+            if (nextProfile === profile) {
+                nextProfile = { ...profile };
+            }
+            delete nextProfile[field];
+        }
+    }
+    return nextProfile;
+}
+
+function valuesEqual(left, right) {
+    if (left === right) {
+        return true;
+    }
+    if (
+        left &&
+        right &&
+        typeof left === 'object' &&
+        typeof right === 'object'
+    ) {
+        return JSON.stringify(left) === JSON.stringify(right);
+    }
+    return false;
+}
+
+function profilesEqual(left, right) {
+    if (left === right) {
+        return true;
+    }
+    if (
+        !left ||
+        !right ||
+        typeof left !== 'object' ||
+        typeof right !== 'object'
+    ) {
+        return false;
+    }
+
+    const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+    for (const key of keys) {
+        if (!valuesEqual(left[key], right[key])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function preserveProfileIdentity(currentProfile, nextProfile, targetUserId) {
+    const currentTargetProfile = previousTargetProfile(
+        currentProfile,
+        targetUserId
+    );
+    return currentTargetProfile &&
+        profilesEqual(currentTargetProfile, nextProfile)
+        ? currentProfile
+        : nextProfile;
+}
+
+function mergeSnapshotIntoCurrentProfile({
+    currentProfile,
+    isTargetCurrentUser,
+    snapshot,
+    targetUserId
+}) {
+    const previousProfile = previousTargetProfile(currentProfile, targetUserId);
+    const nextProfile =
+        isTargetCurrentUser && snapshot
+            ? mergeCurrentUserPresenceFields(snapshot, previousProfile)
+            : mergeLocalSnapshotIntoProfile(snapshot, previousProfile);
+    return preserveProfileIdentity(currentProfile, nextProfile, targetUserId);
+}
+
 function normalizeTargetSnapshot(
     snapshot,
     targetUserId,
@@ -27,7 +118,10 @@ function normalizeTargetSnapshot(
         return null;
     }
 
-    const nextProfile = userProfileRepository.normalize(snapshot);
+    const nextProfile = stripSyntheticSnapshotDefaults(
+        userProfileRepository.normalize(snapshot),
+        snapshot
+    );
     const snapshotUserId = resolveProfileUserId(nextProfile);
     if (snapshotUserId && snapshotUserId !== targetUserId) {
         return null;
@@ -96,7 +190,7 @@ export function mergeLocalSnapshotIntoProfile(localSnapshot, profile) {
             merged[field] = localSnapshot[field];
         }
     }
-    return merged;
+    return profilesEqual(merged, profile) ? profile : merged;
 }
 
 export function mergeUserDialogLocalSnapshot({
@@ -184,18 +278,12 @@ export function useUserDialogProfileResource({
     useEffect(() => {
         if (normalizedLocalSnapshot) {
             setBaseProfile((currentProfile) =>
-                isTargetCurrentUser
-                    ? mergeCurrentUserPresenceFields(
-                          normalizedLocalSnapshot,
-                          previousTargetProfile(
-                              currentProfile,
-                              normalizedUserId
-                          )
-                      )
-                    : mergeLocalSnapshotIntoProfile(
-                          normalizedLocalSnapshot,
-                          previousTargetProfile(currentProfile, normalizedUserId)
-                      )
+                mergeSnapshotIntoCurrentProfile({
+                    currentProfile,
+                    isTargetCurrentUser,
+                    snapshot: normalizedLocalSnapshot,
+                    targetUserId: normalizedUserId
+                })
             );
         } else if (!normalizedUserId) {
             setBaseProfile(null);
@@ -235,15 +323,12 @@ export function useUserDialogProfileResource({
 
         const snapshot = localSnapshotRef.current;
         setBaseProfile((currentProfile) =>
-            isTargetCurrentUser && snapshot
-                ? mergeCurrentUserPresenceFields(
-                      snapshot,
-                      previousTargetProfile(currentProfile, normalizedUserId)
-                  )
-                : mergeLocalSnapshotIntoProfile(
-                      snapshot,
-                      previousTargetProfile(currentProfile, normalizedUserId)
-                  )
+            mergeSnapshotIntoCurrentProfile({
+                currentProfile,
+                isTargetCurrentUser,
+                snapshot,
+                targetUserId: normalizedUserId
+            })
         );
         setLoadStatus('running');
         setDetail('');
@@ -261,18 +346,22 @@ export function useUserDialogProfileResource({
                 }
 
                 setBaseProfile((currentProfile) =>
-                    isTargetCurrentUser
-                        ? mergeCurrentUserPresenceFields(
-                              nextProfile,
-                              previousTargetProfile(
-                                  currentProfile,
-                                  normalizedUserId
+                    preserveProfileIdentity(
+                        currentProfile,
+                        isTargetCurrentUser
+                            ? mergeCurrentUserPresenceFields(
+                                  nextProfile,
+                                  previousTargetProfile(
+                                      currentProfile,
+                                      normalizedUserId
+                                  )
                               )
-                          )
-                        : mergeLocalSnapshotIntoProfile(
-                              localSnapshotRef.current,
-                              nextProfile
-                          )
+                            : mergeLocalSnapshotIntoProfile(
+                                  localSnapshotRef.current,
+                                  nextProfile
+                              ),
+                        normalizedUserId
+                    )
                 );
                 setLoadStatus('ready');
             })
@@ -284,21 +373,12 @@ export function useUserDialogProfileResource({
                 const fallbackSnapshot = localSnapshotRef.current;
                 if (fallbackSnapshot) {
                     setBaseProfile((currentProfile) =>
-                        isTargetCurrentUser
-                            ? mergeCurrentUserPresenceFields(
-                                  fallbackSnapshot,
-                                  previousTargetProfile(
-                                      currentProfile,
-                                      normalizedUserId
-                                  )
-                              )
-                            : mergeLocalSnapshotIntoProfile(
-                                  fallbackSnapshot,
-                                  previousTargetProfile(
-                                      currentProfile,
-                                      normalizedUserId
-                                  )
-                              )
+                        mergeSnapshotIntoCurrentProfile({
+                            currentProfile,
+                            isTargetCurrentUser,
+                            snapshot: fallbackSnapshot,
+                            targetUserId: normalizedUserId
+                        })
                     );
                     setLoadStatus('ready');
                     setDetail(

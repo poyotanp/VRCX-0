@@ -173,6 +173,7 @@ export function StaticSidebarLocation({
     hint = '',
     link = false,
     showGroupLink = false,
+    tooltips = true,
     metadata,
     t,
     showInstanceIdInLocation = false,
@@ -215,10 +216,10 @@ export function StaticSidebarLocation({
     );
 
     function openWorld(event) {
-        event?.stopPropagation?.();
         if (!isLocationLink) {
             return;
         }
+        event?.stopPropagation?.();
         const worldDialogTarget =
             parsedLocation.isRealInstance && parsedLocation.tag
                 ? parsedLocation.tag
@@ -265,6 +266,7 @@ export function StaticSidebarLocation({
     if (isAgeRestricted) {
         return (
             <StaticLocationTooltip
+                disabled={!tooltips}
                 content={t('dialog.user.info.instance_age_restricted_tooltip')}
             >
                 <span
@@ -291,7 +293,7 @@ export function StaticSidebarLocation({
         >
             <RegionCodeBadge region={metadata?.region || ''} />
             <StaticLocationTooltip
-                disabled={!tooltipContent || showInstanceName}
+                disabled={!tooltips || !tooltipContent || showInstanceName}
                 content={tooltipContent}
             >
                 <span
@@ -303,8 +305,10 @@ export function StaticSidebarLocation({
                             ? 'hover:text-primary cursor-pointer text-inherit underline-offset-4'
                             : 'cursor-default'
                     )}
-                    onClick={openWorld}
-                    onKeyDown={openWorldFromKeyboard}
+                    onClick={isLocationLink ? openWorld : undefined}
+                    onKeyDown={
+                        isLocationLink ? openWorldFromKeyboard : undefined
+                    }
                 >
                     {normalizeLocationStatus(location) === 'traveling' ? (
                         <Spinner
@@ -335,6 +339,7 @@ export function StaticSidebarLocation({
             ) : null}
             {metadata?.isClosed ? (
                 <StaticLocationTooltip
+                    disabled={!tooltips}
                     content={t('dialog.user.info.instance_closed')}
                 >
                     <AlertTriangleIcon className="text-muted-foreground ml-2 inline-block size-3.5 shrink-0" />

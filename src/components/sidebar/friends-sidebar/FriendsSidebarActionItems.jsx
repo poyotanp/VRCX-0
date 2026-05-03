@@ -26,9 +26,6 @@ export function CurrentUserActionItems({
     CheckboxItem,
     Group,
     Separator,
-    Sub,
-    SubTrigger,
-    SubContent,
     statusPresets = []
 }) {
     return (
@@ -40,32 +37,22 @@ export function CurrentUserActionItems({
             </Group>
             <Separator />
             <Group>
-                <Sub>
-                    <SubTrigger>
-                        {t('dialog.user.actions.edit_status')}
-                    </SubTrigger>
-                    <SubContent side="left" align="start" className="w-48">
-                        <Group>
-                            {statusOptions.map((option) => (
-                                <CheckboxItem
-                                    key={option.value}
-                                    checked={friend?.status === option.value}
-                                    onSelect={() =>
-                                        void actions.changeStatus(option.value)
-                                    }
-                                >
-                                    <i
-                                        className={userStatusIndicatorClassName(
-                                            option.value,
-                                            { className: 'mr-2' }
-                                        )}
-                                    />
-                                    {t(option.labelKey)}
-                                </CheckboxItem>
-                            ))}
-                        </Group>
-                    </SubContent>
-                </Sub>
+                {statusOptions.map((option) => (
+                    <CheckboxItem
+                        key={option.value}
+                        checked={friend?.status === option.value}
+                        onSelect={() => void actions.changeStatus(option.value)}
+                    >
+                        <span
+                            aria-hidden="true"
+                            className={userStatusIndicatorClassName(
+                                option.value,
+                                { className: 'mr-2' }
+                            )}
+                        />
+                        {t(option.labelKey)}
+                    </CheckboxItem>
+                ))}
                 <MenuItem onSelect={() => void actions.editStatusDescription()}>
                     {t(
                         'view.settings.general.automation.change_status_description'
@@ -77,52 +64,27 @@ export function CurrentUserActionItems({
                 <>
                     <Separator />
                     <Group>
-                        <Sub>
-                            <SubTrigger>
-                                {t('dialog.social_status.history')}
-                            </SubTrigger>
-                            <SubContent
-                                side="left"
-                                align="start"
-                                className="w-56"
-                            >
-                                <Group>
-                                    <CheckboxItem
-                                        checked={!friend?.statusDescription}
-                                        onSelect={() =>
-                                            void actions.setStatusDescription(
-                                                ''
-                                            )
-                                        }
-                                    >
-                                        {t('dialog.gallery_select.none')}
-                                    </CheckboxItem>
-                                </Group>
-                                <Separator />
-                                <Group>
-                                    {friend.statusHistory
-                                        .slice(0, 10)
-                                        .map((item, index) => (
-                                            <CheckboxItem
-                                                key={`${item}:${index}`}
-                                                checked={
-                                                    friend?.statusDescription ===
-                                                    item
-                                                }
-                                                onSelect={() =>
-                                                    void actions.setStatusDescription(
-                                                        item
-                                                    )
-                                                }
-                                            >
-                                                <span className="max-w-44 truncate">
-                                                    {item}
-                                                </span>
-                                            </CheckboxItem>
-                                        ))}
-                                </Group>
-                            </SubContent>
-                        </Sub>
+                        <CheckboxItem
+                            checked={!friend?.statusDescription}
+                            onSelect={() => void actions.setStatusDescription('')}
+                        >
+                            {t('dialog.gallery_select.none')}
+                        </CheckboxItem>
+                        {friend.statusHistory
+                            .slice(0, 10)
+                            .map((item, index) => (
+                                <CheckboxItem
+                                    key={`${item}:${index}`}
+                                    checked={friend?.statusDescription === item}
+                                    onSelect={() =>
+                                        void actions.setStatusDescription(item)
+                                    }
+                                >
+                                    <span className="max-w-44 truncate">
+                                        {item}
+                                    </span>
+                                </CheckboxItem>
+                            ))}
                     </Group>
                 </>
             ) : null}
@@ -130,33 +92,18 @@ export function CurrentUserActionItems({
                 <>
                     <Separator />
                     <Group>
-                        <Sub>
-                            <SubTrigger>
-                                {t('dialog.social_status.presets')}
-                            </SubTrigger>
-                            <SubContent
-                                side="left"
-                                align="start"
-                                className="w-56"
+                        {statusPresets.map((preset, index) => (
+                            <MenuItem
+                                key={`${preset?.status || 'status'}:${preset?.statusDescription || ''}:${index}`}
+                                onSelect={() =>
+                                    void actions.applyStatusPreset(preset)
+                                }
                             >
-                                <Group>
-                                    {statusPresets.map((preset, index) => (
-                                        <MenuItem
-                                            key={`${preset?.status || 'status'}:${preset?.statusDescription || ''}:${index}`}
-                                            onSelect={() =>
-                                                void actions.applyStatusPreset(
-                                                    preset
-                                                )
-                                            }
-                                        >
-                                            <span className="max-w-44 truncate">
-                                                {statusPresetLabel(preset, t)}
-                                            </span>
-                                        </MenuItem>
-                                    ))}
-                                </Group>
-                            </SubContent>
-                        </Sub>
+                                <span className="max-w-44 truncate">
+                                    {statusPresetLabel(preset, t)}
+                                </span>
+                            </MenuItem>
+                        ))}
                     </Group>
                 </>
             ) : null}

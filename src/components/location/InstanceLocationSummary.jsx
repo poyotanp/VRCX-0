@@ -34,6 +34,7 @@ export function InstanceLocationSummary({
     endpoint = '',
     hint = '',
     interactive = true,
+    disableTooltip = false,
     instanceClickAction = 'launch',
     showGroupName = true,
     showPlayerSummary = true,
@@ -212,14 +213,21 @@ export function InstanceLocationSummary({
                 )
             ) : null}
             {isClosed ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <AlertTriangleIcon className="text-destructive ml-1 size-4 shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        {t('dialog.user.info.instance_closed')}
-                    </TooltipContent>
-                </Tooltip>
+                disableTooltip ? (
+                    <AlertTriangleIcon
+                        className="text-destructive ml-1 size-4 shrink-0"
+                        title={t('dialog.user.info.instance_closed')}
+                    />
+                ) : (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <AlertTriangleIcon className="text-destructive ml-1 size-4 shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {t('dialog.user.info.instance_closed')}
+                        </TooltipContent>
+                    </Tooltip>
+                )
             ) : null}
             {locObj.strict ? (
                 <LockIcon className="text-muted-foreground ml-1.5 size-4 shrink-0" />

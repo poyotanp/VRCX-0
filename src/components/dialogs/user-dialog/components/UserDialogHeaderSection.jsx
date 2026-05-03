@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils.js';
 import { Button } from '@/ui/shadcn/button';
 import { CardTitle } from '@/ui/shadcn/card';
 import { Separator } from '@/ui/shadcn/separator';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import { EntityOverviewCard } from '../../EntityDialogScaffold.jsx';
 import {
@@ -151,22 +150,16 @@ function UserDialogHeaderFacts({ state = {}, actions = {}, t }) {
                         >
                             {compactUserId(profile.id)}
                         </span>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    aria-label={t('dialog.user.info.copy_id')}
-                                    size="icon-xs"
-                                    variant="ghost"
-                                    onClick={onCopyUserId}
-                                >
-                                    <CopyIcon data-icon="inline-start" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                {t('dialog.user.info.copy_id')}
-                            </TooltipContent>
-                        </Tooltip>
+                        <Button
+                            type="button"
+                            aria-label={t('dialog.user.info.copy_id')}
+                            title={t('dialog.user.info.copy_id')}
+                            size="icon-xs"
+                            variant="ghost"
+                            onClick={onCopyUserId}
+                        >
+                            <CopyIcon data-icon="inline-start" />
+                        </Button>
                     </span>
                 </HeaderFactRow>
             ) : null}
@@ -179,38 +172,26 @@ function UserDialogHeaderFacts({ state = {}, actions = {}, t }) {
                         >
                             {compactUrl(userUrl)}
                         </span>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    aria-label={t('common.actions.open_link')}
-                                    size="icon-xs"
-                                    variant="ghost"
-                                    onClick={onOpenUserUrl}
-                                >
-                                    <ExternalLinkIcon data-icon="inline-start" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                {t('common.actions.open_link')}
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    aria-label={t('dialog.user.info.copy_url')}
-                                    size="icon-xs"
-                                    variant="ghost"
-                                    onClick={onCopyUserUrl}
-                                >
-                                    <CopyIcon data-icon="inline-start" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                {t('dialog.user.info.copy_url')}
-                            </TooltipContent>
-                        </Tooltip>
+                        <Button
+                            type="button"
+                            aria-label={t('common.actions.open_link')}
+                            title={t('common.actions.open_link')}
+                            size="icon-xs"
+                            variant="ghost"
+                            onClick={onOpenUserUrl}
+                        >
+                            <ExternalLinkIcon data-icon="inline-start" />
+                        </Button>
+                        <Button
+                            type="button"
+                            aria-label={t('dialog.user.info.copy_url')}
+                            title={t('dialog.user.info.copy_url')}
+                            size="icon-xs"
+                            variant="ghost"
+                            onClick={onCopyUserUrl}
+                        >
+                            <CopyIcon data-icon="inline-start" />
+                        </Button>
                     </span>
                 </HeaderFactRow>
             ) : null}
@@ -374,28 +355,22 @@ export function UserDialogHeaderSection({ state = {}, actions = {}, t }) {
                         )}
                     </Button>
                     {userIconUrl ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    aria-label={t(
-                                        'dialog.user.generated.open_user_icon'
-                                    )}
-                                    className="bg-background/90 absolute right-3 bottom-3 size-16 overflow-hidden rounded-full border-2 border-white p-0 shadow-md"
-                                    onClick={onOpenUserIcon}
-                                >
-                                    <img
-                                        src={userIconUrl}
-                                        alt=""
-                                        className="size-full object-cover"
-                                    />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                {t('dialog.user.generated.open_user_icon')}
-                            </TooltipContent>
-                        </Tooltip>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            aria-label={t(
+                                'dialog.user.generated.open_user_icon'
+                            )}
+                            title={t('dialog.user.generated.open_user_icon')}
+                            className="bg-background/90 absolute right-3 bottom-3 size-16 overflow-hidden rounded-full border-2 border-white p-0 shadow-md"
+                            onClick={onOpenUserIcon}
+                        >
+                            <img
+                                src={userIconUrl}
+                                alt=""
+                                className="size-full object-cover"
+                            />
+                        </Button>
                     ) : null}
                 </div>
             }
@@ -404,14 +379,12 @@ export function UserDialogHeaderSection({ state = {}, actions = {}, t }) {
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <CardTitle className="flex min-w-0 flex-wrap items-center gap-1.5 text-lg leading-tight">
                         {statusIndicatorClassName ? (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <i className={statusIndicatorClassName} />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {statusStateText || undefined}
-                                </TooltipContent>
-                            </Tooltip>
+                            <span
+                                aria-label={statusStateText || undefined}
+                                className={statusIndicatorClassName}
+                                role={statusStateText ? 'img' : undefined}
+                                title={statusStateText || undefined}
+                            />
                         ) : null}
                         {onTitleClick ? (
                             <Button
@@ -428,16 +401,12 @@ export function UserDialogHeaderSection({ state = {}, actions = {}, t }) {
                             </span>
                         )}
                         {pronounsText ? (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span className="text-muted-foreground shrink-0 font-mono text-xs font-normal">
-                                        {pronounsText}
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {t('dialog.user.pronouns')}
-                                </TooltipContent>
-                            </Tooltip>
+                            <span
+                                className="text-muted-foreground shrink-0 font-mono text-xs font-normal"
+                                title={t('dialog.user.pronouns')}
+                            >
+                                {pronounsText}
+                            </span>
                         ) : null}
                         <PreviousDisplayNamesBadge
                             names={previousDisplayNames}

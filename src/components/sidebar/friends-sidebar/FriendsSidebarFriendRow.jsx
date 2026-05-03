@@ -3,7 +3,7 @@ import { UserIcon } from 'lucide-react';
 import { getNameColour, userImage } from '@/lib/entityMedia.js';
 import { TRUST_COLOR_DEFAULTS } from '@/lib/trustColors.js';
 import { cn } from '@/lib/utils.js';
-import { Button } from '@/ui/shadcn/button';
+import { buttonVariants } from '@/ui/shadcn/button';
 import {
     ContextMenu,
     ContextMenuCheckboxItem,
@@ -11,9 +11,6 @@ import {
     ContextMenuGroup,
     ContextMenuItem,
     ContextMenuSeparator,
-    ContextMenuSub,
-    ContextMenuSubContent,
-    ContextMenuSubTrigger,
     ContextMenuTrigger
 } from '@/ui/shadcn/context-menu';
 
@@ -105,10 +102,16 @@ export function FriendRow({
     return (
         <ContextMenu>
             <ContextMenuTrigger asChild>
-                <Button
+                <button
                     type="button"
-                    variant="ghost"
-                    className="h-auto w-full min-w-0 justify-start gap-2 p-1.5 text-left font-normal"
+                    data-slot="button"
+                    data-variant="ghost"
+                    data-size="default"
+                    className={buttonVariants({
+                        variant: 'ghost',
+                        className:
+                            'h-auto w-full min-w-0 justify-start gap-2 p-1.5 text-left font-normal'
+                    })}
                     onClick={actions.open}
                 >
                     <span className="relative flex size-9 shrink-0 items-center justify-center overflow-visible">
@@ -165,10 +168,9 @@ export function FriendRow({
                                     location={displayLocation}
                                     traveling={displayTraveling}
                                     hint={metadataHint}
-                                    link
-                                    showGroupLink
                                     metadata={locationMetadata}
                                     t={t}
+                                    tooltips={false}
                                     showInstanceIdInLocation={
                                         showInstanceIdInLocation
                                     }
@@ -181,7 +183,7 @@ export function FriendRow({
                             )}
                         </span>
                     </span>
-                </Button>
+                </button>
             </ContextMenuTrigger>
             <ContextMenuContent className="w-56">
                 {isCurrentUser ? (
@@ -193,9 +195,6 @@ export function FriendRow({
                         CheckboxItem={ContextMenuCheckboxItem}
                         Group={ContextMenuGroup}
                         Separator={ContextMenuSeparator}
-                        Sub={ContextMenuSub}
-                        SubTrigger={ContextMenuSubTrigger}
-                        SubContent={ContextMenuSubContent}
                         statusPresets={statusPresets}
                     />
                 ) : (

@@ -32,29 +32,37 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 function ActionButton({
     label,
     disabled = false,
+    disableTooltip = false,
     loading = false,
     icon: Icon,
     onClick
 }) {
+    const button = (
+        <Button
+            type="button"
+            size="icon-xs"
+            variant="outline"
+            aria-label={label}
+            title={label}
+            disabled={disabled || loading}
+            onClick={onClick}
+        >
+            {loading ? (
+                <Spinner data-icon="inline-start" />
+            ) : (
+                <Icon data-icon="inline-start" />
+            )}
+        </Button>
+    );
+
+    if (disableTooltip) {
+        return button;
+    }
+
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <span>
-                    <Button
-                        type="button"
-                        size="icon-xs"
-                        variant="outline"
-                        aria-label={label}
-                        disabled={disabled || loading}
-                        onClick={onClick}
-                    >
-                        {loading ? (
-                            <Spinner data-icon="inline-start" />
-                        ) : (
-                            <Icon data-icon="inline-start" />
-                        )}
-                    </Button>
-                </span>
+                <span>{button}</span>
             </TooltipTrigger>
             <TooltipContent>{label}</TooltipContent>
         </Tooltip>
@@ -134,12 +142,17 @@ function InstanceInfoTooltip({
     instance,
     canClose,
     closeDisabled,
+    disableTooltip = false,
     onClose,
     children
 }) {
     const { t } = useTranslation();
 
     const disabledContent = disabledContentSettings(instance);
+    if (disableTooltip) {
+        return children;
+    }
+
     return (
         <Tooltip>
             <TooltipTrigger asChild>{children}</TooltipTrigger>
@@ -227,6 +240,7 @@ export function InstanceActionBar({
     instanceInfoPlacement = 'end',
     instanceCountAlign = 'right',
     instanceSummaryOrder = 'count-first',
+    disableTooltip = false,
     refreshTooltip = 'Refresh instance info',
     historyTooltip = 'Previous instance history',
     onRefresh,
@@ -495,6 +509,7 @@ export function InstanceActionBar({
                 location={actionTarget.instanceLocation}
                 canClose={canCloseCurrentInstance}
                 closeDisabled={Boolean(busy)}
+                disableTooltip={disableTooltip}
                 onClose={() => void closeInstance()}
             >
                 <div className="text-muted-foreground inline-flex items-center gap-1 text-xs">
@@ -520,6 +535,7 @@ export function InstanceActionBar({
                 <ActionButton
                     label={t('dialog.instance.generated.launch_instance')}
                     icon={LogInIcon}
+                    disableTooltip={disableTooltip}
                     loading={busy === 'launch'}
                     disabled={Boolean(busy)}
                     onClick={launchInstance}
@@ -529,6 +545,7 @@ export function InstanceActionBar({
                 <ActionButton
                     label={t('dialog.instance.generated.self_invite')}
                     icon={MailIcon}
+                    disableTooltip={disableTooltip}
                     loading={busy === 'invite'}
                     disabled={Boolean(busy)}
                     onClick={() => void selfInvite()}
@@ -538,6 +555,7 @@ export function InstanceActionBar({
                 <ActionButton
                     label={refreshTooltip}
                     icon={RefreshCwIcon}
+                    disableTooltip={disableTooltip}
                     loading={busy === 'refresh'}
                     disabled={Boolean(busy)}
                     onClick={() => void refreshInstance()}
@@ -547,6 +565,7 @@ export function InstanceActionBar({
                 <ActionButton
                     label={historyTooltip}
                     icon={HistoryIcon}
+                    disableTooltip={disableTooltip}
                     disabled={Boolean(busy)}
                     onClick={onHistory}
                 />
