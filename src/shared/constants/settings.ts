@@ -26,10 +26,6 @@ const branches = {
     Stable: {
         name: 'Stable',
         urlReleases: GITHUB_RELEASES_URL
-    },
-    Alpha: {
-        name: 'Alpha',
-        urlReleases: GITHUB_RELEASES_URL
     }
 } as const;
 

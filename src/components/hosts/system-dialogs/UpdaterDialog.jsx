@@ -6,11 +6,9 @@ import { userFacingErrorMessage } from '@/lib/errorDisplay.js';
 import { backend } from '@/platform/index.js';
 import {
     canInstallUpdatesOnPlatform,
-    defaultBranchForVersion,
     downloadAndInstallUpdate,
     fetchBranchReleases,
-    formatReleaseDisplayVersion,
-    sanitizeBranch
+    formatReleaseDisplayVersion
 } from '@/services/updateService.js';
 import { links } from '@/shared/constants/link.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
@@ -32,7 +30,8 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/ui/shadcn/select';
-import { Tabs, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
+
+const STABLE_BRANCH = 'Stable';
 
 export function UpdaterDialog({ open, onOpenChange }) {
     const { t } = useTranslation();
@@ -41,9 +40,6 @@ export function UpdaterDialog({ open, onOpenChange }) {
     );
     const canInstallUpdates = canInstallUpdatesOnPlatform(hostPlatform);
 
-    const [branch, setBranch] = useState(() =>
-        defaultBranchForVersion(VERSION || '')
-    );
     const [releases, setReleases] = useState([]);
     const [releaseVersion, setReleaseVersion] = useState('');
     const [loading, setLoading] = useState(false);
@@ -64,7 +60,7 @@ export function UpdaterDialog({ open, onOpenChange }) {
         setLoading(true);
         setDetail('Checking update state.');
 
-        fetchBranchReleases(branch, {
+        fetchBranchReleases(STABLE_BRANCH, {
             hostPlatform,
             requireInstallerAsset: canInstallUpdates
         })
@@ -108,7 +104,7 @@ export function UpdaterDialog({ open, onOpenChange }) {
         return () => {
             active = false;
         };
-    }, [branch, canInstallUpdates, hostPlatform, open]);
+    }, [canInstallUpdates, hostPlatform, open]);
 
     async function handleInstallUpdate() {
         if (!canInstallUpdates || !selectedRelease || downloading) {
@@ -124,7 +120,6 @@ export function UpdaterDialog({ open, onOpenChange }) {
         );
         try {
             await downloadAndInstallUpdate(selectedRelease, {
-                branch,
                 hostPlatform,
                 onProgress: setProgress
             });
@@ -156,21 +151,6 @@ export function UpdaterDialog({ open, onOpenChange }) {
                     </DialogDescription>
                 </DialogHeader>
                 <FieldGroup>
-                    <Tabs
-                        value={branch}
-                        onValueChange={(value) =>
-                            setBranch(sanitizeBranch(value))
-                        }
-                    >
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="Stable">
-                                {t('dialog.vrcx_updater.branch_stable')}
-                            </TabsTrigger>
-                            <TabsTrigger value="Alpha">
-                                {t('dialog.vrcx_updater.branch_alpha')}
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
                     {canInstallUpdates ? (
                         <div className="border-input bg-background text-foreground flex h-9 w-full items-center truncate rounded-md border px-3 text-sm">
                             {selectedRelease?.displayName ||

@@ -4,7 +4,7 @@ on:
     workflow_dispatch:
         inputs:
             version:
-                description: 'Release version, for example 1.0.0 or 1.1.0-alpha.1'
+                description: 'Stable release version, for example 1.0.0'
                 required: true
                 type: string
                 default: '1.0.0'
@@ -24,9 +24,6 @@ jobs:
             base_version: ${{ steps.version.outputs.base_version }}
             build_version: ${{ steps.version.outputs.build_version }}
             display_version: ${{ steps.version.outputs.display_version }}
-            channel: ${{ steps.version.outputs.channel }}
-            channel_id: ${{ steps.version.outputs.channel_id }}
-            prerelease: ${{ steps.version.outputs.prerelease }}
             tag: ${{ steps.version.outputs.tag }}
         steps:
             - uses: actions/checkout@v6
@@ -61,7 +58,7 @@ jobs:
                       artifact_path: |
                           src-tauri/target/release/bundle/appimage/*.AppImage
                           src-tauri/target/release/bundle/appimage/*.AppImage.sig
-                          src-tauri/target/release/bundle/appimage/vrcx-0-updater-linux-x86_64-*.json
+                          src-tauri/target/release/bundle/appimage/vrcx-0-updater-linux-x86_64-stable.json
                     - label: macOS DMG (Apple Silicon)
                       os: macos-15
                       rust_target: aarch64-apple-darwin
@@ -150,10 +147,10 @@ jobs:
                   node build-scripts/create-tauri-updater-manifest.js \
                       --version "${{ needs.prepare.outputs.build_version }}" \
                       --tag "${{ needs.prepare.outputs.tag }}" \
-                      --target "linux-x86_64-${{ needs.prepare.outputs.channel_id }}" \
+                      --target "linux-x86_64-stable" \
                       --asset-name "$(basename "$appimage_path")" \
                       --signature-file "$signature_path" \
-                      --out "src-tauri/target/release/bundle/appimage/vrcx-0-updater-linux-x86_64-${{ needs.prepare.outputs.channel_id }}.json"
+                      --out "src-tauri/target/release/bundle/appimage/vrcx-0-updater-linux-x86_64-stable.json"
 
             - uses: actions/upload-artifact@v7
               with:
@@ -182,7 +179,6 @@ jobs:
                   name: ${{ needs.prepare.outputs.display_version }}
                   body: Draft release for ${{ needs.prepare.outputs.display_version }}.
                   draft: true
-                  prerelease: ${{ needs.prepare.outputs.prerelease }}
                   files: release-assets/*
                   fail_on_unmatched_files: true
                   overwrite_files: true

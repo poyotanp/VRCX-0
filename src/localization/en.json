@@ -3769,7 +3769,6 @@
             "latest_version": "VRCX-0 is up to date",
             "ready_for_update": "Ready for install, restart VRCX-0 to apply",
             "branch_stable": "Stable",
-            "branch_alpha": "Alpha",
             "release": "Release",
             "download": "Download",
             "install": "Install",

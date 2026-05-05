@@ -9,7 +9,6 @@ import {
 } from '@/shared/utils/releaseVersion.js';
 
 const INSTALLABLE_PLATFORMS = new Set(['windows', 'linux']);
-const TAURI_UPDATER_MANIFEST_ASSET_NAME = 'latest.json';
 let updateInstallInFlight = null;
 
 function platformIdForHost(hostPlatform) {
@@ -21,21 +20,21 @@ function platformIdForHost(hostPlatform) {
 }
 
 function getUpdaterTarget(hostPlatform) {
-    return platformIdForHost(hostPlatform);
+    const platformId = platformIdForHost(hostPlatform);
+    return platformId ? `${platformId}-stable` : '';
 }
 
 function getUpdaterManifestAssetName(hostPlatform) {
-    return getUpdaterTarget(hostPlatform)
-        ? TAURI_UPDATER_MANIFEST_ASSET_NAME
-        : '';
+    const target = getUpdaterTarget(hostPlatform);
+    return target ? `vrcx-0-updater-${target}.json` : '';
 }
 
 function canInstallUpdatesOnPlatform(hostPlatform) {
     return INSTALLABLE_PLATFORMS.has(hostPlatform);
 }
 
-function getTauriManifestAssetOfInterest(assets = [], hostPlatform, branch) {
-    const manifestName = getUpdaterManifestAssetName(hostPlatform, branch);
+function getTauriManifestAssetOfInterest(assets = [], hostPlatform) {
+    const manifestName = getUpdaterManifestAssetName(hostPlatform);
     if (!manifestName) {
         return null;
     }
@@ -49,14 +48,14 @@ function getTauriManifestAssetOfInterest(assets = [], hostPlatform, branch) {
 
     return {
         manifestUrl: asset.browser_download_url,
-        target: getUpdaterTarget(hostPlatform, branch),
+        target: getUpdaterTarget(hostPlatform),
         updaterType: 'tauri'
     };
 }
 
 function normalizeGitHubRelease(
     release,
-    { branch, hostPlatform = 'unknown', requireInstallerAsset = true } = {}
+    { hostPlatform = 'unknown', requireInstallerAsset = true } = {}
 ) {
     const parsedVersion = parseReleaseVersion(release?.tag_name);
     if (!parsedVersion) {
@@ -65,8 +64,7 @@ function normalizeGitHubRelease(
 
     const tauriAsset = getTauriManifestAssetOfInterest(
         release.assets,
-        hostPlatform,
-        branch || parsedVersion.channel
+        hostPlatform
     );
     const asset = tauriAsset;
     if (requireInstallerAsset && !asset) {
@@ -76,7 +74,7 @@ function normalizeGitHubRelease(
     return {
         ...(asset || {}),
         canonicalVersion: parsedVersion.canonicalVersion,
-        channel: parsedVersion.channel,
+        channel: 'Stable',
         displayVersion: parsedVersion.displayVersion,
         htmlUrl: release.html_url || '',
         tagName: release.tag_name,
@@ -90,19 +88,17 @@ function normalizeGitHubRelease(
 
 function normalizeReleaseList(branch, releases, options = {}) {
     const normalizedBranch = sanitizeBranch(branch);
-    const shouldKeepPrerelease = normalizedBranch !== 'Stable';
     return (Array.isArray(releases) ? releases : [releases])
         .map((release) =>
             normalizeGitHubRelease(release, {
-                ...options,
-                branch: normalizedBranch
+                ...options
             })
         )
         .filter(
             (release) =>
                 release &&
                 release.channel === normalizedBranch &&
-                release.prerelease === shouldKeepPrerelease
+                release.prerelease === false
         )
         .sort((left, right) =>
             compareReleaseVersions(
@@ -112,15 +108,12 @@ function normalizeReleaseList(branch, releases, options = {}) {
         );
 }
 
-function sanitizeBranch(branch) {
-    if (branch === 'Alpha') {
-        return 'Alpha';
-    }
+function sanitizeBranch() {
     return 'Stable';
 }
 
-function defaultBranchForVersion(version = VERSION || '') {
-    return parseReleaseVersion(version)?.channel || 'Stable';
+function defaultBranchForVersion() {
+    return 'Stable';
 }
 
 function hasUpdateForBranch(branch, currentVersion, latestReleaseVersion) {
@@ -132,19 +125,8 @@ function hasUpdateForBranch(branch, currentVersion, latestReleaseVersion) {
     }
 
     const normalizedBranch = sanitizeBranch(branch);
-    if (latestParsed.channel !== normalizedBranch) {
-        return false;
-    }
-
     if (normalizedBranch !== 'Stable') {
-        const versionDelta =
-            latestParsed.major - currentParsed.major ||
-            latestParsed.minor - currentParsed.minor ||
-            latestParsed.patchNumber - currentParsed.patchNumber;
-        if (versionDelta !== 0) {
-            return versionDelta > 0;
-        }
-
+        return false;
     }
 
     return (
@@ -188,21 +170,16 @@ async function getUpdaterProxy() {
     return String(proxy || '').trim();
 }
 
-function shouldAllowDowngradesForBranch(branch) {
-    return (
-        defaultBranchForVersion(VERSION || '') === 'Alpha' &&
-        sanitizeBranch(branch) === 'Stable'
-    );
+function shouldAllowDowngradesForBranch() {
+    return false;
 }
 
-async function buildTauriUpdaterRequest(release, branch, hostPlatform) {
+async function buildTauriUpdaterRequest(release, hostPlatform) {
     if (!canInstallUpdatesOnPlatform(hostPlatform)) {
         throw new Error(`Updates are not installable on ${hostPlatform}.`);
     }
 
-    const normalizedBranch = sanitizeBranch(branch || release?.channel);
-    const target =
-        release?.target || getUpdaterTarget(hostPlatform, normalizedBranch);
+    const target = release?.target || getUpdaterTarget(hostPlatform);
     if (!target) {
         throw new Error('No Tauri updater target is available.');
     }
@@ -214,7 +191,7 @@ async function buildTauriUpdaterRequest(release, branch, hostPlatform) {
     return {
         manifestUrl: release.manifestUrl,
         target,
-        allowDowngrades: shouldAllowDowngradesForBranch(normalizedBranch),
+        allowDowngrades: shouldAllowDowngradesForBranch(),
         ...(proxy ? { proxy } : {})
     };
 }
@@ -222,7 +199,6 @@ async function buildTauriUpdaterRequest(release, branch, hostPlatform) {
 async function checkTauriUpdateForRelease(release, options = {}) {
     const request = await buildTauriUpdaterRequest(
         release,
-        options.branch,
         options.hostPlatform || 'unknown'
     );
     return invoke('app__check_tauri_update', request);
@@ -265,7 +241,6 @@ async function downloadAndInstallUpdate(release, options = {}) {
         throw new Error('An update install is already in progress.');
     }
     const hostPlatform = options.hostPlatform || 'unknown';
-    const branch = sanitizeBranch(options.branch || release?.channel);
     if (!release?.target) {
         throw new Error('Selected release has no Tauri updater target.');
     }
@@ -273,11 +248,7 @@ async function downloadAndInstallUpdate(release, options = {}) {
     updateInstallInFlight = (async () => {
         let downloaded = 0;
         let contentLength = 0;
-        const request = await buildTauriUpdaterRequest(
-            release,
-            branch,
-            hostPlatform
-        );
+        const request = await buildTauriUpdaterRequest(release, hostPlatform);
         const onEvent = new Channel((event) => {
             const state = handleTauriDownloadEvent(event, options.onProgress);
             if (state) {

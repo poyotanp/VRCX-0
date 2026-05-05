@@ -2,19 +2,13 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { pathToFileURL } = require('node:url');
 
 const rootDir = path.join(__dirname, '..');
 const tauriConfigPath = path.join(rootDir, 'src-tauri', 'tauri.conf.json');
 const cargoTomlPath = path.join(rootDir, 'src-tauri', 'Cargo.toml');
 const cargoLockPath = path.join(rootDir, 'src-tauri', 'Cargo.lock');
-const releaseVersionCorePath = path.join(
-    rootDir,
-    'src',
-    'shared',
-    'utils',
-    'releaseVersionCore.mjs'
-);
+const RELEASE_VERSION_PATTERN =
+    /^v?(?<major>[1-9][0-9]{0,1})\.(?<minor>0|[1-9][0-9]{0,2})\.(?<patch>0|[1-9][0-9]{0,2})(?:-[0-9A-Za-z.-]+)?$/;
 
 function readArg(argName, fallback = '') {
     const prefix = `--${argName}=`;
@@ -35,14 +29,22 @@ function hasFlag(argName) {
     return process.argv.includes(`--${argName}`);
 }
 
-async function buildReleaseMeta() {
-    const { createReleaseVersionMeta } = await import(
-        pathToFileURL(releaseVersionCorePath).href
-    );
+function buildReleaseMeta() {
+    const version = readArg('version').trim();
+    const match = RELEASE_VERSION_PATTERN.exec(version);
+    if (!match?.groups) {
+        throw new Error(`Invalid release version: ${version}`);
+    }
 
-    return createReleaseVersionMeta({
-        version: readArg('version')
-    });
+    const buildVersion = version.replace(/^v/, '');
+    const baseVersion = `${match.groups.major}.${match.groups.minor}.${match.groups.patch}`;
+
+    return {
+        base_version: baseVersion,
+        build_version: buildVersion,
+        display_version: buildVersion,
+        tag: `v${buildVersion}`
+    };
 }
 
 function syncVersionToManifests(buildVersion) {
@@ -94,14 +96,13 @@ function writeOutputs(meta) {
     }
 }
 
-buildReleaseMeta()
-    .then((meta) => {
-        if (!hasFlag('dry-run')) {
-            syncVersionToManifests(meta.build_version);
-        }
-        writeOutputs(meta);
-    })
-    .catch((error) => {
-        console.error(error);
-        process.exitCode = 1;
-    });
+try {
+    const meta = buildReleaseMeta();
+    if (!hasFlag('dry-run')) {
+        syncVersionToManifests(meta.build_version);
+    }
+    writeOutputs(meta);
+} catch (error) {
+    console.error(error);
+    process.exitCode = 1;
+}
