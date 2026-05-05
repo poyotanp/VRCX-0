@@ -1,11 +1,21 @@
+import { lazy, Suspense } from 'react';
 import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 
 import { GlobalHosts } from '@/components/hosts/GlobalHosts.jsx';
-import { AppShellLayout } from '@/components/layout/AppShellLayout.jsx';
 import { AppTitleBar } from '@/components/layout/AppTitleBar.jsx';
 import { useSessionStore } from '@/state/sessionStore.js';
 
-import { protectedRoutes, publicRoutes } from './routes.jsx';
+import {
+    protectedRoutes,
+    publicRoutes,
+    RouteLoadingFallback
+} from './routes.jsx';
+
+const AppShellLayout = lazy(() =>
+    import('@/components/layout/AppShellLayout.jsx').then((module) => ({
+        default: module.AppShellLayout
+    }))
+);
 
 function RequireAuth() {
     const isSessionReady = useSessionStore(
@@ -31,6 +41,14 @@ function RedirectIfAuthenticated() {
     return <Outlet />;
 }
 
+function AppShellRoute() {
+    return (
+        <Suspense fallback={<RouteLoadingFallback />}>
+            <AppShellLayout />
+        </Suspense>
+    );
+}
+
 function AppRouterContent() {
     return (
         <div className="bg-background flex h-screen min-h-0 w-full flex-col overflow-hidden">
@@ -48,7 +66,7 @@ function AppRouterContent() {
                     </Route>
 
                     <Route element={<RequireAuth />}>
-                        <Route element={<AppShellLayout />}>
+                        <Route element={<AppShellRoute />}>
                             <Route
                                 index
                                 element={<Navigate to="/feed" replace />}
