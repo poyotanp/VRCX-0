@@ -17,7 +17,6 @@ function joinPendingItems(items) {
 
 export function getPendingStartupServices() {
     const sessionState = useSessionStore.getState();
-    const runtimeState = useRuntimeStore.getState();
     const pending = [];
 
     if (!sessionState.isFriendsLoaded) {
@@ -29,9 +28,6 @@ export function getPendingStartupServices() {
     if (!sessionState.isFavoritesLoaded) {
         pending.push('favorites hydration');
     }
-    if (!runtimeState.activity.fullCacheReady) {
-        pending.push('activity cache warm-up');
-    }
 
     return pending;
 }
@@ -40,16 +36,15 @@ export function syncStartupServicesTask(baseParts = []) {
     const runtimeStore = useRuntimeStore.getState();
     const currentStartupStatus = runtimeStore.startup.services.status;
     const pending = getPendingStartupServices();
-    const hasActivityError = runtimeStore.activity.status === 'error';
     const completed = pending.length === 0;
     const detailTail = completed
-        ? 'Friend roster baseline, realtime transport, favorites hydration, and activity cache warm-up are active.'
+        ? 'Friend roster baseline, realtime transport, and favorites hydration are active.'
         : `Pending: ${joinPendingItems(pending)}.`;
     const detail = [...baseParts.filter(Boolean), detailTail].join(' ');
 
     runtimeStore.setStartupTask(
         'services',
-        hasActivityError || currentStartupStatus === 'error'
+        currentStartupStatus === 'error'
             ? 'error'
             : completed
               ? 'completed'

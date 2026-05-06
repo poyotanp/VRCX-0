@@ -3,7 +3,6 @@ import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useSessionStore } from '@/state/sessionStore.js';
 import { DEFAULT_TIME_UNIT_LABELS, useShellStore } from '@/state/shellStore.js';
 
-import { bootstrapActivityCache } from './activityCacheService.js';
 import { startRuntimeAuthFailureRecovery } from './authSessionRecoveryService.js';
 import { bindBackendEvents } from './backendEventService.js';
 import { refreshPlayerModerations } from './backgroundMaintenanceService.js';
@@ -219,7 +218,6 @@ export function startAuthenticatedRuntimeServices() {
     let friendBootstrapStarted = false;
     let favoritesBootstrapStarted = false;
     let moderationRefreshStarted = false;
-    let activityBootstrapStarted = false;
     let realtimeTransportStarted = false;
     const bootstrapRetryState = {
         friends: { timer: null, attempt: 0 },
@@ -249,7 +247,6 @@ export function startAuthenticatedRuntimeServices() {
         activeRunId += 1;
         friendBootstrapStarted = false;
         favoritesBootstrapStarted = false;
-        activityBootstrapStarted = false;
         realtimeTransportStarted = false;
         clearBootstrapRetries();
         stopRealtimeTransport({ updateStatus: false });
@@ -370,24 +367,6 @@ export function startAuthenticatedRuntimeServices() {
         });
     };
 
-    const runActivityBootstrap = (context, runId) => {
-        activityBootstrapStarted = true;
-        bootstrapActivityCache({
-            userId: context.userId,
-            currentUserSnapshot: context.currentUserSnapshot
-        }).catch((error) => {
-            if (!isActiveRun(runId, context)) {
-                return;
-            }
-
-            pushRuntimeNotification({
-                level: 'warning',
-                title: 'Activity cache warm-up failed',
-                error
-            });
-        });
-    };
-
     const runRealtimeTransport = (context, runId) => {
         realtimeTransportStarted = true;
         startRealtimeTransport({
@@ -429,7 +408,6 @@ export function startAuthenticatedRuntimeServices() {
         const runId = activeRunId;
         const moderationRunId = activeModerationRunId;
         const sessionState = useSessionStore.getState();
-        const runtimeState = useRuntimeStore.getState();
 
         if (
             !sessionState.isFriendsLoaded &&
@@ -449,14 +427,6 @@ export function startAuthenticatedRuntimeServices() {
 
         if (!moderationRefreshStarted) {
             runModerationRefresh(context, moderationRunId);
-        }
-
-        if (
-            !activityBootstrapStarted &&
-            (runtimeState.activity.currentUserId !== context.userId ||
-                runtimeState.activity.status === 'idle')
-        ) {
-            runActivityBootstrap(context, runId);
         }
 
         if (!sessionState.isFriendsLoaded) {

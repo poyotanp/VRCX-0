@@ -83,13 +83,13 @@ class FeedRepository {
 
         if (normalizedSearch || dateFrom || dateTo) {
             return feedLocalRepository.searchFeedDatabase(
-                normalizedUserId,
                 normalizedSearch,
                 normalizedFilters,
                 normalizedFavorites,
                 searchLimit,
                 dateFrom,
-                dateTo
+                dateTo,
+                normalizedUserId
             );
         }
 
