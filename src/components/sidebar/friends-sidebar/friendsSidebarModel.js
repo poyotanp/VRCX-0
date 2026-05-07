@@ -212,7 +212,8 @@ function compareByActiveStatus(left, right) {
 export function resolveSidebarStatusDotClassName(
     friend,
     currentUser,
-    isCurrentUser = false
+    isCurrentUser = false,
+    { hideNonFriend = true } = {}
 ) {
     const source = readFriendStatusSource(friend);
     if (!source) {
@@ -267,7 +268,11 @@ export function resolveSidebarStatusDotClassName(
         return 'bg-[var(--status-offline)]';
     }
 
-    if (source?.isFriend === false && friend?.isFriend === false) {
+    if (
+        hideNonFriend &&
+        source?.isFriend === false &&
+        friend?.isFriend === false
+    ) {
         return '';
     }
 

@@ -2508,6 +2508,7 @@
                 "invite_request_sent": "Invite request sent",
                 "failed_to_request_invite": "Failed to request invite",
                 "failed_to_send_boop": "Failed to send boop",
+                "already_viewing_user": "Already viewing this user",
                 "failed_to_open_discord_profile": "Failed to open Discord profile",
                 "translation_failed": "Translation failed",
                 "failed_to_load_avatar_author": "Failed to load avatar author",

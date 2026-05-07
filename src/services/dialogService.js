@@ -1,4 +1,7 @@
+import { toast } from 'sonner';
+
 import { recordUserProfile } from '@/domain/users/userFactAccess.js';
+import i18n from '@/services/i18nService.js';
 import { useDialogStore } from '@/state/dialogStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 
@@ -108,6 +111,21 @@ function openEntityDialog({
         return;
     }
 
+    const store = useDialogStore.getState();
+    if (
+        store.activeDialog?.kind === kind &&
+        normalizeEntityId(store.activeDialog?.entityId) === normalizedEntityId
+    ) {
+        if (kind === 'user') {
+            toast.info(
+                i18n.t('dialog.user.generated_toast.already_viewing_user', {
+                    defaultValue: 'Already viewing this user'
+                })
+            );
+        }
+        return;
+    }
+
     const label = sanitizeEntityTitle(kind, normalizedEntityId, title, payload);
     entityDialogOpenNonce += 1;
     const openNonce = entityDialogOpenNonce;
@@ -129,19 +147,12 @@ function openEntityDialog({
         payload,
         openNonce
     };
-    const store = useDialogStore.getState();
-    const existingIndex = store.breadcrumbs.findIndex(
-        (entry) => entry?.key === crumb.key
-    );
     const activeDialogIsEntity = Boolean(
         store.activeDialog?.kind && store.activeDialog?.entityId
     );
-    const breadcrumbs =
-        existingIndex >= 0
-            ? store.breadcrumbs.slice(0, existingIndex + 1)
-            : activeDialogIsEntity
-              ? [...store.breadcrumbs, crumb]
-              : [crumb];
+    const breadcrumbs = activeDialogIsEntity
+        ? [...store.breadcrumbs, crumb]
+        : [crumb];
 
     store.setDialogTrail(dialog, breadcrumbs);
 }

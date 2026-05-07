@@ -134,7 +134,8 @@ export function InstanceUserTiles({ instance }) {
                 const dotClassName = resolveSidebarStatusDotClassName(
                     user,
                     currentUserSnapshot,
-                    isCurrentUser
+                    isCurrentUser,
+                    { hideNonFriend: false }
                 );
                 const displayName = firstText(
                     user?.displayName,
@@ -152,14 +153,16 @@ export function InstanceUserTiles({ instance }) {
                         type="button"
                         variant="ghost"
                         className="h-auto w-44 justify-start gap-2 px-1.5 py-1.5 text-left font-normal"
-                        onClick={() =>
-                            userId &&
+                        onClick={() => {
+                            if (!userId) {
+                                return;
+                            }
                             openUserDialog({
                                 userId,
                                 title: displayName || undefined,
                                 seedData: user
-                            })
-                        }
+                            });
+                        }}
                     >
                         <UserStatusAvatar
                             imageUrl={image}

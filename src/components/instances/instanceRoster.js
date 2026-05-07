@@ -57,9 +57,18 @@ export function userDisplayName(user) {
 }
 
 export function createInstanceUserRow(user, fallback = {}) {
+    const fallbackUserId = firstText(
+        fallback.id,
+        fallback.userId,
+        fallback.user_id
+    );
     const source =
         typeof user === 'string'
-            ? { id: user, userId: user, displayName: user }
+            ? {
+                  id: fallbackUserId || user,
+                  userId: fallbackUserId || user,
+                  displayName: user
+              }
             : user || {};
     const nestedUser =
         source.user && typeof source.user === 'object' ? source.user : {};
@@ -168,13 +177,16 @@ export function mergeInstanceUser(rowsByKey, user, fallback = {}) {
     rowsByKey.set(key, existing ? mergeInstanceUserRows(existing, row) : row);
 }
 
-export function pushInstanceUserSource(source, push) {
+export function pushInstanceUserSource(source, push, fallback = {}) {
+    const pushWithFallback = (value, fallback = {}) => {
+        push(value, fallback);
+    };
     if (!source) {
         return;
     }
     if (source instanceof Map) {
-        for (const value of source.values()) {
-            pushInstanceUserSource(value, push);
+        for (const [key, value] of source.entries()) {
+            pushInstanceUserSource(value, push, { id: key, userId: key });
         }
         return;
     }
@@ -200,22 +212,22 @@ export function pushInstanceUserSource(source, push) {
             source.user?.displayName ||
             source.user?.username
         ) {
-            push(source);
+            pushWithFallback(source, fallback);
             return;
         }
-        for (const value of Object.values(source)) {
-            pushInstanceUserSource(value, push);
+        for (const [key, value] of Object.entries(source)) {
+            pushInstanceUserSource(value, push, { id: key, userId: key });
         }
         return;
     }
-    push(source);
+    pushWithFallback(source, fallback);
 }
 
 export function normalizeInstanceUsers(...sources) {
     const rows = [];
     for (const source of sources) {
-        pushInstanceUserSource(source, (user) => {
-            const row = createInstanceUserRow(user);
+        pushInstanceUserSource(source, (user, fallback) => {
+            const row = createInstanceUserRow(user, fallback);
             if (rosterUserKey(row)) {
                 rows.push(row);
             }
@@ -334,6 +346,10 @@ export function buildInstanceRosterRows({
                 )
               : null;
     const ownerRowId = userIdForRosterRow(ownerRow);
+    if (ownerRow) {
+        mergeInstanceUser(rowsByKey, ownerRow);
+    }
+    const mergedOwnerRow = ownerRowId ? rowsByKey.get(ownerRowId) : null;
     const playerRows = Array.from(rowsByKey.values()).filter(
         (user) => !ownerRowId || userIdForRosterRow(user) !== ownerRowId
     );
@@ -341,6 +357,6 @@ export function buildInstanceRosterRows({
     return {
         ownerId,
         ownerIsGroup,
-        rows: ownerRow ? [ownerRow, ...playerRows] : playerRows
+        rows: mergedOwnerRow ? [mergedOwnerRow, ...playerRows] : playerRows
     };
 }

@@ -79,18 +79,14 @@ export function EntityList({ rows, kind = '', loading = false, error = '' }) {
                         ? resolveSidebarStatusDotClassName(
                               row,
                               currentUserSnapshot,
-                              isCurrentUserRow
+                              isCurrentUserRow,
+                              { hideNonFriend: false }
                           )
                         : '';
-
-                return (
-                    <Button
-                        key={`${row?.id || row?.userId || label}:${index}`}
-                        type="button"
-                        variant="ghost"
-                        className="h-auto min-w-0 justify-start gap-2 px-1.5 py-1.5 text-left font-normal"
-                        onClick={() => openRow(row, kind)}
-                    >
+                const rowClassName =
+                    'h-auto min-w-0 justify-start gap-2 px-1.5 py-1.5 text-left font-normal active:not-aria-[haspopup]:translate-y-0';
+                const content = (
+                    <>
                         {kind === 'user' ? (
                             <UserStatusAvatar
                                 imageUrl={image}
@@ -146,6 +142,18 @@ export function EntityList({ rows, kind = '', loading = false, error = '' }) {
                                 </span>
                             ) : null}
                         </span>
+                    </>
+                );
+
+                return (
+                    <Button
+                        key={`${row?.id || row?.userId || label}:${index}`}
+                        type="button"
+                        variant="ghost"
+                        className={rowClassName}
+                        onClick={() => openRow(row, kind)}
+                    >
+                        {content}
                     </Button>
                 );
             })}
