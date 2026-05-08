@@ -233,6 +233,8 @@
                 "tab_layout": "标签布局",
                 "tab_name": "标签名称",
                 "visible": "显示",
+                "hide_tab": "隐藏标签",
+                "hide_groups": "隐藏群组",
                 "add_favorite_tab": "添加收藏标签",
                 "favorite_collection_default": "收藏集合",
                 "remote_groups": "VRChat 收藏分组",

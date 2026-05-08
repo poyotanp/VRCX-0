@@ -1,3 +1,4 @@
+import { EyeOffIcon, SlidersHorizontalIcon } from 'lucide-react';
 import { forwardRef, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -10,6 +11,14 @@ import { getNavIconComponent } from '@/shared/constants/navIcons.js';
 import { useFavoriteStore } from '@/state/favoriteStore.js';
 import { useFriendRosterStore } from '@/state/friendRosterStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuGroup,
+    ContextMenuItem,
+    ContextMenuSeparator,
+    ContextMenuTrigger
+} from '@/ui/shadcn/context-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 
 import { FriendsSidebar } from './FriendsSidebar.jsx';
@@ -540,6 +549,25 @@ export const SidePanel = forwardRef(function SidePanel(
         );
     }
 
+    function setTabVisibilityFromMenu(tabId, visible) {
+        const nextLayout = tabLayout.map((item) => {
+            if (item.type === 'system' && item.systemTab === 'friends') {
+                return { ...item, visible: true };
+            }
+            if (item.id !== tabId) {
+                return item;
+            }
+            if (item.type === 'system' && item.systemTab === 'groups') {
+                return { ...item, visible: Boolean(visible) };
+            }
+            if (item.type === 'favoriteCollection') {
+                return { ...item, visible: Boolean(visible) };
+            }
+            return item;
+        });
+        saveCustomTabs(nextLayout, tabDisplayMode);
+    }
+
     return (
         <aside
             ref={ref}
@@ -562,29 +590,81 @@ export const SidePanel = forwardRef(function SidePanel(
                                     item.icon,
                                     sidebarTabFallbackIcon(item.layoutItem)
                                 );
+                                const canHideTab =
+                                    item.layoutItem.type ===
+                                        'favoriteCollection' ||
+                                    item.layoutItem.systemTab === 'groups';
+                                const hideLabel =
+                                    item.layoutItem.type === 'system' &&
+                                    item.layoutItem.systemTab === 'groups'
+                                        ? t(
+                                              'side_panel.settings.custom_tabs.hide_groups'
+                                          )
+                                        : t(
+                                              'side_panel.settings.custom_tabs.hide_tab'
+                                          );
                                 return (
-                                    <TabsTrigger
-                                        key={item.value}
-                                        value={item.value}
-                                        title={item.title}
-                                        className={cn(
-                                            'min-w-0 flex-none',
-                                            showTabText
-                                                ? 'max-w-40'
-                                                : 'w-8 px-1'
-                                        )}
-                                    >
-                                        <Icon data-icon="inline-start" />
-                                        <span
-                                            className={cn(
-                                                showTabText
-                                                    ? 'min-w-0 truncate'
-                                                    : 'sr-only'
-                                            )}
-                                        >
-                                            {item.label}
-                                        </span>
-                                    </TabsTrigger>
+                                    <ContextMenu key={item.value}>
+                                        <ContextMenuTrigger asChild>
+                                            <TabsTrigger
+                                                value={item.value}
+                                                title={item.title}
+                                                className={cn(
+                                                    'min-w-0 flex-none',
+                                                    showTabText
+                                                        ? 'max-w-40'
+                                                        : 'w-8 px-1'
+                                                )}
+                                            >
+                                                <Icon data-icon="inline-start" />
+                                                <span
+                                                    className={cn(
+                                                        showTabText
+                                                            ? 'min-w-0 truncate'
+                                                            : 'sr-only'
+                                                    )}
+                                                >
+                                                    {item.label}
+                                                </span>
+                                            </TabsTrigger>
+                                        </ContextMenuTrigger>
+                                        <ContextMenuContent className="w-44">
+                                            {canHideTab ? (
+                                                <>
+                                                    <ContextMenuGroup>
+                                                        <ContextMenuItem
+                                                            onSelect={() =>
+                                                                setTabVisibilityFromMenu(
+                                                                    item
+                                                                        .layoutItem
+                                                                        .id,
+                                                                    false
+                                                                )
+                                                            }
+                                                        >
+                                                            <EyeOffIcon />
+                                                            {hideLabel}
+                                                        </ContextMenuItem>
+                                                    </ContextMenuGroup>
+                                                    <ContextMenuSeparator />
+                                                </>
+                                            ) : null}
+                                            <ContextMenuGroup>
+                                                <ContextMenuItem
+                                                    onSelect={() =>
+                                                        setCustomTabsDialogOpen(
+                                                            true
+                                                        )
+                                                    }
+                                                >
+                                                    <SlidersHorizontalIcon />
+                                                    {t(
+                                                        'side_panel.settings.custom_tabs.configure'
+                                                    )}
+                                                </ContextMenuItem>
+                                            </ContextMenuGroup>
+                                        </ContextMenuContent>
+                                    </ContextMenu>
                                 );
                             })}
                         </TabsList>

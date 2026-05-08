@@ -333,6 +333,8 @@
                 "tab_layout": "Tab Layout",
                 "tab_name": "Tab name",
                 "visible": "Visible",
+                "hide_tab": "Hide tab",
+                "hide_groups": "Hide Groups",
                 "add_favorite_tab": "Add Favorite Tab",
                 "favorite_collection_default": "Favorite Collection",
                 "remote_groups": "VRChat Favorite Groups",
