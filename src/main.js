@@ -2,8 +2,11 @@ import { createElement, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import '@/styles/globals.css';
+import { installDevPerformanceTimelineGuard } from '@/app/devPerformanceTimelineGuard.js';
 import { installErrorLogging } from '@/services/errorLogService.js';
 
+// only use in dev to prevent OOM from React dev tools User Timing measures
+installDevPerformanceTimelineGuard();
 installErrorLogging();
 
 async function bootstrap() {
