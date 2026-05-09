@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { InviteMessageDialog } from '@/components/dialogs/InviteMessageDialog.jsx';
-import { openExternalLink } from '@/lib/entityMedia.js';
+import { convertFileUrlToImageUrl, openExternalLink } from '@/lib/entityMedia.js';
 import { cn } from '@/lib/utils.js';
 import {
     configRepository,
