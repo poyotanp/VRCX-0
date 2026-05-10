@@ -125,6 +125,18 @@ function forceGameRunningCondition(rule) {
     };
 }
 
+function hasPresenceAction(rule) {
+    const actions = rule?.actions;
+    if (!actions || typeof actions !== 'object') {
+        return false;
+    }
+    return (
+        Object.prototype.hasOwnProperty.call(actions, 'status') ||
+        Object.prototype.hasOwnProperty.call(actions, 'statusDescription') ||
+        Object.prototype.hasOwnProperty.call(actions, 'clearStatusDescription')
+    );
+}
+
 export async function loadPresenceAutomationConfig() {
     const [
         timeRules,
@@ -134,27 +146,29 @@ export async function loadPresenceAutomationConfig() {
         minDescription,
         stable
     ] = await Promise.all([
-            loadStoredRules('presenceAutomationTimeRules'),
-            loadStoredRules('presenceAutomationContextRules'),
-            loadLegacyRules(),
-            configRepository.getInt(
-                'presenceAutomationMinStatusWriteIntervalMs',
-                60000
-            ),
-            configRepository.getInt(
-                'presenceAutomationMinDescriptionWriteIntervalMs',
-                60000
-            ),
-            configRepository.getInt('presenceAutomationStableLocationMs', 30000)
-        ]);
+        loadStoredRules('presenceAutomationTimeRules'),
+        loadStoredRules('presenceAutomationContextRules'),
+        loadLegacyRules(),
+        configRepository.getInt(
+            'presenceAutomationMinStatusWriteIntervalMs',
+            60000
+        ),
+        configRepository.getInt(
+            'presenceAutomationMinDescriptionWriteIntervalMs',
+            60000
+        ),
+        configRepository.getInt('presenceAutomationStableLocationMs', 30000)
+    ]);
     const contextRules = storedContextRules.map(forceGameRunningCondition);
     const rules = [...timeRules, ...contextRules, ...legacyRules];
-    const enabledRules = rules.filter((rule) => rule?.enabled !== false);
+    const enabledRules = rules.filter(
+        (rule) => rule?.enabled !== false && hasPresenceAction(rule)
+    );
 
     return {
         enabled: Boolean(enabledRules.length),
         legacyModeEnabled: legacyRules.length > 0,
-        rules,
+        rules: enabledRules,
         throttle: {
             minStatusWriteIntervalMs: Number(minStatus) || 60000,
             minDescriptionWriteIntervalMs: Number(minDescription) || 60000,
