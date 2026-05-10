@@ -230,10 +230,7 @@ export function buildContextConditions(rule) {
         });
     }
 
-    if (
-        rule.preset === 'inSelectedInstanceTypes' ||
-        rule.selectedInstanceTypes?.length
-    ) {
+    if (rule.selectedInstanceTypes?.length) {
         conditions.push({
             type: 'instanceTypeIn',
             values: rule.selectedInstanceTypes || []

@@ -237,6 +237,43 @@ async function expireNotificationLocally({ userId, notification }) {
     store.markNotificationsSeen(notification.id);
 }
 
+async function cleanupHandledInviteRequestNotification({
+    currentUserId,
+    endpoint,
+    notification,
+    senderUserId
+}) {
+    let cleanupFailed = false;
+
+    try {
+        await notificationRepository.hideRemoteNotification({
+            id: notification.id,
+            version: notification.version,
+            type: notification.type,
+            senderUserId,
+            endpoint
+        });
+    } catch (error) {
+        cleanupFailed = true;
+        console.warn(
+            'Failed to hide handled invite request notification:',
+            error
+        );
+    }
+
+    try {
+        await expireNotificationLocally({ userId: currentUserId, notification });
+    } catch (error) {
+        cleanupFailed = true;
+        console.warn(
+            'Failed to expire handled invite request notification locally:',
+            error
+        );
+    }
+
+    return cleanupFailed ? 'invite-sent-cleanup-failed' : 'invite-sent';
+}
+
 async function sendInviteForRequest({
     notification,
     endpoint,
@@ -354,39 +391,30 @@ export async function handleInviteAutomationNotification(notification) {
             return { handled: false, reason: sendResult.reason };
         }
         senderCooldowns.set(senderScopeKey, nowMs);
-        const latestLocationValidation = validateCurrentInviteLocation({
-            endpoint,
-            currentUserId,
-            expectedLocation: currentInviteLocation
-        });
-        if (!latestLocationValidation.valid) {
+        if (!isCurrentInviteScope({ endpoint, currentUserId })) {
             return {
-                handled:
-                    latestLocationValidation.reason === 'auth-context-changed',
-                reason: `invite-sent-${latestLocationValidation.reason}`,
+                handled: true,
+                reason: 'invite-sent-auth-context-changed',
                 senderUserId,
                 notificationId: notification.id
             };
         }
 
-        await notificationRepository.hideRemoteNotification({
-            id: notification.id,
-            version: notification.version,
-            type: notification.type,
+        const cleanupReason = await cleanupHandledInviteRequestNotification({
+            currentUserId,
+            endpoint,
+            notification,
             senderUserId,
-            endpoint
         });
-        await expireNotificationLocally({ userId: currentUserId, notification });
+        return {
+            handled: true,
+            reason: cleanupReason,
+            senderUserId,
+            notificationId: notification.id
+        };
     } finally {
         pendingSenderInvites.delete(senderScopeKey);
     }
-
-    return {
-        handled: true,
-        reason: 'invite-sent',
-        senderUserId,
-        notificationId: notification.id
-    };
 }
 
 export function resetInviteAutomationService() {
