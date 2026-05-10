@@ -6,10 +6,21 @@ import {
     resolveLocationTarget
 } from './friendsLocationsRows.js';
 
+function interpolateFallback(value, values = {}) {
+    return String(value ?? '').replace(/\{(\w+)\}/g, (match, key) =>
+        Object.hasOwn(values, key) ? String(values[key]) : match
+    );
+}
+
 function localized(t, key, fallback, values = {}) {
-    return typeof t === 'function'
-        ? t(key, { defaultValue: fallback, ...values })
-        : fallback;
+    if (typeof t !== 'function') {
+        return interpolateFallback(fallback, values);
+    }
+
+    return interpolateFallback(
+        t(key, { defaultValue: fallback, ...values }),
+        values
+    );
 }
 
 function appendLabel(labelsByFriendId, friendId, label) {
