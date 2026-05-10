@@ -175,6 +175,10 @@ function validateCurrentInviteLocation({
     }
 
     const runtimeState = useRuntimeStore.getState();
+    if (!runtimeState.gameState?.isGameRunning) {
+        return { valid: false, reason: 'game-not-running' };
+    }
+
     const currentInviteLocation = resolveCurrentInviteLocation(
         runtimeState.gameState
     );
@@ -296,6 +300,10 @@ export async function handleInviteAutomationNotification(notification) {
 
     const runtimeState = useRuntimeStore.getState();
     const auth = runtimeState.auth || {};
+    if (!runtimeState.gameState?.isGameRunning) {
+        return { handled: false, reason: 'game-not-running' };
+    }
+
     const currentUserId = auth.currentUserId;
     const endpoint = auth.currentUserEndpoint;
     const currentInviteLocation = resolveCurrentInviteLocation(
