@@ -521,7 +521,6 @@
                 "rpc": {
                     "vr": "VR",
                     "desktop": "Десктоп‑режим",
-                    "powered_by_vrcx": "Powered by VRCX-0",
                     "private_world": "Приватный мир"
                 }
             },

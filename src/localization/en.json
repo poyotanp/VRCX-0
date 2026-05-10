@@ -265,7 +265,6 @@
             "logout_failed": "Failed to sign out of VRCX-0"
         },
         "generated": {
-            "ctrl_k": "Ctrl+K",
             "started_at": "Started at",
             "session_duration": "Session duration",
             "instance_duration": "Instance duration",
@@ -524,7 +523,6 @@
                 "no_data": "No game log data"
             },
             "generated": {
-                "player": "player",
                 "time_spent_in_this_instance": "Time spent in this instance",
                 "game_log_row_deleted": "Game log row deleted",
                 "copied_game_log_detail": "Copied game log detail",
@@ -591,9 +589,6 @@
                 "grid_density_standard": "Standard",
                 "grid_density_compact": "Compact",
                 "grid_density_dense": "Dense",
-                "grid_density_micro": "Micro",
-                "avatar_card_scale": "Avatar card scale",
-                "avatar_card_spacing": "Avatar card spacing",
                 "current_avatar": "Current",
                 "click_to_wear": "Click to wear",
                 "avatar_selected": "Avatar selected",
@@ -615,7 +610,6 @@
                 "change_avatar_image": "Change avatar image",
                 "make_public": "Make public",
                 "make_private": "Make private",
-                "avatar_description_updated": "Avatar description updated",
                 "avatar_made_public": "Avatar made public",
                 "avatar_made_private": "Avatar made private",
                 "no_authenticated_user_is_available_for_the_avatar_inventory": "No authenticated user is available for the avatar inventory.",
@@ -637,9 +631,6 @@
                 "failed_to_upload_avatar_image": "Failed to upload avatar image"
             },
             "generated_modal": {
-                "rename_avatar": "Rename avatar",
-                "rename": "Rename",
-                "change_avatar_description": "Change avatar description",
                 "select_avatar_value": "Select avatar?\n{value}",
                 "create_impostor": "Create impostor?",
                 "create": "Create",
@@ -918,7 +909,6 @@
             },
             "generated": {
                 "this_notification_does_not_expose_a_navigable_sender": "This notification does not expose a navigable sender",
-                "invite": "Invite",
                 "open_notification_link": "Open notification link",
                 "mark_seen": "Mark seen",
                 "friend_request_accepted": "Friend request accepted",
@@ -1319,8 +1309,7 @@
             },
             "generated_dynamic": {
                 "no_value_loaded": "No {value} loaded",
-                "refresh_this_tab_to_load_value_files": "Refresh this tab to load {value} files",
-                "open_screenshot_value": "Open screenshot {value}"
+                "refresh_this_tab_to_load_value_files": "Refresh this tab to load {value} files"
             },
             "generated_toast": {
                 "failed_to_load_value": "Failed to load {value}",
@@ -1728,7 +1717,6 @@
                 "rpc": {
                     "vr": "VR",
                     "desktop": "Desktop",
-                    "powered_by_vrcx": "Powered by VRCX-0",
                     "private_world": "Private World"
                 }
             },
@@ -2040,18 +2028,13 @@
                 "rebuilding_the_current_instance_roster_from_game_log_history": "Rebuilding the current instance roster from game-log history",
                 "current_players_failed_to_load": "Current players failed to load"
             },
-            "generated_dynamic": {
-                "value_value": "{value}: {value2}",
-                "open_value": "Open {value}"
-            },
             "generated_toast": {
                 "failed_to_look_up_this_player": "Failed to look up this player"
             }
         },
         "auth": {
             "generated_dynamic": {
-                "authenticated_and_prepared_the_session_for_value": "Authenticated and prepared the session for {value}",
-                "remove_saved_account_for_value": "Remove saved account for {value}"
+                "authenticated_and_prepared_the_session_for_value": "Authenticated and prepared the session for {value}"
             },
             "generated_toast": {
                 "failed_to_load_saved_auth_snapshot": "Failed to load saved auth snapshot",
@@ -2087,7 +2070,6 @@
         },
         "favorites": {
             "generated_dynamic": {
-                "refresh_value": "Refresh {value}",
                 "remove_value_from_value": "Remove {value} from {value2}?",
                 "local_group_value_already_exists": "Local group {value} already exists",
                 "removed_value_value_failed": "Removed {value}; {value2} failed",
@@ -2161,8 +2143,7 @@
                 "unfriended_value": "Unfriended {value}",
                 "unfriend_value_friends": "Unfriend {value} friends?",
                 "unfriended_value_friends": "Unfriended {value} friends",
-                "loaded_value_friend_profiles": "Loaded {value} friend profiles",
-                "open_value": "Open {value}"
+                "loaded_value_friend_profiles": "Loaded {value} friend profiles"
             },
             "generated_toast": {
                 "failed_to_unfriend_value": "Failed to unfriend {value}",
@@ -2188,8 +2169,7 @@
             "generated_dynamic": {
                 "accept_the_friend_request_from_value": "Accept the friend request from {value}?",
                 "decline_the_value_notification": "Decline the {value} notification?",
-                "send_an_invite_to_value": "Send an invite to {value}?",
-                "preview_notification_image_value": "Preview notification image: {value}"
+                "send_an_invite_to_value": "Send an invite to {value}?"
             },
             "generated_toast": {
                 "failed_to_load_notifications": "Failed to load notifications",
@@ -2495,12 +2475,7 @@
                 "please_choose_a_valid_social_status": "Please choose a valid social status",
                 "status_preset_already_exists": "Status preset already exists",
                 "status_preset_saved": "Status preset saved",
-                "language_added": "Language added",
-                "language_removed": "Language removed",
                 "status_updated": "Status updated",
-                "bio_updated": "Bio updated",
-                "bio_links_updated": "Bio links updated",
-                "pronouns_updated": "Pronouns updated",
                 "avatar_cloning_setting_updated": "Avatar cloning setting updated",
                 "booping_setting_updated": "Booping setting updated",
                 "shared_connections_setting_updated": "Shared connections setting updated",
@@ -2516,7 +2491,6 @@
                 "boop_sent": "Boop sent",
                 "group_id_is_required": "Group ID is required",
                 "loading_user_profile": "Loading user profile",
-                "fetching_the_current_vrchat_user_snapshot_for_this_dialog": "Fetching the current VRChat user snapshot for this dialog",
                 "user_profile_unavailable": "User profile unavailable",
                 "edit_social_status": "Edit social status",
                 "update_your_social_status_and_status_description": "Update your social status and status message",
@@ -2527,7 +2501,6 @@
                 "social_status": "Social status",
                 "save_preset": "Save Preset",
                 "update": "Update",
-                "edit_language": "Edit language",
                 "edit_profile_details": "Edit Profile Details",
                 "update_your_profile_details": "Edit the profile details shown on your card.",
                 "profile_details_updated": "Profile details updated",
@@ -2540,15 +2513,9 @@
                 "remove_language": "Remove language",
                 "add_bio_link": "Add Link",
                 "remove_bio_link": "Remove Bio Link",
-                "add_or_remove_the_languages_shown_on_your_profile": "Add or remove the languages shown on your profile",
                 "no_languages_selected": "No languages selected",
                 "vrchat_language_list_unavailable_using_local_language_codes": "VRChat language list unavailable, using local language codes",
                 "previous_display_names": "Previous display names",
-                "manage_group_membership": "Manage group membership",
-                "move_top": "Move Top",
-                "move_up": "Move Up",
-                "move_down": "Move Down",
-                "move_bottom": "Move Bottom",
                 "visibility_everyone": "Visibility: Everyone",
                 "visibility_friends": "Visibility: Friends",
                 "visibility_hidden": "Visibility: Hidden",
@@ -2562,24 +2529,11 @@
                 "friend": "Friend #",
                 "blocked": "Blocked",
                 "muted": "Muted",
-                "discord": "Discord",
-                "edit_bio": "Edit Bio",
-                "edit_bio_links": "Edit Bio Links",
-                "unfriend": "Unfriend",
                 "search_mutual_friends": "Search mutual friends",
                 "search_groups": "Search groups",
-                "select_visible": "Select Visible",
-                "clear_selected": "Clear Selected",
-                "bulk_actions": "Bulk Actions",
-                "set_selected_visible": "Set Selected Visible",
-                "set_selected_hidden": "Set Selected Hidden",
-                "set_selected_friends": "Set Selected Friends",
-                "export": "Export",
-                "leave_selected": "Leave Selected",
                 "search_worlds": "Search worlds",
                 "order_by": "Order By",
                 "search_favorite_worlds": "Search favorite worlds",
-                "current_avatar": "Current Avatar:",
                 "search_avatars": "Search avatars",
                 "group_by": "Group By"
             },
@@ -2591,9 +2545,6 @@
                 "value_request_sent": "{value} request sent",
                 "value_updated": "{value} updated",
                 "enter_a_group_id_to_open_moderation_for_value": "Enter a group id to open moderation for {value}",
-                "apply_status_preset_value": "Apply status preset {value}",
-                "remove_value": "Remove {value}",
-                "visibility_value": "Visibility {value}",
                 "value_copied": "{value} copied",
                 "leave_value": "Leave {value}?",
                 "exported_value_groups": "Exported {value} groups",
@@ -2601,9 +2552,7 @@
                 "updated_value_groups": "Updated {value} groups",
                 "leave_value_selected_groups": "Leave {value} selected groups?",
                 "failed_to_leave_value_groups": "Failed to leave {value} groups",
-                "left_value_groups": "Left {value} groups",
-                "value_value": "{value}{value2}",
-                "open_value": "Open {value}"
+                "left_value_groups": "Left {value} groups"
             },
             "generated_toast": {
                 "memo_saved": "Memo saved",
@@ -2611,12 +2560,7 @@
                 "failed_to_save_memo": "Failed to save memo",
                 "failed_to_save_status_preset": "Failed to save status preset",
                 "failed_to_remove_status_preset": "Failed to remove status preset",
-                "failed_to_add_language": "Failed to add language",
-                "failed_to_remove_language": "Failed to remove language",
                 "failed_to_update_social_status": "Failed to update social status",
-                "failed_to_update_bio": "Failed to update bio",
-                "failed_to_update_bio_links": "Failed to update bio links",
-                "failed_to_update_pronouns": "Failed to update pronouns",
                 "failed_to_update_profile_details": "Failed to update profile details",
                 "failed_to_update_avatar_cloning_setting": "Failed to update avatar cloning setting",
                 "failed_to_update_booping_setting": "Failed to update booping setting",
@@ -2652,10 +2596,6 @@
                 "edit_vrchat_note": "Edit VRChat note",
                 "next": "Next",
                 "edit_local_memo": "Edit local memo",
-                "edit_bio": "Edit bio",
-                "edit_bio_links": "Edit bio links",
-                "one_link_per_line_up_to_3": "One link per line, up to 3",
-                "edit_pronouns": "Edit pronouns",
                 "report_hacking": "Report hacking?",
                 "report": "Report",
                 "send_invite": "Send invite?",
@@ -2826,8 +2766,6 @@
                 "allowed_domains_updated": "Allowed domains updated",
                 "no_active_instances": "No active instances",
                 "no_public_or_group_instances_are_currently_listed": "No public or group instances are currently listed",
-                "change_tags": "Change Tags",
-                "change_allowed_domains": "Change Allowed Domains",
                 "youtube_preview": "YouTube Preview",
                 "author": "Author",
                 "world_tags": "World Tags",
@@ -2975,14 +2913,12 @@
                 "avatar_selected": "Avatar selected",
                 "avatar_details_updated": "Avatar details updated",
                 "fallback_avatar_updated": "Fallback avatar updated",
-                "avatar_description_updated": "Avatar description updated",
                 "avatar_image_updated": "Avatar image updated",
                 "avatar_cache_location_unavailable": "Avatar cache location unavailable",
                 "avatar_cache_deleted": "Avatar cache deleted",
                 "avatar_gallery_image_uploaded": "Avatar gallery image uploaded",
                 "change_avatar_image": "Change avatar image",
                 "blocked": "Blocked",
-                "favorite": "Favorite",
                 "no_gallery_images": "No gallery images",
                 "local_tags": "Local Tags",
                 "vrchat_tags": "VRChat Tags",
@@ -2990,9 +2926,7 @@
                 "apply_content_tags_to_this_avatar_or_selected_owned_avatars": "Apply content tags to this avatar or selected owned avatars",
                 "built_in_content_tags": "Built-in content tags",
                 "raw_content_tags": "Raw content tags",
-                "avatar_styles_and_author_tags_updated": "Avatar styles and author tags updated",
                 "edit_avatar_details_description": "Edit the avatar name, description, styles, and author tags.",
-                "set_avatar_style_metadata_and_author_tags": "Set avatar style metadata and author tags",
                 "select_style": "Select style",
                 "none": "None",
                 "style_list_unavailable": "Style list could not be loaded. Current style selections are still available.",
@@ -3011,9 +2945,7 @@
                 "avatar_made_private": "Avatar made private",
                 "failed_to_update_avatar_release_status": "Failed to update avatar release status",
                 "failed_to_load_avatar_styles": "Failed to load avatar styles",
-                "failed_to_rename_avatar": "Failed to rename avatar",
                 "failed_to_update_avatar_details": "Failed to update avatar details",
-                "failed_to_update_avatar_description": "Failed to update avatar description",
                 "failed_to_delete_avatar": "Failed to delete avatar",
                 "value_avatar_state_refresh_failed": "{value} Avatar state refresh failed",
                 "avatar_unblocked": "Avatar unblocked",
@@ -3037,8 +2969,6 @@
             "generated_modal": {
                 "select_fallback_avatar": "Select fallback avatar?",
                 "select_fallback": "Select Fallback",
-                "rename_avatar": "Rename avatar",
-                "change_avatar_description": "Change avatar description",
                 "delete_avatar": "Delete avatar?",
                 "edit_local_memo": "Edit local memo",
                 "create_impostor_title": "Create impostor?",
@@ -3184,7 +3114,6 @@
                 "group_join_request_cancelled": "Group join request cancelled",
                 "group_refreshed": "Group refreshed",
                 "loading": "Loading...",
-                "vrchat_launch_request_sent": "VRChat launch request sent",
                 "user": "User",
                 "status": "Status",
                 "date": "Date",
@@ -3216,13 +3145,11 @@
             },
             "generated_dynamic": {
                 "leave_value": "Leave {value}?",
-                "preview_value_image": "Preview {value} image",
                 "value_group_user": "{value} group user?",
                 "value_completed": "{value} completed",
                 "search_value": "Search {value}",
                 "no_value": "No {value}",
-                "value_copied": "{value} copied",
-                "preview_value_banner": "Preview {value} banner"
+                "value_copied": "{value} copied"
             },
             "generated_toast": {
                 "failed_to_join_group": "Failed to join group",
@@ -3236,7 +3163,6 @@
                 "group_blocked": "Group blocked",
                 "group_unblocked": "Group unblocked",
                 "failed_to_update_group_block_state": "Failed to update group block state",
-                "failed_to_launch_instance": "Failed to launch instance",
                 "value_failed": "{value} failed",
                 "group_post_updated": "Group post updated",
                 "group_post_created": "Group post created",
@@ -3425,11 +3351,7 @@
             "generated": {
                 "this_message_template_is_on_cooldown_and_cannot_be_edited_ye": "This message template is on cooldown and cannot be edited yet",
                 "target": "Target:",
-                "message": "Message",
                 "message_required": "Message cannot be empty."
-            },
-            "generated_dynamic": {
-                "edit_slot_value": "Edit slot {value}"
             }
         },
         "invite_request_message": {
@@ -4027,20 +3949,8 @@
         "system": {
             "generated": {
                 "vrcx_0_update": "VRCX-0 Update",
-                "current_version": "Current version",
-                "latest_version": "Latest version",
                 "update_path": "Upgrade",
-                "an_update_is_downloaded_and_ready_to_install": "An update is downloaded and ready to install",
                 "install_and_restart": "Install And Restart",
-                "vrchat_registry_backup": "VRChat Registry Backup",
-                "create_restore_or_remove_saved_vrchat_registry_backups": "Create, restore, or remove saved VRChat registry backups",
-                "auto_backup": "Auto backup",
-                "ask_to_restore": "Ask to restore",
-                "name": "Name:",
-                "date": "Date:",
-                "create_backup": "Create Backup",
-                "save_to_file": "Save To File",
-                "restore_from_file": "Restore From File",
                 "updated_launch_options": "Updated launch options",
                 "fps_144": "--fps=144",
                 "enable_debug_gui": "--enable-debug-gui",
@@ -4074,9 +3984,7 @@
                 "value_rolled_back_value_avatar_s": "{value} Rolled back {value2} avatar(s)"
             },
             "generated_toast": {
-                "failed_to_load_own_avatars": "Failed to load own avatars",
-                "failed_to_load_avatar_styles": "Failed to load avatar styles",
-                "failed_to_update_avatar_styles_and_author_tags": "Failed to update avatar styles and author tags"
+                "failed_to_load_own_avatars": "Failed to load own avatars"
             }
         },
         "instance_invite": {
@@ -4091,11 +3999,6 @@
             "generated_modal": {
                 "send_invite": "Send invite?",
                 "invite": "Invite"
-            }
-        },
-        "world_owner_edit_dialogs": {
-            "generated_dynamic": {
-                "remove_domain_value": "Remove domain {value}"
             }
         },
         "previous_instances_table": {
@@ -4669,9 +4572,7 @@
         "generated": {
             "page": "Page",
             "table_layout": "Table layout",
-            "reset_columns": "Reset columns",
-            "move_up": "Move up",
-            "move_down": "Move down"
+            "reset_columns": "Reset columns"
         }
     },
     "vr": {
@@ -4872,12 +4773,6 @@
         "now_playing": "Now Playing"
     },
     "component": {
-        "resizable_table_parts": {
-            "generated_dynamic": {
-                "reorder_value_column": "Reorder {value} column",
-                "resize_value_column": "Resize {value} column"
-            }
-        },
         "favorite_action_menu": {
             "generated_dynamic": {
                 "remove_value_from_vrchat_favorites": "Remove {value} from VRChat favorites?"
@@ -4898,20 +4793,11 @@
             }
         },
         "app_title_bar": {
-            "generated_dynamic": {
-                "value_ctrl_k": "{value} Ctrl+K",
-                "value_ctrl_d": "{value} Ctrl+D"
-            },
             "generated_toast": {
                 "failed_to_mark_notifications_as_seen": "Failed to mark notifications as seen"
             }
         },
         "custom_nav": {
-            "generated_dynamic": {
-                "drag_value": "Drag {value}",
-                "edit_value": "Edit {value}",
-                "value_value": "{value} {value2}"
-            },
             "generated_toast": {
                 "failed_to_create_dashboard": "Failed to create dashboard",
                 "failed_to_update_dashboard": "Failed to update dashboard",
@@ -4924,9 +4810,6 @@
             }
         },
         "avatar_provider_settings": {
-            "generated_dynamic": {
-                "remove_avatar_provider_value": "Remove avatar provider {value}"
-            },
             "generated_toast": {
                 "failed_to_save_avatar_providers": "Failed to save avatar providers"
             }
@@ -4934,9 +4817,7 @@
         "side_panel": {
             "generated_dynamic": {
                 "value_value_value": "{value} ({value2}/{value3})",
-                "value_value": "{value} ({value2})",
-                "move_value_up": "Move {value} up",
-                "move_value_down": "Move {value} down"
+                "value_value": "{value} ({value2})"
             },
             "generated_toast": {
                 "failed_to_refresh_friends": "Failed to refresh friends"
@@ -5021,7 +4902,6 @@
     "host": {
         "launch_dialog": {
             "generated_dynamic": {
-                "copy_value": "Copy {value}",
                 "value_copied": "{value} copied"
             },
             "generated_toast": {
@@ -5036,11 +4916,7 @@
         },
         "system_dialogs": {
             "generated_dynamic": {
-                "downloading_value": "Downloading {value}",
-                "value_is_ready_to_install": "{value} is ready to install",
-                "restoring_value": "Restoring {value}",
-                "deleting_value": "Deleting {value}",
-                "saving_value": "Saving {value}"
+                "downloading_value": "Downloading {value}"
             },
             "generated_toast": {
                 "failed_to_load_launch_options": "Failed to load launch options",
@@ -5051,10 +4927,6 @@
                 "failed_to_sweep_asset_cache": "Failed to sweep asset cache",
                 "failed_to_delete_asset_cache": "Failed to delete asset cache",
                 "failed_to_save_vrchat_configuration": "Failed to save VRChat configuration"
-            },
-            "generated_modal": {
-                "delete_vrchat_registry": "Delete VRChat registry",
-                "delete_the_vrchat_registry_folder_this_matches_t": "Delete the VRChat registry folder. This matches the old reset action and cannot be undone from here"
             }
         },
         "vrc_notification_center": {
@@ -5083,8 +4955,6 @@
         },
         "tools_dialogs": {
             "generated_toast": {
-                "failed_to_load_tool_settings": "Failed to load tool settings",
-                "failed_to_save_tool_settings": "Failed to save tool settings",
                 "failed_to_export_friends_list": "Failed to export friends list",
                 "failed_to_export_avatar_list": "Failed to export avatar list",
                 "failed_to_load_memo_export_rows": "Failed to load memo export rows",
@@ -5099,8 +4969,7 @@
     "service": {
         "background_maintenance_service": {
             "generated_dynamic": {
-                "version_value_is_available_on_the_value_branch": "Version {value} is available on the {value2} branch",
-                "version_value_is_ready_to_install": "Version {value} is ready to install"
+                "version_value_is_available_on_the_value_branch": "Version {value} is available on the {value2} branch"
             }
         },
         "database_upgrade_service": {
@@ -5144,11 +5013,7 @@
                 "status_automatically_changed": "Status automatically changed",
                 "vrchat_registry_backup": "VRChat Registry Backup",
                 "registry_backup_restore_description": "The VRChat registry folder is missing and a saved registry backup is available. Restore a backup before starting VRChat",
-                "vrcx_update_available": "VRCX-0 update available",
-                "update_ready_to_install": "An update is downloaded and ready to install",
-                "downloading_version": "Downloading {version}",
-                "downloading_version_progress": "Downloading {version}: {progress}%",
-                "vrcx_update_downloaded": "VRCX-0 update downloaded"
+                "vrcx_update_available": "VRCX-0 update available"
             }
         }
     },
