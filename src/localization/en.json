@@ -1165,6 +1165,16 @@
         },
         "tools": {
             "header": "Tools",
+            "quick_access": {
+                "header": "Quick access",
+                "edit": "Edit quick access",
+                "done": "Done",
+                "add": "Add to quick access",
+                "remove": "Remove from quick access",
+                "already_added": "Already added to quick access",
+                "empty": "Drag tools here, or add them from a tool menu.",
+                "actions": "Tool actions"
+            },
             "group": {
                 "header": "Group",
                 "calendar": "Calendar",
@@ -3885,7 +3895,9 @@
                 "copied_event_link": "Calendar event URL copied to clipboard",
                 "untitled_event": "Untitled event"
             },
-            "featured_events": "Featured Events"
+            "featured_events": "Featured Events",
+            "events_count_short": "{count} events",
+            "following_count_short": "{count} followed"
         },
         "moderate_group": {
             "header": "Moderate Group Member",

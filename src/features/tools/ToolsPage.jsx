@@ -1,12 +1,33 @@
 import {
+    DndContext,
+    KeyboardSensor,
+    PointerSensor,
+    closestCenter,
+    useDraggable,
+    useDroppable,
+    useSensor,
+    useSensors
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    arrayMove,
+    rectSortingStrategy,
+    sortableKeyboardCoordinates,
+    useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
     BotIcon,
     ChevronDownIcon,
     DownloadIcon,
     FolderOpenIcon,
     ImageIcon,
+    MinusIcon,
     MoreHorizontalIcon,
     PinIcon,
     PinOffIcon,
+    PlusIcon,
+    StarIcon,
     UsersIcon,
     WrenchIcon
 } from 'lucide-react';
@@ -35,10 +56,22 @@ import { useDashboardStore } from '@/state/dashboardStore.js';
 import { usePreferencesStore } from '@/state/preferencesStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { Button } from '@/ui/shadcn/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/ui/shadcn/dropdown-menu';
 
 const collapsibleCategories = toolCategories.map((category) => category.key);
-const configKey = 'VRCX_toolsCategoryCollapsed';
+const categoryConfigKey = 'VRCX_toolsCategoryCollapsed';
+const quickAccessConfigKey = 'VRCX_toolsQuickAccessList';
+const quickAccessDropId = 'tools-quick-access-drop-zone';
+const toolCatalogDropId = 'tools-catalog-drop-zone';
+const quickAccessDragPrefix = 'tools-quick-access-tool:';
+const catalogDragPrefix = 'tools-catalog-tool:';
 const defaultCollapsedState = {
     group: false,
     image: false,
@@ -54,6 +87,8 @@ const toolsPageCategories = toolCategories
         ...category,
         tools: getToolsByCategory(category.key)
     }));
+const allTools = toolsPageCategories.flatMap((category) => category.tools);
+const knownToolKeys = new Set(allTools.map((tool) => tool.key));
 
 const categoryIconByKey = {
     image: ImageIcon,
@@ -88,27 +123,92 @@ function getEquivalentToolNavKeys(toolKey) {
     return Array.from(equivalentToolKeys).map((key) => `tool-${key}`);
 }
 
+function normalizeQuickAccessToolKeys(value) {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    const seen = new Set();
+    const nextKeys = [];
+    for (const rawKey of value) {
+        const toolKey = normalizePinnedToolKey(String(rawKey || ''));
+        if (!knownToolKeys.has(toolKey) || seen.has(toolKey)) {
+            continue;
+        }
+        seen.add(toolKey);
+        nextKeys.push(toolKey);
+    }
+    return nextKeys;
+}
+
+function parseQuickAccessToolKeys(value) {
+    try {
+        return normalizeQuickAccessToolKeys(JSON.parse(value || '[]'));
+    } catch {
+        return [];
+    }
+}
+
+function getQuickAccessDragId(toolKey) {
+    return `${quickAccessDragPrefix}${toolKey}`;
+}
+
+function getCatalogDragId(toolKey) {
+    return `${catalogDragPrefix}${toolKey}`;
+}
+
 function ToolItem({
     icon: Icon,
     title,
     description,
+    actionsLabel,
     pinLabel,
     unpinLabel,
+    addQuickAccessLabel,
+    removeQuickAccessLabel,
     navEligible,
     isPinned,
+    isQuickAccess,
+    editMode,
+    editQuickAccessAction,
+    itemRef,
+    itemStyle,
+    isDragging,
+    dragProps,
     onClick,
     onPin,
-    onUnpin
+    onUnpin,
+    onAddQuickAccess,
+    onRemoveQuickAccess
 }) {
     const PinStateIcon = isPinned ? PinOffIcon : PinIcon;
+    const QuickAccessIcon = isQuickAccess ? MinusIcon : PlusIcon;
+    const isEditRemoveAction = editQuickAccessAction === 'remove';
+    const EditQuickAccessIcon = isEditRemoveAction ? MinusIcon : PlusIcon;
+    const editQuickAccessLabel = isEditRemoveAction
+        ? removeQuickAccessLabel
+        : addQuickAccessLabel;
 
     return (
-        <div className="relative h-full">
+        <div
+            ref={itemRef}
+            style={itemStyle}
+            className={cn('relative h-full', isDragging && 'opacity-50')}
+        >
             <Button
                 type="button"
                 variant="outline"
-                className="h-full w-full min-w-0 items-start justify-start gap-2.5 p-3 pr-10 text-left font-normal whitespace-normal"
-                onClick={onClick}
+                className={cn(
+                    'h-full w-full min-w-0 items-start justify-start gap-2.5 p-3 pr-10 text-left font-normal whitespace-normal',
+                    editMode
+                        ? dragProps
+                            ? 'cursor-grab touch-none active:cursor-grabbing'
+                            : 'cursor-default'
+                        : null
+                )}
+                aria-disabled={editMode ? true : undefined}
+                onClick={editMode ? undefined : onClick}
+                {...(editMode && dragProps ? dragProps : {})}
             >
                 <div className="bg-muted/40 text-muted-foreground flex size-8 flex-none items-center justify-center rounded-md">
                     <Icon aria-hidden="true" data-icon="inline-start" />
@@ -120,34 +220,222 @@ function ToolItem({
                     </div>
                 </div>
             </Button>
-            {navEligible ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
+            {editMode ? (
+                <Button
+                    type="button"
+                    size="icon-xs"
+                    variant="secondary"
+                    className="absolute top-2 right-2 size-7"
+                    aria-label={editQuickAccessLabel}
+                    onPointerDown={(event) => {
+                        event.stopPropagation();
+                    }}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (isEditRemoveAction) {
+                            onRemoveQuickAccess?.();
+                        } else {
+                            onAddQuickAccess?.();
+                        }
+                    }}
+                >
+                    <EditQuickAccessIcon data-icon="inline-start" />
+                </Button>
+            ) : (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                         <Button
                             type="button"
                             size="icon-xs"
-                            variant={isPinned ? 'secondary' : 'ghost'}
-                            className={cn(
-                                'absolute top-2 right-2 size-7',
-                                !isPinned && 'text-muted-foreground'
-                            )}
-                            aria-label={isPinned ? unpinLabel : pinLabel}
-                            onClick={() => {
-                                if (isPinned) {
-                                    onUnpin?.();
-                                } else {
-                                    onPin?.();
-                                }
+                            variant="ghost"
+                            className="text-muted-foreground absolute top-2 right-2 size-7"
+                            aria-label={actionsLabel}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
                             }}
                         >
-                            <PinStateIcon data-icon="inline-start" />
+                            <MoreHorizontalIcon data-icon="inline-start" />
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        {isPinned ? unpinLabel : pinLabel}
-                    </TooltipContent>
-                </Tooltip>
-            ) : null}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem
+                                onSelect={() => {
+                                    if (isQuickAccess) {
+                                        onRemoveQuickAccess?.();
+                                    } else {
+                                        onAddQuickAccess?.();
+                                    }
+                                }}
+                            >
+                                <QuickAccessIcon data-icon="inline-start" />
+                                {isQuickAccess
+                                    ? removeQuickAccessLabel
+                                    : addQuickAccessLabel}
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        {navEligible ? (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                        onSelect={() => {
+                                            if (isPinned) {
+                                                onUnpin?.();
+                                            } else {
+                                                onPin?.();
+                                            }
+                                        }}
+                                    >
+                                        <PinStateIcon data-icon="inline-start" />
+                                        {isPinned ? unpinLabel : pinLabel}
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            </>
+                        ) : null}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
+    );
+}
+
+function SortableQuickAccessTool({ toolKey, disabled, children }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({
+        id: getQuickAccessDragId(toolKey),
+        disabled,
+        data: {
+            source: 'quick-access',
+            toolKey
+        }
+    });
+    const itemStyle = {
+        transform: CSS.Transform.toString(transform),
+        transition
+    };
+    const cardDragProps = {
+        ...attributes,
+        ...listeners
+    };
+
+    return children({
+        itemRef: setNodeRef,
+        itemStyle,
+        isDragging,
+        dragProps: cardDragProps
+    });
+}
+
+function DraggableCatalogTool({ toolKey, disabled, children }) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        isDragging
+    } = useDraggable({
+        id: getCatalogDragId(toolKey),
+        disabled,
+        data: {
+            source: 'catalog',
+            toolKey
+        }
+    });
+    const itemStyle = {
+        transform: CSS.Translate.toString(transform)
+    };
+    const cardDragProps = {
+        ...attributes,
+        ...listeners
+    };
+
+    return children({
+        itemRef: setNodeRef,
+        itemStyle,
+        isDragging,
+        dragProps: cardDragProps
+    });
+}
+
+function QuickAccessDropZone({
+    editMode,
+    isEmpty,
+    isHidden,
+    title,
+    emptyDescription,
+    children
+}) {
+    const { isOver, setNodeRef } = useDroppable({
+        id: quickAccessDropId,
+        disabled: !editMode,
+        data: {
+            target: 'quick-access'
+        }
+    });
+
+    if (isHidden) {
+        return null;
+    }
+
+    return (
+        <div className="mb-4">
+            <div className="mb-2 flex items-center gap-2 px-2.5 py-1.5">
+                <StarIcon
+                    aria-hidden="true"
+                    className="text-muted-foreground size-4"
+                />
+                <span className="text-sm font-semibold">{title}</span>
+            </div>
+            <div
+                ref={setNodeRef}
+                className={cn(
+                    editMode
+                        ? 'bg-muted/20 border-muted-foreground/50 rounded-lg border border-dashed p-3 transition-colors'
+                        : 'pl-4',
+                    editMode && isOver && 'border-primary/80 bg-primary/10'
+                )}
+            >
+                {isEmpty ? (
+                    <div className="text-muted-foreground flex min-h-24 items-center justify-center rounded-md text-center text-sm">
+                        {emptyDescription}
+                    </div>
+                ) : (
+                    children
+                )}
+            </div>
+        </div>
+    );
+}
+
+function ToolCatalogDropZone({ editMode, children }) {
+    const { isOver, setNodeRef } = useDroppable({
+        id: toolCatalogDropId,
+        disabled: !editMode,
+        data: {
+            target: 'catalog'
+        }
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            className={cn(
+                'mt-4 px-3',
+                editMode &&
+                    isOver &&
+                    'border-primary/80 bg-primary/10 rounded-lg border border-dashed'
+            )}
+        >
+            {children}
         </div>
     );
 }
@@ -216,7 +504,7 @@ function useToolsCollapsedState() {
     useEffect(() => {
         let active = true;
         configRepository
-            .getString(configKey, '{}')
+            .getString(categoryConfigKey, '{}')
             .then((value) => {
                 if (!active) {
                     return;
@@ -246,7 +534,7 @@ function useToolsCollapsedState() {
                 [categoryKey]: !current[categoryKey]
             };
             void configRepository.setString(
-                configKey,
+                categoryConfigKey,
                 JSON.stringify(nextState)
             );
             return nextState;
@@ -256,6 +544,45 @@ function useToolsCollapsedState() {
     return { collapsed, toggleCategoryCollapsed };
 }
 
+function useToolsQuickAccessState() {
+    const [quickAccessKeys, setQuickAccessKeysState] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+        configRepository
+            .getString(quickAccessConfigKey, '[]')
+            .then((value) => {
+                if (active) {
+                    setQuickAccessKeysState(parseQuickAccessToolKeys(value));
+                }
+            })
+            .catch(() => {
+                if (active) {
+                    setQuickAccessKeysState([]);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    function setQuickAccessKeys(updater) {
+        setQuickAccessKeysState((current) => {
+            const value =
+                typeof updater === 'function' ? updater(current) : updater;
+            const nextKeys = normalizeQuickAccessToolKeys(value);
+            void configRepository.setString(
+                quickAccessConfigKey,
+                JSON.stringify(nextKeys)
+            );
+            return nextKeys;
+        });
+    }
+
+    return { quickAccessKeys, setQuickAccessKeys };
+}
+
 export function ToolsPage() {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
@@ -263,6 +590,16 @@ export function ToolsPage() {
     const dashboards = useDashboardStore((state) => state.dashboards);
     const ensureDashboardsLoaded = useDashboardStore(
         (state) => state.ensureLoaded
+    );
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 6
+            }
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates
+        })
     );
     const categories = useMemo(
         () =>
@@ -274,7 +611,19 @@ export function ToolsPage() {
                 .filter((category) => category.tools.length > 0),
         [hostCapabilities]
     );
+    const availableToolMap = useMemo(
+        () =>
+            new Map(
+                categories
+                    .flatMap((category) => category.tools)
+                    .map((tool) => [tool.key, tool])
+            ),
+        [categories]
+    );
     const { collapsed, toggleCategoryCollapsed } = useToolsCollapsedState();
+    const { quickAccessKeys, setQuickAccessKeys } =
+        useToolsQuickAccessState();
+    const [isQuickAccessEditing, setIsQuickAccessEditing] = useState(false);
     const [navLayout, setNavLayout] = useState([]);
     const [navHiddenKeys, setNavHiddenKeys] = useState([]);
     const preferencesHydrated = usePreferencesStore(
@@ -304,6 +653,19 @@ export function ToolsPage() {
                 )
         );
     }, [navLayout]);
+    const quickAccessKeySet = useMemo(
+        () => new Set(quickAccessKeys),
+        [quickAccessKeys]
+    );
+    const quickAccessTools = useMemo(
+        () =>
+            quickAccessKeys
+                .map((key) => availableToolMap.get(key))
+                .filter(Boolean),
+        [availableToolMap, quickAccessKeys]
+    );
+    const shouldShowQuickAccess =
+        isQuickAccessEditing || quickAccessTools.length > 0;
 
     useEffect(() => {
         void ensureDashboardsLoaded().catch(() => {});
@@ -343,6 +705,92 @@ export function ToolsPage() {
             );
         };
     }, [dashboards, notificationLayout, preferencesHydrated, t]);
+
+    function addQuickAccessToolByKey(toolKey, beforeToolKey = '') {
+        const normalizedToolKey = normalizePinnedToolKey(toolKey);
+        const normalizedBeforeToolKey = normalizePinnedToolKey(beforeToolKey);
+        setQuickAccessKeys((current) => {
+            if (current.includes(normalizedToolKey)) {
+                return current;
+            }
+            const nextKeys = [...current];
+            const insertIndex = nextKeys.indexOf(normalizedBeforeToolKey);
+            if (insertIndex >= 0) {
+                nextKeys.splice(insertIndex, 0, normalizedToolKey);
+            } else {
+                nextKeys.push(normalizedToolKey);
+            }
+            return nextKeys;
+        });
+    }
+
+    function addQuickAccessToolByKeyWithFeedback(toolKey) {
+        const normalizedToolKey = normalizePinnedToolKey(toolKey);
+        if (quickAccessKeySet.has(normalizedToolKey)) {
+            toast.info(
+                translateWithFallback('view.tools.quick_access.already_added')
+            );
+            return;
+        }
+        addQuickAccessToolByKey(normalizedToolKey);
+    }
+
+    function removeQuickAccessToolByKey(toolKey) {
+        const normalizedToolKey = normalizePinnedToolKey(toolKey);
+        setQuickAccessKeys((current) =>
+            current.filter((key) => key !== normalizedToolKey)
+        );
+    }
+
+    function reorderQuickAccessTool(activeToolKey, overToolKey) {
+        const normalizedActiveToolKey = normalizePinnedToolKey(activeToolKey);
+        const normalizedOverToolKey = normalizePinnedToolKey(overToolKey);
+        if (
+            !normalizedOverToolKey ||
+            normalizedActiveToolKey === normalizedOverToolKey
+        ) {
+            return;
+        }
+        setQuickAccessKeys((current) => {
+            const oldIndex = current.indexOf(normalizedActiveToolKey);
+            const newIndex = current.indexOf(normalizedOverToolKey);
+            if (oldIndex < 0 || newIndex < 0) {
+                return current;
+            }
+            return arrayMove(current, oldIndex, newIndex);
+        });
+    }
+
+    function handleQuickAccessDragEnd({ active, over }) {
+        const activeData = active?.data?.current;
+        const overData = over?.data?.current;
+        const activeToolKey = normalizePinnedToolKey(activeData?.toolKey);
+        if (!activeToolKey || !knownToolKeys.has(activeToolKey)) {
+            return;
+        }
+
+        if (
+            activeData?.source === 'quick-access' &&
+            over?.id === toolCatalogDropId
+        ) {
+            removeQuickAccessToolByKey(activeToolKey);
+            return;
+        }
+
+        if (
+            over?.id === quickAccessDropId ||
+            overData?.source === 'quick-access' ||
+            overData?.target === 'quick-access'
+        ) {
+            if (activeData?.source === 'catalog') {
+                addQuickAccessToolByKey(activeToolKey, overData?.toolKey);
+                return;
+            }
+            if (activeData?.source === 'quick-access') {
+                reorderQuickAccessTool(activeToolKey, overData?.toolKey);
+            }
+        }
+    }
 
     async function triggerTool(tool) {
         await triggerToolByKey(tool?.key, {
@@ -407,98 +855,193 @@ export function ToolsPage() {
         }
     }
 
+    function renderToolItem(
+        tool,
+        dragProps = {},
+        editQuickAccessAction = 'add'
+    ) {
+        const normalizedToolKey = normalizePinnedToolKey(tool.key);
+        return (
+            <ToolItem
+                icon={getNavIconComponent(tool.navIcon, 'lucide:Wrench')}
+                title={translateWithFallback(tool.titleKey)}
+                description={translateWithFallback(tool.descriptionKey)}
+                actionsLabel={translateWithFallback(
+                    'view.tools.quick_access.actions'
+                )}
+                navEligible={tool.navEligible}
+                isPinned={pinnedToolKeys.has(normalizedToolKey)}
+                isQuickAccess={quickAccessKeySet.has(normalizedToolKey)}
+                editMode={isQuickAccessEditing}
+                editQuickAccessAction={editQuickAccessAction}
+                pinLabel={translateWithFallback(
+                    'nav_menu.custom_nav.pin_to_nav'
+                )}
+                unpinLabel={translateWithFallback(
+                    'nav_menu.custom_nav.unpin_from_nav'
+                )}
+                addQuickAccessLabel={translateWithFallback(
+                    'view.tools.quick_access.add'
+                )}
+                removeQuickAccessLabel={translateWithFallback(
+                    'view.tools.quick_access.remove'
+                )}
+                onClick={() => {
+                    void triggerTool(tool);
+                }}
+                onPin={() => {
+                    void pinToolToNav(tool);
+                }}
+                onUnpin={() => {
+                    void unpinToolFromNav(tool);
+                }}
+                onAddQuickAccess={() =>
+                    addQuickAccessToolByKeyWithFeedback(tool.key)
+                }
+                onRemoveQuickAccess={() => removeQuickAccessToolByKey(tool.key)}
+                {...dragProps}
+            />
+        );
+    }
+
     return (
         <div
             id="chart"
             className="x-container flex h-full min-h-0 flex-1 flex-col overflow-y-auto p-4"
         >
             <div className="options-container">
-                <span className="header">
-                    {translateWithFallback('view.tools.header')}
-                </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="header">
+                        {translateWithFallback('view.tools.header')}
+                    </span>
+                    <Button
+                        type="button"
+                        variant={isQuickAccessEditing ? 'secondary' : 'outline'}
+                        size="sm"
+                        onClick={() =>
+                            setIsQuickAccessEditing((current) => !current)
+                        }
+                    >
+                        {isQuickAccessEditing
+                            ? translateWithFallback(
+                                  'view.tools.quick_access.done'
+                              )
+                            : translateWithFallback(
+                                  'view.tools.quick_access.edit'
+                              )}
+                    </Button>
+                </div>
 
-                <div className="mt-4 px-3">
-                    {categories.map((category) => (
-                        <div key={category.key} className="mb-4">
-                            {(() => {
-                                const CategoryIcon =
-                                    categoryIconByKey[category.key] ||
-                                    WrenchIcon;
-
-                                return (
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        className="mb-2 h-auto justify-start gap-2 px-2.5 py-1.5 text-left"
-                                        onClick={() =>
-                                            toggleCategoryCollapsed(
-                                                category.key
-                                            )
-                                        }
-                                    >
-                                        <ChevronDownIcon
-                                            aria-hidden="true"
-                                            className={cn(
-                                                'transition-transform duration-300',
-                                                collapsed[category.key]
-                                                    ? '-rotate-90'
-                                                    : ''
-                                            )}
-                                        />
-                                        <CategoryIcon
-                                            aria-hidden="true"
-                                            className="text-muted-foreground"
-                                        />
-                                        <span className="text-sm font-semibold">
-                                            {translateWithFallback(
-                                                category.labelKey
-                                            )}
-                                        </span>
-                                    </Button>
-                                );
-                            })()}
-
-                            {!collapsed[category.key] ? (
-                                <div className="grid grid-cols-1 gap-2.5 pl-4 lg:grid-cols-2 xl:grid-cols-3">
-                                    {category.tools.map((tool) => (
-                                        <ToolItem
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleQuickAccessDragEnd}
+                >
+                    <div className="mt-4 px-3">
+                        <QuickAccessDropZone
+                            editMode={isQuickAccessEditing}
+                            isEmpty={quickAccessTools.length === 0}
+                            isHidden={!shouldShowQuickAccess}
+                            title={translateWithFallback(
+                                'view.tools.quick_access.header'
+                            )}
+                            emptyDescription={translateWithFallback(
+                                'view.tools.quick_access.empty'
+                            )}
+                        >
+                            <SortableContext
+                                items={quickAccessTools.map((tool) =>
+                                    getQuickAccessDragId(tool.key)
+                                )}
+                                strategy={rectSortingStrategy}
+                            >
+                                <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2 xl:grid-cols-3">
+                                    {quickAccessTools.map((tool) => (
+                                        <SortableQuickAccessTool
                                             key={tool.key}
-                                            icon={getNavIconComponent(
-                                                tool.navIcon,
-                                                'lucide:Wrench'
-                                            )}
-                                            title={translateWithFallback(
-                                                tool.titleKey
-                                            )}
-                                            description={translateWithFallback(
-                                                tool.descriptionKey
-                                            )}
-                                            navEligible={tool.navEligible}
-                                            isPinned={pinnedToolKeys.has(
-                                                tool.key
-                                            )}
-                                            pinLabel={translateWithFallback(
-                                                'nav_menu.custom_nav.pin_to_nav'
-                                            )}
-                                            unpinLabel={translateWithFallback(
-                                                'nav_menu.custom_nav.unpin_from_nav'
-                                            )}
-                                            onClick={() => {
-                                                void triggerTool(tool);
-                                            }}
-                                            onPin={() => {
-                                                void pinToolToNav(tool);
-                                            }}
-                                            onUnpin={() => {
-                                                void unpinToolFromNav(tool);
-                                            }}
-                                        />
+                                            toolKey={tool.key}
+                                            disabled={!isQuickAccessEditing}
+                                        >
+                                            {(dragProps) =>
+                                                renderToolItem(
+                                                    tool,
+                                                    dragProps,
+                                                    'remove'
+                                                )
+                                            }
+                                        </SortableQuickAccessTool>
                                     ))}
                                 </div>
-                            ) : null}
-                        </div>
-                    ))}
-                </div>
+                            </SortableContext>
+                        </QuickAccessDropZone>
+                    </div>
+
+                    <ToolCatalogDropZone editMode={isQuickAccessEditing}>
+                        {categories.map((category) => (
+                            <div key={category.key} className="mb-4">
+                                {(() => {
+                                    const CategoryIcon =
+                                        categoryIconByKey[category.key] ||
+                                        WrenchIcon;
+
+                                    return (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            className="mb-2 h-auto justify-start gap-2 px-2.5 py-1.5 text-left"
+                                            onClick={() =>
+                                                toggleCategoryCollapsed(
+                                                    category.key
+                                                )
+                                            }
+                                        >
+                                            <ChevronDownIcon
+                                                aria-hidden="true"
+                                                className={cn(
+                                                    'transition-transform duration-300',
+                                                    collapsed[category.key]
+                                                        ? '-rotate-90'
+                                                        : ''
+                                                )}
+                                            />
+                                            <CategoryIcon
+                                                aria-hidden="true"
+                                                className="text-muted-foreground"
+                                            />
+                                            <span className="text-sm font-semibold">
+                                                {translateWithFallback(
+                                                    category.labelKey
+                                                )}
+                                            </span>
+                                        </Button>
+                                    );
+                                })()}
+
+                                {!collapsed[category.key] ? (
+                                    <div className="grid grid-cols-1 gap-2.5 pl-4 lg:grid-cols-2 xl:grid-cols-3">
+                                        {category.tools.map((tool) => (
+                                            <DraggableCatalogTool
+                                                key={tool.key}
+                                                toolKey={tool.key}
+                                                disabled={
+                                                    !isQuickAccessEditing
+                                                }
+                                            >
+                                                {(dragProps) =>
+                                                    renderToolItem(
+                                                        tool,
+                                                        dragProps,
+                                                        'add'
+                                                    )
+                                                }
+                                            </DraggableCatalogTool>
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </div>
+                        ))}
+                    </ToolCatalogDropZone>
+                </DndContext>
             </div>
         </div>
     );

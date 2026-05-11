@@ -1165,6 +1165,16 @@
         },
         "tools": {
             "header": "ツール",
+            "quick_access": {
+                "header": "クイックアクセス",
+                "edit": "クイックアクセスを編集",
+                "done": "完了",
+                "add": "クイックアクセスに追加",
+                "remove": "クイックアクセスから削除",
+                "already_added": "クイックアクセスに追加済みです",
+                "empty": "ツールをここへドラッグするか、ツールメニューから追加します。",
+                "actions": "ツール操作"
+            },
             "group": {
                 "header": "グループ",
                 "calendar": "カレンダー",
@@ -3885,7 +3895,9 @@
                 "copied_event_link": "イベント URL をクリップボードにコピー",
                 "untitled_event": "無題のイベント"
             },
-            "featured_events": "注目のイベント"
+            "featured_events": "注目のイベント",
+            "events_count_short": "{count} 件の予定",
+            "following_count_short": "{count} 件フォロー中"
         },
         "moderate_group": {
             "header": "グループメンバーを管理",

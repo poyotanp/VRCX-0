@@ -1165,6 +1165,16 @@
         },
         "tools": {
             "header": "工具",
+            "quick_access": {
+                "header": "常用工具",
+                "edit": "编辑常用",
+                "done": "完成",
+                "add": "添加到常用",
+                "remove": "从常用移除",
+                "already_added": "已添加到常用工具",
+                "empty": "把工具拖到这里，或从工具菜单添加。",
+                "actions": "工具操作"
+            },
             "group": {
                 "header": "群组",
                 "calendar": "活动日历",
@@ -3885,7 +3895,9 @@
                 "copied_event_link": "相关活动日历的链接已复制到剪贴板",
                 "untitled_event": "未命名活动"
             },
-            "featured_events": "精选活动"
+            "featured_events": "精选活动",
+            "events_count_short": "{count} 个活动",
+            "following_count_short": "{count} 个关注"
         },
         "moderate_group": {
             "header": "管理群组成员",
