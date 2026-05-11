@@ -71,6 +71,7 @@ const commandArgs: Record<string, string[]> = {
     app__start_game_from_path: ['path', 'arguments'],
     app__change_theme: ['value'],
     app__restart_application: [],
+    app__exit_application: [],
     app__set_tray_icon_notification: ['notify'],
     app__copy_image_to_clipboard: ['path'],
     app__set_startup: ['enabled'],

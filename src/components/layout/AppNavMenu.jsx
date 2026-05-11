@@ -32,6 +32,7 @@ import { CustomNavDialog } from './CustomNavDialog.jsx';
 import {
     getPathForNavEntry,
     loadNavMenuModel,
+    NAV_CUSTOMIZE_REQUESTED_EVENT,
     NAV_LAYOUT_UPDATED_EVENT,
     routePathByName,
     saveNavMenuModel
@@ -163,6 +164,22 @@ export function AppNavMenu({ isCollapsed }) {
             );
         };
     }, [dashboards, notificationLayout, preferencesHydrated, t]);
+
+    useEffect(() => {
+        const handleCustomizeRequested = () => {
+            setCustomNavDialogOpen(true);
+        };
+        window.addEventListener(
+            NAV_CUSTOMIZE_REQUESTED_EVENT,
+            handleCustomizeRequested
+        );
+        return () => {
+            window.removeEventListener(
+                NAV_CUSTOMIZE_REQUESTED_EVENT,
+                handleCustomizeRequested
+            );
+        };
+    }, []);
 
     const activeIndex = resolveActiveIndex(menuItems, location.pathname);
     const shouldShowCreateDashboard =

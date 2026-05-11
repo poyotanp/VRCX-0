@@ -250,6 +250,8 @@
         "notification_center": "通知中心",
         "expand_friends_sidebar": "显示好友侧栏",
         "collapse_friends_sidebar": "隐藏好友侧栏",
+        "show_side_panel": "显示侧边面板",
+        "hide_side_panel": "隐藏侧边面板",
         "zoom_in": "放大",
         "zoom_out": "缩小",
         "reset_zoom": "重置缩放",
@@ -5094,6 +5096,7 @@
         }
     },
     "app": {
+        "title": "VRCX-0",
         "routes": {
             "feed": "好友动态",
             "table_heavy_social_feed_page": "表格密集型社交动态页面。",

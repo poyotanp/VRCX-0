@@ -250,6 +250,8 @@
         "notification_center": "通知センター",
         "expand_friends_sidebar": "フレンドサイドバーを表示",
         "collapse_friends_sidebar": "フレンドサイドバーを非表示",
+        "show_side_panel": "サイドパネルを表示",
+        "hide_side_panel": "サイドパネルを非表示",
         "zoom_in": "拡大",
         "zoom_out": "縮小",
         "reset_zoom": "ズームをリセット",
@@ -5094,6 +5096,7 @@
         }
     },
     "app": {
+        "title": "VRCX-0",
         "routes": {
             "feed": "フィード",
             "table_heavy_social_feed_page": "テーブル中心のソーシャルフィードページです。",

@@ -11,12 +11,18 @@ import {
 import { isToolNavKey } from '@/shared/constants/tools.js';
 import { navDefinitions } from '@/shared/constants/ui.js';
 import {
+    NAV_CUSTOMIZE_REQUESTED_EVENT,
     NAV_LAYOUT_UPDATED_EVENT,
+    publishNavCustomizeRequested,
     publishNavLayoutUpdated
 } from '@/shared/events/navLayoutEvents.js';
 
 export const NAV_CONFIG_KEY = 'VRCX_customNavMenuLayoutList';
-export { NAV_LAYOUT_UPDATED_EVENT };
+export {
+    NAV_CUSTOMIZE_REQUESTED_EVENT,
+    NAV_LAYOUT_UPDATED_EVENT,
+    publishNavCustomizeRequested
+};
 
 const CHART_KEYS = ['charts-instance', 'charts-mutual'];
 

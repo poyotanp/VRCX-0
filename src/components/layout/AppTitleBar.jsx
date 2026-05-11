@@ -63,9 +63,9 @@ function TitleBarButton({ label, className, children, onClick, ...props }) {
     );
 }
 
-function TitleBarShortcut({ modifierKey, actionKey }) {
+function TitleBarShortcut({ modifierKey, actionKey, className }) {
     return (
-        <KbdGroup className="gap-0.5">
+        <KbdGroup className={cn('gap-0.5', className)}>
             <Kbd className="h-4 min-w-4 px-1 text-[10px] leading-4">
                 {modifierKey}
             </Kbd>
@@ -193,8 +193,8 @@ export function AppTitleBar() {
         ? t('nav_tooltip.collapse_menu')
         : t('nav_tooltip.expand_menu');
     const rightSidebarLabel = rightSidebarOpen
-        ? 'Collapse right sidebar'
-        : 'Expand right sidebar';
+        ? t('app_menu.hide_side_panel')
+        : t('app_menu.show_side_panel');
     const isMacHost = hostPlatform === 'macos';
     const quickSearchShortcut = getTitleBarShortcut(isMacHost, 'K');
     const directAccessShortcut = getTitleBarShortcut(isMacHost, 'D');
@@ -255,9 +255,7 @@ export function AppTitleBar() {
                         data-tauri-drag-region
                         className="text-foreground shrink-0 text-xs font-semibold"
                     >
-                        {t(
-                            'view.settings.advanced.advanced.vrcx_settings.header'
-                        )}
+                        {t('app.title')}
                     </span>
                     {titleBarActionsVisible ? (
                         <div
@@ -274,6 +272,9 @@ export function AppTitleBar() {
                                 rightSidebarOpen={rightSidebarOpen}
                                 onOpenQuickSearch={() =>
                                     setQuickSearchOpen(true)
+                                }
+                                onOpenDirectAccess={() =>
+                                    void openDirectAccessFromClipboard()
                                 }
                                 onOpenNotificationCenter={() =>
                                     openVrcNotificationCenter()
@@ -320,7 +321,10 @@ export function AppTitleBar() {
                             onClick={() => setQuickSearchOpen(true)}
                         >
                             <SearchIcon data-icon="inline-start" />
-                            <TitleBarShortcut {...quickSearchShortcut} />
+                            <TitleBarShortcut
+                                {...quickSearchShortcut}
+                                className="hidden min-[520px]:inline-flex"
+                            />
                         </TitleBarButton>
                         <TitleBarButton
                             label={formatTitleBarShortcutLabel(
@@ -331,7 +335,10 @@ export function AppTitleBar() {
                             onClick={() => void openDirectAccessFromClipboard()}
                         >
                             <CompassIcon data-icon="inline-start" />
-                            <TitleBarShortcut {...directAccessShortcut} />
+                            <TitleBarShortcut
+                                {...directAccessShortcut}
+                                className="hidden min-[520px]:inline-flex"
+                            />
                         </TitleBarButton>
                         {notificationActionVisible ? (
                             vrcUnseenNotificationCount > 0 ? (

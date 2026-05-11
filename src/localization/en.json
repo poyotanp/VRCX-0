@@ -250,6 +250,8 @@
         "notification_center": "Notification Center",
         "expand_friends_sidebar": "Show Friends Sidebar",
         "collapse_friends_sidebar": "Hide Friends Sidebar",
+        "show_side_panel": "Show Side Panel",
+        "hide_side_panel": "Hide Side Panel",
         "zoom_in": "Zoom In",
         "zoom_out": "Zoom Out",
         "reset_zoom": "Reset Zoom",
@@ -5094,6 +5096,7 @@
         }
     },
     "app": {
+        "title": "VRCX-0",
         "routes": {
             "feed": "Feed",
             "table_heavy_social_feed_page": "Table-heavy social feed page.",

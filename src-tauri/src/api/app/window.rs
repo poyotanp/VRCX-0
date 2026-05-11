@@ -84,6 +84,12 @@ pub fn app__restart_application(app_handle: AppHandle) -> Result<(), AppError> {
 }
 
 #[tauri::command]
+pub fn app__exit_application(app_handle: AppHandle) -> Result<(), AppError> {
+    app_handle.exit(0);
+    Ok(())
+}
+
+#[tauri::command]
 pub fn app__set_startup(app_handle: AppHandle, _enabled: bool) -> Result<(), AppError> {
     if !(cfg!(target_os = "windows") || cfg!(target_os = "linux")) {
         return Err(AppError::Custom(format!(

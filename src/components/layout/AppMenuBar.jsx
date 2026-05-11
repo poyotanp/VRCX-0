@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { backend } from '@/platform/index.js';
 import { logoutFromReactShell } from '@/services/authExecutionService.js';
 import {
+    setSidebarCollapsedPreference,
     setTableDensityPreference,
     setThemeColorPreference,
     setThemeModePreference,
@@ -25,8 +26,10 @@ import {
 } from '@/services/toolActionService.js';
 import { links } from '@/shared/constants/link.js';
 import { THEME_COLORS } from '@/shared/constants/themes.js';
-import { toolDefinitionMap } from '@/shared/constants/tools.js';
+import { getToolsByCategory, toolCategories } from '@/shared/constants/tools.js';
+import { publishNavCustomizeRequested } from '@/shared/events/navLayoutEvents.js';
 import { formatReleaseDisplayVersion } from '@/shared/utils/releaseVersion.js';
+import { usePreferencesStore } from '@/state/preferencesStore.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useShellStore } from '@/state/shellStore.js';
 import { Button } from '@/ui/shadcn/button';
@@ -44,6 +47,7 @@ import {
     MenubarContent,
     MenubarGroup,
     MenubarItem,
+    MenubarLabel,
     MenubarMenu,
     MenubarRadioGroup,
     MenubarRadioItem,
@@ -117,18 +121,12 @@ function ThemeColorRadioItem({ themeColor, t }) {
     );
 }
 
-function ToolMenuItem({ toolKey, children, navigate, t }) {
-    useRuntimeStore((state) => state.hostCapabilities);
-    const tool = toolDefinitionMap.get(toolKey);
-    if (!isToolCapabilityAvailable(tool)) {
-        return null;
-    }
-
+function ToolMenuItem({ tool, navigate, t }) {
     return (
         <MenuItem
-            onSelect={() => void triggerToolByKey(toolKey, { navigate, t })}
+            onSelect={() => void triggerToolByKey(tool.key, { navigate, t })}
         >
-            {children}
+            {t(tool.titleKey)}
         </MenuItem>
     );
 }
@@ -136,6 +134,7 @@ function ToolMenuItem({ toolKey, children, navigate, t }) {
 export function AppMenuBar({
     rightSidebarOpen,
     onOpenQuickSearch,
+    onOpenDirectAccess,
     onOpenNotificationCenter,
     onToggleRightSidebar
 }) {
@@ -144,19 +143,38 @@ export function AppMenuBar({
     const [aboutOpen, setAboutOpen] = useState(false);
     const [openSourceNoticeOpen, setOpenSourceNoticeOpen] = useState(false);
     const zoomLevel = useShellStore((state) => state.zoomLevel);
+    const sidebarOpen = useShellStore((state) => state.sidebarOpen);
     const themeMode = useShellStore((state) => state.themeMode);
     const themeColor = useShellStore((state) => state.themeColor);
     const tableDensity = useShellStore((state) => state.tableDensity);
+    const notificationLayout = usePreferencesStore(
+        (state) => state.notificationLayout
+    );
     const setSystemHostOpen = useRuntimeStore(
         (state) => state.setSystemHostOpen
     );
     const hostPlatform = useRuntimeStore(
         (state) => state.hostCapabilities.platform
     );
+    const hostCapabilities = useRuntimeStore((state) => state.hostCapabilities);
     const currentZoom = normalizeZoomLevel(zoomLevel);
     const quickSearchShortcutKeys =
         hostPlatform === 'macos' ? ['Meta', 'K'] : ['Ctrl', 'K'];
+    const directAccessShortcutKeys =
+        hostPlatform === 'macos' ? ['Meta', 'D'] : ['Ctrl', 'D'];
     const appVersion = formatReleaseDisplayVersion(VERSION || '') || '-';
+    const availableToolCategories = useMemo(
+        () =>
+            toolCategories
+                .map((category) => ({
+                    ...category,
+                    tools: getToolsByCategory(category.key).filter((tool) =>
+                        isToolCapabilityAvailable(tool)
+                    )
+                }))
+                .filter((category) => category.tools.length > 0),
+        [hostCapabilities]
+    );
 
     async function applyZoomLevel(nextZoom) {
         try {
@@ -184,6 +202,14 @@ export function AppMenuBar({
 
     function openLink(url) {
         void openExternalLink(url);
+    }
+
+    function openNotificationSurface() {
+        if (notificationLayout === 'table') {
+            navigate('/notification');
+            return;
+        }
+        onOpenNotificationCenter?.();
     }
 
     return (
@@ -217,7 +243,7 @@ export function AppMenuBar({
                             <MenuItem
                                 variant="destructive"
                                 onSelect={() =>
-                                    void backend.webview.closeWindow()
+                                    void backend.app.ExitApplication()
                                 }
                             >
                                 {t('app_menu.quit')}
@@ -242,17 +268,45 @@ export function AppMenuBar({
                                     />
                                 </MenubarShortcut>
                             </MenuItem>
+                            <MenuItem onSelect={() => onOpenDirectAccess?.()}>
+                                {t('prompt.direct_access_omni.header')}
+                                <MenubarShortcut className="tracking-normal">
+                                    <KeyboardShortcut
+                                        keys={directAccessShortcutKeys}
+                                        className="gap-0.5"
+                                        kbdClassName="h-4 min-w-4 px-1 text-[10px] leading-4"
+                                    />
+                                </MenubarShortcut>
+                            </MenuItem>
                             <MenuItem
-                                onSelect={() => onOpenNotificationCenter?.()}
+                                onSelect={() => openNotificationSurface()}
                             >
                                 {t('app_menu.notification_center')}
+                            </MenuItem>
+                            <MenuItem
+                                onSelect={() =>
+                                    void setSidebarCollapsedPreference(
+                                        sidebarOpen
+                                    )
+                                }
+                            >
+                                {t(
+                                    sidebarOpen
+                                        ? 'nav_tooltip.collapse_menu'
+                                        : 'nav_tooltip.expand_menu'
+                                )}
                             </MenuItem>
                             <MenuItem onSelect={() => onToggleRightSidebar?.()}>
                                 {t(
                                     rightSidebarOpen
-                                        ? 'app_menu.collapse_friends_sidebar'
-                                        : 'app_menu.expand_friends_sidebar'
+                                        ? 'app_menu.hide_side_panel'
+                                        : 'app_menu.show_side_panel'
                                 )}
+                            </MenuItem>
+                            <MenuItem
+                                onSelect={() => publishNavCustomizeRequested()}
+                            >
+                                {t('nav_menu.custom_nav.header')}
                             </MenuItem>
                         </MenubarGroup>
                         <MenubarSeparator />
@@ -364,75 +418,24 @@ export function AppMenuBar({
                                 {t('app_menu.all_tools')}
                             </MenuItem>
                         </MenubarGroup>
-                        <MenubarSeparator />
-                        <MenubarGroup>
-                            <ToolMenuItem
-                                toolKey="screenshot-metadata"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t('view.tools.pictures.screenshot')}
-                            </ToolMenuItem>
-                            <ToolMenuItem
-                                toolKey="gallery"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t('view.tools.pictures.gallery')}
-                            </ToolMenuItem>
-                        </MenubarGroup>
-                        <MenubarSeparator />
-                        <MenubarGroup>
-                            <ToolMenuItem
-                                toolKey="vrchat-config"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t('view.tools.system_tools.vrchat_config')}
-                            </ToolMenuItem>
-                            <ToolMenuItem
-                                toolKey="launch-options"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t(
-                                    'view.settings.advanced.advanced.launch_options'
-                                )}
-                            </ToolMenuItem>
-                            <ToolMenuItem
-                                toolKey="registry-backup"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t(
-                                    'view.settings.advanced.advanced.vrc_registry_backup'
-                                )}
-                            </ToolMenuItem>
-                        </MenubarGroup>
-                        <MenubarSeparator />
-                        <MenubarGroup>
-                            <ToolMenuItem
-                                toolKey="export-friend-list"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t('view.tools.export.export_friend_list')}
-                            </ToolMenuItem>
-                            <ToolMenuItem
-                                toolKey="export-own-avatars"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t('view.tools.export.export_own_avatars')}
-                            </ToolMenuItem>
-                            <ToolMenuItem
-                                toolKey="export-notes"
-                                navigate={navigate}
-                                t={t}
-                            >
-                                {t('view.tools.export.export_notes')}
-                            </ToolMenuItem>
-                        </MenubarGroup>
+                        {availableToolCategories.map((category) => (
+                            <Fragment key={category.key}>
+                                <MenubarSeparator />
+                                <MenubarGroup>
+                                    <MenubarLabel className="text-muted-foreground px-2 py-1.5 text-[11px] font-medium uppercase">
+                                        {t(category.labelKey)}
+                                    </MenubarLabel>
+                                    {category.tools.map((tool) => (
+                                        <ToolMenuItem
+                                            key={tool.key}
+                                            tool={tool}
+                                            navigate={navigate}
+                                            t={t}
+                                        />
+                                    ))}
+                                </MenubarGroup>
+                            </Fragment>
+                        ))}
                     </MenubarContent>
                 </MenubarMenu>
 
@@ -450,6 +453,12 @@ export function AppMenuBar({
                             </MenuItem>
                             <MenuItem onSelect={() => openLink(links.discord)}>
                                 {t('nav_menu.discord')}
+                            </MenuItem>
+                            <MenuItem onSelect={() => openLink(links.wiki)}>
+                                {t('nav_menu.wiki')}
+                            </MenuItem>
+                            <MenuItem onSelect={() => openLink(links.releases)}>
+                                {t('nav_menu.changelog')}
                             </MenuItem>
                         </MenubarGroup>
                         <MenubarSeparator />
