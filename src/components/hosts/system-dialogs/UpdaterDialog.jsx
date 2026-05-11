@@ -155,6 +155,10 @@ export function UpdaterDialog({ open, onOpenChange }) {
         await openExternalLink(latestRelease?.htmlUrl || links.releases);
     }
 
+    async function handleOpenChangelog() {
+        await openExternalLink(links.releases);
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
@@ -205,6 +209,15 @@ export function UpdaterDialog({ open, onOpenChange }) {
                     ) : null}
                 </FieldGroup>
                 <DialogFooter>
+                    {hasNewerRelease ? (
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => void handleOpenChangelog()}
+                        >
+                            {t('nav_menu.changelog')}
+                        </Button>
+                    ) : null}
                     {canInstallUpdates ? (
                         <Button
                             type="button"
