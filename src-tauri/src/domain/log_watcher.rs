@@ -10,6 +10,11 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter};
 
 const INACTIVE_POLL_KEEPALIVE: Duration = Duration::from_secs(120);
+const LOG_TIMESTAMP_LEN: usize = 19;
+const LOG_SEPARATOR_INDEX: usize = 31;
+const LOG_CONTENT_OFFSET: usize = 34;
+const LOG_MIN_LINE_LEN: usize = 36;
+const LOG_TIME_FORMAT: &str = "%Y.%m.%d %H:%M:%S";
 
 #[derive(Clone)]
 pub struct LogWatcher {
@@ -282,17 +287,8 @@ fn parse_log(
             continue;
         }
 
-        if trimmed.len() <= 36 {
+        let Some((line_date, content)) = parse_log_line_header(trimmed) else {
             continue;
-        }
-        if trimmed.as_bytes().get(31) != Some(&b'-') {
-            continue;
-        }
-
-        let date_str = &trimmed[..19];
-        let line_date = match NaiveDateTime::parse_from_str(date_str, "%Y.%m.%d %H:%M:%S") {
-            Ok(d) => d,
-            Err(_) => continue,
         };
 
         if line_date <= till_date {
@@ -303,9 +299,6 @@ fn parse_log(
         if line_date > now_local + chrono::Duration::minutes(61) {
             continue;
         }
-
-        let offset = 34;
-        let content = &trimmed[offset..];
 
         if content.starts_with('[') {
             let _ = parse_player_joined_or_left(
@@ -426,21 +419,14 @@ fn scan_log_file_location_snapshot(path: &Path, file_name: &str) -> Option<LogLo
 
     for line in reader.lines().map_while(Result::ok) {
         let trimmed = line.trim_end();
-        if trimmed.len() <= 36 || trimmed.as_bytes().get(31) != Some(&b'-') {
+        let Some((line_date, content)) = parse_log_line_header(trimmed) else {
             continue;
-        }
-
-        let date_str = &trimmed[..19];
-        let line_date = match NaiveDateTime::parse_from_str(date_str, "%Y.%m.%d %H:%M:%S") {
-            Ok(date) => date,
-            Err(_) => continue,
         };
         let now_local = Local::now().naive_local();
         if line_date > now_local + chrono::Duration::minutes(61) {
             continue;
         }
 
-        let content = &trimmed[34..];
         if content.contains("[Behaviour] Entering Room: ") {
             if let Some(pos) = trimmed.rfind("] Entering Room: ") {
                 recent_world_name = trimmed[pos + 17..].to_string();
@@ -474,8 +460,54 @@ fn scan_log_file_location_snapshot(path: &Path, file_name: &str) -> Option<LogLo
     current_location
 }
 
+fn parse_log_line_header(line: &str) -> Option<(NaiveDateTime, &str)> {
+    let bytes = line.as_bytes();
+    if bytes.len() <= LOG_MIN_LINE_LEN || bytes.get(LOG_SEPARATOR_INDEX) != Some(&b'-') {
+        return None;
+    }
+    if !has_log_timestamp_prefix(bytes) {
+        return None;
+    }
+
+    let date_str = line.get(..LOG_TIMESTAMP_LEN)?;
+    let line_date = NaiveDateTime::parse_from_str(date_str, LOG_TIME_FORMAT).ok()?;
+    let content = line.get(LOG_CONTENT_OFFSET..)?;
+    Some((line_date, content))
+}
+
+fn has_log_timestamp_prefix(bytes: &[u8]) -> bool {
+    if bytes.len() < LOG_TIMESTAMP_LEN {
+        return false;
+    }
+
+    bytes[0].is_ascii_digit()
+        && bytes[1].is_ascii_digit()
+        && bytes[2].is_ascii_digit()
+        && bytes[3].is_ascii_digit()
+        && bytes[4] == b'.'
+        && bytes[5].is_ascii_digit()
+        && bytes[6].is_ascii_digit()
+        && bytes[7] == b'.'
+        && bytes[8].is_ascii_digit()
+        && bytes[9].is_ascii_digit()
+        && bytes[10] == b' '
+        && bytes[11].is_ascii_digit()
+        && bytes[12].is_ascii_digit()
+        && bytes[13] == b':'
+        && bytes[14].is_ascii_digit()
+        && bytes[15].is_ascii_digit()
+        && bytes[16] == b':'
+        && bytes[17].is_ascii_digit()
+        && bytes[18].is_ascii_digit()
+}
+
 fn convert_log_time_to_iso8601(line: &str) -> String {
-    match NaiveDateTime::parse_from_str(&line[..19], "%Y.%m.%d %H:%M:%S") {
+    let date_str = match line.get(..LOG_TIMESTAMP_LEN) {
+        Some(value) => value,
+        None => return Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
+    };
+
+    match NaiveDateTime::parse_from_str(date_str, LOG_TIME_FORMAT) {
         Ok(local_dt) => {
             let local_aware = chrono::TimeZone::from_local_datetime(&Local, &local_dt);
             match local_aware.single() {
