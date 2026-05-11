@@ -280,6 +280,14 @@ export function FavoritesPageView({
                 selectedSource,
                 isSearchActive,
                 items: contentItems,
+                virtualGridResetKey: [
+                    kind,
+                    selectedSource,
+                    selectedGroupKey,
+                    searchMode,
+                    searchQuery,
+                    sortValue
+                ].join(':'),
                 selectedKeysSet,
                 cardScale,
                 cardSpacing,

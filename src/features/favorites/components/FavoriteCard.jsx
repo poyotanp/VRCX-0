@@ -47,6 +47,7 @@ const FavoriteCard = memo(function FavoriteCard({
     selected,
     showGroupLabel,
     cardScale = 1,
+    cardHeight = 0,
     cardSpacing = 1,
     removing = false,
     onToggleSelect,
@@ -170,6 +171,7 @@ const FavoriteCard = memo(function FavoriteCard({
             className="hover:bg-muted flex w-full min-w-0 cursor-pointer items-center gap-2 overflow-hidden rounded-lg border px-2.5 py-2 text-sm transition-colors"
             style={{
                 gap: `${cardGap}px`,
+                height: cardHeight ? `${cardHeight}px` : undefined,
                 padding: `${cardPaddingY}px ${cardPaddingX}px`
             }}
             role={openHandler ? 'button' : undefined}

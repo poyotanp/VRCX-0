@@ -16,6 +16,7 @@ import {
     FavoritesLoadingState
 } from './FavoritesStateParts.jsx';
 import { FavoritesToolbar } from './FavoritesToolbar.jsx';
+import { useFavoritesVirtualGrid } from '../useFavoritesVirtualGrid.js';
 
 function FavoritesGroupRailPanel({ kind, groupRail }) {
     const { t } = useTranslation();
@@ -95,6 +96,13 @@ function FavoritesContentPanel({ kind, content }) {
         remoteDetails.status === 'running' &&
         !Object.keys(remoteDetailsData).length &&
         content.selectedSource === 'remote';
+    const virtualGrid = useFavoritesVirtualGrid({
+        cardScale: content.cardScale,
+        cardSpacing: content.cardSpacing,
+        items: content.items,
+        resetKey: content.virtualGridResetKey,
+        showGroupLabel: content.isSearchActive
+    });
 
     return (
         <div className="flex h-full min-h-0 min-w-0 flex-col pl-[26px]">
@@ -113,7 +121,10 @@ function FavoritesContentPanel({ kind, content }) {
                 onCopySelection={content.onCopySelection}
                 onBulkRemove={content.onBulkRemove}
             />
-            <div className="min-h-0 min-w-0 flex-1 overflow-auto pr-2">
+            <div
+                ref={virtualGrid.viewportRef}
+                className="min-h-0 min-w-0 flex-1 overflow-auto pr-2"
+            >
                 {content.favoriteLoadStatus === 'running' &&
                 !content.items.length ? (
                     <FavoritesLoadingState
@@ -164,44 +175,69 @@ function FavoritesContentPanel({ kind, content }) {
                     />
                 ) : (
                     <div
-                        className="grid min-w-0"
+                        className="relative min-w-0"
                         style={{
-                            gap: `${Math.max(4, Math.round(8 * content.cardSpacing))}px`,
-                            gridTemplateColumns: `repeat(auto-fill,minmax(${Math.round(260 * content.cardScale)}px,1fr))`
+                            height: `${virtualGrid.totalHeight}px`
                         }}
                     >
-                        {content.items.map((item) => (
-                            <FavoriteCard
-                                key={item.key}
-                                item={item}
-                                editMode={
-                                    content.editMode && !content.isSearchActive
-                                }
-                                selected={content.selectedKeysSet.has(item.key)}
-                                showGroupLabel={content.isSearchActive}
-                                cardScale={content.cardScale}
-                                cardSpacing={content.cardSpacing}
-                                removing={
-                                    content.removingFavoriteKey === item.key
-                                }
-                                canSendInvite={content.canSendInvite}
-                                canBoop={content.canBoop}
-                                currentUserId={content.currentUserId}
-                                currentAvatarId={content.currentAvatarId}
-                                onToggleSelect={content.onToggleSelect}
-                                onRemoveLocal={content.onRemoveLocal}
-                                onRemoveRemote={content.onRemoveRemote}
-                                onFriendLaunch={content.onFriendLaunch}
-                                onFriendSelfInvite={content.onFriendSelfInvite}
-                                onFriendInvite={content.onFriendInvite}
-                                onFriendRequestInvite={
-                                    content.onFriendRequestInvite
-                                }
-                                onFriendBoop={content.onFriendBoop}
-                                onWorldNewInstance={content.onWorldNewInstance}
-                                onWorldSelfInvite={content.onWorldSelfInvite}
-                                onAvatarSelect={content.onAvatarSelect}
-                            />
+                        {virtualGrid.visibleRows.map((row) => (
+                            <div
+                                key={row.key}
+                                className="absolute right-0 left-0 grid min-w-0"
+                                style={{
+                                    gap: `${virtualGrid.gridGap}px`,
+                                    height: `${row.cardHeight}px`,
+                                    gridTemplateColumns: `repeat(${virtualGrid.gridColumnCount}, minmax(${virtualGrid.gridMinWidth}px, 1fr))`,
+                                    transform: `translateY(${row.top}px)`
+                                }}
+                            >
+                                {row.items.map((item) => (
+                                    <FavoriteCard
+                                        key={item.key}
+                                        item={item}
+                                        editMode={
+                                            content.editMode &&
+                                            !content.isSearchActive
+                                        }
+                                        selected={content.selectedKeysSet.has(
+                                            item.key
+                                        )}
+                                        showGroupLabel={content.isSearchActive}
+                                        cardScale={content.cardScale}
+                                        cardHeight={row.cardHeight}
+                                        cardSpacing={content.cardSpacing}
+                                        removing={
+                                            content.removingFavoriteKey ===
+                                            item.key
+                                        }
+                                        canSendInvite={content.canSendInvite}
+                                        canBoop={content.canBoop}
+                                        currentUserId={content.currentUserId}
+                                        currentAvatarId={
+                                            content.currentAvatarId
+                                        }
+                                        onToggleSelect={content.onToggleSelect}
+                                        onRemoveLocal={content.onRemoveLocal}
+                                        onRemoveRemote={content.onRemoveRemote}
+                                        onFriendLaunch={content.onFriendLaunch}
+                                        onFriendSelfInvite={
+                                            content.onFriendSelfInvite
+                                        }
+                                        onFriendInvite={content.onFriendInvite}
+                                        onFriendRequestInvite={
+                                            content.onFriendRequestInvite
+                                        }
+                                        onFriendBoop={content.onFriendBoop}
+                                        onWorldNewInstance={
+                                            content.onWorldNewInstance
+                                        }
+                                        onWorldSelfInvite={
+                                            content.onWorldSelfInvite
+                                        }
+                                        onAvatarSelect={content.onAvatarSelect}
+                                    />
+                                ))}
+                            </div>
                         ))}
                     </div>
                 )}
