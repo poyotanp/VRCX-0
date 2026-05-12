@@ -45,7 +45,7 @@ jobs:
             - run: cargo test --manifest-path src-tauri/Cargo.toml
 
     tauri-linux:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v4
             - name: Install Linux dependencies
