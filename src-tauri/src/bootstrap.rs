@@ -114,13 +114,6 @@ pub fn apply_linux_webkit_workaround() {
             std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
         }
 
-        if std::env::var_os("APPIMAGE").is_some()
-            && std::env::var_os("WEBKIT_DISABLE_COMPOSITING_MODE").is_none()
-        {
-            tracing::info!("disabling WebKitGTK compositing mode for Linux AppImage");
-            std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-        }
-
         apply_workaround_with_options(ApplyWorkaroundOptions::default());
     }
 }
