@@ -277,13 +277,6 @@ function FeedUserLink({
                 <ContextMenuSeparator />
                 <ContextMenuGroup>
                     <ContextMenuItem
-                        disabled={!userId}
-                        onSelect={() => void copyFeedText(userId, 'User ID', t)}
-                    >
-                        <CopyIcon />
-                        {t('dialog.user.info.copy_id')}
-                    </ContextMenuItem>
-                    <ContextMenuItem
                         disabled={!displayName}
                         onSelect={() =>
                             void copyFeedText(displayName, 'Display name', t)

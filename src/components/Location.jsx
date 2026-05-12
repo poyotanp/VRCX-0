@@ -185,10 +185,6 @@ export function Location({
         toast.success(t('message.world.url_copied'));
     }
 
-    function copyCurrentLocation() {
-        void copyTextToClipboard(currentLocation);
-    }
-
     function launchCurrentInstance() {
         if (!canUseCurrentInstance) {
             return;
@@ -290,9 +286,7 @@ export function Location({
         <LocationContextMenu
             canOpenWorld={canOpenWorld}
             canUseCurrentInstance={canUseCurrentInstance}
-            currentLocation={currentLocation}
             isOpenPreviousInstanceInfoDialog={isOpenPreviousInstanceInfoDialog}
-            onCopyCurrentLocation={copyCurrentLocation}
             onCopyShareLink={copyShareLink}
             onLaunchCurrentInstance={launchCurrentInstance}
             onNewInstance={newInstance}

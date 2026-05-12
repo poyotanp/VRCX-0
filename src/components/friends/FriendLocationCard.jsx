@@ -6,10 +6,9 @@ import {
     UsersIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 
 import { Location } from '@/components/Location.jsx';
-import { copyTextToClipboard, userImage } from '@/lib/entityMedia.js';
+import { userImage } from '@/lib/entityMedia.js';
 import { cn } from '@/lib/utils.js';
 import {
     normalizeLocationValue,
@@ -345,19 +344,6 @@ export function FriendLocationCard({
         (Boolean(locationValue) ||
             (Boolean(locationLabel) &&
                 normalizeStatusText(locationLabel) !== 'offline'));
-    async function copyCardText(value, label) {
-        const text = String(value || '').trim();
-        if (!text) {
-            return;
-        }
-        await copyTextToClipboard(text);
-        toast.success(
-            t('component.friend_location_card.dynamic.value_copied', {
-                value: label
-            })
-        );
-    }
-
     const avatarNode = (
         <div className="relative shrink-0">
             {avatarUrl ? (
@@ -590,32 +576,6 @@ export function FriendLocationCard({
                         onSelect={() => void onSendBoop?.()}
                     >
                         {t('dialog.user.actions.send_boop')}
-                    </ContextMenuItem>
-                </ContextMenuGroup>
-                <ContextMenuSeparator />
-                <ContextMenuGroup>
-                    <ContextMenuItem
-                        disabled={!friend?.id}
-                        onSelect={() =>
-                            void copyCardText(
-                                friend?.id,
-                                t('dialog.user.info.id')
-                            )
-                        }
-                    >
-                        {t('dialog.user.info.copy_id')}
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                        disabled={!rawLocation}
-                        onSelect={() =>
-                            void copyCardText(
-                                rawLocation,
-                                t('dialog.new_instance.location')
-                            )
-                        }
-                    >
-                        {t('common.actions.copy')}{' '}
-                        {t('dialog.new_instance.location')}
                     </ContextMenuItem>
                 </ContextMenuGroup>
             </ContextMenuContent>

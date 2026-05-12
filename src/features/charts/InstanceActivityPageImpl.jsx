@@ -472,13 +472,10 @@ export function InstanceActivityPage() {
                             {!chartRows.length ? (
                                 <ChartEmptyState
                                     title={t(
-                                        'view.charts.empty.no_instance_activity_on_this_day'
-                                    )}
-                                    description={
                                         availableDates.includes(selectedDate)
-                                            ? 'The selected day exists in the activity index, but the timeline query returned no current-user instance rows.'
-                                            : 'This date is outside the known activity set. Use the previous/next buttons or pick a recorded day from the selector.'
-                                    }
+                                            ? 'view.charts.empty.no_instance_activity_on_this_day'
+                                            : 'view.charts.empty.selected_date_outside_activity_set'
+                                    )}
                                 />
                             ) : null}
                         </>

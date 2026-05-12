@@ -1225,6 +1225,7 @@
             "empty": {
                 "no_detail_rows": "No detail rows",
                 "no_instance_activity_on_this_day": "No instance activity on this day",
+                "selected_date_outside_activity_set": "This date is outside the known activity set",
                 "no_detail_charts_match_the_current_filters": "No detail charts match the current filters",
                 "no_friends_are_available_for_mutual_graph_fetching": "No friends are available for mutual graph fetching",
                 "no_selection": "No selection",
@@ -4812,6 +4813,7 @@
             "note": "Note",
             "date": "Date",
             "user": "User",
+            "location": "Location",
             "type": "Type",
             "detail": "Detail"
         },
@@ -5111,9 +5113,6 @@
         "friend_location_card": {
             "label": {
                 "friend_avatar": "Friend avatar"
-            },
-            "dynamic": {
-                "value_copied": "{value} copied"
             }
         },
         "app_title_bar": {

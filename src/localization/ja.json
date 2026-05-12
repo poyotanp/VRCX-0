@@ -1225,6 +1225,7 @@
             "empty": {
                 "no_detail_rows": "詳細行はありません",
                 "no_instance_activity_on_this_day": "この日のインスタンス活動はありません",
+                "selected_date_outside_activity_set": "この日は記録済みの活動範囲外です",
                 "no_detail_charts_match_the_current_filters": "現在のフィルターに一致する詳細チャートはありません",
                 "no_friends_are_available_for_mutual_graph_fetching": "共通フレンドグラフの取得に使えるフレンドがいません",
                 "no_selection": "未選択",
@@ -4812,6 +4813,7 @@
             "note": "ノート",
             "date": "日付",
             "user": "ユーザー",
+            "location": "場所",
             "type": "種類",
             "detail": "詳細"
         },
@@ -5111,9 +5113,6 @@
         "friend_location_card": {
             "label": {
                 "friend_avatar": "フレンドのアバター"
-            },
-            "dynamic": {
-                "value_copied": "{value}をコピーしました"
             }
         },
         "app_title_bar": {

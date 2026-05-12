@@ -1,5 +1,4 @@
 import {
-    CopyIcon,
     ExternalLinkIcon,
     FlagIcon,
     HistoryIcon,
@@ -21,9 +20,7 @@ export function LocationContextMenu({
     canOpenWorld,
     canUseCurrentInstance,
     children,
-    currentLocation,
     isOpenPreviousInstanceInfoDialog,
-    onCopyCurrentLocation,
     onCopyShareLink,
     onLaunchCurrentInstance,
     onNewInstance,
@@ -63,14 +60,6 @@ export function LocationContextMenu({
                         >
                             <Share2Icon />
                             {t('dialog.world.actions.share')}
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                            disabled={!currentLocation}
-                            onSelect={onCopyCurrentLocation}
-                        >
-                            <CopyIcon />
-                            {t('common.actions.copy')}{' '}
-                            {t('dialog.new_instance.location')}
                         </ContextMenuItem>
                     </ContextMenuGroup>
                     <ContextMenuSeparator />

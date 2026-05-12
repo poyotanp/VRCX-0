@@ -1225,6 +1225,7 @@
             "empty": {
                 "no_detail_rows": "没有详情行",
                 "no_instance_activity_on_this_day": "这一天没有房间活动",
+                "selected_date_outside_activity_set": "这一天不在已记录的活动范围内",
                 "no_detail_charts_match_the_current_filters": "没有符合当前筛选的详情图表",
                 "no_friends_are_available_for_mutual_graph_fetching": "没有可用于获取共同好友图谱的好友",
                 "no_selection": "未选择",
@@ -4812,6 +4813,7 @@
             "note": "备注",
             "date": "时间",
             "user": "玩家",
+            "location": "位置",
             "type": "种类",
             "detail": "详细信息"
         },
@@ -5111,9 +5113,6 @@
         "friend_location_card": {
             "label": {
                 "friend_avatar": "好友头像"
-            },
-            "dynamic": {
-                "value_copied": "已复制{value}"
             }
         },
         "app_title_bar": {
