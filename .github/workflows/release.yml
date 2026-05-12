@@ -51,7 +51,7 @@ jobs:
             matrix:
                 include:
                     - label: Linux AppImage
-                      os: ubuntu-24.04
+                      os: ubuntu-22.04
                       rust_target: ''
                       build_command: npm run tauri:build -- --config src-tauri/tauri.linux.conf.json --bundles appimage
                       artifact_name: linux-appimage
@@ -101,6 +101,11 @@ jobs:
               if: runner.os == 'Linux'
               run: |
                   sudo apt-get update
+
+                  # Keep AppImage WebKitGTK on a known runner/library family.
+                  # Newer unpinned 24.04 builds have hit EGL_BAD_PARAMETER on Wayland.
+                  webkit_version='2.50.*'
+
                   sudo apt-get install -y \
                       build-essential \
                       curl \
@@ -108,10 +113,17 @@ jobs:
                       libayatana-appindicator3-dev \
                       librsvg2-dev \
                       libssl-dev \
-                      libwebkit2gtk-4.1-dev \
                       libxdo-dev \
                       patchelf \
                       wget
+
+                  sudo apt-get install -y \
+                      gir1.2-javascriptcoregtk-4.1="$webkit_version" \
+                      gir1.2-webkit2-4.1="$webkit_version" \
+                      libjavascriptcoregtk-4.1-0="$webkit_version" \
+                      libjavascriptcoregtk-4.1-dev="$webkit_version" \
+                      libwebkit2gtk-4.1-0="$webkit_version" \
+                      libwebkit2gtk-4.1-dev="$webkit_version"
 
             - run: npm ci
 
