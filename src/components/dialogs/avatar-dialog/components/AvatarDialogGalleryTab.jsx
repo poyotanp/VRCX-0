@@ -105,7 +105,7 @@ export function AvatarDialogGalleryTab({
                             ) : (
                                 <div className="text-muted-foreground rounded-md border border-dashed p-4 text-xs">
                                     {t(
-                                        'dialog.avatar.generated.no_gallery_images'
+                                        'dialog.avatar.empty.no_gallery_images'
                                     )}
                                 </div>
                             )}

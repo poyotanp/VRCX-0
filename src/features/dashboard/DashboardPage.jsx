@@ -64,7 +64,7 @@ function DashboardAddRowControl({ onAddRow }) {
         <div className="border-muted-foreground/20 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 mt-auto flex min-h-[80px] flex-1 items-start justify-center rounded-md border-2 border-dashed p-4 transition-colors">
             <div className="flex flex-wrap items-center gap-3">
                 <span className="text-muted-foreground text-xs">
-                    {t('view.dashboard.generated.add_row')}
+                    {t('view.dashboard.action.add_row')}
                 </span>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -247,13 +247,13 @@ function useDashboardEditorController({ dashboard, updateDashboard, t }) {
                 rows: editRows
             });
             setIsEditing(false);
-            toast.success(t('view.dashboard.generated.dashboard_saved'));
+            toast.success(t('view.dashboard.success.dashboard_saved'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.dashboard.generated_toast.failed_to_save_dashboard'
+                          'view.dashboard.toast.failed_to_save_dashboard'
                       )
             );
         } finally {
@@ -368,7 +368,7 @@ export function DashboardPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.dashboard.generated_toast.failed_to_update_dashboard_panel'
+                          'view.dashboard.toast.failed_to_update_dashboard_panel'
                       )
             );
         }
@@ -380,9 +380,9 @@ export function DashboardPage() {
         }
 
         const result = await confirm({
-            title: t('view.dashboard.generated_modal.delete_dashboard'),
+            title: t('view.dashboard.modal.delete_dashboard'),
             description: t(
-                'view.dashboard.generated_modal.this_removes_the_dashboard_definition_from_the_s'
+                'view.dashboard.modal.this_removes_the_dashboard_definition_from_the_s'
             ),
             destructive: true,
             confirmText: t('common.actions.delete'),
@@ -406,7 +406,7 @@ export function DashboardPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.dashboard.generated_toast.failed_to_delete_dashboard'
+                          'view.dashboard.toast.failed_to_delete_dashboard'
                       )
             );
         }
@@ -424,7 +424,7 @@ export function DashboardPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.dashboard.generated_toast.failed_to_create_dashboard'
+                          'view.dashboard.toast.failed_to_create_dashboard'
                       )
             );
         }
@@ -441,7 +441,7 @@ export function DashboardPage() {
                         </CardTitle>
                         <CardDescription>
                             {t(
-                                'view.dashboard.generated.loading_dashboard_configuration'
+                                'view.dashboard.loading.loading_dashboard_configuration'
                             )}
                         </CardDescription>
                     </CardHeader>
@@ -463,10 +463,10 @@ export function DashboardPage() {
                             <CardDescription>
                                 {dashboards.length
                                     ? t(
-                                          'view.dashboard.generated.that_dashboard_no_longer_exists_in_the_stored_config'
+                                          'view.dashboard.empty.that_dashboard_no_longer_exists_in_the_stored_config'
                                       )
                                     : t(
-                                          'view.dashboard.generated.no_dashboard_definitions_are_stored_yet'
+                                          'view.dashboard.empty.no_dashboard_definitions_are_stored_yet'
                                       )}
                             </CardDescription>
                         </div>
@@ -475,7 +475,7 @@ export function DashboardPage() {
                                 {userFacingErrorMessage(
                                     detail,
                                     t(
-                                        'view.dashboard.generated_toast.failed_to_load_dashboard_configuration'
+                                        'view.dashboard.toast.failed_to_load_dashboard_configuration'
                                     )
                                 )}
                             </div>
@@ -497,7 +497,7 @@ export function DashboardPage() {
                                 }
                             >
                                 {t(
-                                    'view.dashboard.generated.open_first_dashboard'
+                                    'view.dashboard.action.open_first_dashboard'
                                 )}
                             </Button>
                         ) : (
@@ -508,7 +508,7 @@ export function DashboardPage() {
                                     navigate('/feed', { replace: true })
                                 }
                             >
-                                {t('view.dashboard.generated.back_to_feed')}
+                                {t('view.dashboard.action.back_to_feed')}
                             </Button>
                         )}
                     </CardContent>
@@ -527,7 +527,7 @@ export function DashboardPage() {
                         value={editName}
                         onChange={(event) => setEditName(event.target.value)}
                         placeholder={t(
-                            'view.dashboard.generated.dashboard_name'
+                            'view.dashboard.label.dashboard_name'
                         )}
                         className="mx-2 h-7 max-w-52 text-sm"
                     />
@@ -596,7 +596,7 @@ export function DashboardPage() {
                         ) : (
                             <div className="text-muted-foreground flex min-h-[180px] items-center justify-center rounded-md border border-dashed text-sm">
                                 {t(
-                                    'view.dashboard.generated.add_a_row_to_start_building_this_dashboard'
+                                    'view.dashboard.action.add_a_row_to_start_building_this_dashboard'
                                 )}
                             </div>
                         )}

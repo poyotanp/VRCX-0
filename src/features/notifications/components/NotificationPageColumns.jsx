@@ -519,7 +519,7 @@ export function buildNotificationColumns({
                                         variant="ghost"
                                         size="icon-xs"
                                         aria-label={t(
-                                            'view.notification.generated.mark_seen'
+                                            'view.notification.action.mark_seen'
                                         )}
                                         onClick={() =>
                                             void onMarkSeen(notification)
@@ -529,7 +529,7 @@ export function buildNotificationColumns({
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    {t('view.notification.generated.mark_seen')}
+                                    {t('view.notification.action.mark_seen')}
                                 </TooltipContent>
                             </Tooltip>
                         ) : null}

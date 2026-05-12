@@ -63,14 +63,14 @@ export function MyAvatarsToolbar({
                             <ToggleGroupItem
                                 value="grid"
                                 aria-label={t(
-                                    'view.my_avatars.generated.show_avatar_grid'
+                                    'view.my_avatars.action.show_avatar_grid'
                                 )}
                             >
                                 <LayoutGridIcon data-icon="inline-start" />
                             </ToggleGroupItem>
                         </TooltipTrigger>
                         <TooltipContent>
-                            {t('view.my_avatars.generated.show_avatar_grid')}
+                            {t('view.my_avatars.action.show_avatar_grid')}
                         </TooltipContent>
                     </Tooltip>
                     <Tooltip>
@@ -78,14 +78,14 @@ export function MyAvatarsToolbar({
                             <ToggleGroupItem
                                 value="table"
                                 aria-label={t(
-                                    'view.my_avatars.generated.show_avatar_table'
+                                    'view.my_avatars.action.show_avatar_table'
                                 )}
                             >
                                 <ListIcon data-icon="inline-start" />
                             </ToggleGroupItem>
                         </TooltipTrigger>
                         <TooltipContent>
-                            {t('view.my_avatars.generated.show_avatar_table')}
+                            {t('view.my_avatars.action.show_avatar_table')}
                         </TooltipContent>
                     </Tooltip>
                 </ToggleGroup>
@@ -137,7 +137,7 @@ export function MyAvatarsToolbar({
                             variant="ghost"
                             size="icon-sm"
                             aria-label={t(
-                                'view.my_avatars.generated.refresh_avatar_inventory'
+                                'view.my_avatars.action.refresh_avatar_inventory'
                             )}
                             disabled={
                                 !currentUserId || loadStatus === 'running'
@@ -153,7 +153,7 @@ export function MyAvatarsToolbar({
                     </TooltipTrigger>
                     <TooltipContent>
                         {t(
-                            'view.my_avatars.generated.refresh_avatar_inventory'
+                            'view.my_avatars.action.refresh_avatar_inventory'
                         )}
                     </TooltipContent>
                 </Tooltip>

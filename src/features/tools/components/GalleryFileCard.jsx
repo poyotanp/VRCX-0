@@ -69,13 +69,13 @@ export function GalleryFileCard({
                   file.framesOverTime
                       ? {
                             key: 'fps',
-                            label: `${file.framesOverTime}${t('view.tools.generated.fps')}`
+                            label: `${file.framesOverTime}${t('view.tools.label.fps')}`
                         }
                       : null,
                   file.frames
                       ? {
                             key: 'frames',
-                            label: `${file.frames}${t('view.tools.generated.frames')}`
+                            label: `${file.frames}${t('view.tools.label.frames')}`
                         }
                       : null
               ].filter(Boolean)

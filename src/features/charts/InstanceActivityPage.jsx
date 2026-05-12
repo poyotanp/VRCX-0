@@ -15,7 +15,7 @@ function ChartPageFallback() {
     return (
         <div className="text-muted-foreground flex h-full min-h-0 items-center justify-center gap-2 text-sm">
             <Spinner className="size-4" />
-            <span>{t('view.charts.generated.loading_chart')}</span>
+            <span>{t('view.charts.loading.loading_chart')}</span>
         </div>
     );
 }

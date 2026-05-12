@@ -22,7 +22,7 @@ export function FriendListUserLoadDialog({
             <DialogContent showCloseButton={false} className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('view.friend_list.generated.loading_friend_details')}
+                        {t('view.friend_list.loading.loading_friend_details')}
                     </DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-2">
@@ -31,7 +31,7 @@ export function FriendListUserLoadDialog({
                             className="bg-primary h-full"
                             role="progressbar"
                             aria-label={t(
-                                'view.friend_list.generated.loading_friend_details'
+                                'view.friend_list.loading.loading_friend_details'
                             )}
                             aria-valuemin={0}
                             aria-valuemax={progress.total || 100}
@@ -52,7 +52,7 @@ export function FriendListUserLoadDialog({
                         onClick={onCancel}
                     >
                         {progress.cancelled
-                            ? t('view.friend_list.generated.cancelling')
+                            ? t('view.friend_list.description.cancelling')
                             : t('view.friend_list.load_cancel')}
                     </Button>
                 </DialogFooter>

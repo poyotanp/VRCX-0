@@ -489,13 +489,13 @@ export function FriendLogPage({ embedded = false } = {}) {
                 {isLoading ? (
                     <LoadingState
                         label={t(
-                            'view.friend_log.generated.loading_the_friend_history_snapshot'
+                            'view.friend_log.loading.loading_the_friend_history_snapshot'
                         )}
                     />
                 ) : isError ? (
                     <FriendLogEmptyState
                         title={t(
-                            'view.friend_log.generated.friend_history_failed_to_load'
+                            'view.friend_log.error.friend_history_failed_to_load'
                         )}
                         description={
                             detail || 'The history query did not complete.'
@@ -523,10 +523,10 @@ export function FriendLogPage({ embedded = false } = {}) {
                 ) : (
                     <FriendLogEmptyState
                         title={t(
-                            'view.friend_log.generated.no_friend_history_rows_match_the_current_filters'
+                            'view.friend_log.empty.no_friend_history_rows_match_the_current_filters'
                         )}
                         description={t(
-                            'view.friend_log.generated.broaden_the_type_filters_or_search_query_to_see_more_history'
+                            'view.friend_log.label.broaden_the_type_filters_or_search_query_to_see_more_history'
                         )}
                     />
                 )}

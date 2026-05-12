@@ -44,7 +44,7 @@ export function useGalleryInventoryActions({
         }
         const authTarget = getAuthTarget();
         const result = await confirm({
-            title: t('view.tools.generated_modal.delete_print'),
+            title: t('view.tools.modal.delete_print'),
             description: normalizedPrintId,
             confirmText: t('common.actions.delete'),
             cancelText: t('common.actions.cancel'),
@@ -68,14 +68,14 @@ export function useGalleryInventoryActions({
                         (print) => print.id !== normalizedPrintId
                     )
                 }));
-                toast.success(t('view.tools.generated.print_deleted'));
+                toast.success(t('view.tools.success.print_deleted'));
             }
         } catch (error) {
             if (isRuntimeAuthTarget(authTarget)) {
                 toast.error(
                     error instanceof Error
                         ? error.message
-                        : t('view.tools.generated_toast.failed_to_delete_print')
+                        : t('view.tools.toast.failed_to_delete_print')
                 );
             }
         } finally {
@@ -90,7 +90,7 @@ export function useGalleryInventoryActions({
             return;
         }
         if (!currentUserId) {
-            toast.error(t('view.tools.generated.no_current_user_is_available'));
+            toast.error(t('view.tools.empty.no_current_user_is_available'));
             return;
         }
         const normalizedFileId =
@@ -143,7 +143,7 @@ export function useGalleryInventoryActions({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_update_profile_media'
+                              'view.tools.toast.failed_to_update_profile_media'
                           )
                 );
             }
@@ -184,7 +184,7 @@ export function useGalleryInventoryActions({
                 }));
                 await refreshInventory();
                 toast.success(
-                    t('view.tools.generated.inventory_bundle_consumed')
+                    t('view.tools.label.inventory_bundle_consumed')
                 );
             }
         } catch (error) {
@@ -193,7 +193,7 @@ export function useGalleryInventoryActions({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_consume_inventory_bundle'
+                              'view.tools.toast.failed_to_consume_inventory_bundle'
                           )
                 );
             }
@@ -232,7 +232,7 @@ export function useGalleryInventoryActions({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_redeem_reward'
+                              'view.tools.toast.failed_to_redeem_reward'
                           )
                 );
             }

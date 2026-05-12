@@ -126,7 +126,7 @@ export function useVrcNotificationPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_mark_notification_as_seen'
+                          'view.notifications.toast.failed_to_mark_notification_as_seen'
                       )
             );
         }
@@ -139,10 +139,10 @@ export function useVrcNotificationPageActions({
             if (!skipConfirm) {
                 const result = await confirm({
                     title: t(
-                        'view.notifications.generated_modal.delete_notification_log_entry'
+                        'view.notifications.modal.delete_notification_log_entry'
                     ),
                     description: t(
-                        'view.notifications.generated_modal.delete_the_local_value_log_entry',
+                        'view.notifications.modal.delete_the_local_value_log_entry',
                         {
                             value: notification.type || 'notification'
                         }
@@ -161,14 +161,14 @@ export function useVrcNotificationPageActions({
             });
             setReloadToken((value) => value + 1);
             toast.success(
-                t('view.notification.generated.notification_log_entry_deleted')
+                t('view.notification.success.notification_log_entry_deleted')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_delete_notification'
+                          'view.notifications.toast.failed_to_delete_notification'
                       )
             );
         }
@@ -185,10 +185,10 @@ export function useVrcNotificationPageActions({
         try {
             const result = await confirm({
                 title: t(
-                    'view.notifications.generated_modal.accept_friend_request'
+                    'view.notifications.modal.accept_friend_request'
                 ),
                 description: t(
-                    'view.notifications.generated_dynamic.accept_the_friend_request_from_value',
+                    'view.notifications.dynamic.accept_the_friend_request_from_value',
                     {
                         value: notification.senderUsername || 'this user'
                     }
@@ -224,7 +224,7 @@ export function useVrcNotificationPageActions({
             }
             await expireNotificationLocally(notification);
             toast.success(
-                t('view.notification.generated.friend_request_accepted')
+                t('view.notification.success.friend_request_accepted')
             );
         } catch (error) {
             clearFriendLogAddIntent();
@@ -236,7 +236,7 @@ export function useVrcNotificationPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_accept_friend_request'
+                          'view.notifications.toast.failed_to_accept_friend_request'
                       )
             );
         }
@@ -249,16 +249,16 @@ export function useVrcNotificationPageActions({
             if (!skipConfirm) {
                 const result = await confirm({
                     title: t(
-                        'view.notifications.generated_modal.decline_notification'
+                        'view.notifications.modal.decline_notification'
                     ),
                     description: t(
-                        'view.notifications.generated_dynamic.decline_the_value_notification',
+                        'view.notifications.dynamic.decline_the_value_notification',
                         {
                             value: notification.type || 'notification'
                         }
                     ),
                     confirmText: t(
-                        'view.notifications.generated_modal.decline'
+                        'view.notifications.modal.decline'
                     ),
                     destructive: true
                 });
@@ -275,14 +275,14 @@ export function useVrcNotificationPageActions({
             });
             await expireNotificationLocally(notification);
             toast.success(
-                t('view.notification.generated.notification_declined')
+                t('view.notification.success.notification_declined')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_decline_notification'
+                          'view.notifications.toast.failed_to_decline_notification'
                       )
             );
         }
@@ -292,7 +292,7 @@ export function useVrcNotificationPageActions({
             if (!currentInviteLocation) {
                 toast.error(
                     t(
-                        'view.notification.generated.cannot_invite_no_current_vrchat_location_is_available'
+                        'view.notification.error.cannot_invite_no_current_vrchat_location_is_available'
                     )
                 );
                 return;
@@ -300,7 +300,7 @@ export function useVrcNotificationPageActions({
             if (!canInviteFromCurrentLocation) {
                 toast.error(
                     t(
-                        'view.notification.generated.cannot_invite_from_the_current_instance_type'
+                        'view.notification.error.cannot_invite_from_the_current_instance_type'
                     )
                 );
                 return;
@@ -309,15 +309,15 @@ export function useVrcNotificationPageActions({
             if (!parsedLocation.worldId || !parsedLocation.instanceId) {
                 toast.error(
                     t(
-                        'view.notification.generated.cannot_invite_current_location_is_not_a_concrete_instance'
+                        'view.notification.error.cannot_invite_current_location_is_not_a_concrete_instance'
                     )
                 );
                 return;
             }
             const result = await confirm({
-                title: t('view.notifications.generated_modal.send_invite'),
+                title: t('view.notifications.modal.send_invite'),
                 description: t(
-                    'view.notifications.generated_dynamic.send_an_invite_to_value',
+                    'view.notifications.dynamic.send_an_invite_to_value',
                     {
                         value: notification.senderUsername || 'this user'
                     }
@@ -358,7 +358,7 @@ export function useVrcNotificationPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_send_invite'
+                          'view.notifications.toast.failed_to_send_invite'
                       )
             );
         }
@@ -367,7 +367,7 @@ export function useVrcNotificationPageActions({
         if (!currentUserId) {
             toast.error(
                 t(
-                    'view.notification.generated.cannot_send_invite_response_no_current_user_session_is_avail'
+                    'view.notification.error.cannot_send_invite_response_no_current_user_session_is_available'
                 )
             );
             return;
@@ -414,9 +414,9 @@ export function useVrcNotificationPageActions({
         toast.success(
             imageData
                 ? t(
-                      'view.notifications.generated_toast.invite_response_photo_sent'
+                      'view.notifications.toast.invite_response_photo_sent'
                   )
-                : t('view.notifications.generated_toast.invite_response_sent')
+                : t('view.notifications.toast.invite_response_sent')
         );
     }
     async function dismissBoopNotifications(senderUserId) {
@@ -477,7 +477,7 @@ export function useVrcNotificationPageActions({
             })
             .catch(() => {});
         await expireNotificationLocally(notification);
-        toast.success(t('view.notification.generated.boop_sent'));
+        toast.success(t('view.notification.success.boop_sent'));
     }
     async function sendNotificationResponse(notification, response) {
         try {
@@ -503,7 +503,7 @@ export function useVrcNotificationPageActions({
             });
             await expireNotificationLocally(notification);
             toast.success(
-                t('view.notification.generated.notification_response_sent')
+                t('view.notification.success.notification_response_sent')
             );
         } catch (error) {
             if (notification.version >= 2) {
@@ -513,7 +513,7 @@ export function useVrcNotificationPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_send_notification_response'
+                          'view.notifications.toast.failed_to_send_notification_response'
                       )
             );
         }

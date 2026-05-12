@@ -820,7 +820,7 @@ export function ToolsPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.tools.generated_toast.failed_to_pin_tool_to_navigation'
+                          'view.tools.toast.failed_to_pin_tool_to_navigation'
                       )
             );
         }
@@ -849,7 +849,7 @@ export function ToolsPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.tools.generated_toast.failed_to_unpin_tool_from_navigation'
+                          'view.tools.toast.failed_to_unpin_tool_from_navigation'
                       )
             );
         }

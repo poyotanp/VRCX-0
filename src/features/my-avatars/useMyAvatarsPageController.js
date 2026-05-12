@@ -338,7 +338,7 @@ export function useMyAvatarsPageController({ embedded = false } = {}) {
             setLoadStatus('idle');
             setDetail(
                 t(
-                    'view.my_avatars.generated.no_authenticated_user_is_available_for_the_avatar_inventory'
+                    'view.my_avatars.empty.no_authenticated_user_is_available_for_the_avatar_inventory'
                 )
             );
             return;
@@ -371,7 +371,7 @@ export function useMyAvatarsPageController({ embedded = false } = {}) {
                     userFacingErrorMessage(
                         error,
                         t(
-                            'view.my_avatars.generated.avatar_inventory_failed_to_load'
+                            'view.my_avatars.error.avatar_inventory_failed_to_load'
                         )
                     )
                 );

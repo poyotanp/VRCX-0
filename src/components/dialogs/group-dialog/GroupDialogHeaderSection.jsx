@@ -198,14 +198,14 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                                 >
                                     <UserIcon data-icon="inline-start" />
                                     <span className="truncate">
-                                        {t('dialog.group.generated.owner')}{' '}
+                                        {t('dialog.group.label.owner')}{' '}
                                         {ownerLinkLabel}
                                     </span>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                                 {t(
-                                    'dialog.group.generated.open_group_owner_profile'
+                                    'dialog.group.action.open_group_owner_profile'
                                 )}
                             </TooltipContent>
                         </Tooltip>
@@ -428,11 +428,11 @@ export function GroupDialogHeaderSection({ state, handlers }) {
                     value={group.onlineMemberCount}
                 />
                 <GroupRailMetric
-                    label={t('dialog.group.generated.privacy')}
+                    label={t('dialog.group.label.privacy')}
                     value={group.privacy}
                 />
                 <GroupRailMetric
-                    label={t('dialog.group.generated.membership')}
+                    label={t('dialog.group.label.membership')}
                     value={memberStatus || group.membershipStatus}
                 />
             </div>

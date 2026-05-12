@@ -61,7 +61,7 @@ export function UserDialogHeaderBadges({
             {profile.$isModerator ? (
                 <Badge variant="secondary">
                     <ShieldCheckIcon data-icon="inline-start" />
-                    {t('dialog.user.generated.moderator')}
+                    {t('dialog.user.label.moderator')}
                 </Badge>
             ) : null}
             {profile.$isTroll ? (
@@ -94,18 +94,18 @@ export function UserDialogHeaderBadges({
             {profile.ageVerified ? <Badge variant="outline">18+</Badge> : null}
             {friendNumber ? (
                 <Badge variant="outline">
-                    {t('dialog.user.generated.friend')}
+                    {t('dialog.user.label.friend')}
                     {friendNumber}
                 </Badge>
             ) : null}
             {moderationState.block ? (
                 <Badge variant="destructive">
-                    {t('dialog.user.generated.blocked')}
+                    {t('dialog.user.error.blocked')}
                 </Badge>
             ) : null}
             {moderationState.mute ? (
                 <Badge variant="destructive">
-                    {t('dialog.user.generated.muted')}
+                    {t('dialog.user.label.muted')}
                 </Badge>
             ) : null}
             <Badge variant="outline">{profile.$trustLevel || 'Visitor'}</Badge>

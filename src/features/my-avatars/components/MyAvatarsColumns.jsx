@@ -62,7 +62,7 @@ export function buildMyAvatarsColumns({
                             src={row.original.thumbnailImageUrl}
                             alt={
                                 row.original?.name ||
-                                t('view.my_avatars.generated.avatar')
+                                t('view.my_avatars.label.avatar')
                             }
                             className="h-6 w-10 rounded-sm object-cover"
                             loading="lazy"

@@ -86,7 +86,7 @@ export function NoteExportDialog({ open, onOpenChange }) {
                 userFacingErrorMessage(
                     error,
                     t(
-                        'host.tools_dialogs.generated_toast.failed_to_load_memo_export_rows'
+                        'host.tools_dialogs.toast.failed_to_load_memo_export_rows'
                     )
                 )
             );

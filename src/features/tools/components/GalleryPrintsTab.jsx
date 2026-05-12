@@ -182,9 +182,9 @@ export function GalleryPrintsTab({
                         </div>
                     ) : (
                         <EmptyState
-                            title={t('view.tools.generated.no_prints_loaded')}
+                            title={t('view.tools.empty.no_prints_loaded')}
                             description={t(
-                                'view.tools.generated.refresh_this_tab_to_load_your_vrchat_prints'
+                                'view.tools.action.refresh_this_tab_to_load_your_vrchat_prints'
                             )}
                         />
                     )}

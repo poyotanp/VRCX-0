@@ -84,14 +84,14 @@ function FavoriteExportDialog({
         try {
             await navigator.clipboard.writeText(content);
             toast.success(
-                t('view.favorite.generated.copied_favorite_export_data')
+                t('view.favorite.success.copied_favorite_export_data')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_copy_favorite_export_data'
+                          'view.favorites.toast.failed_to_copy_favorite_export_data'
                       )
             );
         }
@@ -102,12 +102,12 @@ function FavoriteExportDialog({
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('view.favorite.generated.export_favorite')} {kind}
+                        {t('view.favorite.action.export_favorite')} {kind}
                         {t('common.time_units.s')}
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'view.favorite.generated.review_the_csv_content_before_copying_it_to_the_clipboard'
+                            'view.favorite.label.review_the_csv_content_before_copying_it_to_the_clipboard'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -144,7 +144,7 @@ function FavoriteExportDialog({
                         <SelectTrigger size="sm" className="min-w-52">
                             <SelectValue
                                 placeholder={t(
-                                    'view.favorite.generated.vrchat_group'
+                                    'view.favorite.label.vrchat_group'
                                 )}
                             />
                         </SelectTrigger>
@@ -152,7 +152,7 @@ function FavoriteExportDialog({
                             <SelectGroup>
                                 <SelectItem value={EXPORT_ALL_VALUE}>
                                     {t(
-                                        'view.favorite.generated.all_vrchat_favorites'
+                                        'view.favorite.label.all_vrchat_favorites'
                                     )}
                                 </SelectItem>
                                 {remoteGroups.map((group) => (
@@ -177,7 +177,7 @@ function FavoriteExportDialog({
                         <SelectTrigger size="sm" className="min-w-52">
                             <SelectValue
                                 placeholder={t(
-                                    'view.favorite.generated.local_group'
+                                    'view.favorite.label.local_group'
                                 )}
                             />
                         </SelectTrigger>
@@ -185,7 +185,7 @@ function FavoriteExportDialog({
                             <SelectGroup>
                                 <SelectItem value={EXPORT_NONE_VALUE}>
                                     {t(
-                                        'view.favorite.generated.no_local_group'
+                                        'view.favorite.empty.no_local_group'
                                     )}
                                 </SelectItem>
                                 {localGroups.map((group) => (
@@ -200,7 +200,7 @@ function FavoriteExportDialog({
                         </SelectContent>
                     </Select>
                     <span className="text-muted-foreground text-sm">
-                        {items.length} {t('view.favorite.generated.item_s')}
+                        {items.length} {t('view.favorite.label.item_s')}
                     </span>
                 </div>
                 <Textarea

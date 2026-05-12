@@ -74,7 +74,7 @@ export function AvatarProviderSettingsDialog({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.avatar_provider_settings.generated_toast.failed_to_save_avatar_providers'
+                          'component.avatar_provider_settings.toast.failed_to_save_avatar_providers'
                       )
             );
         } finally {
@@ -133,7 +133,7 @@ export function AvatarProviderSettingsDialog({
                                 htmlFor={`avatar-provider-${index}`}
                                 className="sr-only"
                             >
-                                {t('view.search.generated.avatar_provider')}{' '}
+                                {t('view.search.label.avatar_provider')}{' '}
                                 {index + 1}
                             </FieldLabel>
                             <InputGroup>

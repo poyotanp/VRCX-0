@@ -83,7 +83,7 @@ export function DatabaseUpgradeDialog({ open }) {
                                 }}
                             >
                                 {t(
-                                    'dialog.system.generated.migrate_and_restart'
+                                    'dialog.system.action.migrate_and_restart'
                                 )}
                             </Button>
                         </>

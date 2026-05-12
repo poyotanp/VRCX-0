@@ -219,7 +219,7 @@ export function WorldDialogTabPanels({ handlers, helpers, state }) {
                         </EntityInfoBlock>
                     ) : null}
                     <EntityInfoBlock
-                        label={t('dialog.world.generated.author')}
+                        label={t('dialog.world.label.author')}
                         onClick={world.authorId ? onOpenAuthor : undefined}
                     >
                         <span className="block truncate text-xs">

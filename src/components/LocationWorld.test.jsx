@@ -42,7 +42,7 @@ vi.mock('@/state/launchStore.js', () => ({
 
 vi.mock('react-i18next', () => {
     const translations = {
-        'component.region_code_badge.generated_dynamic.region_value': 'Region',
+        'component.region_code_badge.dynamic.region_value': 'Region',
         'dialog.new_instance.access_type_friend_plus': 'Friends+',
         'dialog.new_instance.access_type_public': 'Public',
         'dialog.user.info.instance_closed': 'Instance closed',

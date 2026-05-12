@@ -77,8 +77,8 @@ function DashboardPagePreview({ definition }) {
     let metrics = [
         <PreviewMetric
             key="status"
-            label={t('view.dashboard.generated.status')}
-            value={t('view.dashboard.generated.route_available')}
+            label={t('view.dashboard.label.status')}
+            value={t('view.dashboard.label.route_available')}
         />
     ];
 
@@ -86,12 +86,12 @@ function DashboardPagePreview({ definition }) {
         metrics = [
             <PreviewMetric
                 key="friends"
-                label={t('view.dashboard.generated.friends')}
+                label={t('view.dashboard.label.friends')}
                 value={friendCount}
             />,
             <PreviewMetric
                 key="online"
-                label={t('view.dashboard.generated.online')}
+                label={t('view.dashboard.label.online')}
                 value={onlineCount}
             />
         ];
@@ -99,7 +99,7 @@ function DashboardPagePreview({ definition }) {
         metrics = [
             <PreviewMetric
                 key="favorites"
-                label={t('view.dashboard.generated.favorites')}
+                label={t('view.dashboard.label.favorites')}
                 value={favoriteFriendCount}
             />
         ];
@@ -107,7 +107,7 @@ function DashboardPagePreview({ definition }) {
         metrics = [
             <PreviewMetric
                 key="favorites"
-                label={t('view.dashboard.generated.favorites')}
+                label={t('view.dashboard.label.favorites')}
                 value={favoriteWorldCount}
             />
         ];
@@ -115,7 +115,7 @@ function DashboardPagePreview({ definition }) {
         metrics = [
             <PreviewMetric
                 key="favorites"
-                label={t('view.dashboard.generated.favorites')}
+                label={t('view.dashboard.label.favorites')}
                 value={favoriteAvatarCount}
             />
         ];
@@ -123,7 +123,7 @@ function DashboardPagePreview({ definition }) {
         metrics = [
             <PreviewMetric
                 key="notifications"
-                label={t('view.dashboard.generated.notifications')}
+                label={t('view.dashboard.label.notifications')}
                 value={notificationCount}
             />
         ];
@@ -161,7 +161,7 @@ export function DashboardPanelPreview({ panel, onPanelChange }) {
         return (
             <div className="bg-card text-muted-foreground relative flex h-full min-h-[180px] items-center justify-center overflow-hidden rounded-md border border-dashed text-sm">
                 <div className="py-10 text-center">
-                    {t('view.dashboard.generated.panel_not_configured')}
+                    {t('view.dashboard.label.panel_not_configured')}
                 </div>
             </div>
         );
@@ -170,7 +170,7 @@ export function DashboardPanelPreview({ panel, onPanelChange }) {
     if (!definition) {
         return (
             <div className="bg-card text-muted-foreground relative flex h-full min-h-[180px] items-center justify-center overflow-hidden rounded-md border border-dashed text-sm">
-                {t('view.dashboard.generated.unsupported_panel')} {panelKey}
+                {t('view.dashboard.error.unsupported_panel')} {panelKey}
             </div>
         );
     }

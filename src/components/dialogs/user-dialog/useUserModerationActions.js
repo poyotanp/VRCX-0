@@ -48,7 +48,7 @@ export function useUserModerationActions({
         actionStatusRef.current = `${type}:${enabled ? 'enable' : 'disable'}`;
         setActionStatus(actionStatusRef.current);
         const result = await confirm({
-            title: t('dialog.user.generated_dynamic.value_user', {
+            title: t('dialog.user.dynamic.value_user', {
                 value: label
             }),
             description: profile?.displayName || rosterUserId,
@@ -98,7 +98,7 @@ export function useUserModerationActions({
                 mute: Boolean(savedState.mute)
             });
             toast.success(
-                t('dialog.user.generated_dynamic.value_request_sent', {
+                t('dialog.user.dynamic.value_request_sent', {
                     value: label
                 })
             );
@@ -106,7 +106,7 @@ export function useUserModerationActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_value_user', {
+                    : t('dialog.user.toast.failed_to_value_user', {
                           value: label.toLowerCase()
                       })
             );
@@ -138,15 +138,15 @@ export function useUserModerationActions({
             labelMap[type] ||
             t(
                 enabled
-                    ? 'dialog.user.generated_dynamic.enable_value'
-                    : 'dialog.user.generated_dynamic.disable_value',
+                    ? 'dialog.user.dynamic.enable_value'
+                    : 'dialog.user.dynamic.disable_value',
                 { value: type }
             );
 
         actionStatusRef.current = `${type}:${enabled ? 'enable' : 'disable'}`;
         setActionStatus(actionStatusRef.current);
         const result = await confirm({
-            title: t('dialog.user.generated_dynamic.value', { value: label }),
+            title: t('dialog.user.dynamic.value', { value: label }),
             description: profile?.displayName || rosterUserId,
             confirmText: label,
             cancelText: t('common.actions.cancel'),
@@ -178,7 +178,7 @@ export function useUserModerationActions({
                 [type]: enabled
             }));
             toast.success(
-                t('dialog.user.generated_dynamic.value_request_sent', {
+                t('dialog.user.dynamic.value_request_sent', {
                     value: label
                 })
             );
@@ -186,7 +186,7 @@ export function useUserModerationActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_value', {
+                    : t('dialog.user.toast.failed_to_value', {
                           value: label.toLowerCase()
                       })
             );
@@ -242,7 +242,7 @@ export function useUserModerationActions({
                 showAvatar: nextType === 5
             });
             toast.success(
-                t('dialog.user.generated_dynamic.value_updated', {
+                t('dialog.user.dynamic.value_updated', {
                     value: label
                 })
             );
@@ -251,7 +251,7 @@ export function useUserModerationActions({
                 error instanceof Error && !knownAvatarModerationFailure
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_update_avatar_moderation'
+                          'dialog.user.toast.failed_to_update_avatar_moderation'
                       )
             );
         } finally {

@@ -116,7 +116,7 @@ export function useLocationPreviousInstancesDialog({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.location.generated_toast.failed_to_load_instance_history'
+                          'component.location.toast.failed_to_load_instance_history'
                       )
             );
         } finally {

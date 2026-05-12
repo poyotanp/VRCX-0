@@ -66,7 +66,7 @@ export function FriendsLocationsSectionHeader({
                             onClick={() => onOpenWorld(section)}
                         >
                             <GlobeIcon data-icon="inline-start" />
-                            {t('view.friend_list.generated.world')}
+                            {t('view.friend_list.label.world')}
                         </Button>
                     ) : null}
                     {section.groupId ? (
@@ -77,7 +77,7 @@ export function FriendsLocationsSectionHeader({
                             onClick={() => onOpenGroup(section)}
                         >
                             <UsersIcon data-icon="inline-start" />
-                            {t('view.friend_list.generated.group')}
+                            {t('view.friend_list.label.group')}
                         </Button>
                     ) : null}
                 </div>

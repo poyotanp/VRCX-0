@@ -51,13 +51,13 @@ export function ModerationPageView({
                 {isLoading ? (
                     <LoadingState
                         label={t(
-                            'view.moderation.generated.loading_the_moderation_snapshot'
+                            'view.moderation.loading.loading_the_moderation_snapshot'
                         )}
                     />
                 ) : isError ? (
                     <ModerationEmptyState
                         title={t(
-                            'view.moderation.generated.moderation_snapshot_failed_to_load'
+                            'view.moderation.error.moderation_snapshot_failed_to_load'
                         )}
                         description={
                             detail || 'The moderation request did not complete.'
@@ -85,10 +85,10 @@ export function ModerationPageView({
                 ) : (
                     <ModerationEmptyState
                         title={t(
-                            'view.moderation.generated.no_moderation_rows_match_the_current_filters'
+                            'view.moderation.empty.no_moderation_rows_match_the_current_filters'
                         )}
                         description={t(
-                            'view.moderation.generated.broaden_the_type_filters_or_search_query_to_see_more_results'
+                            'view.moderation.label.broaden_the_type_filters_or_search_query_to_see_more_results'
                         )}
                     />
                 )}

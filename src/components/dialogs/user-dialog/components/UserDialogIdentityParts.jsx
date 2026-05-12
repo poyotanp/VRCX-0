@@ -74,7 +74,7 @@ export function PreviousDisplayNamesBadge({ names }) {
                 <div className="flex flex-col">
                     <div className="border-border flex items-center justify-between gap-3 border-b px-3 py-2">
                         <div className="text-sm font-medium">
-                            {t('dialog.user.generated.previous_display_names')}
+                            {t('dialog.user.label.previous_display_names')}
                         </div>
                         <Badge variant="secondary">{names.length}</Badge>
                     </div>

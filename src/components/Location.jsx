@@ -214,7 +214,7 @@ export function Location({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.location.generated_toast.failed_to_send_self_invite'
+                          'component.location.toast.failed_to_send_self_invite'
                       )
             );
         }

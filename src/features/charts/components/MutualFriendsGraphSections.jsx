@@ -119,7 +119,7 @@ function MutualFriendsNodePicker({
                             }}
                         >
                             <span className="min-w-0 flex-1 truncate">
-                                {t('view.charts.generated.no_selection')}
+                                {t('view.charts.empty.no_selection')}
                             </span>
                             <CheckIcon
                                 data-icon="inline-end"
@@ -150,7 +150,7 @@ function MutualFriendsNodePicker({
                         {!filteredNodeOptions.length ? (
                             <div className="text-muted-foreground p-3 text-xs">
                                 {t(
-                                    'view.charts.generated.no_friends_match_this_search'
+                                    'view.charts.empty.no_friends_match_this_search'
                                 )}
                             </div>
                         ) : null}
@@ -274,7 +274,7 @@ function MutualFriendsSettingsSheet({
                                 {!filteredExcludeOptions.length ? (
                                     <div className="text-muted-foreground p-3 text-xs">
                                         {t(
-                                            'view.charts.generated.no_friends_match_this_search'
+                                            'view.charts.empty.no_friends_match_this_search'
                                         )}
                                     </div>
                                 ) : null}
@@ -287,7 +287,7 @@ function MutualFriendsSettingsSheet({
                         </p>
                     </div>
                     <div className="text-muted-foreground text-xs">
-                        {t('view.charts.generated.hidden_nodes')}{' '}
+                        {t('view.charts.label.hidden_nodes')}{' '}
                         {excludedCount}. Visible nodes: {nodeCount}. Visible
                         links: {edgeCount}.
                     </div>
@@ -485,7 +485,7 @@ export function MutualFriendsGraphStage({
     if (status === 'error') {
         return (
             <GraphEmptyState
-                title={t('view.charts.generated.mutual_graph_failed_to_load')}
+                title={t('view.charts.error.mutual_graph_failed_to_load')}
                 description={
                     detail ||
                     'The graph adapter could not read the cached mutual-friends tables.'
@@ -496,9 +496,9 @@ export function MutualFriendsGraphStage({
     if (!baseNodeCount) {
         return (
             <GraphEmptyState
-                title={t('view.charts.generated.no_cached_mutual_graph_yet')}
+                title={t('view.charts.empty.no_cached_mutual_graph_yet')}
                 description={t(
-                    'view.charts.generated.the_local_mutual_friends_snapshot_is_empty_use_start_fetch_t'
+                    'view.charts.description.the_local_mutual_friends_snapshot_is_empty_use_start_fetch_to_build_the_graph_cache'
                 )}
             />
         );
@@ -507,10 +507,10 @@ export function MutualFriendsGraphStage({
         return (
             <GraphEmptyState
                 title={t(
-                    'view.charts.generated.no_graph_nodes_match_the_current_search'
+                    'view.charts.empty.no_graph_nodes_match_the_current_search'
                 )}
                 description={t(
-                    'view.charts.generated.try_a_broader_search_term_or_clear_the_node_filter'
+                    'view.charts.label.try_a_broader_search_term_or_clear_the_node_filter'
                 )}
             />
         );

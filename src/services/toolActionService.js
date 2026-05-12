@@ -56,7 +56,7 @@ export async function triggerToolByKey(toolKey, { navigate, t }) {
     if (!action) {
         toast.error(
             i18n.t(
-                'service.tool_action_service.generated_dynamic.unknown_tool_action_value',
+                'service.tool_action_service.dynamic.unknown_tool_action_value',
                 { value: toolKey }
             )
         );
@@ -124,7 +124,7 @@ export async function triggerToolByKey(toolKey, { navigate, t }) {
 
     toast.error(
         i18n.t(
-            'service.tool_action_service.generated_dynamic.unsupported_tool_action_value',
+            'service.tool_action_service.dynamic.unsupported_tool_action_value',
             { value: toolKey }
         )
     );

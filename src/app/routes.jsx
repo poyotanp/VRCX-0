@@ -68,7 +68,7 @@ export const protectedRoutes = [
         path: '/player-list',
         titleKey: 'app.routes.current_players',
         descriptionKey:
-            'app.routes.current_instance_player_roster_rebuilt_from_loca',
+            'app.routes.current_instance_player_roster_rebuilt_from_local_activity_data',
         element: lazyRouteElement(
             () => import('@/features/player-list/PlayerListPage.jsx'),
             'PlayerListPage'

@@ -160,7 +160,7 @@ function InstanceInfoTooltip({
                 <div className="flex flex-col gap-1.5">
                     {instance?.closedAt ? (
                         <div>
-                            {t('dialog.instance.generated.closed_at')}{' '}
+                            {t('dialog.instance.label.closed_at')}{' '}
                             {formatDateFilter(instance.closedAt, 'long')}
                         </div>
                     ) : null}
@@ -179,37 +179,37 @@ function InstanceInfoTooltip({
                                 onClose?.();
                             }}
                         >
-                            {t('dialog.instance.generated.close_instance')}
+                            {t('dialog.instance.action.close_instance')}
                         </Button>
                     ) : null}
                     <div>
                         <span className="text-platform-pc">PC: </span>
                         {platformCount(instance, 'standalonewindows')}
                         <span className="text-platform-quest ml-2">
-                            {t('dialog.instance.generated.android')}{' '}
+                            {t('dialog.instance.label.android')}{' '}
                         </span>
                         {platformCount(instance, 'android')}
                     </div>
                     <div>
-                        {t('dialog.instance.generated.ios')}{' '}
+                        {t('dialog.instance.label.ios')}{' '}
                         {platformCount(instance, 'ios')}
                     </div>
                     {instance?.gameServerVersion ? (
                         <div>
-                            {t('dialog.instance.generated.game_version')}{' '}
+                            {t('dialog.instance.label.game_version')}{' '}
                             {instance.gameServerVersion}
                         </div>
                     ) : null}
                     {instance?.queueEnabled ? (
                         <div>
                             {t(
-                                'dialog.instance.generated.instance_queuing_enabled'
+                                'dialog.instance.label.instance_queuing_enabled'
                             )}
                         </div>
                     ) : null}
                     {disabledContent ? (
                         <div>
-                            {t('dialog.instance.generated.disabled_content')}{' '}
+                            {t('dialog.instance.label.disabled_content')}{' '}
                             {disabledContent}
                         </div>
                     ) : null}
@@ -339,7 +339,7 @@ export function InstanceActionBar({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.instance_action_bar.generated_toast.failed_to_send_self_invite'
+                          'component.instance_action_bar.toast.failed_to_send_self_invite'
                       )
             );
         } finally {
@@ -386,13 +386,13 @@ export function InstanceActionBar({
                     instances: [response.json]
                 });
             }
-            toast.success(t('dialog.instance.generated.instance_refreshed'));
+            toast.success(t('dialog.instance.success.instance_refreshed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.instance_action_bar.generated_toast.failed_to_refresh_instance'
+                          'component.instance_action_bar.toast.failed_to_refresh_instance'
                       )
             );
         } finally {
@@ -408,7 +408,7 @@ export function InstanceActionBar({
         const requestEndpoint = endpoint;
         const result = await confirm({
             title: t(
-                'component.instance_action_bar.generated_modal.close_instance'
+                'component.instance_action_bar.modal.close_instance'
             ),
             description: requestLocation,
             confirmText: t('common.actions.close'),
@@ -439,13 +439,13 @@ export function InstanceActionBar({
                     instances: [response.json]
                 });
             }
-            toast.success(t('dialog.instance.generated.instance_closed'));
+            toast.success(t('dialog.instance.label.instance_closed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.instance_action_bar.generated_toast.failed_to_close_instance'
+                          'component.instance_action_bar.toast.failed_to_close_instance'
                       )
             );
         } finally {
@@ -533,7 +533,7 @@ export function InstanceActionBar({
             {instanceInfoPlacement === 'start' ? instanceSummary : null}
             {showLaunch && actionTarget.isRealLaunchLocation ? (
                 <ActionButton
-                    label={t('dialog.instance.generated.launch_instance')}
+                    label={t('dialog.instance.action.launch_instance')}
                     icon={LogInIcon}
                     disableTooltip={disableTooltip}
                     loading={busy === 'launch'}
@@ -543,7 +543,7 @@ export function InstanceActionBar({
             ) : null}
             {showInvite && actionTarget.isRealInviteLocation ? (
                 <ActionButton
-                    label={t('dialog.instance.generated.self_invite')}
+                    label={t('dialog.instance.label.self_invite')}
                     icon={MailIcon}
                     disableTooltip={disableTooltip}
                     loading={busy === 'invite'}

@@ -137,7 +137,7 @@ export function GroupEventSummary({
         return (
             <div className="text-muted-foreground flex items-center gap-2 rounded-md border border-dashed p-3 text-sm">
                 <Spinner />
-                {t('dialog.group.generated.loading')}
+                {t('dialog.group.loading.loading')}
             </div>
         );
     }
@@ -247,7 +247,7 @@ export function GroupEventsTab({
             {loading && !rows.length ? (
                 <div className="text-muted-foreground flex items-center gap-2 rounded-md border border-dashed p-3 text-sm">
                     <Spinner />
-                    {t('dialog.group.generated.loading')}
+                    {t('dialog.group.loading.loading')}
                 </div>
             ) : null}
 

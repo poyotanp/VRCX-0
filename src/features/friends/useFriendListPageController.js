@@ -360,7 +360,7 @@ export function useFriendListPageController({ embedded = false } = {}) {
           )
         : 0;
     const toolbarDetail = isMutualFetching
-        ? t('view.friend_list.generated.loading_mutual_friends_progress', {
+        ? t('view.friend_list.loading.loading_mutual_friends_progress', {
               current: mutualProgress.current,
               total: mutualProgress.total
           })

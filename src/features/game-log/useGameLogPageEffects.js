@@ -346,7 +346,7 @@ export function useGameLogPageEffects({
                 setLoadStatus('idle');
                 setDetail(
                     t(
-                        'view.game_log.generated.no_authenticated_user_is_available_for_the_game_log_snapshot'
+                        'view.game_log.empty.no_authenticated_user_is_available_for_the_game_log_snapshot'
                     )
                 );
             }
@@ -356,7 +356,7 @@ export function useGameLogPageEffects({
             setRows([]);
             setSessions([]);
             setLoadStatus('idle');
-            setDetail(t('view.game_log.generated.game_log_is_disabled'));
+            setDetail(t('view.game_log.label.game_log_is_disabled'));
             return;
         }
         if (favoritesOnly && !isFavoritesLoaded) {
@@ -364,7 +364,7 @@ export function useGameLogPageEffects({
             setSessions([]);
             setLoadStatus('idle');
             setDetail(
-                t('view.game_log.generated.favorites_are_still_hydrating')
+                t('view.game_log.description.favorites_are_still_hydrating')
             );
             return;
         }
@@ -411,7 +411,7 @@ export function useGameLogPageEffects({
                 setDetail(
                     userFacingErrorMessage(
                         error,
-                        t('view.game_log.generated.game_log_failed_to_load')
+                        t('view.game_log.error.game_log_failed_to_load')
                     )
                 );
             });

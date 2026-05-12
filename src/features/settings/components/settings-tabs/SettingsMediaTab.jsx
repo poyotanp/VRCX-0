@@ -104,12 +104,12 @@ export function SettingsMediaTab({
                 <CardHeader>
                     <CardTitle>
                         {t(
-                            'view.settings.advanced.advanced.user_generated_content.header'
+                            'view.settings.advanced.advanced.user_content.header'
                         )}
                     </CardTitle>
                     <CardDescription>
                         {t(
-                            'view.settings.advanced.advanced.user_generated_content.description'
+                            'view.settings.advanced.advanced.user_content.description'
                         )}
                     </CardDescription>
                 </CardHeader>
@@ -122,7 +122,7 @@ export function SettingsMediaTab({
                             onClick={onOpenUgcPhotosFolder}
                         >
                             {t(
-                                'view.settings.advanced.advanced.user_generated_content.folder'
+                                'view.settings.advanced.advanced.user_content.folder'
                             )}
                         </Button>
                         <Button
@@ -132,7 +132,7 @@ export function SettingsMediaTab({
                             onClick={onOpenUgcFolderSelector}
                         >
                             {t(
-                                'view.settings.advanced.advanced.user_generated_content.set_folder'
+                                'view.settings.advanced.advanced.user_content.set_folder'
                             )}
                         </Button>
                         {prefs.userGeneratedContentPath ? (
@@ -143,7 +143,7 @@ export function SettingsMediaTab({
                                 onClick={onResetUgcFolder}
                             >
                                 {t(
-                                    'view.settings.advanced.advanced.user_generated_content.reset_override'
+                                    'view.settings.advanced.advanced.user_content.reset_override'
                                 )}
                             </Button>
                         ) : null}

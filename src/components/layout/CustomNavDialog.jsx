@@ -442,7 +442,7 @@ export function CustomNavDialog({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.custom_nav.generated_toast.failed_to_create_dashboard'
+                          'component.custom_nav.toast.failed_to_create_dashboard'
                       )
             );
         }
@@ -482,7 +482,7 @@ export function CustomNavDialog({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.custom_nav.generated_toast.failed_to_update_dashboard'
+                          'component.custom_nav.toast.failed_to_update_dashboard'
                       )
             );
         }
@@ -511,7 +511,7 @@ export function CustomNavDialog({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.custom_nav.generated_toast.failed_to_delete_dashboard'
+                          'component.custom_nav.toast.failed_to_delete_dashboard'
                       )
             );
         }

@@ -129,18 +129,18 @@ function FavoritesContentPanel({ kind, content }) {
                 !content.items.length ? (
                     <FavoritesLoadingState
                         title={t(
-                            'view.favorite.generated.loading_favorites_baseline'
+                            'view.favorite.loading.loading_favorites_baseline'
                         )}
                     />
                 ) : content.favoriteLoadStatus === 'error' ? (
                     <FavoritesEmptyState
                         title={t(
-                            'view.favorite.generated.favorites_failed_to_load'
+                            'view.favorite.error.favorites_failed_to_load'
                         )}
                         description={
                             content.favoriteDetail ||
                             t(
-                                'view.favorite.generated.the_favorites_baseline_did_not_finish_loading'
+                                'view.favorite.label.the_favorites_baseline_did_not_finish_loading'
                             )
                         }
                     />
@@ -149,10 +149,10 @@ function FavoritesContentPanel({ kind, content }) {
                         title={
                             kind === 'avatar'
                                 ? t(
-                                      'view.favorite.generated.loading_remote_avatar_details'
+                                      'view.favorite.loading.loading_remote_avatar_details'
                                   )
                                 : t(
-                                      'view.favorite.generated.loading_remote_world_details'
+                                      'view.favorite.loading.loading_remote_world_details'
                                   )
                         }
                     />
@@ -166,10 +166,10 @@ function FavoritesContentPanel({ kind, content }) {
                         description={
                             content.isSearchActive
                                 ? t(
-                                      'view.favorite.generated.try_a_different_search_term'
+                                      'view.favorite.label.try_a_different_search_term'
                                   )
                                 : t(
-                                      'view.favorite.generated.the_selected_group_currently_has_no_items'
+                                      'view.favorite.empty.the_selected_group_currently_has_no_items'
                                   )
                         }
                     />

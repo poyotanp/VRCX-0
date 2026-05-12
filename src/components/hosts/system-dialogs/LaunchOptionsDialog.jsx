@@ -57,7 +57,7 @@ export function LaunchOptionsDialog({ open, onOpenChange }) {
                     userFacingErrorMessage(
                         error,
                         t(
-                            'host.system_dialogs.generated_toast.failed_to_load_launch_options'
+                            'host.system_dialogs.toast.failed_to_load_launch_options'
                         )
                     )
                 );
@@ -99,14 +99,14 @@ export function LaunchOptionsDialog({ open, onOpenChange }) {
                 )
             ]);
             setLaunchArguments(normalizedArguments);
-            toast.success(t('dialog.system.generated.updated_launch_options'));
+            toast.success(t('dialog.system.success.updated_launch_options'));
             onOpenChange(false);
         } catch (error) {
             toast.error(
                 userFacingErrorMessage(
                     error,
                     t(
-                        'host.system_dialogs.generated_toast.failed_to_save_launch_options'
+                        'host.system_dialogs.toast.failed_to_save_launch_options'
                     )
                 )
             );
@@ -129,16 +129,16 @@ export function LaunchOptionsDialog({ open, onOpenChange }) {
                 </DialogHeader>
                 <FieldGroup>
                     <div className="bg-muted/30 text-muted-foreground rounded-md border p-3 text-xs">
-                        <div>{t('dialog.system.generated.fps_144')}</div>
+                        <div>{t('dialog.system.label.fps_144')}</div>
                         <div>
-                            {t('dialog.system.generated.enable_debug_gui')}
+                            {t('dialog.system.action.enable_debug_gui')}
                         </div>
                         <div>
-                            {t('dialog.system.generated.enable_sdk_log_levels')}
+                            {t('dialog.system.action.enable_sdk_log_levels')}
                         </div>
                         <div>
                             {t(
-                                'dialog.system.generated.enable_udon_debug_logging'
+                                'dialog.system.action.enable_udon_debug_logging'
                             )}
                         </div>
                     </div>

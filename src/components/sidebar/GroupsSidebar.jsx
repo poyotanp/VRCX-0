@@ -253,19 +253,19 @@ function GroupInstanceRow({ instance, currentUserId, friendsMap }) {
             );
             if (opened) {
                 toast.success(
-                    t('side_panel.generated.vrchat_launch_request_sent')
+                    t('side_panel.success.vrchat_launch_request_sent')
                 );
                 return;
             }
             toast.error(
-                t('side_panel.generated.unable_to_open_this_instance_in_vrchat')
+                t('side_panel.error.unable_to_open_this_instance_in_vrchat')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.groups_sidebar.generated_toast.failed_to_launch_instance'
+                          'component.groups_sidebar.toast.failed_to_launch_instance'
                       )
             );
         }
@@ -287,7 +287,7 @@ function GroupInstanceRow({ instance, currentUserId, friendsMap }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.groups_sidebar.generated_toast.failed_to_send_self_invite'
+                          'component.groups_sidebar.toast.failed_to_send_self_invite'
                       )
             );
         }

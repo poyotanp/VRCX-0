@@ -200,7 +200,7 @@ async function handleLaunchCommand(input) {
                 const result = await useModalStore.getState().confirm({
                     title: i18n.t('common.actions.confirm'),
                     description: i18n.t(
-                        'service.ipc_event_service.generated_modal.select_avatar_value',
+                        'service.ipc_event_service.modal.select_avatar_value',
                         { value: avatarId }
                     ),
                     confirmText: i18n.t('common.actions.select'),

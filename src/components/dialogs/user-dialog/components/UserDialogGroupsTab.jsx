@@ -42,7 +42,7 @@ export function UserDialogGroupsTab({
                 tab="groups"
                 rows={profileGroups}
                 filteredRows={filteredProfileGroups}
-                placeholder={t('dialog.user.generated.search_groups')}
+                placeholder={t('dialog.user.action.search_groups')}
                 remoteStatus={remoteStatus}
                 loadTab={loadTab}
                 search={search}

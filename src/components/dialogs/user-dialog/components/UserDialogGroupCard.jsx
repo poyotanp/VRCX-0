@@ -16,12 +16,12 @@ import { openRow } from './userDialogEntityNavigation.js';
 
 function visibilityLabel(visibility, t) {
     if (visibility === 'friends') {
-        return t('dialog.user.generated.visibility_friends');
+        return t('dialog.user.label.visibility_friends');
     }
     if (visibility === 'hidden') {
-        return t('dialog.user.generated.visibility_hidden');
+        return t('dialog.user.label.visibility_hidden');
     }
-    return t('dialog.user.generated.visibility_everyone');
+    return t('dialog.user.label.visibility_everyone');
 }
 
 export function UserGroupCard({ group, currentEndpoint }) {

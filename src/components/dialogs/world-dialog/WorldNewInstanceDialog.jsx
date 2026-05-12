@@ -233,7 +233,7 @@ export function WorldNewInstanceDialog({
                     <DialogDescription>
                         {world?.name ||
                             world?.id ||
-                            t('dialog.world.generated.world')}
+                            t('dialog.world.label.world')}
                     </DialogDescription>
                 </DialogHeader>
                 <Tabs
@@ -252,7 +252,7 @@ export function WorldNewInstanceDialog({
                         <FieldGroup className="gap-4">
                             <Field>
                                 <FieldLabel>
-                                    {t('dialog.world.generated.access')}
+                                    {t('dialog.world.label.access')}
                                 </FieldLabel>
                                 <Select
                                     value={form.accessType}
@@ -361,7 +361,7 @@ export function WorldNewInstanceDialog({
                                         <Field>
                                             <FieldLabel htmlFor="world-instance-role-ids">
                                                 {t(
-                                                    'dialog.world.generated.role_ids'
+                                                    'dialog.world.label.role_ids'
                                                 )}
                                             </FieldLabel>
                                             <Input
@@ -401,7 +401,7 @@ export function WorldNewInstanceDialog({
                                             />
                                             <FieldLabel htmlFor="world-instance-queue-enabled">
                                                 {t(
-                                                    'dialog.world.generated.queue_enabled'
+                                                    'dialog.world.label.queue_enabled'
                                                 )}
                                             </FieldLabel>
                                         </Field>
@@ -425,7 +425,7 @@ export function WorldNewInstanceDialog({
                                             />
                                             <FieldLabel htmlFor="world-instance-age-gate">
                                                 {t(
-                                                    'dialog.world.generated.age_gate'
+                                                    'dialog.world.label.age_gate'
                                                 )}
                                             </FieldLabel>
                                         </Field>
@@ -434,7 +434,7 @@ export function WorldNewInstanceDialog({
                             ) : null}
                             <Field>
                                 <FieldLabel htmlFor="world-instance-display-name">
-                                    {t('dialog.world.generated.display_name')}
+                                    {t('dialog.world.label.display_name')}
                                 </FieldLabel>
                                 <Input
                                     id="world-instance-display-name"
@@ -453,7 +453,7 @@ export function WorldNewInstanceDialog({
                         <FieldGroup className="gap-4">
                             <Field>
                                 <FieldLabel>
-                                    {t('dialog.world.generated.access')}
+                                    {t('dialog.world.label.access')}
                                 </FieldLabel>
                                 <Select
                                     value={form.accessType}
@@ -529,7 +529,7 @@ export function WorldNewInstanceDialog({
                             form.accessType !== 'group' ? (
                                 <Field>
                                     <FieldLabel htmlFor="world-launch-user-id">
-                                        {t('dialog.world.generated.user_id')}
+                                        {t('dialog.world.label.user_id')}
                                     </FieldLabel>
                                     <Input
                                         id="world-launch-user-id"
@@ -605,7 +605,7 @@ export function WorldNewInstanceDialog({
                                         }
                                     />
                                     <FieldLabel htmlFor="world-launch-age-gate">
-                                        {t('dialog.world.generated.age_gate')}
+                                        {t('dialog.world.label.age_gate')}
                                     </FieldLabel>
                                 </Field>
                             ) : null}
@@ -622,7 +622,7 @@ export function WorldNewInstanceDialog({
                                         }
                                     />
                                     <FieldLabel htmlFor="world-launch-strict">
-                                        {t('dialog.world.generated.strict')}
+                                        {t('dialog.world.label.strict')}
                                     </FieldLabel>
                                 </Field>
                             ) : null}
@@ -633,7 +633,7 @@ export function WorldNewInstanceDialog({
                     <FieldGroup className="gap-4">
                         <Field>
                             <FieldLabel htmlFor="world-created-location">
-                                {t('dialog.world.generated.location')}
+                                {t('dialog.world.label.location')}
                             </FieldLabel>
                             <Input
                                 id="world-created-location"
@@ -675,7 +675,7 @@ export function WorldNewInstanceDialog({
                             disabled={submitting}
                             onClick={() => onSelfInvite?.(activeCreated)}
                         >
-                            {t('dialog.world.generated.self_invite')}
+                            {t('dialog.world.label.self_invite')}
                         </Button>
                         <Button
                             type="button"
@@ -683,7 +683,7 @@ export function WorldNewInstanceDialog({
                             disabled={submitting || inviteDisabled}
                             onClick={() => onInvite?.(activeCreated)}
                         >
-                            {t('dialog.world.generated.invite')}
+                            {t('dialog.world.action.invite')}
                         </Button>
                         <Button
                             type="button"
@@ -691,14 +691,14 @@ export function WorldNewInstanceDialog({
                             disabled={submitting}
                             onClick={() => onLaunch?.(activeCreated)}
                         >
-                            {t('dialog.world.generated.launch')}
+                            {t('dialog.world.action.launch')}
                         </Button>
                         <Button
                             type="button"
                             disabled={submitting}
                             onClick={() => onOpenInGame?.(activeCreated)}
                         >
-                            {t('dialog.world.generated.open_in_game')}
+                            {t('dialog.world.action.open_in_game')}
                         </Button>
                     </DialogFooter>
                 ) : (

@@ -43,7 +43,7 @@ export function MyAvatarsDialogs({
                 open={Boolean(imageCropRequest)}
                 file={imageCropRequest?.file || null}
                 aspectRatio={4 / 3}
-                title={t('view.my_avatars.generated.change_avatar_image')}
+                title={t('view.my_avatars.action.change_avatar_image')}
                 onOpenChange={onImageCropOpenChange}
                 onConfirm={onImageCropConfirm}
             />

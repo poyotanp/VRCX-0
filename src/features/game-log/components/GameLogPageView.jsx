@@ -123,13 +123,13 @@ export function GameLogPageView({
                     {isLoading ? (
                         <LoadingState
                             label={t(
-                                'view.game_log.generated.loading_the_game_log_snapshot'
+                                'view.game_log.loading.loading_the_game_log_snapshot'
                             )}
                         />
                     ) : isError ? (
                         <GameLogEmptyState
                             title={t(
-                                'view.game_log.generated.game_log_failed_to_load'
+                                'view.game_log.error.game_log_failed_to_load'
                             )}
                             description={
                                 detail || 'The game log query did not complete.'
@@ -138,10 +138,10 @@ export function GameLogPageView({
                     ) : gameLogDisabled ? (
                         <GameLogEmptyState
                             title={t(
-                                'view.game_log.generated.game_log_is_disabled'
+                                'view.game_log.label.game_log_is_disabled'
                             )}
                             description={t(
-                                'view.game_log.generated.enable_game_log_ingestion_in_settings_before_this_page_can_l'
+                                'view.game_log.action.enable_game_log_ingestion_in_settings_before_this_page_can_load_local_vrchat_activity'
                             )}
                         />
                     ) : savedViewMode === 'sessions' ? (
@@ -169,15 +169,15 @@ export function GameLogPageView({
                         ) : (
                             <GameLogEmptyState
                                 title={t(
-                                    'view.game_log.generated.no_game_log_sessions_match_the_current_filters'
+                                    'view.game_log.empty.no_game_log_sessions_match_the_current_filters'
                                 )}
                                 description={
                                     favoritesOnly && !isFavoritesLoaded
                                         ? t(
-                                              'view.game_log.generated.favorites_are_still_hydrating'
+                                              'view.game_log.description.favorites_are_still_hydrating'
                                           )
                                         : t(
-                                              'view.game_log.generated.broaden_the_filters_or_search_query_to_see_more_recent_sessions'
+                                              'view.game_log.description.broaden_the_filters_or_search_query_to_see_more_recent_sessions'
                                           )
                                 }
                             />
@@ -240,18 +240,18 @@ export function GameLogPageView({
 
                             <PageFooter>
                                 <div className="text-muted-foreground text-sm">
-                                    {t('view.game_log.generated.showing')}{' '}
+                                    {t('view.game_log.label.showing')}{' '}
                                     <span className="text-foreground font-medium">
                                         {table.getRowModel().rows.length}
                                     </span>{' '}
-                                    {t('view.game_log.generated.of')}{' '}
+                                    {t('view.game_log.label.of')}{' '}
                                     <span className="text-foreground font-medium">
                                         {annotatedRows.length}
                                     </span>{' '}
                                     {t(
                                         annotatedRows.length === 1
-                                            ? 'view.game_log.generated.game_log_row'
-                                            : 'view.game_log.generated.game_log_rows'
+                                            ? 'view.game_log.label.game_log_row'
+                                            : 'view.game_log.label.game_log_rows'
                                     )}
                                 </div>
                                 <DataTablePagination
@@ -282,15 +282,15 @@ export function GameLogPageView({
                     ) : (
                         <GameLogEmptyState
                             title={t(
-                                'view.game_log.generated.no_game_log_rows_match_the_current_filters'
+                                'view.game_log.empty.no_game_log_rows_match_the_current_filters'
                             )}
                             description={
                                 favoritesOnly && !isFavoritesLoaded
                                     ? t(
-                                          'view.game_log.generated.favorites_are_still_hydrating'
+                                          'view.game_log.description.favorites_are_still_hydrating'
                                       )
                                     : t(
-                                          'view.game_log.generated.broaden_the_filters_or_search_query_to_see_more_results'
+                                          'view.game_log.description.broaden_the_filters_or_search_query_to_see_more_results'
                                       )
                             }
                         />

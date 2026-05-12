@@ -215,7 +215,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_save_trust_color'
+                          'view.settings.toast.failed_to_save_trust_color'
                       )
             );
             await restorePersistedTrustColors();
@@ -234,7 +234,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_save_trust_color'
+                          'view.settings.toast.failed_to_save_trust_color'
                       )
             );
         }
@@ -264,7 +264,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_refresh_sqlite_table_sizes'
+                          'view.settings.toast.failed_to_refresh_sqlite_table_sizes'
                       )
             );
         }
@@ -284,7 +284,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_refresh_config_json'
+                          'view.settings.toast.failed_to_refresh_config_json'
                       )
             );
         }
@@ -300,7 +300,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_refresh_online_user_count'
+                          'view.settings.toast.failed_to_refresh_online_user_count'
                       )
             );
         }
@@ -325,7 +325,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_load_proxy_settings'
+                          'view.settings.toast.failed_to_load_proxy_settings'
                       )
             );
             return;
@@ -342,7 +342,7 @@ export function useSettingsPreferenceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_save_proxy_settings'
+                          'view.settings.toast.failed_to_save_proxy_settings'
                       )
             );
         }
@@ -435,7 +435,7 @@ export function useSettingsPreferenceActions({
         if (!voices.length) {
             toast.warning(
                 t(
-                    'view.settings.generated.no_text_to_speech_voices_are_available'
+                    'view.settings.empty.no_text_to_speech_voices_are_available'
                 )
             );
             return;

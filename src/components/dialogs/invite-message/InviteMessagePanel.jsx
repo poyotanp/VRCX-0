@@ -76,7 +76,7 @@ export function InviteMessagePanel({
             setRows([]);
             setError(
                 t(
-                    'dialog.user.generated.cannot_load_message_templates_no_current_user_session_is_ava'
+                    'dialog.user.error.cannot_load_message_templates_no_current_user_session_is_available'
                 )
             );
             setLoading(false);
@@ -105,7 +105,7 @@ export function InviteMessagePanel({
                 nextError instanceof Error
                     ? nextError.message
                     : t(
-                          'dialog.edit_invite_messages.generated.failed_to_load_templates'
+                          'dialog.edit_invite_messages.error.failed_to_load_templates'
                       )
             );
         } finally {
@@ -146,8 +146,8 @@ export function InviteMessagePanel({
         if (!validation.ok) {
             setError(
                 validation.reason === 'too_large'
-                    ? t('message.image.generated.selected_image_is_too_large')
-                    : t('message.image.generated.selected_file_is_not_image')
+                    ? t('message.image.error.selected_image_is_too_large')
+                    : t('message.image.success.selected_file_is_not_image')
             );
             return;
         }
@@ -160,7 +160,7 @@ export function InviteMessagePanel({
             setError(
                 nextError instanceof Error
                     ? nextError.message
-                    : t('message.image.generated.failed_to_read_image')
+                    : t('message.image.error.failed_to_read_image')
             );
         }
     }
@@ -172,7 +172,7 @@ export function InviteMessagePanel({
         if (isInviteMessageOnCooldown(row, nowMs)) {
             toast.warning(
                 t(
-                    'dialog.invite_message.generated.this_message_template_is_on_cooldown_and_cannot_be_edited_ye'
+                    'dialog.invite_message.error.this_message_template_is_on_cooldown_and_cannot_be_edited_yet'
                 )
             );
             return;
@@ -201,7 +201,7 @@ export function InviteMessagePanel({
         if (isInviteMessageOnCooldown(editingRow, nowMs)) {
             setError(
                 t(
-                    'dialog.invite_message.generated.this_message_template_is_on_cooldown_and_cannot_be_edited_ye'
+                    'dialog.invite_message.error.this_message_template_is_on_cooldown_and_cannot_be_edited_yet'
                 )
             );
             return;
@@ -219,7 +219,7 @@ export function InviteMessagePanel({
                 nextError instanceof Error
                     ? nextError.message
                     : t(
-                          'dialog.edit_invite_messages.generated.failed_to_update_template'
+                          'dialog.edit_invite_messages.error.failed_to_update_template'
                       )
             );
         } finally {
@@ -234,7 +234,7 @@ export function InviteMessagePanel({
         const nextMessage =
             resolvedMode === 'respond' ? String(message || '').trim() : message;
         if (resolvedMode === 'respond' && !nextMessage) {
-            setError(t('dialog.invite_message.generated.message_required'));
+            setError(t('dialog.invite_message.error.message_required'));
             return;
         }
 
@@ -249,7 +249,7 @@ export function InviteMessagePanel({
                 if (isInviteMessageOnCooldown(row, nowMs)) {
                     throw new Error(
                         t(
-                            'dialog.invite_message.generated.this_message_template_is_on_cooldown_and_cannot_be_edited_ye'
+                            'dialog.invite_message.error.this_message_template_is_on_cooldown_and_cannot_be_edited_yet'
                         )
                     );
                 }
@@ -269,7 +269,7 @@ export function InviteMessagePanel({
                 nextError instanceof Error
                     ? nextError.message
                     : t(
-                          'dialog.edit_invite_messages.generated.failed_to_use_template'
+                          'dialog.edit_invite_messages.error.failed_to_use_template'
                       )
             );
         } finally {
@@ -318,7 +318,7 @@ export function InviteMessagePanel({
             ) : null}
             {targetLabel && resolvedMode !== 'manage' ? (
                 <div className="text-muted-foreground text-sm">
-                    {t('dialog.invite_message.generated.target')} {targetLabel}
+                    {t('dialog.invite_message.label.target')} {targetLabel}
                 </div>
             ) : null}
             {error ? (
@@ -394,7 +394,7 @@ export function InviteMessagePanel({
                                                             variant="ghost"
                                                             size="icon-xs"
                                                             aria-label={t(
-                                                                'dialog.invite_message.generated_dynamic.edit_slot_value',
+                                                                'dialog.invite_message.dynamic.edit_slot_value',
                                                                 {
                                                                     value: row.slot
                                                                 }

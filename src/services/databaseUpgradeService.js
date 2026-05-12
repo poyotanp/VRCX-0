@@ -27,10 +27,10 @@ function errorMessage(error) {
 function failedUpgradeDescription(failedUpgrade) {
     const workDbPath =
         failedUpgrade?.workDbPath ||
-        i18n.t('service.database_upgrade_service.generated.unknown_path');
+        i18n.t('service.database_upgrade_service.label.unknown_path');
     if (failedUpgrade?.reason) {
         return i18n.t(
-            'service.database_upgrade_service.generated.failed_upgrade_description_with_reason',
+            'service.database_upgrade_service.error.failed_upgrade_description_with_reason',
             {
                 path: workDbPath,
                 reason: failedUpgrade.reason
@@ -38,7 +38,7 @@ function failedUpgradeDescription(failedUpgrade) {
         );
     }
     return i18n.t(
-        'service.database_upgrade_service.generated.failed_upgrade_description',
+        'service.database_upgrade_service.error.failed_upgrade_description',
         { path: workDbPath }
     );
 }
@@ -107,7 +107,7 @@ async function runFullDatabaseUpgrade() {
                 fromVersion: currentVersion,
                 toVersion: DATABASE_VERSION,
                 detail: i18n.t(
-                    'service.database_upgrade_service.generated.database_schema_is_current'
+                    'service.database_upgrade_service.label.database_schema_is_current'
                 ),
                 legacyMigrationAvailable: false
             });
@@ -121,7 +121,7 @@ async function runFullDatabaseUpgrade() {
             fromVersion: currentVersion,
             toVersion: DATABASE_VERSION,
             detail: i18n.t(
-                'service.database_upgrade_service.generated_dynamic.updating_database_from_value_to_value',
+                'service.database_upgrade_service.dynamic.updating_database_from_value_to_value',
                 { value: currentVersion, value2: DATABASE_VERSION }
             ),
             legacyMigrationAvailable: false
@@ -148,7 +148,7 @@ async function runFullDatabaseUpgrade() {
             fromVersion: currentVersion,
             toVersion: DATABASE_VERSION,
             detail: i18n.t(
-                'service.database_upgrade_service.generated.database_update_complete'
+                'service.database_upgrade_service.success.database_update_complete'
             )
         });
         useSessionStore.getState().setSessionState({ databaseReady: true });
@@ -171,11 +171,11 @@ async function runFullDatabaseUpgrade() {
         await showSQLiteErrorDialog(error);
 
         let description = i18n.t(
-            'service.database_upgrade_service.generated.apply_upgrade_failed'
+            'service.database_upgrade_service.error.apply_upgrade_failed'
         );
         if (upgradeCommitted) {
             description = i18n.t(
-                'service.database_upgrade_service.generated.refresh_config_failed_after_upgrade'
+                'service.database_upgrade_service.action.refresh_config_failed_after_upgrade'
             );
         } else if (failedUpgrade) {
             description = failedUpgradeDescription(failedUpgrade);

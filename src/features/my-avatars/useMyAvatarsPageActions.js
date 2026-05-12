@@ -75,7 +75,7 @@ export function useMyAvatarsPageActions({
             setManageTagsAvatar(null);
             setDetail(
                 t(
-                    'view.my_avatars.generated_dynamic.updated_local_tags_for_value',
+                    'view.my_avatars.dynamic.updated_local_tags_for_value',
                     {
                         value: avatar?.name || avatarId
                     }
@@ -86,7 +86,7 @@ export function useMyAvatarsPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.my_avatars.generated_toast.failed_to_update_avatar_tags'
+                          'view.my_avatars.toast.failed_to_update_avatar_tags'
                       )
             );
         } finally {
@@ -143,7 +143,7 @@ export function useMyAvatarsPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.my_avatars.generated_toast.failed_to_update_avatar'
+                          'view.my_avatars.toast.failed_to_update_avatar'
                       );
             setDetail(message);
             toast.error(message);
@@ -166,7 +166,7 @@ export function useMyAvatarsPageActions({
             const result = await confirm({
                 title: t('common.actions.confirm'),
                 description: t(
-                    'view.my_avatars.generated_modal.select_avatar_value',
+                    'view.my_avatars.modal.select_avatar_value',
                     {
                         value: avatar?.name || avatarId
                     }
@@ -195,18 +195,18 @@ export function useMyAvatarsPageActions({
                 return;
             }
             setDetail(
-                t('view.my_avatars.generated_dynamic.selected_avatar_value', {
+                t('view.my_avatars.dynamic.selected_avatar_value', {
                     value: avatar?.name || avatarId
                 })
             );
-            toast.success(t('view.my_avatars.generated.avatar_selected'));
+            toast.success(t('view.my_avatars.success.avatar_selected'));
         } catch (error) {
             if (isRuntimeAuthTarget(authTarget)) {
                 const message =
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.my_avatars.generated_toast.failed_to_select_avatar'
+                              'view.my_avatars.toast.failed_to_select_avatar'
                           );
                 setDetail(message);
                 toast.error(message);
@@ -223,13 +223,13 @@ export function useMyAvatarsPageActions({
         const result = await confirm({
             title:
                 nextReleaseStatus === 'public'
-                    ? t('view.my_avatars.generated_modal.make_avatar_public')
-                    : t('view.my_avatars.generated_modal.make_avatar_private'),
+                    ? t('view.my_avatars.modal.make_avatar_public')
+                    : t('view.my_avatars.modal.make_avatar_private'),
             description: avatar?.name || avatar?.id || '',
             confirmText:
                 nextReleaseStatus === 'public'
-                    ? t('view.my_avatars.generated.make_public')
-                    : t('view.my_avatars.generated.make_private'),
+                    ? t('view.my_avatars.label.make_public')
+                    : t('view.my_avatars.label.make_private'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -241,8 +241,8 @@ export function useMyAvatarsPageActions({
                 releaseStatus: nextReleaseStatus
             },
             nextReleaseStatus === 'public'
-                ? t('view.my_avatars.generated.avatar_made_public')
-                : t('view.my_avatars.generated.avatar_made_private')
+                ? t('view.my_avatars.label.avatar_made_public')
+                : t('view.my_avatars.label.avatar_made_private')
         );
     }
     function openAvatarEditDetails(avatar) {
@@ -265,9 +265,9 @@ export function useMyAvatarsPageActions({
             return;
         }
         const result = await confirm({
-            title: t('view.my_avatars.generated_modal.create_impostor'),
+            title: t('view.my_avatars.modal.create_impostor'),
             description: avatar?.name || avatarId,
-            confirmText: t('view.my_avatars.generated_modal.create'),
+            confirmText: t('view.my_avatars.modal.create'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -290,10 +290,10 @@ export function useMyAvatarsPageActions({
                 return;
             }
             setDetail(
-                t('view.my_avatars.generated.impostor_queued_for_creation')
+                t('view.my_avatars.label.impostor_queued_for_creation')
             );
             toast.success(
-                t('view.my_avatars.generated.impostor_queued_for_creation')
+                t('view.my_avatars.label.impostor_queued_for_creation')
             );
         } catch (error) {
             if (!isRuntimeAuthTarget(authTarget)) {
@@ -303,7 +303,7 @@ export function useMyAvatarsPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.my_avatars.generated_toast.failed_to_create_impostor'
+                          'view.my_avatars.toast.failed_to_create_impostor'
                       );
             setDetail(message);
             toast.error(message);
@@ -358,11 +358,11 @@ export function useMyAvatarsPageActions({
     function showImageValidationError(validation) {
         if (validation.reason === 'too_large') {
             toast.error(
-                t('view.my_avatars.generated.selected_image_is_too_large')
+                t('view.my_avatars.error.selected_image_is_too_large')
             );
         } else if (validation.reason === 'not_image') {
             toast.error(
-                t('view.my_avatars.generated.selected_file_is_not_an_image')
+                t('view.my_avatars.error.selected_file_is_not_an_image')
             );
         }
     }
@@ -428,20 +428,20 @@ export function useMyAvatarsPageActions({
             applyAvatarUpdate(result.avatar);
             setDetail(
                 t(
-                    'view.my_avatars.generated_dynamic.avatar_image_updated_for_value',
+                    'view.my_avatars.dynamic.avatar_image_updated_for_value',
                     {
                         value: avatar?.name || avatarId
                     }
                 )
             );
-            toast.success(t('view.my_avatars.generated.avatar_image_updated'));
+            toast.success(t('view.my_avatars.success.avatar_image_updated'));
         } catch (error) {
             if (isRuntimeAuthTarget(authTarget)) {
                 const message =
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.my_avatars.generated_toast.failed_to_upload_avatar_image'
+                              'view.my_avatars.toast.failed_to_upload_avatar_image'
                           );
                 setDetail(message);
                 toast.error(message);

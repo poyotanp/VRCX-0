@@ -107,7 +107,7 @@ export function ExportFriendsListDialog({ open, onOpenChange }) {
                     userFacingErrorMessage(
                         error,
                         t(
-                            'host.tools_dialogs.generated_toast.failed_to_export_friends_list'
+                            'host.tools_dialogs.toast.failed_to_export_friends_list'
                         )
                     )
                 )
@@ -179,7 +179,7 @@ export function ExportAvatarsListDialog({ open, onOpenChange }) {
                     userFacingErrorMessage(
                         error,
                         t(
-                            'host.tools_dialogs.generated_toast.failed_to_export_avatar_list'
+                            'host.tools_dialogs.toast.failed_to_export_avatar_list'
                         )
                     )
                 )

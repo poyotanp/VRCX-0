@@ -378,7 +378,7 @@ export function UserDialogTabbedView({
     async function copyUserText(text, label) {
         await copyTextToClipboard(text);
         toast.success(
-            t('dialog.user.generated_dynamic.value_copied', { value: label })
+            t('dialog.user.dynamic.value_copied', { value: label })
         );
     }
 
@@ -390,7 +390,7 @@ export function UserDialogTabbedView({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_open_discord_profile'
+                          'dialog.user.toast.failed_to_open_discord_profile'
                       )
             );
         }
@@ -412,13 +412,13 @@ export function UserDialogTabbedView({
                 });
                 return;
             }
-            toast.error(t('dialog.user.generated.avatar_author_unavailable'));
+            toast.error(t('dialog.user.error.avatar_author_unavailable'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_load_avatar_author'
+                          'dialog.user.toast.failed_to_load_avatar_author'
                       )
             );
         }

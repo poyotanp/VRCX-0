@@ -117,7 +117,7 @@ export async function saveInviteMessage({
     const slot = Number.parseInt(row?.slot, 10);
     if (!currentUserId || !Number.isFinite(slot)) {
         throw new Error(
-            t('dialog.edit_invite_messages.generated.slot_must_be_number')
+            t('dialog.edit_invite_messages.description.slot_must_be_number')
         );
     }
 
@@ -137,7 +137,7 @@ export async function saveInviteMessage({
     );
     if (json?.[slot]?.message === previousMessage) {
         throw new Error(
-            t('dialog.edit_invite_messages.generated.update_failed')
+            t('dialog.edit_invite_messages.error.update_failed')
         );
     }
     return json;

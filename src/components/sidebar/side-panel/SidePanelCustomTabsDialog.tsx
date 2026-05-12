@@ -78,7 +78,7 @@ function tabActionLabel(
     key: string,
     value: string
 ) {
-    return t(`side_panel.settings.custom_tabs.generated_dynamic.${key}`, {
+    return t(`side_panel.settings.custom_tabs.dynamic.${key}`, {
         value
     });
 }

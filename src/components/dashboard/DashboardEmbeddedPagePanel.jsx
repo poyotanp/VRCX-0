@@ -11,7 +11,7 @@ function EmbeddedPageFallback() {
     return (
         <div className="text-muted-foreground flex min-h-[220px] flex-1 items-center justify-center gap-2 text-sm">
             <Spinner />
-            {t('view.dashboard.generated.loading_dashboard_panel')}
+            {t('view.dashboard.loading.loading_dashboard_panel')}
         </div>
     );
 }

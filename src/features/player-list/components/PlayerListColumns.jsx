@@ -86,7 +86,7 @@ function PlayerIconCell({ row, t }) {
                         <span>{PLAYER_ICON_GLYPHS.master}</span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.instance_master')}
+                        {t('view.player_list.label.instance_master')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -96,7 +96,7 @@ function PlayerIconCell({ row, t }) {
                         <span>{PLAYER_ICON_GLYPHS.moderator}</span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.moderator')}
+                        {t('view.player_list.label.moderator')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -106,7 +106,7 @@ function PlayerIconCell({ row, t }) {
                         <span>{PLAYER_ICON_GLYPHS.favorite}</span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.favorite')}
+                        {t('view.player_list.label.favorite')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -128,7 +128,7 @@ function PlayerIconCell({ row, t }) {
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.blocked')}
+                        {t('view.player_list.error.blocked')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -140,7 +140,7 @@ function PlayerIconCell({ row, t }) {
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.muted')}
+                        {t('view.player_list.label.muted')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -153,7 +153,7 @@ function PlayerIconCell({ row, t }) {
                     </TooltipTrigger>
                     <TooltipContent>
                         {t(
-                            'view.player_list.generated.avatar_interaction_disabled'
+                            'view.player_list.label.avatar_interaction_disabled'
                         )}
                     </TooltipContent>
                 </Tooltip>
@@ -166,7 +166,7 @@ function PlayerIconCell({ row, t }) {
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.chatbox_muted')}
+                        {t('view.player_list.label.chatbox_muted')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -180,7 +180,7 @@ function PlayerIconCell({ row, t }) {
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.timeout')}
+                        {t('view.player_list.label.timeout')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}
@@ -192,7 +192,7 @@ function PlayerIconCell({ row, t }) {
                         </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                        {t('view.player_list.generated.age_verified')}
+                        {t('view.player_list.label.age_verified')}
                     </TooltipContent>
                 </Tooltip>
             ) : null}

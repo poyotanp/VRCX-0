@@ -145,7 +145,7 @@ export function GroupModerationToolsDialog({
         }
         const label = moderationRowLabel(row);
         const result = await confirm({
-            title: t('dialog.group.generated_dynamic.value_group_user', {
+            title: t('dialog.group.dynamic.value_group_user', {
                 value: action.label
             }),
             description: label,
@@ -225,7 +225,7 @@ export function GroupModerationToolsDialog({
             }));
             setErrorsByTab((current) => ({ ...current, [activeTab]: '' }));
             toast.success(
-                t('dialog.group.generated_dynamic.value_completed', {
+                t('dialog.group.dynamic.value_completed', {
                     value: action.label
                 })
             );
@@ -233,7 +233,7 @@ export function GroupModerationToolsDialog({
             toast.error(
                 actionError instanceof Error
                     ? actionError.message
-                    : t('dialog.group.generated_toast.value_failed', {
+                    : t('dialog.group.toast.value_failed', {
                           value: action.label
                       })
             );

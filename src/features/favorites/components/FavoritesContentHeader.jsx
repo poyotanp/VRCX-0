@@ -33,7 +33,7 @@ function FavoritesContentHeader({
                     ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-2 text-sm">
-                    <span>{t('view.favorite.generated.edit_mode')}</span>
+                    <span>{t('view.favorite.action.edit_mode')}</span>
                     <Switch
                         checked={editMode}
                         disabled={editModeDisabled}

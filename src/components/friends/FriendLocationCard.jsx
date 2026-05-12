@@ -330,9 +330,9 @@ export function FriendLocationCard({
     const resolvedDensityConfig = densityConfig || DEFAULT_CARD_DENSITY_CONFIG;
     const isDense = resolvedDensityConfig.layout === 'item';
     const resolvedWorldActionLabel =
-        worldActionLabel || t('view.friend_list.generated.world');
+        worldActionLabel || t('view.friend_list.label.world');
     const resolvedGroupActionLabel =
-        groupActionLabel || t('view.friend_list.generated.group');
+        groupActionLabel || t('view.friend_list.label.group');
     const locationLineClampClass = resolveLineClampClass(
         resolvedDensityConfig.locationLineClamp
     );
@@ -352,7 +352,7 @@ export function FriendLocationCard({
         }
         await copyTextToClipboard(text);
         toast.success(
-            t('component.friend_location_card.generated_dynamic.value_copied', {
+            t('component.friend_location_card.dynamic.value_copied', {
                 value: label
             })
         );
@@ -366,7 +366,7 @@ export function FriendLocationCard({
                     alt={
                         friend?.displayName ||
                         friend?.id ||
-                        t('component.friend_location_card.generated.friend_avatar')
+                        t('component.friend_location_card.label.friend_avatar')
                     }
                     loading="lazy"
                     className="rounded-full object-cover"

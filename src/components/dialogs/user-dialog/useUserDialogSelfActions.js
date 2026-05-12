@@ -348,7 +348,7 @@ export function useUserDialogSelfActions({
             (!profile?.$isModerator && nextStatus === 'offline')
         ) {
             toast.warning(
-                t('dialog.user.generated.please_choose_a_valid_social_status')
+                t('dialog.user.label.please_choose_a_valid_social_status')
             );
             return;
         }
@@ -361,9 +361,9 @@ export function useUserDialogSelfActions({
                 ).slice(0, 32)
             },
             {
-                successMessage: t('dialog.user.generated.status_updated'),
+                successMessage: t('dialog.user.success.status_updated'),
                 errorMessage: t(
-                    'dialog.user.generated_toast.failed_to_update_social_status'
+                    'dialog.user.toast.failed_to_update_social_status'
                 )
             }
         );
@@ -468,14 +468,14 @@ export function useUserDialogSelfActions({
                 applyCurrentUserSnapshot(nextProfile);
             }
 
-            toast.success(t('dialog.user.generated.profile_details_updated'));
+            toast.success(t('dialog.user.success.profile_details_updated'));
             setProfileDetailsDialogOpen(false);
         } catch (error) {
             toast.error(
                 userFacingErrorMessage(
                     error,
                     t(
-                        'dialog.user.generated_toast.failed_to_update_profile_details'
+                        'dialog.user.toast.failed_to_update_profile_details'
                     )
                 )
             );
@@ -518,7 +518,7 @@ export function useUserDialogSelfActions({
                         ? t('message.gallery.profile_icon_changed')
                         : t('message.gallery.profile_pic_changed'),
                 errorMessage: t(
-                    'view.tools.generated_toast.failed_to_update_profile_media'
+                    'view.tools.toast.failed_to_update_profile_media'
                 )
             }
         );
@@ -529,10 +529,10 @@ export function useUserDialogSelfActions({
             { allowAvatarCopying: !profile?.allowAvatarCopying },
             {
                 successMessage: t(
-                    'dialog.user.generated.avatar_cloning_setting_updated'
+                    'dialog.user.success.avatar_cloning_setting_updated'
                 ),
                 errorMessage: t(
-                    'dialog.user.generated_toast.failed_to_update_avatar_cloning_setting'
+                    'dialog.user.toast.failed_to_update_avatar_cloning_setting'
                 )
             }
         );
@@ -543,10 +543,10 @@ export function useUserDialogSelfActions({
             { isBoopingEnabled: profile?.isBoopingEnabled === false },
             {
                 successMessage: t(
-                    'dialog.user.generated.booping_setting_updated'
+                    'dialog.user.success.booping_setting_updated'
                 ),
                 errorMessage: t(
-                    'dialog.user.generated_toast.failed_to_update_booping_setting'
+                    'dialog.user.toast.failed_to_update_booping_setting'
                 )
             }
         );
@@ -559,10 +559,10 @@ export function useUserDialogSelfActions({
             },
             {
                 successMessage: t(
-                    'dialog.user.generated.shared_connections_setting_updated'
+                    'dialog.user.success.shared_connections_setting_updated'
                 ),
                 errorMessage: t(
-                    'dialog.user.generated_toast.failed_to_update_shared_connections_setting'
+                    'dialog.user.toast.failed_to_update_shared_connections_setting'
                 )
             }
         );
@@ -573,10 +573,10 @@ export function useUserDialogSelfActions({
             { hasDiscordFriendsOptOut: !profile?.hasDiscordFriendsOptOut },
             {
                 successMessage: t(
-                    'dialog.user.generated.discord_connections_setting_updated'
+                    'dialog.user.success.discord_connections_setting_updated'
                 ),
                 errorMessage: t(
-                    'dialog.user.generated_toast.failed_to_update_discord_connections_setting'
+                    'dialog.user.toast.failed_to_update_discord_connections_setting'
                 )
             }
         );
@@ -598,7 +598,7 @@ export function useUserDialogSelfActions({
                 }),
             successMessage: t('message.badge.updated'),
             fallbackErrorMessage: t(
-                'dialog.user.generated_toast.failed_to_update_badge'
+                'dialog.user.toast.failed_to_update_badge'
             ),
             onSuccess: (nextProfile) => {
                 applyCurrentUserSnapshot(nextProfile);
@@ -622,7 +622,7 @@ export function useUserDialogSelfActions({
                 }),
             successMessage: t('message.badge.updated'),
             fallbackErrorMessage: t(
-                'dialog.user.generated_toast.failed_to_update_badge'
+                'dialog.user.toast.failed_to_update_badge'
             ),
             onSuccess: (nextProfile) => {
                 applyCurrentUserSnapshot(nextProfile);

@@ -64,13 +64,13 @@ export function useFriendsLocationsPageActions({
             );
             if (opened) {
                 toast.success(
-                    t('view.friend_list.generated.vrchat_launch_request_sent')
+                    t('view.friend_list.success.vrchat_launch_request_sent')
                 );
                 return;
             }
             toast.error(
                 t(
-                    'view.friend_list.generated.unable_to_open_this_instance_in_vrchat'
+                    'view.friend_list.error.unable_to_open_this_instance_in_vrchat'
                 )
             );
         } catch (error) {
@@ -78,7 +78,7 @@ export function useFriendsLocationsPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.friends.generated_toast.failed_to_launch_instance'
+                          'view.friends.toast.failed_to_launch_instance'
                       )
             );
         }
@@ -104,7 +104,7 @@ export function useFriendsLocationsPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.friends.generated_toast.failed_to_send_self_invite'
+                          'view.friends.toast.failed_to_send_self_invite'
                       )
             );
         }
@@ -117,7 +117,7 @@ export function useFriendsLocationsPageActions({
         if (!currentInviteLocation) {
             toast.error(
                 t(
-                    'view.friend_list.generated.cannot_invite_no_current_vrchat_location_is_available'
+                    'view.friend_list.error.cannot_invite_no_current_vrchat_location_is_available'
                 )
             );
             return;
@@ -125,7 +125,7 @@ export function useFriendsLocationsPageActions({
         if (!canInviteFromCurrentLocation) {
             toast.error(
                 t(
-                    'view.friend_list.generated.cannot_invite_from_the_current_instance_type'
+                    'view.friend_list.error.cannot_invite_from_the_current_instance_type'
                 )
             );
             return;
@@ -134,15 +134,15 @@ export function useFriendsLocationsPageActions({
         if (!parsedLocation.worldId || !parsedLocation.instanceId) {
             toast.error(
                 t(
-                    'view.friend_list.generated.cannot_invite_current_location_is_not_a_concrete_instance'
+                    'view.friend_list.error.cannot_invite_current_location_is_not_a_concrete_instance'
                 )
             );
             return;
         }
         const result = await confirm({
-            title: t('view.friends.generated_modal.send_invite'),
+            title: t('view.friends.modal.send_invite'),
             description: friend?.displayName || friend?.username || 'this user',
-            confirmText: t('view.friends.generated_modal.invite'),
+            confirmText: t('view.friends.modal.invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -173,7 +173,7 @@ export function useFriendsLocationsPageActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.friends.generated_toast.failed_to_send_invite')
+                    : t('view.friends.toast.failed_to_send_invite')
             );
         }
     }
@@ -183,9 +183,9 @@ export function useFriendsLocationsPageActions({
             return;
         }
         const result = await confirm({
-            title: t('view.friends.generated_modal.request_invite'),
+            title: t('view.friends.modal.request_invite'),
             description: friend?.displayName || friend?.username || 'this user',
-            confirmText: t('view.friends.generated_modal.request_invite_2'),
+            confirmText: t('view.friends.modal.request_invite_2'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -199,12 +199,12 @@ export function useFriendsLocationsPageActions({
                     platform: 'standalonewindows'
                 }
             });
-            toast.success(t('view.friend_list.generated.invite_request_sent'));
+            toast.success(t('view.friend_list.success.invite_request_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.friends.generated_toast.failed_to_request_invite')
+                    : t('view.friends.toast.failed_to_request_invite')
             );
         }
     }
@@ -215,12 +215,12 @@ export function useFriendsLocationsPageActions({
         }
         try {
             const result = await prompt({
-                title: t('view.friends.generated_modal.send_boop'),
+                title: t('view.friends.modal.send_boop'),
                 description: t(
-                    'view.friends.generated_modal.optional_emoji_id_leave_blank_to_send_the_defaul'
+                    'view.friends.modal.optional_emoji_id_leave_blank_to_send_the_default'
                 ),
                 inputValue: '',
-                confirmText: t('view.friends.generated_modal.send'),
+                confirmText: t('view.friends.modal.send'),
                 cancelText: t('common.actions.cancel')
             });
             if (!result.ok) {
@@ -231,12 +231,12 @@ export function useFriendsLocationsPageActions({
                 emojiId: result.value,
                 endpoint: currentEndpoint
             });
-            toast.success(t('view.friend_list.generated.boop_sent'));
+            toast.success(t('view.friend_list.success.boop_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.friends.generated_toast.failed_to_send_boop')
+                    : t('view.friends.toast.failed_to_send_boop')
             );
         }
     }

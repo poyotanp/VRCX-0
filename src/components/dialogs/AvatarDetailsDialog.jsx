@@ -188,7 +188,7 @@ export function AvatarDetailsDialog({
                         error instanceof Error
                             ? error.message
                             : t(
-                                  'dialog.avatar.generated_toast.failed_to_load_avatar_styles'
+                                  'dialog.avatar.toast.failed_to_load_avatar_styles'
                               )
                     );
                 }
@@ -270,14 +270,14 @@ export function AvatarDetailsDialog({
                     ? response.json
                     : fallbackAvatar
             );
-            toast.success(t('dialog.avatar.generated.avatar_details_updated'));
+            toast.success(t('dialog.avatar.success.avatar_details_updated'));
             onOpenChange(false);
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_update_avatar_details'
+                          'dialog.avatar.toast.failed_to_update_avatar_details'
                       )
             );
         } finally {
@@ -296,7 +296,7 @@ export function AvatarDetailsDialog({
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.avatar.generated.edit_avatar_details_description'
+                            'dialog.avatar.description.edit_avatar_details_description'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -344,14 +344,14 @@ export function AvatarDetailsDialog({
                                 <SelectTrigger>
                                     <SelectValue
                                         placeholder={t(
-                                            'dialog.avatar.generated.select_style'
+                                            'dialog.avatar.action.select_style'
                                         )}
                                     />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectItem value={noneValue}>
-                                            {t('dialog.avatar.generated.none')}
+                                            {t('dialog.avatar.label.none')}
                                         </SelectItem>
                                         {styleNames.map((styleNameValue) => (
                                             <SelectItem
@@ -381,14 +381,14 @@ export function AvatarDetailsDialog({
                                 <SelectTrigger>
                                     <SelectValue
                                         placeholder={t(
-                                            'dialog.avatar.generated.select_style'
+                                            'dialog.avatar.action.select_style'
                                         )}
                                     />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectItem value={noneValue}>
-                                            {t('dialog.avatar.generated.none')}
+                                            {t('dialog.avatar.label.none')}
                                         </SelectItem>
                                         {styleNames.map((styleNameValue) => (
                                             <SelectItem
@@ -421,7 +421,7 @@ export function AvatarDetailsDialog({
                         {loadStatus === 'error' ? (
                             <FieldDescription>
                                 {t(
-                                    'dialog.avatar.generated.style_list_unavailable'
+                                    'dialog.avatar.error.style_list_unavailable'
                                 )}
                             </FieldDescription>
                         ) : null}

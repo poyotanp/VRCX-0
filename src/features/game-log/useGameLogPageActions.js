@@ -51,7 +51,7 @@ export function useGameLogPageActions({
         if (!skipConfirm) {
             const detailValue = describeGameLogDetail(row);
             const result = await confirm({
-                title: t('view.game_log.generated_modal.delete_game_log_row'),
+                title: t('view.game_log.modal.delete_game_log_row'),
                 description: detailValue.primary || row.type || row.created_at,
                 confirmText: t('common.actions.delete'),
                 cancelText: t('common.actions.cancel'),
@@ -69,13 +69,13 @@ export function useGameLogPageActions({
                     (entry) => getGameLogRowKey(entry) !== rowKey
                 )
             );
-            toast.success(t('view.game_log.generated.game_log_row_deleted'));
+            toast.success(t('view.game_log.success.game_log_row_deleted'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.game_log.generated_toast.failed_to_delete_game_log_row'
+                          'view.game_log.toast.failed_to_delete_game_log_row'
                       )
             );
         } finally {
@@ -119,7 +119,7 @@ export function useGameLogPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.game_log.generated_toast.failed_to_load_instance_history'
+                          'view.game_log.toast.failed_to_load_instance_history'
                       )
             );
         } finally {
@@ -132,7 +132,7 @@ export function useGameLogPageActions({
             return;
         }
         await copyTextToClipboard(text);
-        toast.success(t('view.game_log.generated.copied_game_log_detail'));
+        toast.success(t('view.game_log.success.copied_game_log_detail'));
     }
     function commitSearchDraft() {
         setSearchQuery(searchDraft);

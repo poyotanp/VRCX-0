@@ -31,8 +31,8 @@ import {
 } from './GameLogTableParts.jsx';
 
 function GameLogViewModeToggle({ viewMode, onViewModeChange, t }) {
-    const sessionsLabel = t('view.game_log.generated.sessions');
-    const tableLabel = t('view.game_log.generated.table');
+    const sessionsLabel = t('view.game_log.label.sessions');
+    const tableLabel = t('view.game_log.label.table');
 
     return (
         <ToggleGroup
@@ -74,7 +74,7 @@ function GameLogViewModeToggle({ viewMode, onViewModeChange, t }) {
 }
 
 function GameLogFavoritesToggle({ favoritesOnly, onToggle, t }) {
-    const label = t('view.game_log.generated.favorites_only');
+    const label = t('view.game_log.label.favorites_only');
 
     return (
         <Tooltip>
@@ -108,7 +108,7 @@ function GameLogSessionDateFilter({
     onApply,
     t
 }) {
-    const label = t('view.game_log.generated.session_date_range');
+    const label = t('view.game_log.label.session_date_range');
 
     return (
         <Popover open={open} onOpenChange={onOpenChange}>
@@ -156,9 +156,9 @@ function GameLogSessionDateFilter({
                             sessionDateDraftTo || '...'
                         ].join(' - ')}
                         <span className="ml-2">
-                            {t('view.game_log.generated.max')}{' '}
+                            {t('view.game_log.label.max')}{' '}
                             {GAME_LOG_SESSION_DATE_RANGE_MAX_DAYS}{' '}
-                            {t('view.game_log.generated.days')}
+                            {t('view.game_log.label.days')}
                         </span>
                     </div>
                     <div className="flex justify-end gap-2">

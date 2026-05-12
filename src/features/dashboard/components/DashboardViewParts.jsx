@@ -74,7 +74,7 @@ export function DashboardFilterConfig({
                     variant={filters.length === 0 ? 'default' : 'outline'}
                     onClick={() => onConfigChange({ ...config, filters: [] })}
                 >
-                    {t('view.dashboard.generated.all')}
+                    {t('view.dashboard.label.all')}
                 </Button>
                 {filterTypes.map((filterType) => (
                     <Button
@@ -133,7 +133,7 @@ export function DashboardInstanceColumnConfig({ config, onConfigChange }) {
     return (
         <div className="flex flex-col gap-2">
             <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                {t('view.dashboard.generated.visible_columns')}
+                {t('view.dashboard.label.visible_columns')}
             </div>
             <div className="flex flex-wrap gap-2">
                 {DASHBOARD_INSTANCE_WIDGET_COLUMN_DEFINITIONS.map((column) => (
@@ -175,15 +175,15 @@ export function DashboardWidgetConfigEditor({
         return (
             <div className="flex flex-col gap-3">
                 <DashboardFilterConfig
-                    title={t('view.dashboard.generated.feed_filters')}
+                    title={t('view.dashboard.label.feed_filters')}
                     filterTypes={FEED_FILTER_TYPES}
                     config={config}
                     onConfigChange={onConfigChange}
                 />
                 <DashboardSwitchConfig
-                    label={t('view.dashboard.generated.show_type_column')}
+                    label={t('view.dashboard.action.show_type_column')}
                     description={t(
-                        'view.dashboard.generated.matches_the_stored_feed_widget_config'
+                        'view.dashboard.description.matches_the_stored_feed_widget_config'
                     )}
                     checked={Boolean(config.showType)}
                     onCheckedChange={(checked) =>
@@ -201,15 +201,15 @@ export function DashboardWidgetConfigEditor({
         return (
             <div className="flex flex-col gap-3">
                 <DashboardFilterConfig
-                    title={t('view.dashboard.generated.game_log_filters')}
+                    title={t('view.dashboard.label.game_log_filters')}
                     filterTypes={GAME_LOG_FILTER_TYPES}
                     config={config}
                     onConfigChange={onConfigChange}
                 />
                 <DashboardSwitchConfig
-                    label={t('view.dashboard.generated.show_detail')}
+                    label={t('view.dashboard.action.show_detail')}
                     description={t(
-                        'view.dashboard.generated.expands_the_compact_game_log_description'
+                        'view.dashboard.description.expands_the_compact_game_log_description'
                     )}
                     checked={Boolean(config.showDetail)}
                     onCheckedChange={(checked) =>
@@ -250,7 +250,7 @@ export function DashboardPanelSelectorDialog({
             <DialogContent className="max-h-[80vh] overflow-hidden sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('view.dashboard.generated.select_panel')}
+                        {t('view.dashboard.action.select_panel')}
                     </DialogTitle>
                 </DialogHeader>
                 <div className="min-h-0 overflow-y-auto">
@@ -261,7 +261,7 @@ export function DashboardPanelSelectorDialog({
                             className="text-muted-foreground h-auto justify-start border-dashed p-3 text-left font-normal whitespace-normal"
                             onClick={() => onSelect('__none__')}
                         >
-                            {t('view.dashboard.generated.not_configured')}
+                            {t('view.dashboard.label.not_configured')}
                         </Button>
                         {options.map((option) => {
                             const definition = getDashboardPanelDefinition(
@@ -363,7 +363,7 @@ export function DashboardEditorPanel({
                 ) : (
                     <>
                         <span className="text-muted-foreground text-base">
-                            {t('view.dashboard.generated.panel_not_selected')}
+                            {t('view.dashboard.success.panel_not_selected')}
                         </span>
                         <Button
                             type="button"
@@ -422,7 +422,7 @@ export function DashboardEditorRow({
         <div className="relative flex h-full min-h-[180px] flex-col gap-2 rounded-md border border-dashed p-2">
             <div className="flex items-center justify-between gap-2">
                 <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    {t('view.dashboard.generated.row')} {rowIndex + 1}
+                    {t('view.dashboard.label.row')} {rowIndex + 1}
                 </div>
                 <div className="flex items-center gap-2">
                     {panels.length === 2 ? (
@@ -437,11 +437,11 @@ export function DashboardEditorRow({
                                 <SelectGroup>
                                     <SelectItem value="horizontal">
                                         {t(
-                                            'view.dashboard.generated.horizontal'
+                                            'view.dashboard.label.horizontal'
                                         )}
                                     </SelectItem>
                                     <SelectItem value="vertical">
-                                        {t('view.dashboard.generated.vertical')}
+                                        {t('view.dashboard.label.vertical')}
                                     </SelectItem>
                                 </SelectGroup>
                             </SelectContent>

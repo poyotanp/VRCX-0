@@ -353,7 +353,7 @@ export function AppStatusBar() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'component.app_status_bar.generated_toast.failed_to_save_status_bar_visibility'
+                              'component.app_status_bar.toast.failed_to_save_status_bar_visibility'
                           )
                 );
             });
@@ -383,7 +383,7 @@ export function AppStatusBar() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'component.app_status_bar.generated_toast.failed_to_save_clock_count'
+                              'component.app_status_bar.toast.failed_to_save_clock_count'
                           )
                 );
             });
@@ -412,7 +412,7 @@ export function AppStatusBar() {
                         error instanceof Error
                             ? error.message
                             : t(
-                                  'component.app_status_bar.generated_toast.failed_to_save_status_bar_clocks'
+                                  'component.app_status_bar.toast.failed_to_save_status_bar_clocks'
                               )
                     );
                 });
@@ -429,7 +429,7 @@ export function AppStatusBar() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_status_bar.generated_toast.failed_to_open_vrchat_status'
+                          'component.app_status_bar.toast.failed_to_open_vrchat_status'
                       )
             );
         }
@@ -441,12 +441,12 @@ export function AppStatusBar() {
         }
         const currentProxyServer = usePreferencesStore.getState().proxyServer;
         const result = await prompt({
-            title: t('component.app_status_bar.generated_modal.proxy_settings'),
+            title: t('component.app_status_bar.modal.proxy_settings'),
             description: t(
-                'component.app_status_bar.generated_modal.set_the_proxy_server_used_by_vrcx_0_restart_is_r'
+                'component.app_status_bar.modal.set_the_proxy_server_used_by_vrcx_0_restart_is_required'
             ),
             inputValue: currentProxyServer,
-            confirmText: t('component.app_status_bar.generated_modal.restart'),
+            confirmText: t('component.app_status_bar.modal.restart'),
             cancelText: t('common.actions.close')
         });
         if (!result.ok) {
@@ -493,7 +493,7 @@ export function AppStatusBar() {
                                         error instanceof Error
                                             ? error.message
                                             : t(
-                                                  'component.app_status_bar.generated_toast.failed_to_open_media_link'
+                                                  'component.app_status_bar.toast.failed_to_open_media_link'
                                               )
                                     );
                                 });
@@ -505,7 +505,7 @@ export function AppStatusBar() {
                                     error instanceof Error
                                         ? error.message
                                         : t(
-                                              'component.app_status_bar.generated_toast.failed_to_update_proxy_settings'
+                                              'component.app_status_bar.toast.failed_to_update_proxy_settings'
                                           )
                                 );
                             });

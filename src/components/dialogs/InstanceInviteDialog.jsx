@@ -269,29 +269,29 @@ export function InstanceInviteDialog({
         if (!parsedLocation.worldId || !parsedLocation.instanceId) {
             toast.error(
                 t(
-                    'dialog.invite.generated.cannot_invite_location_is_not_a_concrete_instance'
+                    'dialog.invite.error.cannot_invite_location_is_not_a_concrete_instance'
                 )
             );
             return;
         }
         if (!normalizedUserIds.length) {
             toast.error(
-                t('dialog.invite.generated.select_at_least_one_user_to_invite')
+                t('dialog.invite.action.select_at_least_one_user_to_invite')
             );
             return;
         }
 
         const result = await confirm({
-            title: t('dialog.instance_invite.generated_modal.send_invite'),
+            title: t('dialog.instance_invite.modal.send_invite'),
             description: t(
                 normalizedUserIds.length === 1
-                    ? 'dialog.instance_invite.generated_dynamic.send_invite_to_value_user'
-                    : 'dialog.instance_invite.generated_dynamic.send_invites_to_value_users',
+                    ? 'dialog.instance_invite.dynamic.send_invite_to_value_user'
+                    : 'dialog.instance_invite.dynamic.send_invites_to_value_users',
                 {
                     value: normalizedUserIds.length
                 }
             ),
-            confirmText: t('dialog.instance_invite.generated_modal.invite'),
+            confirmText: t('dialog.instance_invite.modal.invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -341,7 +341,7 @@ export function InstanceInviteDialog({
                     successCount === 1
                         ? t('message.invite.sent')
                         : t(
-                              'dialog.instance_invite.generated_toast.sent_value_invites',
+                              'dialog.instance_invite.toast.sent_value_invites',
                               { value: successCount }
                           )
                 );
@@ -354,7 +354,7 @@ export function InstanceInviteDialog({
                     failures.length === 1
                         ? failures[0]
                         : t(
-                              'dialog.instance_invite.generated_toast.failed_to_send_value_invites',
+                              'dialog.instance_invite.toast.failed_to_send_value_invites',
                               { value: failures.length }
                           )
                 );
@@ -366,7 +366,7 @@ export function InstanceInviteDialog({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.instance_invite.generated_toast.failed_to_send_invite'
+                          'dialog.instance_invite.toast.failed_to_send_invite'
                       )
             );
         } finally {
@@ -381,7 +381,7 @@ export function InstanceInviteDialog({
                     <DialogTitle>{t('dialog.invite.invite')}</DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.invite.generated.choose_online_friends_to_invite_to_this_instance'
+                            'dialog.invite.description.choose_online_friends_to_invite_to_this_instance'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -471,7 +471,7 @@ export function InstanceInviteDialog({
                         value={search}
                         disabled={sending}
                         placeholder={t(
-                            'dialog.invite.generated.search_online_friends'
+                            'dialog.invite.action.search_online_friends'
                         )}
                         onChange={(event) => setSearch(event.target.value)}
                     />
@@ -534,12 +534,12 @@ export function InstanceInviteDialog({
                                 <EmptyHeader>
                                     <EmptyTitle>
                                         {t(
-                                            'dialog.invite.generated.no_online_friends'
+                                            'dialog.invite.empty.no_online_friends'
                                         )}
                                     </EmptyTitle>
                                     <EmptyDescription>
                                         {t(
-                                            'dialog.invite.generated.no_selectable_online_friends_match_the_current_search'
+                                            'dialog.invite.empty.no_selectable_online_friends_match_the_current_search'
                                         )}
                                     </EmptyDescription>
                                 </EmptyHeader>

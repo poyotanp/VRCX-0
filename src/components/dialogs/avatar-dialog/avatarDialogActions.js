@@ -68,13 +68,13 @@ export function createAvatarDialogActions({
                 allowLocalFallback: false
             });
             applyCurrentAvatarUpdate(nextAvatar);
-            toast.success(t('dialog.avatar.generated.avatar_refreshed'));
+            toast.success(t('dialog.avatar.success.avatar_refreshed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_refresh_avatar'
+                          'dialog.avatar.toast.failed_to_refresh_avatar'
                       )
             );
         } finally {
@@ -115,12 +115,12 @@ export function createAvatarDialogActions({
                     currentUserSnapshot: nextUser
                 });
             }
-            toast.success(t('dialog.avatar.generated.avatar_selected'));
+            toast.success(t('dialog.avatar.success.avatar_selected'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.avatar.generated_toast.failed_to_select_avatar')
+                    : t('dialog.avatar.toast.failed_to_select_avatar')
             );
         } finally {
             actionStatusRef.current = 'idle';
@@ -155,12 +155,12 @@ export function createAvatarDialogActions({
         actionStatusRef.current = 'fallback';
         setActionStatus('fallback');
         const result = await confirm({
-            title: t('dialog.avatar.generated_modal.select_fallback_avatar'),
+            title: t('dialog.avatar.modal.select_fallback_avatar'),
             description: t(
-                'dialog.avatar.generated_dynamic.use_value_as_your_vrchat_fallback_avatar',
+                'dialog.avatar.dynamic.use_value_as_your_vrchat_fallback_avatar',
                 { value: avatar.name || avatar.id }
             ),
-            confirmText: t('dialog.avatar.generated_modal.select_fallback'),
+            confirmText: t('dialog.avatar.modal.select_fallback'),
             cancelText: t('common.actions.cancel')
         });
 
@@ -176,13 +176,13 @@ export function createAvatarDialogActions({
                 endpoint: currentEndpoint
             });
             await refreshCurrentUserSnapshot();
-            toast.success(t('dialog.avatar.generated.fallback_avatar_updated'));
+            toast.success(t('dialog.avatar.empty.fallback_avatar_updated'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_select_fallback_avatar'
+                          'dialog.avatar.toast.failed_to_select_fallback_avatar'
                       )
             );
         } finally {
@@ -201,8 +201,8 @@ export function createAvatarDialogActions({
         setActionStatus('release-status');
         const result = await confirm({
             title: isPublic
-                ? t('view.my_avatars.generated_modal.make_avatar_public')
-                : t('view.my_avatars.generated_modal.make_avatar_private'),
+                ? t('view.my_avatars.modal.make_avatar_public')
+                : t('view.my_avatars.modal.make_avatar_private'),
             description: avatar.name || avatar.id,
             confirmText: isPublic
                 ? t('dialog.avatar.actions.make_public')
@@ -233,15 +233,15 @@ export function createAvatarDialogActions({
             );
             toast.success(
                 isPublic
-                    ? t('dialog.avatar.generated_toast.avatar_made_public')
-                    : t('dialog.avatar.generated_toast.avatar_made_private')
+                    ? t('dialog.avatar.toast.avatar_made_public')
+                    : t('dialog.avatar.toast.avatar_made_private')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_update_avatar_release_status'
+                          'dialog.avatar.toast.failed_to_update_avatar_release_status'
                       )
             );
         } finally {
@@ -270,7 +270,7 @@ export function createAvatarDialogActions({
         }
 
         const result = await confirm({
-            title: t('dialog.avatar.generated_modal.delete_avatar'),
+            title: t('dialog.avatar.modal.delete_avatar'),
             description: avatar.name || avatar.id,
             confirmText: t('common.actions.delete'),
             cancelText: t('common.actions.cancel'),
@@ -296,7 +296,7 @@ export function createAvatarDialogActions({
             toast.success(
                 refreshFailed
                     ? t(
-                          'dialog.avatar.generated_toast.avatar_deleted_but_current_user_snapshot_refresh'
+                          'dialog.avatar.toast.avatar_deleted_but_current_user_snapshot_refresh'
                       )
                     : t('message.avatar.deleted')
             );
@@ -310,7 +310,7 @@ export function createAvatarDialogActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.avatar.generated_toast.failed_to_delete_avatar')
+                    : t('dialog.avatar.toast.failed_to_delete_avatar')
             );
         } finally {
             actionStatusRef.current = 'idle';
@@ -351,14 +351,14 @@ export function createAvatarDialogActions({
             );
             toast.success(
                 nextMemo
-                    ? t('dialog.avatar.generated_toast.memo_saved')
-                    : t('dialog.avatar.generated_toast.memo_cleared')
+                    ? t('dialog.avatar.toast.memo_saved')
+                    : t('dialog.avatar.toast.memo_cleared')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.avatar.generated_toast.failed_to_save_memo')
+                    : t('dialog.avatar.toast.failed_to_save_memo')
             );
         }
     }
@@ -422,7 +422,7 @@ export function createAvatarDialogActions({
 
     async function editMemo() {
         const result = await prompt({
-            title: t('dialog.avatar.generated_modal.edit_local_memo'),
+            title: t('dialog.avatar.modal.edit_local_memo'),
             description: avatar.name || avatar.id,
             inputValue: memo,
             multiline: true,

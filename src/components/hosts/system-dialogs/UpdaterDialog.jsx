@@ -131,7 +131,7 @@ export function UpdaterDialog({ open, onOpenChange }) {
         setDownloading(true);
         setProgress(0);
         setDetail(
-            t('host.system_dialogs.generated_dynamic.downloading_value', {
+            t('host.system_dialogs.dynamic.downloading_value', {
                 value: latestVersionText
             })
         );
@@ -169,10 +169,10 @@ export function UpdaterDialog({ open, onOpenChange }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        {t('dialog.system.generated.vrcx_0_update')}
+                        {t('dialog.system.label.vrcx_0_update')}
                     </DialogTitle>
                     <DialogDescription>
-                        {t('dialog.system.generated_dynamic.version_summary', {
+                        {t('dialog.system.dynamic.version_summary', {
                             current: currentVersionText,
                             latest: latestVersionText
                         })}
@@ -181,7 +181,7 @@ export function UpdaterDialog({ open, onOpenChange }) {
                 <FieldGroup>
                     <div className="border-input bg-background flex w-full flex-col gap-1 rounded-md border px-3 py-2 text-sm">
                         <div className="text-muted-foreground text-xs">
-                            {t('dialog.system.generated.update_path')}
+                            {t('dialog.system.action.update_path')}
                         </div>
                         <div className="text-foreground truncate font-medium tabular-nums">
                             {currentVersionText} -&gt; {latestVersionText}
@@ -234,7 +234,7 @@ export function UpdaterDialog({ open, onOpenChange }) {
                             }
                             onClick={() => void handleInstallUpdate()}
                         >
-                            {t('dialog.system.generated.install_and_restart')}
+                            {t('dialog.system.action.install_and_restart')}
                         </Button>
                     ) : (
                         <Button

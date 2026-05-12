@@ -373,9 +373,9 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
     if (!currentUserId) {
         return renderShell(
             <DashboardWidgetEmptyState
-                title={t('view.dashboard.generated.game_log_unavailable')}
+                title={t('view.dashboard.error.game_log_unavailable')}
                 description={t(
-                    'view.dashboard.generated.sign_in_before_the_dashboard_can_query_game_log_rows'
+                    'view.dashboard.label.sign_in_before_the_dashboard_can_query_game_log_rows'
                 )}
             />
         );
@@ -384,7 +384,7 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
     if (loadStatus === 'error') {
         return renderShell(
             <DashboardWidgetEmptyState
-                title={t('view.dashboard.generated.game_log_widget_failed')}
+                title={t('view.dashboard.error.game_log_widget_failed')}
                 description={userFacingErrorMessage(
                     detail,
                     'The local game-log query did not complete.'
@@ -397,7 +397,7 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
         return renderShell(
             <div className="text-muted-foreground flex min-h-[180px] flex-1 items-center justify-center gap-2 text-sm">
                 <Spinner />
-                {t('view.dashboard.generated.loading_game_log_widget')}
+                {t('view.dashboard.loading.loading_game_log_widget')}
             </div>
         );
     }
@@ -405,9 +405,9 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
     if (!annotatedRows.length) {
         return renderShell(
             <DashboardWidgetEmptyState
-                title={t('view.dashboard.generated.no_game_log_rows')}
+                title={t('view.dashboard.empty.no_game_log_rows')}
                 description={t(
-                    'view.dashboard.generated.the_current_filter_set_did_not_return_any_recent_game_log_ac'
+                    'view.dashboard.label.the_current_filter_set_did_not_return_any_recent_game_log_activity'
                 )}
             />
         );
@@ -418,7 +418,7 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
             <div className="text-muted-foreground flex flex-wrap gap-2 px-3 pt-3 text-xs">
                 <span>
                     {annotatedRows.length}{' '}
-                    {t('view.dashboard.generated.recent_rows')}
+                    {t('view.dashboard.label.recent_rows')}
                 </span>
                 <span>
                     {Array.isArray(config.filters) && config.filters.length
@@ -426,7 +426,7 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
                         : 'All game-log types'}
                 </span>
                 {showDetail ? (
-                    <span>{t('view.dashboard.generated.detail_expanded')}</span>
+                    <span>{t('view.dashboard.label.detail_expanded')}</span>
                 ) : null}
             </div>
 
@@ -475,7 +475,7 @@ export function DashboardGameLogWidget({ config = {}, configUpdater = null }) {
                                                 >
                                                     <HeartIcon className="size-3 fill-current" />
                                                     {t(
-                                                        'view.dashboard.generated.favorite'
+                                                        'view.dashboard.label.favorite'
                                                     )}
                                                 </Badge>
                                             ) : null}

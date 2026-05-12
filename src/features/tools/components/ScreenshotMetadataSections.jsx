@@ -232,9 +232,9 @@ export function ScreenshotMetadataResultsTable({
             {isSearchLoading ? (
                 <EmptyState
                     loading
-                    title={t('view.tools.generated.searching_screenshots')}
+                    title={t('view.tools.loading.searching_screenshots')}
                     description={t(
-                        'view.tools.generated.resolving_file_list_and_metadata_summaries'
+                        'view.tools.loading.resolving_file_list_and_metadata_summaries'
                     )}
                 />
             ) : (
@@ -360,7 +360,7 @@ export function ScreenshotMetadataPreviewCard({
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
                         <CardTitle>
-                            {t('view.tools.generated.preview')}
+                            {t('view.tools.action.preview')}
                         </CardTitle>
                         <CardDescription>
                             {metadata?.fileName ||
@@ -374,7 +374,7 @@ export function ScreenshotMetadataPreviewCard({
                             onClick={onNavigatePrev}
                         >
                             <ArrowLeftIcon data-icon="inline-start" />
-                            {t('view.tools.generated.prev')}
+                            {t('view.tools.label.prev')}
                             <KeyboardShortcut keys={['Alt', 'ArrowLeft']} />
                         </Button>
                         <Button
@@ -398,9 +398,9 @@ export function ScreenshotMetadataPreviewCard({
                 {isMetadataLoading ? (
                     <EmptyState
                         loading
-                        title={t('view.tools.generated.loading_screenshot')}
+                        title={t('view.tools.loading.loading_screenshot')}
                         description={t(
-                            'view.tools.generated.fetching_embedded_metadata_and_file_details'
+                            'view.tools.loading.fetching_embedded_metadata_and_file_details'
                         )}
                     />
                 ) : imageUrl ? (
@@ -420,7 +420,7 @@ export function ScreenshotMetadataPreviewCard({
                     <EmptyState
                         title={t('dialog.screenshot_metadata.drag')}
                         description={t(
-                            'view.tools.generated.browse_for_a_screenshot_load_the_latest_screenshot_or_run_a_'
+                            'view.tools.description.browse_for_a_screenshot_load_the_latest_screenshot_or_run_a_metadata_search'
                         )}
                     />
                 )}

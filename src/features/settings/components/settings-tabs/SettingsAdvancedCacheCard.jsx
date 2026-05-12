@@ -100,12 +100,12 @@ export function SettingsAdvancedCacheCard({
                             cacheStats.instanceCache
                         ],
                         [
-                            t('view.settings.generated.favorite_detail_cache'),
+                            t('view.settings.label.favorite_detail_cache'),
                             cacheStats.favoriteDetailsCache
                         ],
                         [
                             t(
-                                'view.settings.generated.favorite_detail_pending'
+                                'view.settings.loading.favorite_detail_pending'
                             ),
                             cacheStats.favoriteDetailsPending
                         ],

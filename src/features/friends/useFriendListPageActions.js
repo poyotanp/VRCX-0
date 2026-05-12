@@ -85,7 +85,7 @@ export function useFriendListPageActions({
                     return next;
                 });
                 toast.success(
-                    t('view.friends.generated_dynamic.unfriended_value', {
+                    t('view.friends.dynamic.unfriended_value', {
                         value: friend.displayName || normalizedUserId
                     })
                 );
@@ -99,7 +99,7 @@ export function useFriendListPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.friends.generated_toast.failed_to_unfriend_value',
+                          'view.friends.toast.failed_to_unfriend_value',
                           {
                               value: friend.displayName || normalizedUserId
                           }
@@ -119,9 +119,9 @@ export function useFriendListPageActions({
             return;
         }
         const result = await confirm({
-            title: t('view.friends.generated_modal.unfriend_user'),
+            title: t('view.friends.modal.unfriend_user'),
             description: friend?.displayName || normalizedUserId,
-            confirmText: t('view.friends.generated_modal.unfriend'),
+            confirmText: t('view.friends.modal.unfriend'),
             cancelText: t('common.actions.cancel'),
             destructive: true
         });
@@ -138,14 +138,14 @@ export function useFriendListPageActions({
             return;
         }
         const result = await confirm({
-            title: t('view.friends.generated_dynamic.unfriend_value_friends', {
+            title: t('view.friends.dynamic.unfriend_value_friends', {
                 value: selectedRows.length
             }),
             description: selectedRows
                 .map((friend) => friend.displayName || friend.id)
                 .slice(0, 30)
                 .join('\n'),
-            confirmText: t('view.friends.generated_modal.unfriend'),
+            confirmText: t('view.friends.modal.unfriend'),
             cancelText: t('common.actions.cancel'),
             destructive: true
         });
@@ -167,7 +167,7 @@ export function useFriendListPageActions({
             if (deletedCount > 0) {
                 toast.success(
                     t(
-                        'view.friends.generated_dynamic.unfriended_value_friends',
+                        'view.friends.dynamic.unfriended_value_friends',
                         {
                             value: deletedCount
                         }
@@ -188,7 +188,7 @@ export function useFriendListPageActions({
         if (!rowsToFetch.length) {
             toast.success(
                 t(
-                    'view.friend_list.generated.friend_details_are_already_loaded'
+                    'view.friend_list.label.friend_details_are_already_loaded'
                 )
             );
             return;
@@ -238,14 +238,14 @@ export function useFriendListPageActions({
             if (cancelUserLoadRef.current) {
                 toast.warning(
                     t(
-                        'view.friend_list.generated.friend_detail_loading_cancelled'
+                        'view.friend_list.success.friend_detail_loading_cancelled'
                     )
                 );
                 return;
             }
             toast.success(
                 t(
-                    'view.friends.generated_dynamic.loaded_value_friend_profiles',
+                    'view.friends.dynamic.loaded_value_friend_profiles',
                     {
                         value: loadedCount
                     }
@@ -313,7 +313,7 @@ export function useFriendListPageActions({
         if (currentUserSnapshot?.hasSharedConnectionsOptOut) {
             toast.warning(
                 t(
-                    'view.friend_list.generated.shared_connections_are_opted_out_for_the_current_account'
+                    'view.friend_list.label.shared_connections_are_opted_out_for_the_current_account'
                 )
             );
             return;
@@ -324,7 +324,7 @@ export function useFriendListPageActions({
         if (!friendSnapshot.length) {
             toast.info(
                 t(
-                    'view.friend_list.generated.no_friends_are_available_for_mutual_friends_loading'
+                    'view.friend_list.empty.no_friends_are_available_for_mutual_friends_loading'
                 )
             );
             return;
@@ -396,7 +396,7 @@ export function useFriendListPageActions({
             );
             await mutualGraphRepository.saveSnapshot(currentUserId, entries);
             toast.success(
-                t('view.friend_list.generated.mutual_friends_loaded')
+                t('view.friend_list.label.mutual_friends_loaded')
             );
         } finally {
             setIsMutualFetching(false);

@@ -50,7 +50,7 @@ export function AvatarProviderDialog({
                                 <Field
                                     key={`avatar-provider-dialog-${index}`}
                                     label={t(
-                                        'view.settings.generated_dynamic.value_value',
+                                        'view.settings.dynamic.value_value',
                                         {
                                             value: t(
                                                 'view.settings.advanced.advanced.remote_database.avatar_database_provider'

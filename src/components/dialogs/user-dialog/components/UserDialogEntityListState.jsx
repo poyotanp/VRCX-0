@@ -11,18 +11,18 @@ import { Spinner } from '@/ui/shadcn/spinner';
 
 export function EntityListEmptyTitle(kind, t) {
     if (kind === 'user') {
-        return t('dialog.user.generated.no_users');
+        return t('dialog.user.empty.no_users');
     }
     if (kind === 'world') {
-        return t('dialog.user.generated.no_worlds');
+        return t('dialog.user.empty.no_worlds');
     }
     if (kind === 'avatar') {
-        return t('dialog.user.generated.no_avatars');
+        return t('dialog.user.empty.no_avatars');
     }
     if (kind === 'group') {
-        return t('dialog.user.generated.no_groups');
+        return t('dialog.user.empty.no_groups');
     }
-    return t('dialog.user.generated.no_results');
+    return t('dialog.user.empty.no_results');
 }
 
 export function EntityListState({ kind, loading = false, error = '' }) {
@@ -32,7 +32,7 @@ export function EntityListState({ kind, loading = false, error = '' }) {
         return (
             <div className="text-muted-foreground flex min-h-32 items-center justify-center gap-2 text-sm">
                 <Spinner className="size-4" />
-                <span>{t('dialog.user.generated.loading')}</span>
+                <span>{t('dialog.user.loading.loading')}</span>
             </div>
         );
     }

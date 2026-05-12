@@ -26,7 +26,7 @@ function instanceDialogDescription(row, t) {
     const parts = [row?.worldName, row?.groupName].filter(Boolean);
     return parts.length
         ? parts.join(' / ')
-        : t('dialog.previous_instances.generated.instance_details');
+        : t('dialog.previous_instances.description.instance_details');
 }
 
 function PreviousInstancesPanel({
@@ -88,7 +88,7 @@ function PreviousInstancesPanel({
         }
         const result = await confirm({
             title: t(
-                'dialog.previous_instances_table.generated_modal.delete_instance_record'
+                'dialog.previous_instances_table.modal.delete_instance_record'
             ),
             description: location,
             destructive: true,
@@ -104,7 +104,7 @@ function PreviousInstancesPanel({
                 if (!Array.isArray(row.events) || row.events.length === 0) {
                     toast.error(
                         t(
-                            'dialog.previous_instances.generated.this_user_instance_row_cannot_be_deleted_without_event_ids'
+                            'dialog.previous_instances.error.this_user_instance_row_cannot_be_deleted_without_event_ids'
                         )
                     );
                     return;
@@ -126,14 +126,14 @@ function PreviousInstancesPanel({
             });
             setDetailRow((current) => (current === row ? null : current));
             toast.success(
-                t('dialog.previous_instances.generated.instance_record_deleted')
+                t('dialog.previous_instances.success.instance_record_deleted')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.previous_instances_table.generated_toast.failed_to_delete_instance_record'
+                          'dialog.previous_instances_table.toast.failed_to_delete_instance_record'
                       )
             );
         }
@@ -210,7 +210,7 @@ function PreviousInstancesTableDialog({
     const dialogDescription = detailsOnly
         ? instanceDialogDescription(initialDetailRow, t)
         : t(
-              'dialog.previous_instances.generated.recorded_instance_visits_count',
+              'dialog.previous_instances.label.recorded_instance_visits_count',
               {
                   count: instanceCountText
               }

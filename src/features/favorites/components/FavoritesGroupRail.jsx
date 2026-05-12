@@ -98,7 +98,7 @@ function GroupMenu({
                     </DropdownMenuGroup>
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger>
-                            {t('view.favorite.generated.visibility')}
+                            {t('view.favorite.label.visibility')}
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent className="w-40">
                             <DropdownMenuGroup>
@@ -221,7 +221,7 @@ const GroupRailSection = memo(function GroupRailSection({
                         >
                             <div className="min-w-0">
                                 <div className="truncate font-semibold">
-                                    {t('view.favorite.generated.group')}{' '}
+                                    {t('view.favorite.label.group')}{' '}
                                     {index + 1}
                                 </div>
                                 <div className="bg-muted mt-1 h-3 w-14 rounded" />

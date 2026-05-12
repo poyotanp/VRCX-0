@@ -31,10 +31,10 @@ export function ScreenshotMetadataDetailsCard({
     return (
         <Card className="flex min-h-0 flex-col">
             <CardHeader>
-                <CardTitle>{t('view.tools.generated.details')}</CardTitle>
+                <CardTitle>{t('view.tools.description.details')}</CardTitle>
                 <CardDescription>
                     {t(
-                        'view.tools.generated.metadata_extracted_from_the_selected_vrchat_screenshot'
+                        'view.tools.label.metadata_extracted_from_the_selected_vrchat_screenshot'
                     )}
                 </CardDescription>
             </CardHeader>
@@ -139,7 +139,7 @@ export function ScreenshotMetadataDetailsCard({
                             ) : (
                                 <div className="text-muted-foreground text-sm">
                                     {t(
-                                        'view.tools.generated.no_player_metadata'
+                                        'view.tools.empty.no_player_metadata'
                                     )}
                                 </div>
                             )}
@@ -197,9 +197,9 @@ export function ScreenshotMetadataDetailsCard({
                     </>
                 ) : (
                     <EmptyState
-                        title={t('view.tools.generated.no_screenshot_selected')}
+                        title={t('view.tools.empty.no_screenshot_selected')}
                         description={t(
-                            'view.tools.generated.load_a_screenshot_to_inspect_embedded_world_player_and_file_'
+                            'view.tools.action.load_a_screenshot_to_inspect_embedded_world_player_and_file_metadata'
                         )}
                     />
                 )}

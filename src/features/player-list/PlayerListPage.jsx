@@ -758,7 +758,7 @@ export function PlayerListPage({ embedded = false } = {}) {
             }
             toast.info(
                 t(
-                    'view.player_list.generated.no_user_id_was_found_for_this_player_row'
+                    'view.player_list.empty.no_user_id_was_found_for_this_player_row'
                 )
             );
         } catch (error) {
@@ -766,7 +766,7 @@ export function PlayerListPage({ embedded = false } = {}) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.player_list.generated_toast.failed_to_look_up_this_player'
+                          'view.player_list.toast.failed_to_look_up_this_player'
                       )
             );
         }

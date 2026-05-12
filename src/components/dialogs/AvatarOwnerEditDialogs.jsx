@@ -183,7 +183,7 @@ export function AvatarContentTagsDialog({
                         error instanceof Error
                             ? error.message
                             : t(
-                                  'dialog.avatar_owner_edit_dialogs.generated_toast.failed_to_load_own_avatars'
+                                  'dialog.avatar_owner_edit_dialogs.toast.failed_to_load_own_avatars'
                               )
                     );
                 }
@@ -270,7 +270,7 @@ export function AvatarContentTagsDialog({
                 }
             }
             toast.success(
-                t('dialog.avatar.generated.avatar_content_tags_updated')
+                t('dialog.avatar.success.avatar_content_tags_updated')
             );
             onOpenChange(false);
         } catch (error) {
@@ -310,7 +310,7 @@ export function AvatarContentTagsDialog({
             if (savedAvatarIds.length && rollbackFailures.length) {
                 toast.error(
                     t(
-                        'dialog.avatar_owner_edit_dialogs.generated_dynamic.value_rolled_back_value_avatar_s_but_value_rollb',
+                        'dialog.avatar_owner_edit_dialogs.dynamic.value_rolled_back_value_avatar_s_but_value_rollback',
                         {
                             value: baseMessage,
                             value2:
@@ -322,7 +322,7 @@ export function AvatarContentTagsDialog({
             } else if (savedAvatarIds.length) {
                 toast.error(
                     t(
-                        'dialog.avatar_owner_edit_dialogs.generated_dynamic.value_rolled_back_value_avatar_s',
+                        'dialog.avatar_owner_edit_dialogs.dynamic.value_rolled_back_value_avatar_s',
                         { value: baseMessage, value2: savedAvatarIds.length }
                     )
                 );
@@ -343,14 +343,14 @@ export function AvatarContentTagsDialog({
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.avatar.generated.apply_content_tags_to_this_avatar_or_selected_owned_avatars'
+                            'dialog.avatar.action.apply_content_tags_to_this_avatar_or_selected_owned_avatars'
                         )}
                     </DialogDescription>
                 </DialogHeader>
                 <FieldGroup>
                     <FieldSet>
                         <FieldLegend variant="label">
-                            {t('dialog.avatar.generated.built_in_content_tags')}
+                            {t('dialog.avatar.label.built_in_content_tags')}
                         </FieldLegend>
                         <FieldGroup
                             data-slot="checkbox-group"
@@ -384,7 +384,7 @@ export function AvatarContentTagsDialog({
                             htmlFor="avatar-content-tags-csv"
                             className="sr-only"
                         >
-                            {t('dialog.avatar.generated.raw_content_tags')}
+                            {t('dialog.avatar.label.raw_content_tags')}
                         </FieldLabel>
                         <Textarea
                             id="avatar-content-tags-csv"

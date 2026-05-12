@@ -13,11 +13,11 @@ export function useFavoritesBulkActions({
             return;
         }
         const result = await confirm({
-            title: t('view.favorites.generated_modal.delete_value_favorites', {
+            title: t('view.favorites.modal.delete_value_favorites', {
                 value: selectedContentItems.length
             }),
             description: t(
-                'view.favorites.generated_modal.this_action_cannot_be_undone'
+                'view.favorites.modal.this_action_cannot_be_undone'
             ),
             destructive: true,
             confirmText: t('common.actions.delete'),
@@ -57,12 +57,12 @@ export function useFavoritesBulkActions({
         if (failedCount === 0) {
             setEditMode(false);
             toast.success(
-                t('view.favorite.generated.selected_favorites_removed')
+                t('view.favorite.success.selected_favorites_removed')
             );
             return;
         }
         toast.error(
-            t('view.favorites.generated_dynamic.removed_value_value_failed', {
+            t('view.favorites.dynamic.removed_value_value_failed', {
                 value: removedCount,
                 value2: failedCount
             })

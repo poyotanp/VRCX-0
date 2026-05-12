@@ -127,7 +127,7 @@ export function useFeedPageActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.feed.generated_toast.failed_to_load_instance_history'
+                          'view.feed.toast.failed_to_load_instance_history'
                       )
             );
         } finally {
@@ -166,18 +166,18 @@ export function useFeedPageActions({
             );
             if (opened) {
                 toast.success(
-                    t('view.feed.generated.vrchat_launch_request_sent')
+                    t('view.feed.success.vrchat_launch_request_sent')
                 );
                 return;
             }
             toast.error(
-                t('view.feed.generated.unable_to_open_this_instance_in_vrchat')
+                t('view.feed.error.unable_to_open_this_instance_in_vrchat')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.feed.generated_toast.failed_to_launch_instance')
+                    : t('view.feed.toast.failed_to_launch_instance')
             );
         }
     }
@@ -201,7 +201,7 @@ export function useFeedPageActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.feed.generated_toast.failed_to_send_self_invite')
+                    : t('view.feed.toast.failed_to_send_self_invite')
             );
         }
     }
@@ -213,7 +213,7 @@ export function useFeedPageActions({
         if (!currentInviteLocation) {
             toast.error(
                 t(
-                    'view.feed.generated.cannot_invite_no_current_vrchat_location_is_available'
+                    'view.feed.error.cannot_invite_no_current_vrchat_location_is_available'
                 )
             );
             return;
@@ -221,7 +221,7 @@ export function useFeedPageActions({
         if (!canInviteFromCurrentLocation) {
             toast.error(
                 t(
-                    'view.feed.generated.cannot_invite_from_the_current_instance_type'
+                    'view.feed.error.cannot_invite_from_the_current_instance_type'
                 )
             );
             return;
@@ -230,15 +230,15 @@ export function useFeedPageActions({
         if (!parsedLocation.worldId || !parsedLocation.instanceId) {
             toast.error(
                 t(
-                    'view.feed.generated.cannot_invite_current_location_is_not_a_concrete_instance'
+                    'view.feed.error.cannot_invite_current_location_is_not_a_concrete_instance'
                 )
             );
             return;
         }
         const result = await confirm({
-            title: t('view.feed.generated_modal.send_invite'),
+            title: t('view.feed.modal.send_invite'),
             description: friend?.displayName || 'this user',
-            confirmText: t('view.feed.generated_modal.invite'),
+            confirmText: t('view.feed.modal.invite'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -269,7 +269,7 @@ export function useFeedPageActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.feed.generated_toast.failed_to_send_invite')
+                    : t('view.feed.toast.failed_to_send_invite')
             );
         }
     }
@@ -281,15 +281,15 @@ export function useFeedPageActions({
         if (!canRequestInviteFromFeedFriend(friend, currentUserSnapshot)) {
             toast.error(
                 t(
-                    'view.feed.generated.cannot_request_invite_friend_is_not_online'
+                    'view.feed.error.cannot_request_invite_friend_is_not_online'
                 )
             );
             return;
         }
         const result = await confirm({
-            title: t('view.feed.generated_modal.request_invite'),
+            title: t('view.feed.modal.request_invite'),
             description: friend?.displayName || 'this user',
-            confirmText: t('view.feed.generated_modal.request_invite_2'),
+            confirmText: t('view.feed.modal.request_invite_2'),
             cancelText: t('common.actions.cancel')
         });
         if (!result.ok) {
@@ -303,12 +303,12 @@ export function useFeedPageActions({
                     platform: 'standalonewindows'
                 }
             });
-            toast.success(t('view.feed.generated.invite_request_sent'));
+            toast.success(t('view.feed.success.invite_request_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.feed.generated_toast.failed_to_request_invite')
+                    : t('view.feed.toast.failed_to_request_invite')
             );
         }
     }
@@ -319,12 +319,12 @@ export function useFeedPageActions({
         }
         try {
             const result = await prompt({
-                title: t('view.feed.generated_modal.send_boop'),
+                title: t('view.feed.modal.send_boop'),
                 description: t(
-                    'view.feed.generated_modal.optional_emoji_id_leave_blank_to_send_the_defaul'
+                    'view.feed.modal.optional_emoji_id_leave_blank_to_send_the_default'
                 ),
                 inputValue: '',
-                confirmText: t('view.feed.generated_modal.send'),
+                confirmText: t('view.feed.modal.send'),
                 cancelText: t('common.actions.cancel')
             });
             if (!result.ok) {
@@ -335,12 +335,12 @@ export function useFeedPageActions({
                 emojiId: result.value,
                 endpoint: currentEndpoint
             });
-            toast.success(t('view.feed.generated.boop_sent'));
+            toast.success(t('view.feed.success.boop_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.feed.generated_toast.failed_to_send_boop')
+                    : t('view.feed.toast.failed_to_send_boop')
             );
         }
     }

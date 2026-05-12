@@ -326,9 +326,9 @@ export function AvatarDialogContent({ avatarId, seedData = null }) {
         return (
             <AvatarDialogEmptyState
                 loading
-                title={t('dialog.avatar.generated.loading_avatar_profile')}
+                title={t('dialog.avatar.loading.loading_avatar_profile')}
                 description={t(
-                    'dialog.avatar.generated.fetching_the_current_vrchat_avatar_snapshot_for_this_dialog'
+                    'dialog.avatar.loading.fetching_the_current_vrchat_avatar_snapshot_for_this_dialog'
                 )}
             />
         );
@@ -337,11 +337,11 @@ export function AvatarDialogContent({ avatarId, seedData = null }) {
     if (!avatar) {
         return (
             <AvatarDialogEmptyState
-                title={t('dialog.avatar.generated.avatar_profile_unavailable')}
+                title={t('dialog.avatar.error.avatar_profile_unavailable')}
                 description={
                     detail ||
                     t(
-                        'dialog.avatar.generated.avatar_snapshot_unavailable_description'
+                        'dialog.avatar.description.avatar_snapshot_unavailable_description'
                     )
                 }
             />
@@ -521,7 +521,7 @@ export function AvatarDialogContent({ avatarId, seedData = null }) {
                 open={Boolean(imageCropRequest)}
                 file={imageCropRequest?.file || null}
                 aspectRatio={4 / 3}
-                title={t('dialog.avatar.generated.change_avatar_image')}
+                title={t('dialog.avatar.action.change_avatar_image')}
                 onOpenChange={(open) => {
                     if (!open) {
                         setImageCropRequest(null);

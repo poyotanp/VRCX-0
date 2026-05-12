@@ -39,7 +39,7 @@ export function UserPickerRow({
                 </span>
                 {Number.isFinite(option?.degree) ? (
                     <span className="text-muted-foreground block truncate text-xs">
-                        {option.degree} {t('view.charts.generated.connections')}
+                        {option.degree} {t('view.charts.label.connections')}
                     </span>
                 ) : null}
             </span>
@@ -70,7 +70,7 @@ export function GraphLoadingState() {
     return (
         <AppLoadingState
             className="min-h-80"
-            label={t('view.charts.generated.loading_mutual_graph_snapshot')}
+            label={t('view.charts.loading.loading_mutual_graph_snapshot')}
         />
     );
 }

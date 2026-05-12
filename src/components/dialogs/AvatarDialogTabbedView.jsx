@@ -310,7 +310,7 @@ export function AvatarDialogTabbedView({
     const [activeTab, setActiveTab] = useState('info');
     const [galleryIndex, setGalleryIndex] = useState(0);
     const openImagePreview = useModalStore((state) => state.openImagePreview);
-    const avatarFallbackLabel = t('view.favorites.generated.avatar_fallback');
+    const avatarFallbackLabel = t('view.favorites.empty.avatar_fallback');
     const avatarUrl = avatar.id
         ? `https://vrchat.com/home/avatar/${avatar.id}`
         : '';
@@ -389,7 +389,7 @@ export function AvatarDialogTabbedView({
     async function copyAvatarText(text, label) {
         await copyTextToClipboard(text);
         toast.success(
-            t('dialog.avatar.generated_dynamic.value_copied', {
+            t('dialog.avatar.dynamic.value_copied', {
                 value: label
             })
         );

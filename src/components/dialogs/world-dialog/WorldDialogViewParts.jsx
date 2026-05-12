@@ -53,11 +53,11 @@ export function WorldInstancesEmptyState() {
         <Empty className="min-h-32 border">
             <EmptyHeader>
                 <EmptyTitle>
-                    {t('dialog.world.generated.no_active_instances')}
+                    {t('dialog.world.empty.no_active_instances')}
                 </EmptyTitle>
                 <EmptyDescription>
                     {t(
-                        'dialog.world.generated.no_public_or_group_instances_are_currently_listed'
+                        'dialog.world.empty.no_public_or_group_instances_are_currently_listed'
                     )}
                 </EmptyDescription>
             </EmptyHeader>

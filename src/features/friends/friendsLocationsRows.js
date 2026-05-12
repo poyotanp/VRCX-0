@@ -502,7 +502,7 @@ export function resolveInstanceSectionDescriptor(friend, t) {
             title:
                 summary.label ||
                 target.worldId ||
-                localized(t, 'view.friend_list.generated.world', 'World'),
+                localized(t, 'view.friend_list.label.world', 'World'),
             description: [summary.meta].filter(Boolean).join(' · '),
             worldId: target.worldId,
             groupId: target.groupId,

@@ -56,10 +56,10 @@ vi.mock('@/state/runtimeStore.js', () => ({
 
 vi.mock('react-i18next', () => {
     const translations = {
-        'dialog.instance.generated.android': 'Android:',
-        'dialog.instance.generated.ios': 'iOS:',
-        'dialog.instance.generated.launch_instance': 'Launch instance',
-        'dialog.instance.generated.self_invite': 'Self invite',
+        'dialog.instance.label.android': 'Android:',
+        'dialog.instance.label.ios': 'iOS:',
+        'dialog.instance.action.launch_instance': 'Launch instance',
+        'dialog.instance.label.self_invite': 'Self invite',
         'dialog.new_instance.ageGate': 'Age Gate',
         'dialog.new_instance.queueEnabled': 'Queue'
     };

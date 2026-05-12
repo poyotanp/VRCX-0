@@ -24,7 +24,7 @@ export function LoginAutoLoginAlert({
         <Alert variant={variant}>
             <AlertDescription className="flex flex-wrap items-center gap-3 text-sm">
                 <Badge variant="secondary">
-                    {t('common.generated.generated.auto_login')}
+                    {t('common.label.auto_login')}
                 </Badge>
                 <span className="font-medium">{target}</span>
                 {state.status === 'scheduled' && state.detail ? (
@@ -64,7 +64,7 @@ export function LoginAutoLoginAlert({
                         size="sm"
                         onClick={onRetry}
                     >
-                        {t('common.generated.generated.retry')}
+                        {t('common.action.retry')}
                     </Button>
                 ) : null}
             </AlertDescription>

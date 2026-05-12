@@ -70,7 +70,7 @@ async function copyFeedText(text, label, t) {
     }
     await copyTextToClipboard(value);
     toast.success(
-        t('view.feed.generated_dynamic.value_copied', {
+        t('view.feed.dynamic.value_copied', {
             value: label || 'Value'
         })
     );

@@ -308,7 +308,7 @@ export function useLoginAutoLogin({
                     getErrorMessage(
                         error,
                         t(
-                            'view.auth.generated_toast.automatic_login_failed_unexpectedly'
+                            'view.auth.toast.automatic_login_failed_unexpectedly'
                         )
                     )
                 );

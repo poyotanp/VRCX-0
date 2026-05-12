@@ -252,7 +252,7 @@ export function useSettingsPageController() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.settings.generated_toast.failed_to_save_setting')
+                    : t('view.settings.toast.failed_to_save_setting')
             );
             return false;
         }

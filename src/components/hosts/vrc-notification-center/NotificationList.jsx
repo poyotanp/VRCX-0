@@ -470,7 +470,7 @@ function NotificationRow({
                             {hasLink ? (
                                 <NotificationActionButton
                                     label={t(
-                                        'view.notification.generated.open_notification_link'
+                                        'view.notification.action.open_notification_link'
                                     )}
                                     onClick={() =>
                                         openNotificationLink(notification.link)
@@ -482,7 +482,7 @@ function NotificationRow({
                             {isUnseen ? (
                                 <NotificationActionButton
                                     label={t(
-                                        'view.notification.generated.mark_seen'
+                                        'view.notification.action.mark_seen'
                                     )}
                                     onClick={() => {
                                         void onMarkSeen(notification);

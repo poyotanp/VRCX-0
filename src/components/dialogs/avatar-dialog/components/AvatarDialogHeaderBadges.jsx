@@ -57,7 +57,7 @@ export function AvatarDialogHeaderBadges({
             ) : null}
             {avatarBlocked ? (
                 <Badge variant="destructive">
-                    {t('dialog.avatar.generated.blocked')}
+                    {t('dialog.avatar.error.blocked')}
                 </Badge>
             ) : null}
             {avatar.$isCached ? (

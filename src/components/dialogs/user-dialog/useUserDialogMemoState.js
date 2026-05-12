@@ -62,11 +62,11 @@ export function useUserDialogMemoState({
         let nextNote = targetProfile.note || '';
         if (!editingCurrentUser) {
             const noteResult = await prompt({
-                title: t('dialog.user.generated_modal.edit_vrchat_note'),
+                title: t('dialog.user.modal.edit_vrchat_note'),
                 description: targetProfile.displayName || targetProfile.id,
                 inputValue: nextNote,
                 multiline: true,
-                confirmText: t('dialog.user.generated_modal.next'),
+                confirmText: t('dialog.user.modal.next'),
                 cancelText: t('common.actions.cancel')
             });
             if (!noteResult.ok) {
@@ -76,7 +76,7 @@ export function useUserDialogMemoState({
         }
 
         const result = await prompt({
-            title: t('dialog.user.generated_modal.edit_local_memo'),
+            title: t('dialog.user.modal.edit_local_memo'),
             description: targetProfile.displayName || targetProfile.id,
             inputValue: memo,
             multiline: true,
@@ -140,14 +140,14 @@ export function useUserDialogMemoState({
             }
             toast.success(
                 nextMemo
-                    ? t('dialog.user.generated_toast.memo_saved')
-                    : t('dialog.user.generated_toast.memo_cleared')
+                    ? t('dialog.user.toast.memo_saved')
+                    : t('dialog.user.toast.memo_cleared')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_save_memo')
+                    : t('dialog.user.toast.failed_to_save_memo')
             );
         }
     }

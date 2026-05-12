@@ -216,7 +216,7 @@ export function openSender(notification, t) {
     if (!openNotificationLink(notification?.link)) {
         toast.info(
             t(
-                'view.notification.generated.this_notification_does_not_expose_a_navigable_sender'
+                'view.notification.description.this_notification_does_not_expose_a_navigable_sender'
             )
         );
     }

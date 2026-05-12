@@ -183,11 +183,11 @@ function WorldDetailsDialog({
             <DialogContent className="grid max-h-[calc(100vh-4rem)] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('dialog.world.generated.edit_world_details')}
+                        {t('dialog.world.description.edit_world_details')}
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.world.generated.update_world_name_description_capacity_and_preview'
+                            'dialog.world.action.update_world_name_description_capacity_and_preview'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -245,7 +245,7 @@ function WorldDetailsDialog({
                             <Field>
                                 <FieldLabel htmlFor="world-details-recommended-capacity">
                                     {t(
-                                        'dialog.world.generated.recommended_capacity'
+                                        'dialog.world.label.recommended_capacity'
                                     )}
                                 </FieldLabel>
                                 <Input
@@ -266,7 +266,7 @@ function WorldDetailsDialog({
                         </div>
                         <Field>
                             <FieldLabel htmlFor="world-details-preview">
-                                {t('dialog.world.generated.youtube_preview')}
+                                {t('dialog.world.label.youtube_preview')}
                             </FieldLabel>
                             <Input
                                 id="world-details-preview"
@@ -329,11 +329,11 @@ function WorldTagsDialog({
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('dialog.world.generated.world_tags')}
+                        {t('dialog.world.label.world_tags')}
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.world.generated.edit_managed_content_author_and_feature_tags_for_this_world'
+                            'dialog.world.action.edit_managed_content_author_and_feature_tags_for_this_world'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -351,7 +351,7 @@ function WorldTagsDialog({
                         />
                         <FieldLabel htmlFor="world-tag-avatar-scaling-disabled">
                             {t(
-                                'dialog.world.generated.avatar_scaling_disabled'
+                                'dialog.world.label.avatar_scaling_disabled'
                             )}
                         </FieldLabel>
                     </Field>
@@ -367,7 +367,7 @@ function WorldTagsDialog({
                             }
                         />
                         <FieldLabel htmlFor="world-tag-focus-view-disabled">
-                            {t('dialog.world.generated.focus_view_disabled')}
+                            {t('dialog.world.label.focus_view_disabled')}
                         </FieldLabel>
                     </Field>
                     <Field orientation="horizontal">
@@ -380,12 +380,12 @@ function WorldTagsDialog({
                             }
                         />
                         <FieldLabel htmlFor="world-tag-debug-allowed">
-                            {t('dialog.world.generated.enable_debugging')}
+                            {t('dialog.world.action.enable_debugging')}
                         </FieldLabel>
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="world-owner-author-tags">
-                            {t('dialog.world.generated.author_tags')}
+                            {t('dialog.world.label.author_tags')}
                         </FieldLabel>
                         <Textarea
                             id="world-owner-author-tags"
@@ -400,7 +400,7 @@ function WorldTagsDialog({
                     </Field>
                     <FieldSet>
                         <FieldLegend variant="label">
-                            {t('dialog.world.generated.content_tags')}
+                            {t('dialog.world.label.content_tags')}
                         </FieldLegend>
                         <FieldGroup
                             data-slot="checkbox-group"
@@ -431,7 +431,7 @@ function WorldTagsDialog({
                                 htmlFor="world-owner-content-tags"
                                 className="sr-only"
                             >
-                                {t('dialog.world.generated.raw_content_tags')}
+                                {t('dialog.world.label.raw_content_tags')}
                             </FieldLabel>
                             <Textarea
                                 id="world-owner-content-tags"
@@ -450,7 +450,7 @@ function WorldTagsDialog({
                     <FieldSet>
                         <FieldLegend variant="label">
                             {t(
-                                'dialog.world.generated.default_content_settings'
+                                'dialog.world.label.default_content_settings'
                             )}
                         </FieldLegend>
                         <FieldGroup
@@ -537,7 +537,7 @@ function WorldAllowedDomainsDialog({
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.world.generated.manage_domains_allowed_for_this_world_s_video_player'
+                            'dialog.world.label.manage_domains_allowed_for_this_world_s_video_player'
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -548,7 +548,7 @@ function WorldAllowedDomainsDialog({
                                 htmlFor={`world-allowed-domain-${index}`}
                                 className="sr-only"
                             >
-                                {t('dialog.world.generated.allowed_domain')}{' '}
+                                {t('dialog.world.label.allowed_domain')}{' '}
                                 {index + 1}
                             </FieldLabel>
                             <InputGroup>
@@ -590,7 +590,7 @@ function WorldAllowedDomainsDialog({
                             setUrlList((current) => [...current, ''])
                         }
                     >
-                        {t('dialog.world.generated.add_domain')}
+                        {t('dialog.world.action.add_domain')}
                     </Button>
                 </FieldGroup>
                 <DialogFooter>

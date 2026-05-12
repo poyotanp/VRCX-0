@@ -120,7 +120,7 @@ export function ManageAvatarTagsDialog({
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('view.my_avatars.generated.manage_avatar_tags')}
+                        {t('view.my_avatars.label.manage_avatar_tags')}
                     </DialogTitle>
                     <DialogDescription>{avatarName}</DialogDescription>
                 </DialogHeader>
@@ -129,7 +129,7 @@ export function ManageAvatarTagsDialog({
                     <FieldGroup>
                         <Field>
                             <FieldLabel htmlFor="avatar-tag-name">
-                                {t('view.my_avatars.generated.add_local_tag')}
+                                {t('view.my_avatars.action.add_local_tag')}
                             </FieldLabel>
                             <div className="flex gap-2">
                                 <Input
@@ -145,7 +145,7 @@ export function ManageAvatarTagsDialog({
                                         }
                                     }}
                                     placeholder={t(
-                                        'view.my_avatars.generated.tag_name'
+                                        'view.my_avatars.label.tag_name'
                                     )}
                                     disabled={saving}
                                 />
@@ -156,7 +156,7 @@ export function ManageAvatarTagsDialog({
                                     disabled={saving}
                                 >
                                     <PlusIcon data-icon="inline-start" />
-                                    {t('view.my_avatars.generated.add')}
+                                    {t('view.my_avatars.action.add')}
                                 </Button>
                             </div>
                         </Field>
@@ -260,7 +260,7 @@ export function ManageAvatarTagsDialog({
                         ) : (
                             <div className="bg-muted/20 text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
                                 {t(
-                                    'view.my_avatars.generated.this_avatar_has_no_local_tags_yet'
+                                    'view.my_avatars.empty.this_avatar_has_no_local_tags_yet'
                                 )}
                             </div>
                         )}

@@ -308,7 +308,7 @@ export function BoopReplyDialog({
             <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-[min(92vw,46rem)]">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('view.notification.generated.send_boop')}
+                        {t('view.notification.action.send_boop')}
                     </DialogTitle>
                     <DialogDescription>{displayName}</DialogDescription>
                 </DialogHeader>
@@ -316,7 +316,7 @@ export function BoopReplyDialog({
                     {!emojiId ? (
                         <div className="text-muted-foreground rounded-md border p-3 text-sm">
                             {t(
-                                'view.notification.generated.no_custom_emoji_selected_the_default_boop_will_be_sent'
+                                'view.notification.empty.no_custom_emoji_selected_the_default_boop_will_be_sent'
                             )}
                         </div>
                     ) : null}
@@ -326,7 +326,7 @@ export function BoopReplyDialog({
                                 <Input
                                     value={emojiSearch}
                                     placeholder={t(
-                                        'view.notification.generated.search_emoji'
+                                        'view.notification.action.search_emoji'
                                     )}
                                     disabled={sending}
                                     className="h-9 min-w-48 flex-1"
@@ -342,7 +342,7 @@ export function BoopReplyDialog({
                                     onClick={() => setEmojiId('')}
                                 >
                                     {t(
-                                        'view.notification.generated.clear_selection'
+                                        'view.notification.action.clear_selection'
                                     )}
                                 </Button>
                             </div>
@@ -351,7 +351,7 @@ export function BoopReplyDialog({
                                     <div className="text-muted-foreground flex h-28 items-center justify-center gap-2 text-sm">
                                         <Spinner className="size-4" />
                                         {t(
-                                            'view.notification.generated.loading_emojis'
+                                            'view.notification.loading.loading_emojis'
                                         )}
                                     </div>
                                 ) : filteredEmojiRows.length ? (
@@ -420,7 +420,7 @@ export function BoopReplyDialog({
                             navigate('/tools/inventory');
                         }}
                     >
-                        {t('view.notification.generated.emoji_manager')}
+                        {t('view.notification.label.emoji_manager')}
                     </Button>
                     <Button
                         type="button"
@@ -449,7 +449,7 @@ export function BoopReplyDialog({
                         ) : (
                             <SendIcon data-icon="inline-start" />
                         )}
-                        {t('view.notification.generated.send')}
+                        {t('view.notification.action.send')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -143,7 +143,7 @@ function openEntityDialog({
         }
         if (kind === 'user') {
             toast.info(
-                i18n.t('dialog.user.generated_toast.already_viewing_user', {
+                i18n.t('dialog.user.toast.already_viewing_user', {
                     defaultValue: 'Already viewing this user'
                 })
             );

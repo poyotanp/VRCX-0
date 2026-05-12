@@ -36,9 +36,9 @@ export function ImageCropDialog({
     const [offsetX, setOffsetX] = useState(0);
     const [offsetY, setOffsetY] = useState(0);
     const [isConfirming, setIsConfirming] = useState(false);
-    const resolvedTitle = title || t('message.image.generated.crop_image');
+    const resolvedTitle = title || t('message.image.label.crop_image');
     const resolvedDescription =
-        description || t('message.image.generated.crop_description');
+        description || t('message.image.description.crop_description');
 
     useEffect(() => {
         if (
@@ -150,7 +150,7 @@ export function ImageCropDialog({
                                 ref={canvasRef}
                                 role="img"
                                 aria-label={t(
-                                    'message.image.generated.selected_upload_preview'
+                                    'message.image.success.selected_upload_preview'
                                 )}
                                 className="h-full w-full object-cover"
                             />
@@ -159,7 +159,7 @@ export function ImageCropDialog({
                     <FieldGroup className="grid gap-4 md:grid-cols-3">
                         <Field>
                             <FieldLabel htmlFor="image-crop-zoom">
-                                {t('message.image.generated.zoom')}
+                                {t('message.image.label.zoom')}
                             </FieldLabel>
                             <Slider
                                 id="image-crop-zoom"
@@ -174,7 +174,7 @@ export function ImageCropDialog({
                         </Field>
                         <Field>
                             <FieldLabel htmlFor="image-crop-offset-x">
-                                {t('message.image.generated.horizontal')}
+                                {t('message.image.label.horizontal')}
                             </FieldLabel>
                             <Slider
                                 id="image-crop-offset-x"
@@ -189,7 +189,7 @@ export function ImageCropDialog({
                         </Field>
                         <Field>
                             <FieldLabel htmlFor="image-crop-offset-y">
-                                {t('message.image.generated.vertical')}
+                                {t('message.image.label.vertical')}
                             </FieldLabel>
                             <Slider
                                 id="image-crop-offset-y"
@@ -219,7 +219,7 @@ export function ImageCropDialog({
                         {isConfirming ? (
                             <Spinner data-icon="inline-start" />
                         ) : null}
-                        {t('message.image.generated.upload')}
+                        {t('message.image.action.upload')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -271,7 +271,7 @@ export function buildGameLogColumns({
                                                 variant="ghost"
                                                 size="icon"
                                                 aria-label={t(
-                                                    'view.game_log.generated.open_link'
+                                                    'view.game_log.action.open_link'
                                                 )}
                                                 className="size-6 p-0"
                                                 onClick={(event) => {
@@ -290,7 +290,7 @@ export function buildGameLogColumns({
                                                 variant="ghost"
                                                 size="icon"
                                                 aria-label={t(
-                                                    'view.game_log.generated.copy_detail'
+                                                    'view.game_log.action.copy_detail'
                                                 )}
                                                 className="size-6 p-0"
                                                 onClick={(event) => {
@@ -342,7 +342,7 @@ export function buildGameLogColumns({
                                 variant="ghost"
                                 size="icon"
                                 aria-label={t(
-                                    'view.game_log.generated_modal.delete_game_log_row'
+                                    'view.game_log.modal.delete_game_log_row'
                                 )}
                                 className="text-muted-foreground hover:text-destructive size-6 p-0"
                                 disabled={deletingGameLogKey === rowKey}
@@ -370,7 +370,7 @@ export function buildGameLogColumns({
                                 variant="ghost"
                                 size="icon"
                                 aria-label={t(
-                                    'view.game_log.generated.show_instance_history'
+                                    'view.game_log.action.show_instance_history'
                                 )}
                                 className="text-muted-foreground hover:text-foreground size-6 p-0"
                                 disabled={

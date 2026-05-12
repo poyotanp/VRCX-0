@@ -28,7 +28,7 @@ export function GroupListState({
                 )}
             >
                 <Spinner className="size-4" />
-                <span>{t('dialog.group.generated.loading')}</span>
+                <span>{t('dialog.group.loading.loading')}</span>
             </div>
         );
     }

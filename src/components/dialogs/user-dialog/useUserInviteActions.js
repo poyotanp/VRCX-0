@@ -57,7 +57,7 @@ export function useUserInviteActions({
         if (requireCurrentUser && !normalizedCurrentUserId) {
             toast.error(
                 t(
-                    'dialog.user.generated.cannot_load_message_templates_no_current_user_session_is_ava'
+                    'dialog.user.error.cannot_load_message_templates_no_current_user_session_is_available'
                 )
             );
             return null;
@@ -66,7 +66,7 @@ export function useUserInviteActions({
         if (!currentInviteLocation) {
             toast.error(
                 t(
-                    'dialog.user.generated.cannot_invite_no_current_vrchat_location_is_available'
+                    'dialog.user.error.cannot_invite_no_current_vrchat_location_is_available'
                 )
             );
             return null;
@@ -74,7 +74,7 @@ export function useUserInviteActions({
         if (!canInviteFromCurrentLocation) {
             toast.error(
                 t(
-                    'dialog.user.generated.cannot_invite_from_the_current_instance_type'
+                    'dialog.user.error.cannot_invite_from_the_current_instance_type'
                 )
             );
             return null;
@@ -84,7 +84,7 @@ export function useUserInviteActions({
         if (!parsedLocation.worldId || !parsedLocation.instanceId) {
             toast.error(
                 t(
-                    'dialog.user.generated.cannot_invite_current_location_is_not_a_concrete_instance'
+                    'dialog.user.error.cannot_invite_current_location_is_not_a_concrete_instance'
                 )
             );
             return null;
@@ -114,7 +114,7 @@ export function useUserInviteActions({
         if (requireCurrentUser && !normalizedCurrentUserId) {
             toast.error(
                 t(
-                    'dialog.user.generated.cannot_load_message_templates_no_current_user_session_is_ava'
+                    'dialog.user.error.cannot_load_message_templates_no_current_user_session_is_available'
                 )
             );
             return null;
@@ -169,7 +169,7 @@ export function useUserInviteActions({
             );
             toast.success(
                 messageSlot !== null
-                    ? t('dialog.user.generated_toast.invite_message_sent')
+                    ? t('dialog.user.toast.invite_message_sent')
                     : t('message.invite.sent')
             );
             return true;
@@ -177,7 +177,7 @@ export function useUserInviteActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_send_invite')
+                    : t('dialog.user.toast.failed_to_send_invite')
             );
             return false;
         } finally {
@@ -205,7 +205,7 @@ export function useUserInviteActions({
         }
 
         const result = await confirm({
-            title: t('dialog.user.generated_modal.send_invite'),
+            title: t('dialog.user.modal.send_invite'),
             description: profile?.displayName || context.rosterUserId,
             confirmText: t('dialog.user.actions.invite'),
             cancelText: t('common.actions.cancel')
@@ -252,16 +252,16 @@ export function useUserInviteActions({
             toast.success(
                 requestSlot !== null
                     ? t(
-                          'dialog.user.generated_toast.invite_request_message_sent'
+                          'dialog.user.toast.invite_request_message_sent'
                       )
-                    : t('dialog.user.generated_toast.invite_request_sent')
+                    : t('dialog.user.toast.invite_request_sent')
             );
             return true;
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_request_invite')
+                    : t('dialog.user.toast.failed_to_request_invite')
             );
             return false;
         } finally {
@@ -291,7 +291,7 @@ export function useUserInviteActions({
         }
 
         const result = await confirm({
-            title: t('dialog.user.generated_modal.request_invite'),
+            title: t('dialog.user.modal.request_invite'),
             description: profile?.displayName || context.rosterUserId,
             confirmText: t('dialog.user.actions.request_invite'),
             cancelText: t('common.actions.cancel')
@@ -307,7 +307,7 @@ export function useUserInviteActions({
         const slot = inviteMessageSlot(row);
         if (!Number.isFinite(slot)) {
             toast.error(
-                t('dialog.user.generated.invite_message_slot_must_be_a_number')
+                t('dialog.user.action.invite_message_slot_must_be_a_number')
             );
             return false;
         }

@@ -81,7 +81,7 @@ export function useSettingsMaintenanceActions({
             return;
         }
         await backend.app.DeleteAllScreenshotMetadata();
-        toast.success(t('view.settings.generated.screenshot_metadata_removed'));
+        toast.success(t('view.settings.success.screenshot_metadata_removed'));
     }
     async function refreshCacheSize() {
         const favoriteStats = getFavoriteRemoteDetailsCacheStats();
@@ -128,7 +128,7 @@ export function useSettingsMaintenanceActions({
         }));
         toast.success(
             t(
-                'view.settings.generated_dynamic.cleared_value_query_cache_entries_value_avatar_n',
+                'view.settings.dynamic.cleared_value_query_cache_entries_value_avatar_name_entries_and_value_favorite_detail_entries',
                 {
                     value: queryCacheCount,
                     value2: avatarNameCacheCount,
@@ -281,12 +281,12 @@ export function useSettingsMaintenanceActions({
     }
     async function promptCropExistingPrints() {
         const result = await confirm({
-            title: t('view.settings.generated_modal.crop_existing_prints'),
+            title: t('view.settings.modal.crop_existing_prints'),
             description: t(
-                'view.settings.generated_modal.crop_already_saved_instance_prints_in_the_config'
+                'view.settings.modal.crop_already_saved_instance_prints_in_the_config'
             ),
-            confirmText: t('view.settings.generated_modal.crop_prints'),
-            cancelText: t('view.settings.generated_modal.skip')
+            confirmText: t('view.settings.modal.crop_prints'),
+            cancelText: t('view.settings.modal.skip')
         });
         if (!result.ok) {
             return;
@@ -296,7 +296,7 @@ export function useSettingsMaintenanceActions({
         );
         await mediaRepository.cropAllPrints(ugcFolderPath);
         toast.success(
-            t('view.settings.generated.existing_saved_prints_cropped')
+            t('view.settings.label.existing_saved_prints_cropped')
         );
     }
     async function handleCropInstancePrintsChange(checked) {
@@ -320,7 +320,7 @@ export function useSettingsMaintenanceActions({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.settings.generated_toast.failed_to_crop_existing_prints'
+                              'view.settings.toast.failed_to_crop_existing_prints'
                           )
                 );
             });
@@ -353,7 +353,7 @@ export function useSettingsMaintenanceActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_save_feed_filters'
+                          'view.settings.toast.failed_to_save_feed_filters'
                       )
             );
         });

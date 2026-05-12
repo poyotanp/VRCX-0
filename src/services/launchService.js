@@ -105,7 +105,7 @@ export async function attachRunningVrchat(
         }
         toast.warning(
             i18n.t(
-                'common.generated.generated.failed_open_instance_in_vrchat_falling_back_to_self_invite'
+                'common.error.failed_open_instance_in_vrchat_falling_back_to_self_invite'
             )
         );
         const launchToken = await resolveInstanceLaunchToken(
@@ -184,5 +184,5 @@ export async function launchVrchat(
                 : 'Failed to find VRChat. Configure a custom launch path in launch options.'
         );
     }
-    toast.success(i18n.t('common.generated.generated.vrchat_launched'));
+    toast.success(i18n.t('common.label.vrchat_launched'));
 }

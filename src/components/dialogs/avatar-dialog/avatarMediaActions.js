@@ -59,8 +59,8 @@ export function createAvatarImageUploadActions({
         if (!validation.ok) {
             const message =
                 validation.reason === 'too_large'
-                    ? t('message.image.generated.selected_image_is_too_large')
-                    : t('message.image.generated.selected_file_is_not_image');
+                    ? t('message.image.error.selected_image_is_too_large')
+                    : t('message.image.success.selected_file_is_not_image');
             setDetail(message);
             toast.error(message);
             return;
@@ -126,17 +126,17 @@ export function createAvatarImageUploadActions({
             setAvatar(currentAvatar);
             setDetail(
                 t(
-                    'dialog.avatar.generated_dynamic.avatar_image_updated_for_value',
+                    'dialog.avatar.dynamic.avatar_image_updated_for_value',
                     { value: selectedAvatar.name || avatarId }
                 )
             );
-            toast.success(t('dialog.avatar.generated.avatar_image_updated'));
+            toast.success(t('dialog.avatar.success.avatar_image_updated'));
         } catch (error) {
             const message =
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_upload_avatar_image'
+                          'dialog.avatar.toast.failed_to_upload_avatar_image'
                       );
             setDetail(message);
             toast.error(message);
@@ -177,7 +177,7 @@ export function createAvatarCacheActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_open_avatar_cache_folder'
+                          'dialog.avatar.toast.failed_to_open_avatar_cache_folder'
                       )
             );
         }
@@ -196,7 +196,7 @@ export function createAvatarCacheActions({
         );
         if (!args) {
             toast.error(
-                t('dialog.avatar.generated.avatar_cache_location_unavailable')
+                t('dialog.avatar.error.avatar_cache_location_unavailable')
             );
             return;
         }
@@ -214,13 +214,13 @@ export function createAvatarCacheActions({
             setAvatar((current) =>
                 current ? { ...current, $isCached: cache.inCache } : current
             );
-            toast.success(t('dialog.avatar.generated.avatar_cache_deleted'));
+            toast.success(t('dialog.avatar.success.avatar_cache_deleted'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_delete_avatar_cache'
+                          'dialog.avatar.toast.failed_to_delete_avatar_cache'
                       )
             );
         } finally {
@@ -266,10 +266,10 @@ export function createAvatarGalleryUploadActions({
             toast.error(
                 validation.reason === 'too_large'
                     ? t(
-                          'dialog.avatar.generated_toast.selected_file_is_too_large'
+                          'dialog.avatar.toast.selected_file_is_too_large'
                       )
                     : t(
-                          'dialog.avatar.generated_toast.selected_file_is_not_an_image'
+                          'dialog.avatar.toast.selected_file_is_not_an_image'
                       )
             );
             return;
@@ -301,7 +301,7 @@ export function createAvatarGalleryUploadActions({
                         .filter(Boolean)
                 }));
                 toast.success(
-                    t('dialog.avatar.generated.avatar_gallery_image_uploaded')
+                    t('dialog.avatar.label.avatar_gallery_image_uploaded')
                 );
             }
         } catch (error) {
@@ -309,7 +309,7 @@ export function createAvatarGalleryUploadActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_upload_avatar_gallery_image'
+                          'dialog.avatar.toast.failed_to_upload_avatar_gallery_image'
                       )
             );
         } finally {

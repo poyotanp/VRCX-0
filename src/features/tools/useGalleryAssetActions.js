@@ -80,7 +80,7 @@ export function useGalleryAssetActions({
                 toast.error(
                     error instanceof Error
                         ? error.message
-                        : t('view.tools.generated_toast.failed_to_load_value', {
+                        : t('view.tools.toast.failed_to_load_value', {
                               value: tab
                           })
                 );
@@ -120,7 +120,7 @@ export function useGalleryAssetActions({
                 toast.error(
                     error instanceof Error
                         ? error.message
-                        : t('view.tools.generated_toast.failed_to_load_prints')
+                        : t('view.tools.toast.failed_to_load_prints')
                 );
             }
         } finally {
@@ -160,7 +160,7 @@ export function useGalleryAssetActions({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_load_inventory'
+                              'view.tools.toast.failed_to_load_inventory'
                           )
                 );
             }
@@ -359,7 +359,7 @@ export function useGalleryAssetActions({
         }
         const authTarget = getAuthTarget();
         const result = await confirm({
-            title: t('view.tools.generated_modal.delete_value_item', {
+            title: t('view.tools.modal.delete_value_item', {
                 value: tab
             }),
             description: normalizedFileId,
@@ -387,14 +387,14 @@ export function useGalleryAssetActions({
                     (file) => file.id !== normalizedFileId
                 )
             }));
-            toast.success(t('view.tools.generated.media_item_deleted'));
+            toast.success(t('view.tools.success.media_item_deleted'));
         } catch (error) {
             if (isRuntimeAuthTarget(authTarget)) {
                 toast.error(
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_delete_media_item'
+                              'view.tools.toast.failed_to_delete_media_item'
                           )
                 );
             }

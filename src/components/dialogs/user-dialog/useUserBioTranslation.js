@@ -68,7 +68,7 @@ export function useUserBioTranslation({ profile }) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.translation_failed')
+                    : t('dialog.user.toast.translation_failed')
             );
         } finally {
             setBioTranslationLoading(false);

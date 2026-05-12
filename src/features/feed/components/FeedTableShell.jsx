@@ -103,21 +103,21 @@ export function FeedTableShell({
                                             <span className="inline-flex items-center gap-2">
                                                 <Spinner />
                                                 {t(
-                                                    'view.feed.generated.loading_feed_rows'
+                                                    'view.feed.loading.loading_feed_rows'
                                                 )}
                                             </span>
                                         ) : favoritesOnly &&
                                           !isFavoritesLoaded ? (
                                             t(
-                                                'view.feed.generated.favorites_are_still_hydrating'
+                                                'view.feed.label.favorites_are_still_hydrating'
                                             )
                                         ) : loadStatus === 'error' ? (
                                             t(
-                                                'view.feed.generated.feed_query_failed'
+                                                'view.feed.error.feed_query_failed'
                                             )
                                         ) : (
                                             t(
-                                                'view.feed.generated.no_feed_rows_match_the_current_filters'
+                                                'view.feed.empty.no_feed_rows_match_the_current_filters'
                                             )
                                         )}
                                     </DataTableEmptyRow>
@@ -130,9 +130,9 @@ export function FeedTableShell({
 
             <PageFooter>
                 <div className="text-muted-foreground text-sm">
-                    {rows.length} {t('view.feed.generated.rows')}
+                    {rows.length} {t('view.feed.label.rows')}
                     {favoritesOnly
-                        ? ` · ${t('view.feed.generated.favorites_only')}`
+                        ? ` · ${t('view.feed.label.favorites_only')}`
                         : ''}
                 </div>
                 <DataTablePagination

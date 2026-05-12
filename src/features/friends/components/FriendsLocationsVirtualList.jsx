@@ -55,12 +55,12 @@ export function FriendsLocationsVirtualList({ controller }) {
             ) : isError ? (
                 <FriendsLocationsEmptyState
                     title={t(
-                        'view.friend_list.generated.friend_locations_failed_to_load'
+                        'view.friend_list.error.friend_locations_failed_to_load'
                     )}
                     description={
                         rosterDetail ||
                         t(
-                            'view.friend_list.generated.roster_bootstrap_did_not_complete'
+                            'view.friend_list.success.roster_bootstrap_did_not_complete'
                         )
                     }
                 />
@@ -139,15 +139,15 @@ export function FriendsLocationsVirtualList({ controller }) {
             ) : (
                 <FriendsLocationsEmptyState
                     title={t(
-                        'view.friend_list.generated.no_friends_match_the_current_filters'
+                        'view.friend_list.empty.no_friends_match_the_current_filters'
                     )}
                     description={
                         activeSegment === 'favorite' && !isFavoritesLoaded
                             ? t(
-                                  'view.friend_list.generated.favorites_are_still_hydrating'
+                                  'view.friend_list.label.favorites_are_still_hydrating'
                               )
                             : t(
-                                  'view.friend_list.generated.try_a_different_segment_or_broaden_the_search_query'
+                                  'view.friend_list.label.try_a_different_segment_or_broaden_the_search_query'
                               )
                     }
                 />

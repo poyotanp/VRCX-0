@@ -88,7 +88,7 @@ export function NotificationPageTable({
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="text-muted-foreground text-sm">
                     {rowsCount}{' '}
-                    {t('view.notification.generated.notifications_in_view')}
+                    {t('view.notification.label.notifications_in_view')}
                 </div>
                 <DataTablePagination
                     table={table}

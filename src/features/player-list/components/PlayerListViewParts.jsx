@@ -243,7 +243,7 @@ export function CurrentWorldHeader({
                 </div>
                 <div>
                     <span className="text-muted-foreground block">
-                        {t('view.player_list.generated.last_updated')}
+                        {t('view.player_list.success.last_updated')}
                     </span>
                     <span className="font-medium">
                         {fileAnalysis?.standalonewindows?.created_at
@@ -258,7 +258,7 @@ export function CurrentWorldHeader({
                 </div>
                 <div>
                     <span className="text-muted-foreground block">
-                        {t('view.player_list.generated.created')}
+                        {t('view.player_list.success.created')}
                     </span>
                     <span className="font-medium">
                         {world?.createdAt

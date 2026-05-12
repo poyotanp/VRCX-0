@@ -222,7 +222,7 @@ export function useSettingsIntegrations({ commit, t }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_save_translation_settings'
+                          'view.settings.toast.failed_to_save_translation_settings'
                       )
             );
         } finally {
@@ -280,7 +280,7 @@ export function useSettingsIntegrations({ commit, t }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.settings.generated_toast.failed_to_fetch_translation_models'
+                          'view.settings.toast.failed_to_fetch_translation_models'
                       )
             );
         } finally {

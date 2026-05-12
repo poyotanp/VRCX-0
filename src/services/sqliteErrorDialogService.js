@@ -6,29 +6,29 @@ const SQLITE_ERROR_DIALOGS = {
     malformed: {
         method: 'confirm',
         descriptionKey:
-            'repository.sqlite_repository.generated_modal.please_repair_or_delete_your_database_file_by_fo',
+            'repository.sqlite_repository.modal.please_repair_or_delete_your_database_file_by_fo',
         titleKey:
-            'repository.sqlite_repository.generated_modal.your_database_is_corrupted'
+            'repository.sqlite_repository.modal.your_database_is_corrupted'
     },
     disk_full: {
         method: 'alert',
         descriptionKey:
-            'repository.sqlite_repository.generated_modal.disk_full_description',
-        titleKey: 'repository.sqlite_repository.generated_modal.disk_full_title'
+            'repository.sqlite_repository.modal.disk_full_description',
+        titleKey: 'repository.sqlite_repository.modal.disk_full_title'
     },
     locked: {
         method: 'alert',
         descriptionKey:
-            'repository.sqlite_repository.generated_modal.database_locked_description',
+            'repository.sqlite_repository.modal.database_locked_description',
         titleKey:
-            'repository.sqlite_repository.generated_modal.database_locked_title'
+            'repository.sqlite_repository.modal.database_locked_title'
     },
     io_error: {
         method: 'alert',
         descriptionKey:
-            'repository.sqlite_repository.generated_modal.disk_io_error_description',
+            'repository.sqlite_repository.modal.disk_io_error_description',
         titleKey:
-            'repository.sqlite_repository.generated_modal.disk_io_error_title'
+            'repository.sqlite_repository.modal.disk_io_error_title'
     }
 };
 

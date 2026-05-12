@@ -401,21 +401,21 @@ export function GroupDialogTabPanels({ state, handlers }) {
                             }
                         />
                         <EntityInfoBlock
-                            label={t('dialog.group.generated.join_state')}
+                            label={t('dialog.group.action.join_state')}
                             value={joinState || '—'}
                         />
                         <EntityInfoBlock
-                            label={t('dialog.group.generated.membership')}
+                            label={t('dialog.group.label.membership')}
                             value={
                                 memberStatus || group.membershipStatus || '—'
                             }
                         />
                         <EntityInfoBlock
-                            label={t('dialog.group.generated.languages')}
+                            label={t('dialog.group.label.languages')}
                             value={languages.join(', ') || '—'}
                         />
                         <EntityInfoBlock
-                            label={t('dialog.group.generated.privacy')}
+                            label={t('dialog.group.label.privacy')}
                             value={group.privacy || '—'}
                         />
                         {links.length ? (
@@ -458,7 +458,7 @@ export function GroupDialogTabPanels({ state, handlers }) {
                             wide
                         />
                         <EntityInfoBlock
-                            label={t('dialog.group.generated.owner_2')}
+                            label={t('dialog.group.label.owner_2')}
                             value={ownerLabel || '—'}
                             wide
                             onClick={group.ownerId ? onOpenOwner : undefined}
@@ -580,7 +580,7 @@ export function GroupDialogTabPanels({ state, handlers }) {
                         disabled={remoteStatus.members === 'running'}
                         onClick={onLoadAllMembers}
                     >
-                        {t('dialog.group.generated.load_all')}
+                        {t('dialog.group.action.load_all')}
                     </Button>
                     <Button
                         type="button"
@@ -605,16 +605,16 @@ export function GroupDialogTabPanels({ state, handlers }) {
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem value="joinedAt:desc">
-                                    {t('dialog.group.generated.joined_newest')}
+                                    {t('dialog.group.success.joined_newest')}
                                 </SelectItem>
                                 <SelectItem value="joinedAt:asc">
-                                    {t('dialog.group.generated.joined_oldest')}
+                                    {t('dialog.group.success.joined_oldest')}
                                 </SelectItem>
                                 <SelectItem value="user.displayName:asc">
-                                    {t('dialog.group.generated.name_a_z')}
+                                    {t('dialog.group.label.name_a_z')}
                                 </SelectItem>
                                 <SelectItem value="user.displayName:desc">
-                                    {t('dialog.group.generated.name_z_a')}
+                                    {t('dialog.group.label.name_z_a')}
                                 </SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -626,13 +626,13 @@ export function GroupDialogTabPanels({ state, handlers }) {
                     >
                         <SelectTrigger size="sm" className="w-48">
                             <SelectValue
-                                placeholder={t('dialog.group.generated.role')}
+                                placeholder={t('dialog.group.label.role')}
                             />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem value="all">
-                                    {t('dialog.group.generated.all_roles')}
+                                    {t('dialog.group.label.all_roles')}
                                 </SelectItem>
                                 {roles.map((role) => (
                                     <SelectItem

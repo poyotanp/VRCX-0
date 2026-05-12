@@ -19,9 +19,9 @@ const dashboardT = (key, params = {}) => {
     const messages = {
         'dashboard.registry.feed': 'Feed',
         'dashboard.registry.feed_widget': 'Feed Widget',
-        'view.dashboard.generated_dynamic.existing_value': `Existing · ${params.value}`,
-        'view.dashboard.generated_dynamic.page_value': `Page · ${params.value}`,
-        'view.dashboard.generated_dynamic.widget_value': `Widget · ${params.value}`
+        'view.dashboard.dynamic.existing_value': `Existing · ${params.value}`,
+        'view.dashboard.dynamic.page_value': `Page · ${params.value}`,
+        'view.dashboard.dynamic.widget_value': `Widget · ${params.value}`
     };
 
     return messages[key] ?? key;

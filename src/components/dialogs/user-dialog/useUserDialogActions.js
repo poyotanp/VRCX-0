@@ -162,7 +162,7 @@ export function useUserDialogActions({
         actionStatusRef.current = 'unfriend';
         setActionStatus('unfriend');
         const result = await confirm({
-            title: t('dialog.user.generated_modal.unfriend_user'),
+            title: t('dialog.user.modal.unfriend_user'),
             description: friend?.displayName || rosterUserId,
             confirmText: t('dialog.user.actions.unfriend'),
             cancelText: t('common.actions.cancel'),
@@ -185,7 +185,7 @@ export function useUserDialogActions({
             if (deleteResult.stale) {
                 toast.info(
                     t(
-                        'dialog.user.generated.unfriend_request_sent_but_the_active_session_changed_before_'
+                        'dialog.user.action.unfriend_request_sent_but_the_active_session_changed_before_local_state_was_updated'
                     )
                 );
             } else {
@@ -199,7 +199,7 @@ export function useUserDialogActions({
                         : currentProfile
                 );
                 toast.success(
-                    t('dialog.user.generated_dynamic.unfriended_value', {
+                    t('dialog.user.dynamic.unfriended_value', {
                         value: friend?.displayName || rosterUserId
                     })
                 );
@@ -208,7 +208,7 @@ export function useUserDialogActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_unfriend_user')
+                    : t('dialog.user.toast.failed_to_unfriend_user')
             );
         } finally {
             actionStatusRef.current = 'idle';
@@ -256,7 +256,7 @@ export function useUserDialogActions({
         actionStatusRef.current = `friend-request:${action}`;
         setActionStatus(actionStatusRef.current);
         const result = await confirm({
-            title: t('dialog.user.generated_dynamic.value', { value: label }),
+            title: t('dialog.user.dynamic.value', { value: label }),
             description: profile?.displayName || rosterUserId,
             confirmText:
                 action === 'accept'
@@ -298,7 +298,7 @@ export function useUserDialogActions({
                     }
                     toast.info(
                         t(
-                            'dialog.user.generated.friend_request_is_no_longer_active'
+                            'dialog.user.empty.friend_request_is_no_longer_active'
                         )
                     );
                     return;
@@ -384,9 +384,9 @@ export function useUserDialogActions({
                 toast.success(
                     isNowFriend
                         ? t(
-                              'dialog.user.generated_toast.friend_request_accepted'
+                              'dialog.user.toast.friend_request_accepted'
                           )
-                        : t('dialog.user.generated_toast.friend_request_sent')
+                        : t('dialog.user.toast.friend_request_sent')
                 );
             } else {
                 incomingNotification =
@@ -407,7 +407,7 @@ export function useUserDialogActions({
                     }
                     toast.info(
                         t(
-                            'dialog.user.generated.friend_request_is_no_longer_active'
+                            'dialog.user.empty.friend_request_is_no_longer_active'
                         )
                     );
                     return;
@@ -442,10 +442,10 @@ export function useUserDialogActions({
                 toast.success(
                     action === 'decline'
                         ? t(
-                              'dialog.user.generated_toast.friend_request_declined'
+                              'dialog.user.toast.friend_request_declined'
                           )
                         : t(
-                              'dialog.user.generated_toast.friend_request_cancelled'
+                              'dialog.user.toast.friend_request_cancelled'
                           )
                 );
             }
@@ -472,7 +472,7 @@ export function useUserDialogActions({
                 }
                 toast.info(
                     t(
-                        'dialog.user.generated.friend_request_is_no_longer_active'
+                        'dialog.user.empty.friend_request_is_no_longer_active'
                     )
                 );
                 return;
@@ -480,7 +480,7 @@ export function useUserDialogActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.value_failed', {
+                    : t('dialog.user.toast.value_failed', {
                           value: label
                       })
             );
@@ -502,9 +502,9 @@ export function useUserDialogActions({
         }
 
         const result = await confirm({
-            title: t('dialog.user.generated_modal.report_hacking'),
+            title: t('dialog.user.modal.report_hacking'),
             description: profile?.displayName || rosterUserId,
-            confirmText: t('dialog.user.generated_modal.report'),
+            confirmText: t('dialog.user.modal.report'),
             cancelText: t('common.actions.cancel'),
             destructive: true
         });
@@ -524,12 +524,12 @@ export function useUserDialogActions({
                 },
                 { endpoint: currentEndpoint }
             );
-            toast.success(t('dialog.user.generated.report_sent'));
+            toast.success(t('dialog.user.success.report_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_report_user')
+                    : t('dialog.user.toast.failed_to_report_user')
             );
         } finally {
             actionStatusRef.current = 'idle';
@@ -552,12 +552,12 @@ export function useUserDialogActions({
         setActionStatus('boop');
         try {
             const result = await prompt({
-                title: t('dialog.user.generated_modal.send_boop'),
+                title: t('dialog.user.modal.send_boop'),
                 description: t(
-                    'dialog.user.generated_modal.optional_emoji_id_leave_blank_to_send_the_defaul'
+                    'dialog.user.modal.optional_emoji_id_leave_blank_to_send_the_default'
                 ),
                 inputValue: '',
-                confirmText: t('dialog.user.generated_modal.send'),
+                confirmText: t('dialog.user.modal.send'),
                 cancelText: t('common.actions.cancel')
             });
             if (!result.ok) {
@@ -570,12 +570,12 @@ export function useUserDialogActions({
                 emojiId: result.value,
                 endpoint: currentEndpoint
             });
-            toast.success(t('dialog.user.generated.boop_sent'));
+            toast.success(t('dialog.user.success.boop_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_send_boop')
+                    : t('dialog.user.toast.failed_to_send_boop')
             );
         } finally {
             actionStatusRef.current = 'idle';
@@ -594,9 +594,9 @@ export function useUserDialogActions({
         }
 
         const result = await prompt({
-            title: t('dialog.user.generated_modal.group_moderation'),
+            title: t('dialog.user.modal.group_moderation'),
             description: t(
-                'dialog.user.generated_dynamic.enter_a_group_id_to_open_moderation_for_value',
+                'dialog.user.dynamic.enter_a_group_id_to_open_moderation_for_value',
                 { value: profile?.displayName || rosterUserId }
             ),
             inputValue: '',
@@ -608,7 +608,7 @@ export function useUserDialogActions({
         }
         const groupId = normalizeUserId(result.value);
         if (!groupId) {
-            toast.error(t('dialog.user.generated.group_id_is_required'));
+            toast.error(t('dialog.user.error.group_id_is_required'));
             return;
         }
         openGroupDialog({ groupId });

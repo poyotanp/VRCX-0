@@ -207,7 +207,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                         <div className="flex justify-between gap-4">
                                             <span className="text-muted-foreground">
                                                 {t(
-                                                    'app_menu.generated.started_at'
+                                                    'app_menu.label.started_at'
                                                 )}
                                             </span>
                                             <span>
@@ -219,7 +219,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                         <div className="flex justify-between gap-4">
                                             <span className="text-muted-foreground">
                                                 {t(
-                                                    'app_menu.generated.session_duration'
+                                                    'app_menu.label.session_duration'
                                                 )}
                                             </span>
                                             <span>
@@ -233,7 +233,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                         <div className="flex justify-between gap-4">
                                             <span className="text-muted-foreground">
                                                 {t(
-                                                    'app_menu.generated.instance_duration'
+                                                    'app_menu.label.instance_duration'
                                                 )}
                                             </span>
                                             <span>
@@ -257,7 +257,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                         <div className="flex justify-between gap-4">
                                             <span className="text-muted-foreground">
                                                 {t(
-                                                    'app_menu.generated.last_game_event'
+                                                    'app_menu.label.last_game_event'
                                                 )}
                                             </span>
                                             <span>
@@ -269,7 +269,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                         <div className="flex justify-between gap-4">
                                             <span className="text-muted-foreground">
                                                 {t(
-                                                    'app_menu.generated.last_event_type'
+                                                    'app_menu.label.last_event_type'
                                                 )}
                                             </span>
                                             <span>

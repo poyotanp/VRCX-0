@@ -171,7 +171,7 @@ export function AvatarStylesDialog({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.my_avatars.generated_toast.failed_to_load_avatar_styles'
+                              'view.my_avatars.toast.failed_to_load_avatar_styles'
                           )
                 );
             });
@@ -249,7 +249,7 @@ export function AvatarStylesDialog({
             if (!hasPrimaryStyleParam || !hasSecondaryStyleParam) {
                 toast.error(
                     t(
-                        'view.my_avatars.generated.selected_avatar_style_is_not_available'
+                        'view.my_avatars.error.selected_avatar_style_is_not_available'
                     )
                 );
                 return;
@@ -264,14 +264,14 @@ export function AvatarStylesDialog({
                 return;
             }
             onSaved?.(savedAvatar);
-            toast.success(t('view.my_avatars.generated.avatar_styles_updated'));
+            toast.success(t('view.my_avatars.success.avatar_styles_updated'));
             onOpenChange(false);
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.my_avatars.generated_toast.failed_to_update_avatar_styles'
+                          'view.my_avatars.toast.failed_to_update_avatar_styles'
                       )
             );
         } finally {
@@ -293,7 +293,7 @@ export function AvatarStylesDialog({
                 <FieldGroup>
                     <Field>
                         <FieldLabel>
-                            {t('view.my_avatars.generated.primary_style')}
+                            {t('view.my_avatars.label.primary_style')}
                         </FieldLabel>
                         <Select
                             value={primaryStyle || CLEAR_STYLE_VALUE}
@@ -306,14 +306,14 @@ export function AvatarStylesDialog({
                             <SelectTrigger>
                                 <SelectValue
                                     placeholder={t(
-                                        'view.my_avatars.generated.select_style'
+                                        'view.my_avatars.action.select_style'
                                     )}
                                 />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
                                     <SelectItem value={CLEAR_STYLE_VALUE}>
-                                        {t('view.my_avatars.generated.none')}
+                                        {t('view.my_avatars.label.none')}
                                     </SelectItem>
                                     {styleNames.map((styleName) => (
                                         <SelectItem
@@ -329,7 +329,7 @@ export function AvatarStylesDialog({
                     </Field>
                     <Field>
                         <FieldLabel>
-                            {t('view.my_avatars.generated.secondary_style')}
+                            {t('view.my_avatars.label.secondary_style')}
                         </FieldLabel>
                         <Select
                             value={secondaryStyle || CLEAR_STYLE_VALUE}
@@ -342,14 +342,14 @@ export function AvatarStylesDialog({
                             <SelectTrigger>
                                 <SelectValue
                                     placeholder={t(
-                                        'view.my_avatars.generated.select_style'
+                                        'view.my_avatars.action.select_style'
                                     )}
                                 />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
                                     <SelectItem value={CLEAR_STYLE_VALUE}>
-                                        {t('view.my_avatars.generated.none')}
+                                        {t('view.my_avatars.label.none')}
                                     </SelectItem>
                                     {styleNames.map((styleName) => (
                                         <SelectItem
@@ -365,7 +365,7 @@ export function AvatarStylesDialog({
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="avatar-styles-author-tags">
-                            {t('view.my_avatars.generated.author_tags')}
+                            {t('view.my_avatars.label.author_tags')}
                         </FieldLabel>
                         <Textarea
                             id="avatar-styles-author-tags"
@@ -380,7 +380,7 @@ export function AvatarStylesDialog({
                     {loadStatus === 'error' ? (
                         <FieldDescription>
                             {t(
-                                'view.my_avatars.generated.style_list_could_not_be_loaded_unknown_style_selections_will'
+                                'view.my_avatars.error.style_list_could_not_be_loaded_unknown_style_selections_will'
                             )}
                         </FieldDescription>
                     ) : null}

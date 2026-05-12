@@ -357,7 +357,7 @@ function UserDialogProfileLinksPanel({
             <InfoStat label={t('dialog.user.info.represented_group')}>
                 {representedGroupStatus === 'running' ? (
                     <span className="text-muted-foreground block text-xs">
-                        {t('dialog.user.generated.loading')}
+                        {t('dialog.user.loading.loading')}
                     </span>
                 ) : representedGroup?.isRepresenting ? (
                     <Button

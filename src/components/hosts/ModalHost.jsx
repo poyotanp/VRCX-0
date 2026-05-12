@@ -154,7 +154,7 @@ export function ModalHost() {
                                 updatePromptValue(event.target.value)
                             }
                             placeholder={t(
-                                'dialog.tools.generated.prompt_value'
+                                'dialog.tools.label.prompt_value'
                             )}
                             className="min-h-32"
                         />
@@ -166,7 +166,7 @@ export function ModalHost() {
                                 updatePromptValue(event.target.value)
                             }
                             placeholder={t(
-                                'dialog.tools.generated.prompt_value'
+                                'dialog.tools.label.prompt_value'
                             )}
                         />
                     )}

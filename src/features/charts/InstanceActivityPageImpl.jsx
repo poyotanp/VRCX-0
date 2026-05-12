@@ -456,7 +456,7 @@ export function InstanceActivityPage() {
                     ) : dataStatus === 'error' ? (
                         <ChartEmptyState
                             title={t(
-                                'view.charts.generated.instance_activity_failed_to_load'
+                                'view.charts.error.instance_activity_failed_to_load'
                             )}
                             description={
                                 dataDetail ||
@@ -472,7 +472,7 @@ export function InstanceActivityPage() {
                             {!chartRows.length ? (
                                 <ChartEmptyState
                                     title={t(
-                                        'view.charts.generated.no_instance_activity_on_this_day'
+                                        'view.charts.empty.no_instance_activity_on_this_day'
                                     )}
                                     description={
                                         availableDates.includes(selectedDate)
@@ -544,10 +544,10 @@ export function InstanceActivityPage() {
                             ) : (
                                 <ChartEmptyState
                                     title={t(
-                                        'view.charts.generated.no_detail_charts_match_the_current_filters'
+                                        'view.charts.empty.no_detail_charts_match_the_current_filters'
                                     )}
                                     description={t(
-                                        'view.charts.generated.turn_on_solo_or_no_friend_instances_to_show_the_hidden_detai'
+                                        'view.charts.empty.turn_on_solo_or_no_friend_instances_to_show_the_hidden_detail_groups'
                                     )}
                                 />
                             )}

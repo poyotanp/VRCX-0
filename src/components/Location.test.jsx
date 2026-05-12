@@ -93,9 +93,9 @@ vi.mock('@/state/preferencesStore.js', () => ({
 
 vi.mock('react-i18next', () => {
     const translations = {
-        'component.location.generated_toast.failed_to_send_self_invite':
+        'component.location.toast.failed_to_send_self_invite':
             'Failed to send self invite',
-        'component.region_code_badge.generated_dynamic.region_value': 'Region',
+        'component.region_code_badge.dynamic.region_value': 'Region',
         'dialog.new_instance.access_type_group': 'Group',
         'dialog.new_instance.access_type_public': 'Public',
         'dialog.new_instance.instance_id': 'Instance ID',

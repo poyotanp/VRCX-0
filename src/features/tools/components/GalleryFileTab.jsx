@@ -161,11 +161,11 @@ export function GalleryFileTab({
                     ) : (
                         <EmptyState
                             title={t(
-                                'view.tools.generated_dynamic.no_value_loaded',
+                                'view.tools.dynamic.no_value_loaded',
                                 { value: tab }
                             )}
                             description={t(
-                                'view.tools.generated_dynamic.refresh_this_tab_to_load_value_files',
+                                'view.tools.dynamic.refresh_this_tab_to_load_value_files',
                                 { value: definition.tag }
                             )}
                         />

@@ -33,8 +33,8 @@ import {
 
 function renderColumnLockLabel(locked, t) {
     return locked
-        ? t('table.generated.unlock_column_order')
-        : t('table.generated.lock_column_order');
+        ? t('table.label.unlock_column_order')
+        : t('table.label.lock_column_order');
 }
 
 export function TableColumnVisibilityMenu({
@@ -53,7 +53,7 @@ export function TableColumnVisibilityMenu({
     }
 
     const columnOrderLocked = getColumnOrderLocked(table);
-    const resolvedLabel = label || t('table.generated.columns');
+    const resolvedLabel = label || t('table.label.columns');
 
     return (
         <DropdownMenu>
@@ -72,7 +72,7 @@ export function TableColumnVisibilityMenu({
                 className="max-h-96 w-72 overflow-y-auto"
             >
                 <DropdownMenuLabel>
-                    {t('table.generated.table_layout')}
+                    {t('table.label.table_layout')}
                 </DropdownMenuLabel>
                 <DropdownMenuGroup>
                     <DropdownMenuItem
@@ -81,7 +81,7 @@ export function TableColumnVisibilityMenu({
                             resetTableLayout(table, onResetLayout);
                         }}
                     >
-                        {t('table.generated.reset_columns')}
+                        {t('table.action.reset_columns')}
                     </DropdownMenuItem>
                     {showColumnOrderLock ? (
                         <DropdownMenuItem
@@ -196,7 +196,7 @@ export function TableColumnHeaderContextMenu({
                                     resetTableLayout(table, onResetLayout)
                                 }
                             >
-                                {t('table.generated.reset_columns')}
+                                {t('table.action.reset_columns')}
                             </ContextMenuItem>
                         ) : null}
                     </ContextMenuGroup>

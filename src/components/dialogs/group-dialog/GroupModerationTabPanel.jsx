@@ -106,7 +106,7 @@ export function GroupModerationTabPanel({
                         value={search}
                         onChange={(event) => onSearchChange(event.target.value)}
                         placeholder={t(
-                            'dialog.group.generated_dynamic.search_value',
+                            'dialog.group.dynamic.search_value',
                             { value: tab.label.toLowerCase() }
                         )}
                         className="h-8 w-64"
@@ -134,7 +134,7 @@ export function GroupModerationTabPanel({
             </div>
             {loading ? (
                 <GroupListState
-                    title={t('dialog.group.generated_dynamic.no_value', {
+                    title={t('dialog.group.dynamic.no_value', {
                         value: tab.label.toLowerCase()
                     })}
                     loading
@@ -142,7 +142,7 @@ export function GroupModerationTabPanel({
             ) : null}
             {error ? (
                 <GroupListState
-                    title={t('dialog.group.generated_dynamic.no_value', {
+                    title={t('dialog.group.dynamic.no_value', {
                         value: tab.label.toLowerCase()
                     })}
                     error={error}
@@ -154,7 +154,7 @@ export function GroupModerationTabPanel({
                         <TableHeader className="bg-background sticky top-0">
                             <TableRow>
                                 <TableHead className="w-56">
-                                    {t('dialog.group.generated.user')}
+                                    {t('dialog.group.label.user')}
                                 </TableHead>
                                 <TableHead>
                                     {t('dialog.group_member_moderation.roles')}{' '}
@@ -164,13 +164,13 @@ export function GroupModerationTabPanel({
                                     )}
                                 </TableHead>
                                 <TableHead className="w-44">
-                                    {t('dialog.group.generated.status')}
+                                    {t('dialog.group.label.status')}
                                 </TableHead>
                                 <TableHead className="w-44">
-                                    {t('dialog.group.generated.date')}
+                                    {t('dialog.group.label.date')}
                                 </TableHead>
                                 <TableHead className="w-48 text-right">
-                                    {t('dialog.group.generated.actions')}
+                                    {t('dialog.group.label.actions')}
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
@@ -282,7 +282,7 @@ export function GroupModerationTabPanel({
                                         colSpan={5}
                                         className="text-muted-foreground py-8 text-center text-sm"
                                     >
-                                        {t('dialog.group.generated.no_rows')}
+                                        {t('dialog.group.empty.no_rows')}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -293,7 +293,7 @@ export function GroupModerationTabPanel({
             {!loading && !error ? (
                 <div className="mt-3 flex items-center justify-between">
                     <span className="text-muted-foreground text-sm">
-                        {t('dialog.group.generated.page')}{' '}
+                        {t('dialog.group.label.page')}{' '}
                         {currentPageIndex + 1} / {totalPages}
                     </span>
                     <div className="flex gap-2">

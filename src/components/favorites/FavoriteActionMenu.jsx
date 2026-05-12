@@ -169,13 +169,13 @@ export function FavoriteActionMenu({
             if (response.json && typeof response.json === 'object') {
                 addRemoteFavorite(response.json);
             }
-            toast.success(t('view.favorite.generated.favorite_added'));
+            toast.success(t('view.favorite.label.favorite_added'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.favorite_action_menu.generated_toast.failed_to_add_favorite'
+                          'component.favorite_action_menu.toast.failed_to_add_favorite'
                       )
             );
         } finally {
@@ -193,10 +193,10 @@ export function FavoriteActionMenu({
         setActionStatus('favorite');
         const result = await confirm({
             title: t(
-                'component.favorite_action_menu.generated_modal.remove_vrchat_favorite'
+                'component.favorite_action_menu.modal.remove_vrchat_favorite'
             ),
             description: t(
-                'component.favorite_action_menu.generated_dynamic.remove_value_from_vrchat_favorites',
+                'component.favorite_action_menu.dynamic.remove_value_from_vrchat_favorites',
                 { value: normalizedEntityId }
             ),
             destructive: true,
@@ -216,13 +216,13 @@ export function FavoriteActionMenu({
                 objectId: normalizedEntityId
             });
             removeRemoteFavorite(normalizedEntityId);
-            toast.success(t('view.favorite.generated.favorite_removed'));
+            toast.success(t('view.favorite.success.favorite_removed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.favorite_action_menu.generated_toast.failed_to_remove_favorite'
+                          'component.favorite_action_menu.toast.failed_to_remove_favorite'
                       )
             );
         } finally {
@@ -250,13 +250,13 @@ export function FavoriteActionMenu({
                 groupName,
                 entity
             });
-            toast.success(t('view.favorite.generated.local_favorite_added'));
+            toast.success(t('view.favorite.label.local_favorite_added'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.favorite_action_menu.generated_toast.failed_to_add_local_favorite'
+                          'component.favorite_action_menu.toast.failed_to_add_local_favorite'
                       )
             );
         } finally {
@@ -283,13 +283,13 @@ export function FavoriteActionMenu({
                 entityId: normalizedEntityId,
                 groupName
             });
-            toast.success(t('view.favorite.generated.local_favorite_removed'));
+            toast.success(t('view.favorite.success.local_favorite_removed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.favorite_action_menu.generated_toast.failed_to_remove_local_favorite'
+                          'component.favorite_action_menu.toast.failed_to_remove_local_favorite'
                       )
             );
         } finally {
@@ -303,8 +303,8 @@ export function FavoriteActionMenu({
     }
 
     const triggerLabel = remoteFavorite
-        ? t('view.favorite.generated.favorited')
-        : label || t('view.favorite.generated.favorite');
+        ? t('view.favorite.label.favorited')
+        : label || t('view.favorite.label.favorite');
     const localFavoritesLabel =
         kind === 'avatar'
             ? t('dialog.favorite.local_avatar_favorites')
@@ -340,7 +340,7 @@ export function FavoriteActionMenu({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
                 <DropdownMenuLabel>
-                    {t('view.favorite.generated.vrchat_favorites')}
+                    {t('view.favorite.label.vrchat_favorites')}
                 </DropdownMenuLabel>
                 {remoteFavorite ? (
                     <>
@@ -360,7 +360,7 @@ export function FavoriteActionMenu({
                                     void deleteFavorite();
                                 }}
                             >
-                                {t('view.favorite.generated.remove_favorite')}
+                                {t('view.favorite.action.remove_favorite')}
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </>
@@ -390,7 +390,7 @@ export function FavoriteActionMenu({
                     <DropdownMenuGroup>
                         <DropdownMenuItem disabled>
                             {t(
-                                'view.favorite.generated.no_favorite_groups_loaded'
+                                'view.favorite.empty.no_favorite_groups_loaded'
                             )}
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
@@ -438,7 +438,7 @@ export function FavoriteActionMenu({
                     <DropdownMenuGroup>
                         <DropdownMenuItem disabled>
                             {t(
-                                'view.favorite.generated.no_local_favorite_groups_loaded'
+                                'view.favorite.empty.no_local_favorite_groups_loaded'
                             )}
                         </DropdownMenuItem>
                     </DropdownMenuGroup>

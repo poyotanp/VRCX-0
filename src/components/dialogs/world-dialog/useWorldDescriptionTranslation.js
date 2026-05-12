@@ -69,7 +69,7 @@ export function useWorldDescriptionTranslation({ world }) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.world.generated_toast.translation_failed', {
+                    : t('dialog.world.toast.translation_failed', {
                           defaultValue: 'Translation failed'
                       })
             );

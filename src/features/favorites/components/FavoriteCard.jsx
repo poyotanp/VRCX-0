@@ -408,7 +408,7 @@ const FavoriteCard = memo(function FavoriteCard({
                                         {canRemoveLocal
                                             ? t('common.actions.delete')
                                             : t(
-                                                  'view.favorite.generated.remove_favorite'
+                                                  'view.favorite.action.remove_favorite'
                                               )}
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>

@@ -69,7 +69,7 @@ function FavoritesToolbar({
                         <ArrowUpDownIcon className="size-4" />
                         <SelectValue
                             placeholder={t(
-                                'view.favorite.generated.sort_favorites'
+                                'view.favorite.label.sort_favorites'
                             )}
                         />
                     </span>
@@ -80,11 +80,11 @@ function FavoritesToolbar({
                             {t('view.search.avatar.sort_name')}
                         </SelectItem>
                         <SelectItem value="date">
-                            {t('view.favorite.generated.sort_by_date')}
+                            {t('view.favorite.label.sort_by_date')}
                         </SelectItem>
                         {kind === 'world' ? (
                             <SelectItem value="players">
-                                {t('view.favorite.generated.sort_by_players')}
+                                {t('view.favorite.label.sort_by_players')}
                             </SelectItem>
                         ) : null}
                     </SelectGroup>

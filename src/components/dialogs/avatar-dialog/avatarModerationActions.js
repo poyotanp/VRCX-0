@@ -23,34 +23,34 @@ export function createAvatarModerationActions({
 
         const labels = {
             create: {
-                title: t('dialog.avatar.generated_modal.create_impostor_title'),
-                confirmText: t('dialog.avatar.generated_modal.create'),
+                title: t('dialog.avatar.modal.create_impostor_title'),
+                confirmText: t('dialog.avatar.modal.create'),
                 success: t(
-                    'dialog.avatar.generated_toast.impostor_queued_for_creation'
+                    'dialog.avatar.toast.impostor_queued_for_creation'
                 ),
                 error: t(
-                    'dialog.avatar.generated_toast.failed_to_create_impostor'
+                    'dialog.avatar.toast.failed_to_create_impostor'
                 )
             },
             delete: {
-                title: t('dialog.avatar.generated_modal.delete_impostor_title'),
+                title: t('dialog.avatar.modal.delete_impostor_title'),
                 confirmText: t('common.actions.delete'),
-                success: t('dialog.avatar.generated_toast.impostor_deleted'),
+                success: t('dialog.avatar.toast.impostor_deleted'),
                 error: t(
-                    'dialog.avatar.generated_toast.failed_to_delete_impostor'
+                    'dialog.avatar.toast.failed_to_delete_impostor'
                 ),
                 destructive: true
             },
             regenerate: {
                 title: t(
-                    'dialog.avatar.generated_modal.regenerate_impostor_title'
+                    'dialog.avatar.modal.regenerate_impostor_title'
                 ),
-                confirmText: t('dialog.avatar.generated_modal.regenerate'),
+                confirmText: t('dialog.avatar.modal.regenerate'),
                 success: t(
-                    'dialog.avatar.generated_toast.impostor_queued_for_regeneration'
+                    'dialog.avatar.toast.impostor_queued_for_regeneration'
                 ),
                 error: t(
-                    'dialog.avatar.generated_toast.failed_to_regenerate_impostor'
+                    'dialog.avatar.toast.failed_to_regenerate_impostor'
                 ),
                 destructive: true
             }
@@ -103,7 +103,7 @@ export function createAvatarModerationActions({
             toast.success(
                 refreshFailed
                     ? t(
-                          'dialog.avatar.generated_toast.value_avatar_state_refresh_failed',
+                          'dialog.avatar.toast.value_avatar_state_refresh_failed',
                           { value: label.success }
                       )
                     : label.success
@@ -129,12 +129,12 @@ export function createAvatarModerationActions({
         setActionStatus('avatar-block');
         const result = await confirm({
             title: enabled
-                ? t('dialog.avatar.generated_modal.block_avatar_title')
-                : t('dialog.avatar.generated_modal.unblock_avatar_title'),
+                ? t('dialog.avatar.modal.block_avatar_title')
+                : t('dialog.avatar.modal.unblock_avatar_title'),
             description: avatar.name || avatar.id,
             confirmText: enabled
-                ? t('dialog.avatar.generated_modal.block')
-                : t('dialog.avatar.generated_modal.unblock'),
+                ? t('dialog.avatar.modal.block')
+                : t('dialog.avatar.modal.unblock'),
             cancelText: t('common.actions.cancel'),
             destructive: enabled
         });
@@ -164,14 +164,14 @@ export function createAvatarModerationActions({
             toast.success(
                 enabled
                     ? t('message.avatar.blocked')
-                    : t('dialog.avatar.generated_toast.avatar_unblocked')
+                    : t('dialog.avatar.toast.avatar_unblocked')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.avatar.generated_toast.failed_to_update_avatar_moderation'
+                          'dialog.avatar.toast.failed_to_update_avatar_moderation'
                       )
             );
         } finally {

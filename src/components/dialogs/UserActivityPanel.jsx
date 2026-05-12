@@ -15,7 +15,7 @@ function UserActivityPanelFallback() {
     return (
         <div className="text-muted-foreground flex min-h-48 items-center justify-center gap-2 text-sm">
             <Spinner className="size-4" />
-            <span>{t('dialog.user.generated.loading_activity')}</span>
+            <span>{t('dialog.user.loading.loading_activity')}</span>
         </div>
     );
 }

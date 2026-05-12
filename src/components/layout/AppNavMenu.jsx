@@ -205,7 +205,7 @@ export function AppNavMenu({ isCollapsed }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_nav_menu.generated_toast.failed_to_create_dashboard'
+                          'component.app_nav_menu.toast.failed_to_create_dashboard'
                       )
             );
         } finally {
@@ -227,7 +227,7 @@ export function AppNavMenu({ isCollapsed }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_nav_menu.generated_toast.failed_to_mark_notifications_as_seen'
+                          'component.app_nav_menu.toast.failed_to_mark_notifications_as_seen'
                       )
             );
         }
@@ -293,7 +293,7 @@ export function AppNavMenu({ isCollapsed }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_nav_menu.generated_toast.failed_to_delete_dashboard'
+                          'component.app_nav_menu.toast.failed_to_delete_dashboard'
                       )
             );
         }
@@ -325,7 +325,7 @@ export function AppNavMenu({ isCollapsed }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_nav_menu.generated_toast.failed_to_save_custom_navigation'
+                          'component.app_nav_menu.toast.failed_to_save_custom_navigation'
                       )
             );
         }
@@ -346,7 +346,7 @@ export function AppNavMenu({ isCollapsed }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_nav_menu.generated_toast.failed_to_save_dashboard_navigation'
+                          'component.app_nav_menu.toast.failed_to_save_dashboard_navigation'
                       )
             );
         }
@@ -368,7 +368,7 @@ export function AppNavMenu({ isCollapsed }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_nav_menu.generated_toast.failed_to_unpin_tool_from_navigation'
+                          'component.app_nav_menu.toast.failed_to_unpin_tool_from_navigation'
                       )
             );
         }

@@ -440,13 +440,13 @@ function InventoryFileCard({
                   file.framesOverTime
                       ? {
                             key: 'fps',
-                            label: `${file.framesOverTime}${t('view.tools.generated.fps')}`
+                            label: `${file.framesOverTime}${t('view.tools.label.fps')}`
                         }
                       : null,
                   file.frames
                       ? {
                             key: 'frames',
-                            label: `${file.frames}${t('view.tools.generated.frames')}`
+                            label: `${file.frames}${t('view.tools.label.frames')}`
                         }
                       : null
               ].filter(Boolean)
@@ -955,7 +955,7 @@ export function InventoryPage() {
             return;
         }
         const result = await confirm({
-            title: t('view.tools.generated_modal.delete_value_item', {
+            title: t('view.tools.modal.delete_value_item', {
                 value: activeCategory
             }),
             description: normalizedFileId,
@@ -979,7 +979,7 @@ export function InventoryPage() {
                         (file) => file.id !== normalizedFileId
                     )
                 }));
-                toast.success(t('view.tools.generated.media_item_deleted'));
+                toast.success(t('view.tools.success.media_item_deleted'));
             }
         } catch (error) {
             if (isCurrentAuthTarget(authTarget)) {
@@ -987,7 +987,7 @@ export function InventoryPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_delete_media_item'
+                              'view.tools.toast.failed_to_delete_media_item'
                           )
                 );
             }
@@ -1058,7 +1058,7 @@ export function InventoryPage() {
             );
             if (isCurrentAuthTarget(authTarget)) {
                 toast.success(
-                    t('view.tools.generated.inventory_bundle_consumed')
+                    t('view.tools.label.inventory_bundle_consumed')
                 );
                 await refreshScope(activeCategory, activeSubTab);
             }
@@ -1068,7 +1068,7 @@ export function InventoryPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_consume_inventory_bundle'
+                              'view.tools.toast.failed_to_consume_inventory_bundle'
                           )
                 );
             }
@@ -1108,7 +1108,7 @@ export function InventoryPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.tools.generated_toast.failed_to_redeem_reward'
+                              'view.tools.toast.failed_to_redeem_reward'
                           )
                 );
             }

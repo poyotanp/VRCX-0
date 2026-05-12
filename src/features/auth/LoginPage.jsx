@@ -116,7 +116,7 @@ export function LoginPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.auth.generated_toast.failed_to_load_saved_auth_snapshot'
+                              'view.auth.toast.failed_to_load_saved_auth_snapshot'
                           )
                 );
             })
@@ -144,7 +144,7 @@ export function LoginPage() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.auth.generated_toast.failed_to_change_language')
+                    : t('view.auth.toast.failed_to_change_language')
             );
         }
     }
@@ -158,7 +158,7 @@ export function LoginPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.auth.generated_toast.failed_to_load_proxy_settings'
+                              'view.auth.toast.failed_to_load_proxy_settings'
                           )
                 );
             }
@@ -186,7 +186,7 @@ export function LoginPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.auth.generated_toast.failed_to_save_proxy_settings'
+                          'view.auth.toast.failed_to_save_proxy_settings'
                       )
             );
         } finally {
@@ -212,7 +212,7 @@ export function LoginPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.auth.generated_toast.failed_to_remove_saved_account'
+                          'view.auth.toast.failed_to_remove_saved_account'
                       )
             );
         } finally {
@@ -241,7 +241,7 @@ export function LoginPage() {
         if (!databaseReady) {
             toast.error(
                 t(
-                    'common.generated.generated.database_initialization_is_still_pending'
+                    'common.status.database_initialization_is_still_pending'
                 )
             );
             return;
@@ -264,7 +264,7 @@ export function LoginPage() {
             applySnapshot(nextSnapshot);
             toast.success(
                 t(
-                    'common.generated.generated.authenticated_and_prepared_the_session'
+                    'common.label.authenticated_and_prepared_the_session'
                 )
             );
         } catch (error) {
@@ -274,7 +274,7 @@ export function LoginPage() {
             toast.error(
                 getErrorMessage(
                     error,
-                    t('view.auth.generated_toast.failed_to_authenticate')
+                    t('view.auth.toast.failed_to_authenticate')
                 )
             );
         } finally {
@@ -291,7 +291,7 @@ export function LoginPage() {
         if (!databaseReady) {
             toast.error(
                 t(
-                    'common.generated.generated.database_initialization_is_still_pending'
+                    'common.status.database_initialization_is_still_pending'
                 )
             );
             return;
@@ -306,7 +306,7 @@ export function LoginPage() {
             applySnapshot(nextSnapshot);
             toast.success(
                 t(
-                    'view.auth.generated_dynamic.authenticated_and_prepared_the_session_for_value',
+                    'view.auth.dynamic.authenticated_and_prepared_the_session_for_value',
                     { value: getUserDisplayName(entry.user) }
                 )
             );
@@ -318,7 +318,7 @@ export function LoginPage() {
                 getErrorMessage(
                     error,
                     t(
-                        'view.auth.generated_toast.failed_to_restore_the_saved_account'
+                        'view.auth.toast.failed_to_restore_the_saved_account'
                     )
                 )
             );

@@ -352,7 +352,7 @@ export function useVrcNotificationPageController({ embedded = false } = {}) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.notifications.generated_toast.failed_to_load_notifications'
+                          'view.notifications.toast.failed_to_load_notifications'
                       )
             );
         });

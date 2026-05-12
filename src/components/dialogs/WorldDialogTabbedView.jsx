@@ -660,7 +660,7 @@ export function WorldDialogTabbedView({
     async function copyWorldText(text, label) {
         await copyTextToClipboard(text);
         toast.success(
-            t('dialog.world.generated_dynamic.value_copied', { value: label })
+            t('dialog.world.dynamic.value_copied', { value: label })
         );
     }
 

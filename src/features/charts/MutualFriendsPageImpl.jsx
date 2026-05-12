@@ -430,10 +430,10 @@ export function MutualFriendsPage() {
         if (!isFriend) {
             const result = await confirm({
                 title: t(
-                    'view.charts.generated_modal.refresh_non_friend_mutuals'
+                    'view.charts.modal.refresh_non_friend_mutuals'
                 ),
                 description: t(
-                    'view.charts.generated_modal.this_node_is_not_currently_in_the_friend_roster_'
+                    'view.charts.modal.this_node_is_not_currently_in_the_friend_roster_continue_refreshing_its_mutual_friends_cache'
                 ),
                 confirmText: t('common.actions.refresh'),
                 cancelText: t('common.actions.cancel')
@@ -466,7 +466,7 @@ export function MutualFriendsPage() {
                 ownerUserId
             );
             toast.success(
-                t('view.charts.generated_dynamic.refreshed_mutuals_for_value', {
+                t('view.charts.dynamic.refreshed_mutuals_for_value', {
                     value: selectedNode.label
                 })
             );
@@ -488,7 +488,7 @@ export function MutualFriendsPage() {
                 );
                 toast.warning(
                     t(
-                        'view.charts.generated_dynamic.value_has_opted_out_of_shared_connections',
+                        'view.charts.dynamic.value_has_opted_out_of_shared_connections',
                         { value: selectedNode.label }
                     )
                 );
@@ -499,7 +499,7 @@ export function MutualFriendsPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.charts.generated_toast.failed_to_refresh_selected_mutuals'
+                          'view.charts.toast.failed_to_refresh_selected_mutuals'
                       )
             );
         } finally {

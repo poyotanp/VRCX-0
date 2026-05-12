@@ -368,7 +368,7 @@ export const SidePanel = forwardRef(function SidePanel(
                 }
                 if (item.systemTab === 'groups') {
                     const label = t(
-                        'component.side_panel.generated_dynamic.value_value',
+                        'component.side_panel.dynamic.value_value',
                         {
                             value: t('side_panel.groups'),
                             value2: groupInstances.length
@@ -383,7 +383,7 @@ export const SidePanel = forwardRef(function SidePanel(
                     };
                 }
                 const label = t(
-                    'component.side_panel.generated_dynamic.value_value_value',
+                    'component.side_panel.dynamic.value_value_value',
                     {
                         value: t('side_panel.friends'),
                         value2: onlineIds.length,
@@ -504,7 +504,7 @@ export const SidePanel = forwardRef(function SidePanel(
         if (!auth.currentUserId || !auth.currentUserSnapshot) {
             toast.error(
                 t(
-                    'side_panel.generated.no_authenticated_user_snapshot_is_available'
+                    'side_panel.empty.no_authenticated_user_snapshot_is_available'
                 )
             );
             return;
@@ -514,7 +514,7 @@ export const SidePanel = forwardRef(function SidePanel(
             await refreshFriendAndFavoriteSnapshots();
             toast.success(
                 t(
-                    'side_panel.generated.friend_and_favorite_snapshots_refreshed'
+                    'side_panel.success.friend_and_favorite_snapshots_refreshed'
                 )
             );
         } catch (error) {
@@ -522,7 +522,7 @@ export const SidePanel = forwardRef(function SidePanel(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.side_panel.generated_toast.failed_to_refresh_friends'
+                          'component.side_panel.toast.failed_to_refresh_friends'
                       )
             );
         } finally {

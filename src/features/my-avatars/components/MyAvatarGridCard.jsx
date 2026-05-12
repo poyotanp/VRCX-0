@@ -162,7 +162,7 @@ export function MyAvatarGridCard({
     const platformDotClassName =
         'size-2.5 -ml-1 rounded-full border border-background/80 opacity-80 shadow-sm first:ml-0';
     const avatarName =
-        avatar?.name || t('view.my_avatars.generated.untitled_avatar');
+        avatar?.name || t('view.my_avatars.label.untitled_avatar');
     const overlayStyle = {
         padding: `${densityConfig.overlayNameOnlyPaddingTop}px ${densityConfig.overlayPaddingX}px ${densityConfig.overlayPaddingY}px`
     };
@@ -218,7 +218,7 @@ export function MyAvatarGridCard({
                                         className="max-w-full truncate rounded-sm px-1.5 py-0 text-xs shadow-sm"
                                     >
                                         {t(
-                                            'view.my_avatars.generated.current_avatar'
+                                            'view.my_avatars.label.current_avatar'
                                         )}
                                     </Badge>
                                 ) : null}
@@ -291,7 +291,7 @@ export function MyAvatarGridCard({
                                 {canWear && !tags.length ? (
                                     <div className="bg-background/85 text-foreground max-w-full -translate-y-1 rounded-sm px-1.5 py-0 text-xs font-medium opacity-0 shadow-sm backdrop-blur-[1px] transition-all group-focus-within/card:translate-y-0 group-focus-within/card:opacity-100 group-hover/card:translate-y-0 group-hover/card:opacity-100">
                                         {t(
-                                            'view.my_avatars.generated.click_to_wear'
+                                            'view.my_avatars.label.click_to_wear'
                                         )}
                                     </div>
                                 ) : null}
@@ -345,7 +345,7 @@ export function MyAvatarGridCard({
                                 size="icon-xs"
                                 className="absolute top-1 right-1 opacity-0 shadow-sm transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 data-[state=open]:opacity-100"
                                 aria-label={t(
-                                    'view.my_avatars.generated.open_avatar_actions'
+                                    'view.my_avatars.action.open_avatar_actions'
                                 )}
                                 disabled={isUpdating}
                                 onPointerDown={(event) =>

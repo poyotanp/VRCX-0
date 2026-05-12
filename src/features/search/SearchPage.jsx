@@ -109,7 +109,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_load_world_categories'
+                              'view.search.toast.failed_to_load_world_categories'
                           )
                 );
             });
@@ -154,7 +154,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_load_avatar_providers'
+                              'view.search.toast.failed_to_load_avatar_providers'
                           )
                 );
             });
@@ -231,7 +231,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_search_users'
+                              'view.search.toast.failed_to_search_users'
                           )
                 );
             }
@@ -267,7 +267,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_search_worlds'
+                              'view.search.toast.failed_to_search_worlds'
                           )
                 );
             }
@@ -298,7 +298,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_search_groups'
+                              'view.search.toast.failed_to_search_groups'
                           )
                 );
             }
@@ -332,7 +332,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_search_avatars'
+                              'view.search.toast.failed_to_search_avatars'
                           )
                 );
             }
@@ -419,7 +419,7 @@ export function SearchPage() {
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.search.generated_toast.failed_to_save_avatar_provider'
+                              'view.search.toast.failed_to_save_avatar_provider'
                           )
                 );
             });

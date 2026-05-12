@@ -53,13 +53,13 @@ export function useFavoritesCollectionActions({
                 );
                 setAvatarHistory(Array.isArray(rows) ? rows : []);
             }
-            toast.success(t('view.favorite.generated.favorites_refreshed'));
+            toast.success(t('view.favorite.success.favorites_refreshed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_refresh_favorites'
+                          'view.favorites.toast.failed_to_refresh_favorites'
                       )
             );
         } finally {
@@ -76,7 +76,7 @@ export function useFavoritesCollectionActions({
                         error instanceof Error
                             ? error.message
                             : t(
-                                  'view.favorites.generated_toast.failed_to_save_favorite_sort_preference'
+                                  'view.favorites.toast.failed_to_save_favorite_sort_preference'
                               )
                     );
                 }
@@ -96,17 +96,17 @@ export function useFavoritesCollectionActions({
             setRemovingFavoriteKey(item.key);
             const result = await confirm({
                 title: t(
-                    'view.favorites.generated_modal.remove_local_favorite'
+                    'view.favorites.modal.remove_local_favorite'
                 ),
                 description: t(
-                    'view.favorites.generated_dynamic.remove_value_from_value',
+                    'view.favorites.dynamic.remove_value_from_value',
                     {
                         value:
                             item.title ||
-                            t('view.favorites.generated.favorite_fallback'),
+                            t('view.favorites.empty.favorite_fallback'),
                         value2:
                             item.groupLabel ||
-                            t('view.favorites.generated.favorites_fallback')
+                            t('view.favorites.empty.favorites_fallback')
                     }
                 ),
                 destructive: true,
@@ -132,7 +132,7 @@ export function useFavoritesCollectionActions({
             });
             if (!silent) {
                 toast.success(
-                    t('view.favorite.generated.local_favorite_removed')
+                    t('view.favorite.success.local_favorite_removed')
                 );
             }
             return true;
@@ -144,7 +144,7 @@ export function useFavoritesCollectionActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_remove_local_favorite'
+                          'view.favorites.toast.failed_to_remove_local_favorite'
                       )
             );
             return false;
@@ -173,17 +173,17 @@ export function useFavoritesCollectionActions({
             setRemovingFavoriteKey(item.key);
             const result = await confirm({
                 title: t(
-                    'view.favorites.generated_modal.remove_vrchat_favorite'
+                    'view.favorites.modal.remove_vrchat_favorite'
                 ),
                 description: t(
-                    'view.favorites.generated_dynamic.remove_value_from_value',
+                    'view.favorites.dynamic.remove_value_from_value',
                     {
                         value:
                             item.title ||
-                            t('view.favorites.generated.favorite_fallback'),
+                            t('view.favorites.empty.favorite_fallback'),
                         value2:
                             item.groupLabel ||
-                            t('view.favorites.generated.favorites_fallback')
+                            t('view.favorites.empty.favorites_fallback')
                     }
                 ),
                 destructive: true,
@@ -204,7 +204,7 @@ export function useFavoritesCollectionActions({
             removeRemoteFavorite(item.id);
             if (!silent) {
                 toast.success(
-                    t('view.favorite.generated.vrchat_favorite_removed')
+                    t('view.favorite.success.vrchat_favorite_removed')
                 );
             }
             return true;
@@ -216,7 +216,7 @@ export function useFavoritesCollectionActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_remove_vrchat_favorite'
+                          'view.favorites.toast.failed_to_remove_vrchat_favorite'
                       )
             );
             return false;
@@ -232,7 +232,7 @@ export function useFavoritesCollectionActions({
     async function exportCurrentFavorites() {
         if (!allItems.length) {
             toast.error(
-                t('view.favorite.generated.no_favorites_available_to_export')
+                t('view.favorite.empty.no_favorites_available_to_export')
             );
             return;
         }
@@ -241,17 +241,17 @@ export function useFavoritesCollectionActions({
     async function handleRemoteGroupRename(group) {
         const result = await prompt({
             title: t(
-                'view.favorites.generated_modal.change_favorite_group_name'
+                'view.favorites.modal.change_favorite_group_name'
             ),
             description: t(
-                'view.favorites.generated_modal.enter_the_new_display_name'
+                'view.favorites.modal.enter_the_new_display_name'
             ),
             inputValue: group.label || group.name,
             pattern: /\S+/,
-            confirmText: t('view.favorites.generated_modal.change'),
+            confirmText: t('view.favorites.modal.change'),
             cancelText: t('common.actions.cancel'),
             errorMessage: t(
-                'view.favorites.generated_modal.group_name_required'
+                'view.favorites.modal.group_name_required'
             )
         });
         if (!result.ok) {
@@ -270,13 +270,13 @@ export function useFavoritesCollectionActions({
                 displayName: nextName
             });
             await refreshFavorites();
-            toast.success(t('view.favorite.generated.favorite_group_renamed'));
+            toast.success(t('view.favorite.label.favorite_group_renamed'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_rename_favorite_group'
+                          'view.favorites.toast.failed_to_rename_favorite_group'
                       )
             );
         }
@@ -295,23 +295,23 @@ export function useFavoritesCollectionActions({
             });
             await refreshFavorites();
             toast.success(
-                t('view.favorite.generated.group_visibility_changed')
+                t('view.favorite.label.group_visibility_changed')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_change_group_visibility'
+                          'view.favorites.toast.failed_to_change_group_visibility'
                       )
             );
         }
     }
     async function handleRemoteGroupClear(group) {
         const result = await confirm({
-            title: t('view.favorites.generated_modal.clear_favorite_group'),
+            title: t('view.favorites.modal.clear_favorite_group'),
             description: t(
-                'view.favorites.generated_modal.remove_all_favorites_from_this_group'
+                'view.favorites.modal.remove_all_favorites_from_this_group'
             ),
             destructive: true,
             confirmText: t('common.actions.clear'),
@@ -328,13 +328,13 @@ export function useFavoritesCollectionActions({
                 group: group.name
             });
             await refreshFavorites();
-            toast.success(t('view.favorite.generated.favorite_group_cleared'));
+            toast.success(t('view.favorite.success.favorite_group_cleared'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_clear_favorite_group'
+                          'view.favorites.toast.failed_to_clear_favorite_group'
                       )
             );
         }
@@ -342,17 +342,17 @@ export function useFavoritesCollectionActions({
     async function handleLocalGroupRename(group) {
         const result = await prompt({
             title: t(
-                'view.favorites.generated_modal.rename_local_favorite_group'
+                'view.favorites.modal.rename_local_favorite_group'
             ),
             description: t(
-                'view.favorites.generated_modal.enter_the_new_local_group_name'
+                'view.favorites.modal.enter_the_new_local_group_name'
             ),
             inputValue: group.label,
             pattern: /\S+/,
             confirmText: t('common.actions.save'),
             cancelText: t('common.actions.cancel'),
             errorMessage: t(
-                'view.favorites.generated_modal.group_name_required'
+                'view.favorites.modal.group_name_required'
             )
         });
         if (!result.ok) {
@@ -365,7 +365,7 @@ export function useFavoritesCollectionActions({
         if (localGroups.some((localGroup) => localGroup.key === nextName)) {
             toast.error(
                 t(
-                    'view.favorites.generated_dynamic.local_group_value_already_exists',
+                    'view.favorites.dynamic.local_group_value_already_exists',
                     {
                         value: nextName
                     }
@@ -388,14 +388,14 @@ export function useFavoritesCollectionActions({
                 setSelectedGroupKey(nextName);
             }
             toast.success(
-                t('view.favorite.generated.local_favorite_group_renamed')
+                t('view.favorite.label.local_favorite_group_renamed')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_rename_local_favorite_group'
+                          'view.favorites.toast.failed_to_rename_local_favorite_group'
                       )
             );
         }
@@ -403,9 +403,9 @@ export function useFavoritesCollectionActions({
     async function handleLocalGroupDelete(group) {
         const result = await confirm({
             title: t(
-                'view.favorites.generated_modal.delete_local_favorite_group'
+                'view.favorites.modal.delete_local_favorite_group'
             ),
-            description: t('view.favorites.generated_modal.delete_value', {
+            description: t('view.favorites.modal.delete_value', {
                 value: group.label
             }),
             destructive: true,
@@ -428,14 +428,14 @@ export function useFavoritesCollectionActions({
                 setSelectedGroupKey('');
             }
             toast.success(
-                t('view.favorite.generated.local_favorite_group_deleted')
+                t('view.favorite.success.local_favorite_group_deleted')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.favorites.generated_toast.failed_to_delete_local_favorite_group'
+                          'view.favorites.toast.failed_to_delete_local_favorite_group'
                       )
             );
         }

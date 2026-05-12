@@ -58,7 +58,7 @@ export function useModerationPageActions({
                 rows: nextRows
             });
             setDetail(
-                t('view.moderation.generated_dynamic.deleted_value_for_value', {
+                t('view.moderation.dynamic.deleted_value_for_value', {
                     value: row.type || 'moderation',
                     value2: row.targetDisplayName || row.targetUserId
                 })

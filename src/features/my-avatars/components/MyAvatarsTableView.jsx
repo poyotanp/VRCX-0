@@ -109,14 +109,14 @@ export function MyAvatarsTableView({
                                                     .join(' ')}
                                                 tabIndex={0}
                                                 aria-label={t(
-                                                    'view.my_avatars.generated_dynamic.open_value',
+                                                    'view.my_avatars.dynamic.open_value',
                                                     {
                                                         value:
                                                             row.original
                                                                 ?.name ||
                                                             row.original?.id ||
                                                             t(
-                                                                'view.my_avatars.generated.avatar'
+                                                                'view.my_avatars.label.avatar'
                                                             )
                                                     }
                                                 )}
@@ -212,18 +212,18 @@ export function MyAvatarsTableView({
             </DataTableSurface>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="text-muted-foreground text-sm">
-                    {t('view.my_avatars.generated.showing')}{' '}
+                    {t('view.my_avatars.label.showing')}{' '}
                     <span className="text-foreground font-medium">
                         {table.getRowModel().rows.length}
                     </span>{' '}
-                    {t('view.my_avatars.generated.of')}{' '}
+                    {t('view.my_avatars.label.of')}{' '}
                     <span className="text-foreground font-medium">
                         {filteredCount}
                     </span>{' '}
                     {t(
                         filteredCount === 1
-                            ? 'view.my_avatars.generated.avatar'
-                            : 'view.my_avatars.generated.avatars'
+                            ? 'view.my_avatars.label.avatar'
+                            : 'view.my_avatars.label.avatars'
                     )}
                 </div>
                 <DataTablePagination

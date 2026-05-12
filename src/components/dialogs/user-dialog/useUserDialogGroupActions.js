@@ -40,7 +40,7 @@ export function useUserDialogGroupActions({
         const result = await prompt({
             title: t('dialog.user.actions.invite_to_group'),
             description: t(
-                'dialog.user.generated_modal.enter_the_vrchat_group_id_to_invite_this_user_to'
+                'dialog.user.modal.enter_the_vrchat_group_id_to_invite_this_user_to'
             ),
             inputValue: '',
             confirmText: t('dialog.user.actions.invite'),
@@ -55,13 +55,13 @@ export function useUserDialogGroupActions({
                 userId: profile.id,
                 endpoint: currentEndpoint
             });
-            toast.success(t('dialog.user.generated.group_invite_sent'));
+            toast.success(t('dialog.user.success.group_invite_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_send_group_invite'
+                          'dialog.user.toast.failed_to_send_group_invite'
                       )
             );
         }
@@ -91,7 +91,7 @@ export function useUserDialogGroupActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_update_group_visibility'
+                          'dialog.user.toast.failed_to_update_group_visibility'
                       )
             );
         } finally {
@@ -105,11 +105,11 @@ export function useUserDialogGroupActions({
             return;
         }
         const result = await confirm({
-            title: t('dialog.user.generated_modal.leave_group'),
-            description: t('dialog.user.generated_dynamic.leave_value', {
+            title: t('dialog.user.modal.leave_group'),
+            description: t('dialog.user.dynamic.leave_value', {
                 value: summarizeEntityRow(group, groupId)
             }),
-            confirmText: t('dialog.user.generated_modal.leave'),
+            confirmText: t('dialog.user.modal.leave'),
             cancelText: t('common.actions.cancel'),
             destructive: true
         });
@@ -123,13 +123,13 @@ export function useUserDialogGroupActions({
                 groupId,
                 endpoint: currentEndpoint
             });
-            toast.success(t('dialog.user.generated.left_group'));
+            toast.success(t('dialog.user.success.left_group'));
             await refreshGroupsAfterMembershipChange();
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('dialog.user.generated_toast.failed_to_leave_group')
+                    : t('dialog.user.toast.failed_to_leave_group')
             );
         } finally {
             setGroupActionId('');
@@ -172,7 +172,7 @@ export function useUserDialogGroupActions({
     function exportUserGroups(rows) {
         const groups = rows.length ? rows : profileGroups;
         if (!groups.length) {
-            toast.error(t('dialog.user.generated.no_groups_to_export'));
+            toast.error(t('dialog.user.empty.no_groups_to_export'));
             return;
         }
         const filenameUser =
@@ -181,7 +181,7 @@ export function useUserDialogGroupActions({
             ).replace(/[^a-z0-9_-]+/gi, '_') || 'user';
         downloadJsonFile(`vrcx-${filenameUser}-groups.json`, groups);
         toast.success(
-            t('dialog.user.generated_dynamic.exported_value_groups', {
+            t('dialog.user.dynamic.exported_value_groups', {
                 value: groups.length
             })
         );
@@ -209,13 +209,13 @@ export function useUserDialogGroupActions({
             if (failed) {
                 toast.error(
                     t(
-                        'dialog.user.generated_dynamic.failed_to_update_value_groups',
+                        'dialog.user.dynamic.failed_to_update_value_groups',
                         { value: failed }
                     )
                 );
             } else {
                 toast.success(
-                    t('dialog.user.generated_dynamic.updated_value_groups', {
+                    t('dialog.user.dynamic.updated_value_groups', {
                         value: selectedUserGroups.length
                     })
                 );
@@ -231,12 +231,12 @@ export function useUserDialogGroupActions({
             return;
         }
         const result = await confirm({
-            title: t('dialog.user.generated_modal.leave_selected_groups'),
+            title: t('dialog.user.modal.leave_selected_groups'),
             description: t(
-                'dialog.user.generated_dynamic.leave_value_selected_groups',
+                'dialog.user.dynamic.leave_value_selected_groups',
                 { value: selectedUserGroups.length }
             ),
-            confirmText: t('dialog.user.generated_modal.leave'),
+            confirmText: t('dialog.user.modal.leave'),
             cancelText: t('common.actions.cancel'),
             destructive: true
         });
@@ -259,13 +259,13 @@ export function useUserDialogGroupActions({
             if (failed) {
                 toast.error(
                     t(
-                        'dialog.user.generated_dynamic.failed_to_leave_value_groups',
+                        'dialog.user.dynamic.failed_to_leave_value_groups',
                         { value: failed }
                     )
                 );
             } else {
                 toast.success(
-                    t('dialog.user.generated_dynamic.left_value_groups', {
+                    t('dialog.user.dynamic.left_value_groups', {
                         value: selectedUserGroups.length
                     })
                 );
@@ -334,7 +334,7 @@ export function useUserDialogGroupActions({
                 JSON.stringify(nextOrder),
                 3
             );
-            toast.success(t('dialog.user.generated.group_order_updated'));
+            toast.success(t('dialog.user.success.group_order_updated'));
         } catch (error) {
             useRuntimeStore
                 .getState()
@@ -343,7 +343,7 @@ export function useUserDialogGroupActions({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_update_group_order'
+                          'dialog.user.toast.failed_to_update_group_order'
                       )
             );
         } finally {

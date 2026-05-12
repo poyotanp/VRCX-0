@@ -39,13 +39,13 @@ export function createDashboardPanelSelectOptions(currentPanelKey, t) {
     const options = [
         ...DASHBOARD_WIDGET_DEFINITIONS.map((definition) => ({
             value: definition.key,
-            label: t('view.dashboard.generated_dynamic.widget_value', {
+            label: t('view.dashboard.dynamic.widget_value', {
                 value: getDashboardPanelLabel(definition, t)
             })
         })),
         ...DASHBOARD_SELECTABLE_PAGE_DEFINITIONS.map((definition) => ({
             value: definition.key,
-            label: t('view.dashboard.generated_dynamic.page_value', {
+            label: t('view.dashboard.dynamic.page_value', {
                 value: getDashboardPanelLabel(definition, t)
             })
         }))
@@ -58,7 +58,7 @@ export function createDashboardPanelSelectOptions(currentPanelKey, t) {
     ) {
         options.unshift({
             value: currentPanelKey,
-            label: t('view.dashboard.generated_dynamic.existing_value', {
+            label: t('view.dashboard.dynamic.existing_value', {
                 value:
                     getDashboardPanelLabel(
                         getDashboardPanelDefinition(currentPanelKey),

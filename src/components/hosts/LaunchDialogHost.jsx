@@ -244,7 +244,7 @@ export function LaunchDialogHost() {
                         error instanceof Error
                             ? error.message
                             : t(
-                                  'host.launch_dialog.generated_toast.failed_to_resolve_launch_details'
+                                  'host.launch_dialog.toast.failed_to_resolve_launch_details'
                               )
                     );
                 }
@@ -272,7 +272,7 @@ export function LaunchDialogHost() {
         }
         await copyTextToClipboard(value);
         toast.success(
-            t('host.launch_dialog.generated_dynamic.value_copied', {
+            t('host.launch_dialog.dynamic.value_copied', {
                 value: label
             })
         );
@@ -293,7 +293,7 @@ export function LaunchDialogHost() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.launch_dialog.generated_toast.launch_action_failed'
+                          'host.launch_dialog.toast.launch_action_failed'
                       )
             );
         } finally {
@@ -304,11 +304,11 @@ export function LaunchDialogHost() {
     async function launchWithMode(nextDesktopMode) {
         if (isGameRunning) {
             const result = await confirm({
-                title: t('host.launch_dialog.generated_modal.launch_vrchat'),
+                title: t('host.launch_dialog.modal.launch_vrchat'),
                 description: t(
-                    'host.launch_dialog.generated_modal.vrchat_is_already_running_continue_launching_thi'
+                    'host.launch_dialog.modal.vrchat_is_already_running_continue_launching_this_instance'
                 ),
-                confirmText: t('host.launch_dialog.generated_modal.launch'),
+                confirmText: t('host.launch_dialog.modal.launch'),
                 cancelText: t('common.actions.cancel')
             });
             if (!result.ok) {
@@ -365,7 +365,7 @@ export function LaunchDialogHost() {
                         <DialogTitle>{t('dialog.launch.header')}</DialogTitle>
                         <DialogDescription>
                             {t(
-                                'dialog.launch.generated.open_copy_invite_or_self_invite_to_this_vrchat_instance'
+                                'dialog.launch.action.open_copy_invite_or_self_invite_to_this_vrchat_instance'
                             )}
                         </DialogDescription>
                     </DialogHeader>
@@ -434,7 +434,7 @@ export function LaunchDialogHost() {
                                         )
                                     }
                                 >
-                                    {t('dialog.launch.generated.open_in_game')}
+                                    {t('dialog.launch.action.open_in_game')}
                                 </Button>
                             ) : null}
                             <Button
@@ -453,7 +453,7 @@ export function LaunchDialogHost() {
                                     )
                                 }
                             >
-                                {t('dialog.launch.generated.self_invite')}
+                                {t('dialog.launch.label.self_invite')}
                             </Button>
                         </div>
                         <div className="flex">
@@ -513,7 +513,7 @@ export function LaunchDialogHost() {
                                             }
                                         >
                                             {t(
-                                                'dialog.launch.generated.start_as_desktop'
+                                                'dialog.launch.action.start_as_desktop'
                                             )}
                                         </DropdownMenuItem>
                                     </DropdownMenuGroup>

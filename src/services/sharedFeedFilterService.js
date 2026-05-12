@@ -169,7 +169,7 @@ export async function pushSharedFeedNotification(entry) {
     useNotificationStore.getState().pushNotification({
         level: 'info',
         title: i18n.t(
-            'service.shared_feed_filter_service.generated_dynamic.feed_value',
+            'service.shared_feed_filter_service.dynamic.feed_value',
             { value: type }
         ),
         message: [displayName, detail].filter(Boolean).join(' - ')

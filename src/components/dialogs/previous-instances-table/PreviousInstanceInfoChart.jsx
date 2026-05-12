@@ -242,10 +242,10 @@ export function PreviousInstanceInfoChart({ rows }) {
         return (
             <InfoChartEmptyState
                 title={t(
-                    'dialog.previous_instances.generated.no_player_detail_rows'
+                    'dialog.previous_instances.empty.no_player_detail_rows'
                 )}
                 description={t(
-                    'dialog.previous_instances.generated.there_are_no_timeline_rows_for_this_instance'
+                    'dialog.previous_instances.empty.there_are_no_timeline_rows_for_this_instance'
                 )}
             />
         );

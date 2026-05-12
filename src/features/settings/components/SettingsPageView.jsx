@@ -118,7 +118,7 @@ export function SettingsPageView({ controller }) {
                 {loading ? (
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
                         <Spinner />
-                        {t('view.settings.generated.loading_settings_snapshot')}
+                        {t('view.settings.loading.loading_settings_snapshot')}
                     </div>
                 ) : null}
                 <SettingsSystemSection system={system} />

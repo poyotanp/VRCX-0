@@ -364,11 +364,11 @@ export async function importFavoriteImportRows() {
         useNotificationStore.getState().pushNotification({
             level: 'success',
             title: i18n.t(
-                'service.favorite_import_service.generated_dynamic.value_import_complete',
+                'service.favorite_import_service.dynamic.value_import_complete',
                 { value: TYPE_CONFIG[type].label }
             ),
             message: i18n.t(
-                'service.favorite_import_service.generated_dynamic.value_item_s_imported',
+                'service.favorite_import_service.dynamic.value_item_s_imported',
                 { value: imported }
             )
         });

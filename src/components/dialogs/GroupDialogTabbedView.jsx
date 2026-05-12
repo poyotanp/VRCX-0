@@ -422,7 +422,7 @@ export function GroupDialogTabbedView({
                 userFacingErrorMessage(
                     error,
                     t(
-                        'host.tools_dialogs.generated_toast.failed_to_update_group_event_follow_state'
+                        'host.tools_dialogs.toast.failed_to_update_group_event_follow_state'
                     )
                 )
             );
@@ -524,7 +524,7 @@ export function GroupDialogTabbedView({
     async function copyGroupText(text, label) {
         await copyTextToClipboard(text);
         toast.success(
-            t('dialog.group.generated_dynamic.value_copied', { value: label })
+            t('dialog.group.dynamic.value_copied', { value: label })
         );
     }
 
@@ -546,9 +546,9 @@ export function GroupDialogTabbedView({
 
     async function inviteUserToGroup() {
         const result = await prompt({
-            title: t('dialog.group.generated_modal.invite_to_group'),
+            title: t('dialog.group.modal.invite_to_group'),
             description: t(
-                'dialog.group.generated_modal.enter_the_vrchat_user_id_to_invite'
+                'dialog.group.modal.enter_the_vrchat_user_id_to_invite'
             ),
             inputValue: '',
             confirmText: t('dialog.invite_to_group.invite'),
@@ -563,13 +563,13 @@ export function GroupDialogTabbedView({
                 userId: result.value,
                 endpoint: currentEndpoint
             });
-            toast.success(t('dialog.group.generated.group_invite_sent'));
+            toast.success(t('dialog.group.success.group_invite_sent'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.group.generated_toast.failed_to_send_group_invite'
+                          'dialog.group.toast.failed_to_send_group_invite'
                       )
             );
         }

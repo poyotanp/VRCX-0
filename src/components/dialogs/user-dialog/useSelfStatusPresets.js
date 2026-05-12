@@ -37,7 +37,7 @@ export function useSelfStatusPresets({ socialStatusDraft, t }) {
         const nextStatus = normalizeSelfStatusInput(socialStatusDraft.status);
         if (!nextStatus) {
             toast.warning(
-                t('dialog.user.generated.please_choose_a_valid_social_status')
+                t('dialog.user.label.please_choose_a_valid_social_status')
             );
             return;
         }
@@ -56,13 +56,13 @@ export function useSelfStatusPresets({ socialStatusDraft, t }) {
                         nextPreset.statusDescription
             )
         ) {
-            toast.info(t('dialog.user.generated.status_preset_already_exists'));
+            toast.info(t('dialog.user.label.status_preset_already_exists'));
             return;
         }
         if (statusPresets.length >= maxStatusPresets) {
             toast.warning(
                 t(
-                    'dialog.user.generated_dynamic.status_presets_are_limited_to_value',
+                    'dialog.user.dynamic.status_presets_are_limited_to_value',
                     { value: maxStatusPresets }
                 )
             );
@@ -77,14 +77,14 @@ export function useSelfStatusPresets({ socialStatusDraft, t }) {
                 statusPresetsConfigKey,
                 nextPresets
             );
-            toast.success(t('dialog.user.generated.status_preset_saved'));
+            toast.success(t('dialog.user.success.status_preset_saved'));
         } catch (error) {
             setStatusPresets(previousPresets);
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_save_status_preset'
+                          'dialog.user.toast.failed_to_save_status_preset'
                       )
             );
         }
@@ -107,7 +107,7 @@ export function useSelfStatusPresets({ socialStatusDraft, t }) {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.user.generated_toast.failed_to_remove_status_preset'
+                          'dialog.user.toast.failed_to_remove_status_preset'
                       )
             );
         }

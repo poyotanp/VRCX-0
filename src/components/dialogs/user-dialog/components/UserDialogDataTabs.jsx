@@ -40,7 +40,7 @@ export function UserDialogMutualTab({
                 tab="mutual"
                 rows={mutualFriends}
                 filteredRows={filteredMutualFriends}
-                placeholder={t('dialog.user.generated.search_mutual_friends')}
+                placeholder={t('dialog.user.action.search_mutual_friends')}
                 remoteStatus={remoteStatus}
                 loadTab={loadTab}
                 search={search}
@@ -102,7 +102,7 @@ export function UserDialogWorldsTab({
                 tab="worlds"
                 rows={profileWorlds}
                 filteredRows={filteredProfileWorlds}
-                placeholder={t('dialog.user.generated.search_worlds')}
+                placeholder={t('dialog.user.action.search_worlds')}
                 remoteStatus={remoteStatus}
                 loadTab={loadTab}
                 search={search}
@@ -140,7 +140,7 @@ export function UserDialogWorldsTab({
                     </SelectContent>
                 </Select>
                 <span className="text-muted-foreground text-sm">
-                    {t('dialog.user.generated.order_by')}
+                    {t('dialog.user.label.order_by')}
                 </span>
                 <Select
                     value={worldOrder}
@@ -194,7 +194,7 @@ export function UserDialogFavoriteWorldsTab({
                 tab="favorite-worlds"
                 rows={favoriteWorlds}
                 filteredRows={filteredFavoriteWorlds}
-                placeholder={t('dialog.user.generated.search_favorite_worlds')}
+                placeholder={t('dialog.user.action.search_favorite_worlds')}
                 remoteStatus={remoteStatus}
                 loadTab={loadTab}
                 search={search}
@@ -236,7 +236,7 @@ export function UserDialogAvatarsTab({
                 tab="avatars"
                 rows={profileAvatars}
                 filteredRows={visibleProfileAvatars}
-                placeholder={t('dialog.user.generated.search_avatars')}
+                placeholder={t('dialog.user.action.search_avatars')}
                 remoteStatus={remoteStatus}
                 loadTab={loadTab}
                 search={search}
@@ -274,7 +274,7 @@ export function UserDialogAvatarsTab({
                             </SelectContent>
                         </Select>
                         <span className="text-muted-foreground text-sm">
-                            {t('dialog.user.generated.group_by')}
+                            {t('dialog.user.label.group_by')}
                         </span>
                         <Select
                             value={avatarReleaseStatus}

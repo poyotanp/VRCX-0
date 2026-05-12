@@ -167,10 +167,10 @@ export function GalleryInventoryTab({
                     ) : (
                         <EmptyState
                             title={t(
-                                'view.tools.generated.no_inventory_items_loaded'
+                                'view.tools.empty.no_inventory_items_loaded'
                             )}
                             description={t(
-                                'view.tools.generated.refresh_this_tab_to_load_inventory_items'
+                                'view.tools.action.refresh_this_tab_to_load_inventory_items'
                             )}
                         />
                     )}

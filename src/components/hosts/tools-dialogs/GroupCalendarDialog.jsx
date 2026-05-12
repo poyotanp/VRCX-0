@@ -353,7 +353,7 @@ export function GroupCalendarDialog({ open, onOpenChange }) {
                 userFacingErrorMessage(
                     error,
                     t(
-                        'host.tools_dialogs.generated_toast.failed_to_load_group_events'
+                        'host.tools_dialogs.toast.failed_to_load_group_events'
                     )
                 )
             );
@@ -412,7 +412,7 @@ export function GroupCalendarDialog({ open, onOpenChange }) {
                 userFacingErrorMessage(
                     error,
                     t(
-                        'host.tools_dialogs.generated_toast.failed_to_update_group_event_follow_state'
+                        'host.tools_dialogs.toast.failed_to_update_group_event_follow_state'
                     )
                 )
             );

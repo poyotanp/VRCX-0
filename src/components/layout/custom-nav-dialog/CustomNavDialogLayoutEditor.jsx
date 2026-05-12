@@ -45,7 +45,7 @@ import {
 } from './customNavLayout.js';
 
 function customNavActionLabel(t, key, value) {
-    return t(`nav_menu.custom_nav.generated_dynamic.${key}`, { value });
+    return t(`nav_menu.custom_nav.dynamic.${key}`, { value });
 }
 
 function NavIconSelect({ value, fallbackIcon, ariaLabel, onValueChange }) {

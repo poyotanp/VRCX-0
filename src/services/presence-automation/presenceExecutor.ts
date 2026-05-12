@@ -352,7 +352,7 @@ export async function applyPresenceAutomationResult({
         useNotificationStore.getState().pushNotification({
             level: 'info',
             title: i18n.t(
-                'service.background_maintenance.generated.status_automatically_changed'
+                'service.background_maintenance.label.status_automatically_changed'
             ),
             message: [changedPatch.status, changedPatch.statusDescription]
                 .filter((value) => value !== undefined && value !== '')

@@ -102,18 +102,18 @@ export function UserSocialStatusDialog({
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('dialog.user.generated.edit_social_status')}
+                        {t('dialog.user.action.edit_social_status')}
                     </DialogTitle>
                     <DialogDescription>
                         {t(
-                            'dialog.user.generated.update_your_social_status_and_status_description'
+                            'dialog.user.description.update_your_social_status_and_status_description'
                         )}
                     </DialogDescription>
                 </DialogHeader>
                 <FieldGroup>
                     <Field>
                         <FieldLabel htmlFor="user-social-status-description">
-                            {t('dialog.user.generated.status_description')}
+                            {t('dialog.user.description.status_description')}
                         </FieldLabel>
                         <InputGroup>
                             <InputGroupInput
@@ -121,7 +121,7 @@ export function UserSocialStatusDialog({
                                 value={draft.statusDescription}
                                 maxLength={32}
                                 placeholder={t(
-                                    'dialog.user.generated.status_description'
+                                    'dialog.user.description.status_description'
                                 )}
                                 disabled={busy}
                                 onChange={(event) => {
@@ -138,7 +138,7 @@ export function UserSocialStatusDialog({
                                         size="icon-xs"
                                         disabled={busy}
                                         aria-label={t(
-                                            'dialog.user.generated.clear_status_description'
+                                            'dialog.user.description.clear_status_description'
                                         )}
                                         onClick={() => {
                                             setDraft((current) => ({
@@ -156,7 +156,7 @@ export function UserSocialStatusDialog({
                                             size="icon-xs"
                                             disabled={busy}
                                             aria-label={t(
-                                                'dialog.user.generated.status_history'
+                                                'dialog.user.label.status_history'
                                             )}
                                         >
                                             <HistoryIcon data-icon="inline-start" />
@@ -196,7 +196,7 @@ export function UserSocialStatusDialog({
                                             ) : (
                                                 <DropdownMenuItem disabled>
                                                     {t(
-                                                        'dialog.user.generated.no_status_history'
+                                                        'dialog.user.empty.no_status_history'
                                                     )}
                                                 </DropdownMenuItem>
                                             )}
@@ -211,7 +211,7 @@ export function UserSocialStatusDialog({
                     </Field>
                     <Field>
                         <FieldLabel>
-                            {t('dialog.user.generated.social_status')}
+                            {t('dialog.user.label.social_status')}
                         </FieldLabel>
                         <ToggleGroup
                             type="single"
@@ -219,7 +219,7 @@ export function UserSocialStatusDialog({
                             value={draft.status}
                             spacing={2}
                             className="w-full flex-wrap"
-                            aria-label={t('dialog.user.generated.social_status')}
+                            aria-label={t('dialog.user.label.social_status')}
                             onValueChange={(nextStatus) => {
                                 if (!nextStatus) {
                                     return;
@@ -269,7 +269,7 @@ export function UserSocialStatusDialog({
                                 onClick={onSavePreset}
                             >
                                 <BookmarkIcon data-icon="inline-start" />
-                                {t('dialog.user.generated.save_preset')}
+                                {t('dialog.user.action.save_preset')}
                             </Button>
                         </div>
                         {statusPresets.length ? (
@@ -350,7 +350,7 @@ export function UserSocialStatusDialog({
                         {t('common.actions.cancel')}
                     </Button>
                     <Button type="button" disabled={busy} onClick={onSave}>
-                        {t('dialog.user.generated.update')}
+                        {t('dialog.user.action.update')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -395,8 +395,8 @@ export function UserProfileDetailsDialog({
         !availableLanguageOptions.length;
     const languageInputPlaceholder =
         languageOptionsStatus === 'running'
-            ? t('dialog.user.generated.loading_languages')
-            : t('dialog.user.generated.select_language');
+            ? t('dialog.user.loading.loading_languages')
+            : t('dialog.user.action.select_language');
 
     function handleLanguageValueChange(values) {
         setDraft((current) => ({
@@ -410,10 +410,10 @@ export function UserProfileDetailsDialog({
             <DialogContent className="grid max-h-[calc(100vh-4rem)] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>
-                        {t('dialog.user.generated.edit_profile_details')}
+                        {t('dialog.user.description.edit_profile_details')}
                     </DialogTitle>
                     <DialogDescription>
-                        {t('dialog.user.generated.update_your_profile_details')}
+                        {t('dialog.user.description.update_your_profile_details')}
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="-mx-1 min-h-0 px-1">
@@ -422,7 +422,7 @@ export function UserProfileDetailsDialog({
                             <Field>
                                 <div className="flex items-center justify-between gap-2">
                                     <FieldLabel>
-                                        {t('dialog.user.generated.languages')}
+                                        {t('dialog.user.label.languages')}
                                     </FieldLabel>
                                     <span className="text-muted-foreground text-xs tabular-nums">
                                         {languageRows.length}/3
@@ -467,7 +467,7 @@ export function UserProfileDetailsDialog({
                                                                 : languageInputPlaceholder
                                                         }
                                                         aria-label={t(
-                                                            'dialog.user.generated.select_language'
+                                                            'dialog.user.action.select_language'
                                                         )}
                                                     />
                                                 </>
@@ -479,7 +479,7 @@ export function UserProfileDetailsDialog({
                                     >
                                         <ComboboxEmpty>
                                             {t(
-                                                'dialog.user.generated.no_results'
+                                                'dialog.user.empty.no_results'
                                             )}
                                         </ComboboxEmpty>
                                         <ComboboxList>
@@ -499,7 +499,7 @@ export function UserProfileDetailsDialog({
                                 {languageOptionsStatus === 'error' ? (
                                     <FieldDescription>
                                         {t(
-                                            'dialog.user.generated.vrchat_language_list_unavailable_using_local_language_codes'
+                                            'dialog.user.label.vrchat_language_list_unavailable_using_local_language_codes'
                                         )}
                                     </FieldDescription>
                                 ) : null}
@@ -507,7 +507,7 @@ export function UserProfileDetailsDialog({
                             <Field>
                                 <div className="flex items-center justify-between gap-2">
                                     <FieldLabel htmlFor="user-profile-pronouns">
-                                        {t('dialog.user.generated.pronouns')}
+                                        {t('dialog.user.label.pronouns')}
                                     </FieldLabel>
                                     <span className="text-muted-foreground text-xs tabular-nums">
                                         {pronounsLength}/32
@@ -537,7 +537,7 @@ export function UserProfileDetailsDialog({
                         <Field>
                             <div className="flex items-center justify-between gap-2">
                                 <FieldLabel>
-                                    {t('dialog.user.generated.bio_links')}
+                                    {t('dialog.user.label.bio_links')}
                                 </FieldLabel>
                                 <div className="flex items-center gap-2">
                                     <span className="text-muted-foreground text-xs tabular-nums">
@@ -564,7 +564,7 @@ export function UserProfileDetailsDialog({
                                         >
                                             <PlusIcon data-icon="inline-start" />
                                             {t(
-                                                'dialog.user.generated.add_bio_link'
+                                                'dialog.user.action.add_bio_link'
                                             )}
                                         </Button>
                                     ) : null}
@@ -612,7 +612,7 @@ export function UserProfileDetailsDialog({
                                                     busy || bioLinks.length <= 1
                                                 }
                                                 aria-label={t(
-                                                    'dialog.user.generated.remove_bio_link'
+                                                    'dialog.user.action.remove_bio_link'
                                                 )}
                                                 onClick={() => {
                                                     setDraft((current) => {
@@ -647,7 +647,7 @@ export function UserProfileDetailsDialog({
                         <Field>
                             <div className="flex items-center justify-between gap-2">
                                 <FieldLabel htmlFor="user-profile-bio">
-                                    {t('dialog.user.generated.bio')}
+                                    {t('dialog.user.label.bio')}
                                 </FieldLabel>
                                 <FieldDescription className="text-xs">
                                     {bioLength}/512

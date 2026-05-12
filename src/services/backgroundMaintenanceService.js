@@ -880,10 +880,10 @@ async function checkAutoBackupRestoreVrcRegistry() {
 
     await useModalStore.getState().alert({
         title: i18n.t(
-            'service.background_maintenance.generated.vrchat_registry_backup'
+            'service.background_maintenance.label.vrchat_registry_backup'
         ),
         description: i18n.t(
-            'service.background_maintenance.generated.registry_backup_restore_description'
+            'service.background_maintenance.description.registry_backup_restore_description'
         )
     });
     useRuntimeStore.getState().setSystemHostOpen('registryBackupOpen', true);
@@ -942,13 +942,13 @@ async function checkForAppUpdate({ includeRegistryBackup = true } = {}) {
                         update.version
                     );
                     const message = i18n.t(
-                        'service.background_maintenance_service.generated_dynamic.version_value_is_available_on_the_value_branch',
+                        'service.background_maintenance_service.dynamic.version_value_is_available_on_the_value_branch',
                         { value: displayVersion, value2: branch }
                     );
                     useNotificationStore.getState().pushNotification({
                         level: 'info',
                         title: i18n.t(
-                            'service.background_maintenance.generated.vrcx_update_available'
+                            'service.background_maintenance.label.vrcx_update_available'
                         ),
                         message
                     });
@@ -978,13 +978,13 @@ async function checkForAppUpdate({ includeRegistryBackup = true } = {}) {
                         latestRelease.canonicalVersion
                     );
                     const message = i18n.t(
-                        'service.background_maintenance_service.generated_dynamic.version_value_is_available_on_the_value_branch',
+                        'service.background_maintenance_service.dynamic.version_value_is_available_on_the_value_branch',
                         { value: displayVersion, value2: branch }
                     );
                     useNotificationStore.getState().pushNotification({
                         level: 'info',
                         title: i18n.t(
-                            'service.background_maintenance.generated.vrcx_update_available'
+                            'service.background_maintenance.label.vrcx_update_available'
                         ),
                         message
                     });

@@ -304,7 +304,7 @@ export const AvatarInfoLine = memo(function AvatarInfoLine({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.feed.generated_toast.failed_to_resolve_avatar_author'
+                              'view.feed.toast.failed_to_resolve_avatar_author'
                           )
                 );
                 return;
@@ -329,13 +329,13 @@ export const AvatarInfoLine = memo(function AvatarInfoLine({
         }
 
         if (!nextOwnerId) {
-            toast.warning(t('view.feed.generated.avatar_author_unavailable'));
+            toast.warning(t('view.feed.error.avatar_author_unavailable'));
             return;
         }
 
         if (nextOwnerId === normalizedUserId) {
             toast.warning(
-                t('view.feed.generated.avatar_is_private_or_not_found')
+                t('view.feed.error.avatar_is_private_or_not_found')
             );
             return;
         }

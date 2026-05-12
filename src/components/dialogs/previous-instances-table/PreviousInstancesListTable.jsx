@@ -113,7 +113,7 @@ export function PreviousInstancesListTable({
                         <p className="text-muted-foreground text-sm">
                             {filteredCountText}/{totalCountText}{' '}
                             {t(
-                                'dialog.previous_instances.generated.recorded_instance_visits'
+                                'dialog.previous_instances.label.recorded_instance_visits'
                             )}
                         </p>
                     </div>
@@ -130,7 +130,7 @@ export function PreviousInstancesListTable({
                 />
                 <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-sm">
-                        {t('dialog.previous_instances.generated.rows')}
+                        {t('dialog.previous_instances.label.rows')}
                     </span>
                     <Select
                         value={String(pageSize)}
@@ -176,7 +176,7 @@ export function PreviousInstancesListTable({
                                 </TableHead>
                                 <TableHead>
                                     {t(
-                                        'dialog.previous_instances.generated.location'
+                                        'dialog.previous_instances.label.location'
                                     )}
                                 </TableHead>
                                 <TableHead className="w-48">
@@ -220,7 +220,7 @@ export function PreviousInstancesListTable({
                                             >
                                                 <span className="sr-only">
                                                     {t(
-                                                        'dialog.previous_instances.generated.open_instance_details'
+                                                        'dialog.previous_instances.description.open_instance_details'
                                                     )}
                                                 </span>
                                             </Button>
@@ -270,7 +270,7 @@ export function PreviousInstancesListTable({
                                                     }
                                                 >
                                                     {t(
-                                                        'dialog.previous_instances.generated.details'
+                                                        'dialog.previous_instances.description.details'
                                                     )}
                                                 </Button>
                                                 <Button
@@ -296,7 +296,7 @@ export function PreviousInstancesListTable({
             ) : (
                 <DialogEmptyState
                     title={t(
-                        'dialog.previous_instances.generated.no_instance_records'
+                        'dialog.previous_instances.empty.no_instance_records'
                     )}
                     description={
                         search.trim()
@@ -308,7 +308,7 @@ export function PreviousInstancesListTable({
             )}
             <div className="flex items-center justify-between">
                 <div className="text-muted-foreground text-sm">
-                    {t('dialog.previous_instances.generated.page')}{' '}
+                    {t('dialog.previous_instances.label.page')}{' '}
                     {currentPageIndex + 1} / {totalPages}
                 </div>
                 <div className="flex gap-2">

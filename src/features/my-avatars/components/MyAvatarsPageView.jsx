@@ -115,7 +115,7 @@ export function MyAvatarsPageView({
                         {userFacingErrorMessage(
                             detail,
                             t(
-                                'view.my_avatars.generated.avatar_inventory_failed_to_load'
+                                'view.my_avatars.error.avatar_inventory_failed_to_load'
                             )
                         )}
                     </div>
@@ -124,18 +124,18 @@ export function MyAvatarsPageView({
                 {isLoading ? (
                     <LoadingState
                         label={t(
-                            'view.my_avatars.generated.loading_the_avatar_inventory'
+                            'view.my_avatars.loading.loading_the_avatar_inventory'
                         )}
                     />
                 ) : isError ? (
                     <MyAvatarsEmptyState
                         title={t(
-                            'view.my_avatars.generated.avatar_inventory_failed_to_load'
+                            'view.my_avatars.error.avatar_inventory_failed_to_load'
                         )}
                         description={
                             detail ||
                             t(
-                                'view.my_avatars.generated.avatar_request_did_not_complete'
+                                'view.my_avatars.success.avatar_request_did_not_complete'
                             )
                         }
                     />
@@ -183,10 +183,10 @@ export function MyAvatarsPageView({
                 ) : (
                     <MyAvatarsEmptyState
                         title={t(
-                            'view.my_avatars.generated.no_avatars_match_the_current_filters'
+                            'view.my_avatars.empty.no_avatars_match_the_current_filters'
                         )}
                         description={t(
-                            'view.my_avatars.generated.broaden_the_filters_or_search_query_to_see_more_avatars'
+                            'view.my_avatars.label.broaden_the_filters_or_search_query_to_see_more_avatars'
                         )}
                     />
                 )}
@@ -227,13 +227,13 @@ export function MyAvatarsPageView({
                 onEditDetailsSaved={(nextAvatar) => {
                     applyAvatarUpdate(nextAvatar);
                     setDetail(
-                        t('dialog.avatar.generated.avatar_details_updated')
+                        t('dialog.avatar.success.avatar_details_updated')
                     );
                 }}
                 onContentTagsSaved={(nextAvatar) => {
                     applyAvatarUpdate(nextAvatar);
                     setDetail(
-                        t('dialog.avatar.generated.avatar_content_tags_updated')
+                        t('dialog.avatar.success.avatar_content_tags_updated')
                     );
                 }}
             />

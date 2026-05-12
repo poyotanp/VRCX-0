@@ -301,9 +301,9 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
     if (!currentUserId) {
         return renderShell(
             <DashboardWidgetEmptyState
-                title={t('view.dashboard.generated.feed_unavailable')}
+                title={t('view.dashboard.error.feed_unavailable')}
                 description={t(
-                    'view.dashboard.generated.sign_in_before_the_dashboard_can_query_feed_rows'
+                    'view.dashboard.label.sign_in_before_the_dashboard_can_query_feed_rows'
                 )}
             />
         );
@@ -312,7 +312,7 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
     if (loadStatus === 'error') {
         return renderShell(
             <DashboardWidgetEmptyState
-                title={t('view.dashboard.generated.feed_widget_failed')}
+                title={t('view.dashboard.error.feed_widget_failed')}
                 description={userFacingErrorMessage(
                     detail,
                     'The local feed query did not complete.'
@@ -325,7 +325,7 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
         return renderShell(
             <div className="text-muted-foreground flex min-h-[180px] flex-1 items-center justify-center gap-2 text-sm">
                 <Spinner />
-                {t('view.dashboard.generated.loading_feed_widget')}
+                {t('view.dashboard.loading.loading_feed_widget')}
             </div>
         );
     }
@@ -333,9 +333,9 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
     if (!annotatedRows.length) {
         return renderShell(
             <DashboardWidgetEmptyState
-                title={t('view.dashboard.generated.no_feed_rows')}
+                title={t('view.dashboard.empty.no_feed_rows')}
                 description={t(
-                    'view.dashboard.generated.the_current_filter_set_did_not_return_any_recent_feed_activi'
+                    'view.dashboard.label.the_current_filter_set_did_not_return_any_recent_feed_activity'
                 )}
             />
         );
@@ -346,7 +346,7 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
             <div className="text-muted-foreground flex flex-wrap gap-2 px-3 pt-3 text-xs">
                 <span>
                     {annotatedRows.length}{' '}
-                    {t('view.dashboard.generated.recent_rows')}
+                    {t('view.dashboard.label.recent_rows')}
                 </span>
                 <span>
                     {Array.isArray(config.filters) && config.filters.length
@@ -355,7 +355,7 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
                 </span>
                 {showType ? (
                     <span>
-                        {t('view.dashboard.generated.type_column_enabled')}
+                        {t('view.dashboard.label.type_column_enabled')}
                     </span>
                 ) : null}
             </div>
@@ -402,7 +402,7 @@ export function DashboardFeedWidget({ config = {}, configUpdater = null }) {
                                             >
                                                 <HeartIcon className="size-3 fill-current" />
                                                 {t(
-                                                    'view.dashboard.generated.favorite'
+                                                    'view.dashboard.label.favorite'
                                                 )}
                                             </Badge>
                                         ) : null}

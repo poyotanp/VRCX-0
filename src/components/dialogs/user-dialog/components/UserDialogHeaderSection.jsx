@@ -363,9 +363,9 @@ export function UserDialogHeaderSection({ state = {}, actions = {} }) {
                             type="button"
                             variant="ghost"
                             aria-label={t(
-                                'dialog.user.generated.open_user_icon'
+                                'dialog.user.action.open_user_icon'
                             )}
-                            title={t('dialog.user.generated.open_user_icon')}
+                            title={t('dialog.user.action.open_user_icon')}
                             className="bg-background/90 absolute right-3 bottom-3 size-16 overflow-hidden rounded-full border-2 border-white p-0 shadow-md"
                             onClick={onOpenUserIcon}
                         >

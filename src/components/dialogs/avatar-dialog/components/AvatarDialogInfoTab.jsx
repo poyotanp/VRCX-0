@@ -117,7 +117,7 @@ export function AvatarDialogInfoTab({
                 </EntityInfoBlock>
                 {localTags.length ? (
                     <EntityInfoBlock
-                        label={t('dialog.avatar.generated.local_tags')}
+                        label={t('dialog.avatar.label.local_tags')}
                         full
                     >
                         <AvatarDialogTagList
@@ -146,7 +146,7 @@ export function AvatarDialogInfoTab({
                 ) : null}
                 {otherTags.length ? (
                     <EntityInfoBlock
-                        label={t('dialog.avatar.generated.vrchat_tags')}
+                        label={t('dialog.avatar.label.vrchat_tags')}
                         full
                     >
                         <AvatarDialogTagList tags={otherTags} />

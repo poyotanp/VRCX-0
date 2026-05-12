@@ -13,8 +13,8 @@ function useStableEvent(handler) {
 function getFavoriteSearchResultsSubtitle(t, count) {
     return t(
         count === 1
-            ? 'view.favorites.generated_dynamic.search_results_singular'
-            : 'view.favorites.generated_dynamic.search_results_plural',
+            ? 'view.favorites.dynamic.search_results_singular'
+            : 'view.favorites.dynamic.search_results_plural',
         { count }
     );
 }
@@ -110,7 +110,7 @@ export function FavoritesPageView({
         ? pageConfig.searchPlaceholder
         : selectedGroup
           ? selectedGroup.label
-          : t('view.favorites.generated.no_group_selected');
+          : t('view.favorites.empty.no_group_selected');
     const subtitle = isSearchActive
         ? getFavoriteSearchResultsSubtitle(t, contentItems.length)
         : selectedGroup

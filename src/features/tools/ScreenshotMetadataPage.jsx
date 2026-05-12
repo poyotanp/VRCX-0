@@ -237,7 +237,7 @@ export function ScreenshotMetadataPage() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.tools.generated_toast.failed_to_open_screenshot_picker'
+                          'view.tools.toast.failed_to_open_screenshot_picker'
                       )
             );
         }
@@ -257,7 +257,7 @@ export function ScreenshotMetadataPage() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.tools.generated_toast.failed_to_open_folder')
+                    : t('view.tools.toast.failed_to_open_folder')
             );
         }
     }
@@ -274,7 +274,7 @@ export function ScreenshotMetadataPage() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.tools.generated_toast.failed_to_copy_image')
+                    : t('view.tools.toast.failed_to_copy_image')
             );
         }
     }
@@ -479,7 +479,7 @@ export function ScreenshotMetadataPage() {
         if (!filePath) {
             toast.error(
                 t(
-                    'view.tools.generated.dropped_screenshot_path_is_not_available'
+                    'view.tools.error.dropped_screenshot_path_is_not_available'
                 )
             );
             return;
@@ -503,9 +503,9 @@ export function ScreenshotMetadataPage() {
                     title={t('dialog.screenshot_metadata.header')}
                     deleting={false}
                     uploading={false}
-                    deletingLabel={t('view.tools.generated.deleting_metadata')}
+                    deletingLabel={t('view.tools.loading.deleting_metadata')}
                     uploadingLabel={t(
-                        'view.tools.generated.uploading_screenshot'
+                        'view.tools.loading.uploading_screenshot'
                     )}
                     onBack={() => navigate('/tools')}
                 />
@@ -524,8 +524,8 @@ export function ScreenshotMetadataPage() {
                 title={t('dialog.screenshot_metadata.header')}
                 deleting={isDeletingMetadata}
                 uploading={isUploadingScreenshot}
-                deletingLabel={t('view.tools.generated.deleting_metadata')}
-                uploadingLabel={t('view.tools.generated.uploading_screenshot')}
+                deletingLabel={t('view.tools.loading.deleting_metadata')}
+                uploadingLabel={t('view.tools.loading.uploading_screenshot')}
                 onBack={() => navigate('/tools')}
             />
 

@@ -146,13 +146,13 @@ export function PlayerListTableSection({
             {isLoading ? (
                 <LoadingState
                     label={t(
-                        'view.player_list.generated.rebuilding_the_current_instance_roster_from_game_log_history'
+                        'view.player_list.label.rebuilding_the_current_instance_roster_from_game_log_history'
                     )}
                 />
             ) : isError ? (
                 <PlayerListEmptyState
                     title={t(
-                        'view.player_list.generated.current_players_failed_to_load'
+                        'view.player_list.error.current_players_failed_to_load'
                     )}
                     description={userFacingErrorMessage(
                         detail,

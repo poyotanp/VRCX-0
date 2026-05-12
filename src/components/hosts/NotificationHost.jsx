@@ -32,28 +32,28 @@ export function NotificationHost() {
                     <div className="flex items-center justify-between gap-3">
                         <SheetTitle className="flex items-center gap-2">
                             <BellIcon className="size-4" />
-                            {t('dialog.tools.generated.notifications')}
+                            {t('dialog.tools.label.notifications')}
                         </SheetTitle>
                         <Badge
                             variant={unreadCount > 0 ? 'default' : 'outline'}
                         >
-                            {unreadCount} {t('dialog.tools.generated.unread')}
+                            {unreadCount} {t('dialog.tools.label.unread')}
                         </Badge>
                     </div>
                     <SheetDescription>
                         {t(
-                            'dialog.tools.generated.backend_events_and_system_messages_land_here'
+                            'dialog.tools.label.backend_events_and_system_messages_land_here'
                         )}
                     </SheetDescription>
                 </SheetHeader>
                 <div className="mt-6 flex items-center justify-between gap-3">
                     <div className="text-muted-foreground text-xs">
                         {t(
-                            'dialog.tools.generated.notifications_are_surfaced_from_the_top_level_status_bar'
+                            'dialog.tools.label.notifications_are_surfaced_from_the_top_level_status_bar'
                         )}
                     </div>
                     <Button size="sm" variant="outline" onClick={markAllRead}>
-                        {t('dialog.tools.generated.mark_all_read')}
+                        {t('dialog.tools.action.mark_all_read')}
                     </Button>
                 </div>
                 <Separator className="my-4" />
@@ -89,7 +89,7 @@ export function NotificationHost() {
                         ))
                     ) : (
                         <div className="text-muted-foreground rounded-md border border-dashed p-4 text-sm">
-                            {t('dialog.tools.generated.no_notifications_yet')}
+                            {t('dialog.tools.empty.no_notifications_yet')}
                         </div>
                     )}
                 </div>

@@ -227,7 +227,7 @@ export function UserDialogProfileMediaPanel({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.tools.generated_toast.failed_to_load_value', {
+                    : t('view.tools.toast.failed_to_load_value', {
                           value: section.fileTag
                       })
             );

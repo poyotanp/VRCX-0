@@ -47,10 +47,10 @@ export function ModerationTypeFilterDropdown({
 }) {
     const selectedTypes = Array.isArray(value) ? value : [];
     const label = selectedTypes.length
-        ? t('view.moderation.generated_dynamic.selected_moderation_filters', {
+        ? t('view.moderation.dynamic.selected_moderation_filters', {
               count: selectedTypes.length
           })
-        : t('view.moderation.generated.moderation_filters');
+        : t('view.moderation.label.moderation_filters');
 
     return (
         <DropdownMenu>

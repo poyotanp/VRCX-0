@@ -135,7 +135,7 @@ export function VrcNotificationCenterHost() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.vrc_notification_center.generated_toast.failed_to_mark_notifications_as_seen'
+                          'host.vrc_notification_center.toast.failed_to_mark_notifications_as_seen'
                       )
             );
         });
@@ -173,10 +173,10 @@ export function VrcNotificationCenterHost() {
         try {
             const result = await confirm({
                 title: t(
-                    'host.vrc_notification_center.generated_modal.accept_friend_request'
+                    'host.vrc_notification_center.modal.accept_friend_request'
                 ),
                 description: t(
-                    'host.vrc_notification_center.generated_dynamic.accept_the_friend_request_from_value',
+                    'host.vrc_notification_center.dynamic.accept_the_friend_request_from_value',
                     { value: notification.senderUsername || 'this user' }
                 )
             });
@@ -210,7 +210,7 @@ export function VrcNotificationCenterHost() {
             }
             await expireNotificationLocally(notification);
             toast.success(
-                t('view.notification.generated.friend_request_accepted')
+                t('view.notification.success.friend_request_accepted')
             );
         } catch (error) {
             clearFriendLogAddIntent();
@@ -222,7 +222,7 @@ export function VrcNotificationCenterHost() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.vrc_notification_center.generated_toast.failed_to_accept_friend_request'
+                          'host.vrc_notification_center.toast.failed_to_accept_friend_request'
                       )
             );
         }
@@ -232,14 +232,14 @@ export function VrcNotificationCenterHost() {
         try {
             const result = await confirm({
                 title: t(
-                    'host.vrc_notification_center.generated_modal.decline_notification'
+                    'host.vrc_notification_center.modal.decline_notification'
                 ),
                 description: t(
-                    'host.vrc_notification_center.generated_dynamic.decline_the_value_notification',
+                    'host.vrc_notification_center.dynamic.decline_the_value_notification',
                     { value: notification.type || 'notification' }
                 ),
                 confirmText: t(
-                    'host.vrc_notification_center.generated_modal.decline'
+                    'host.vrc_notification_center.modal.decline'
                 ),
                 destructive: true
             });
@@ -255,14 +255,14 @@ export function VrcNotificationCenterHost() {
             });
             await expireNotificationLocally(notification);
             toast.success(
-                t('view.notification.generated.notification_declined')
+                t('view.notification.success.notification_declined')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.vrc_notification_center.generated_toast.failed_to_decline_notification'
+                          'host.vrc_notification_center.toast.failed_to_decline_notification'
                       )
             );
         }
@@ -273,7 +273,7 @@ export function VrcNotificationCenterHost() {
             if (!currentInviteLocation) {
                 toast.error(
                     t(
-                        'view.notification.generated.cannot_invite_no_current_vrchat_location_is_available'
+                        'view.notification.error.cannot_invite_no_current_vrchat_location_is_available'
                     )
                 );
                 return;
@@ -281,7 +281,7 @@ export function VrcNotificationCenterHost() {
             if (!canInviteFromCurrentLocation) {
                 toast.error(
                     t(
-                        'view.notification.generated.cannot_invite_from_the_current_instance_type'
+                        'view.notification.error.cannot_invite_from_the_current_instance_type'
                     )
                 );
                 return;
@@ -290,17 +290,17 @@ export function VrcNotificationCenterHost() {
             if (!parsedLocation.worldId || !parsedLocation.instanceId) {
                 toast.error(
                     t(
-                        'view.notification.generated.cannot_invite_current_location_is_not_a_concrete_instance'
+                        'view.notification.error.cannot_invite_current_location_is_not_a_concrete_instance'
                     )
                 );
                 return;
             }
             const result = await confirm({
                 title: t(
-                    'host.vrc_notification_center.generated_modal.send_invite'
+                    'host.vrc_notification_center.modal.send_invite'
                 ),
                 description: t(
-                    'host.vrc_notification_center.generated_dynamic.send_an_invite_to_value',
+                    'host.vrc_notification_center.dynamic.send_an_invite_to_value',
                     { value: notification.senderUsername || 'this user' }
                 )
             });
@@ -338,7 +338,7 @@ export function VrcNotificationCenterHost() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.vrc_notification_center.generated_toast.failed_to_send_invite'
+                          'host.vrc_notification_center.toast.failed_to_send_invite'
                       )
             );
         }
@@ -348,7 +348,7 @@ export function VrcNotificationCenterHost() {
         if (!currentUserId) {
             toast.error(
                 t(
-                    'view.notification.generated.cannot_send_invite_response_no_current_user_session_is_avail'
+                    'view.notification.error.cannot_send_invite_response_no_current_user_session_is_available'
                 )
             );
             return;
@@ -374,7 +374,7 @@ export function VrcNotificationCenterHost() {
             endpoint
         });
         await expireNotificationLocally(notification);
-        toast.success(t('view.notification.generated.invite_response_sent'));
+        toast.success(t('view.notification.success.invite_response_sent'));
     }
 
     async function sendNotificationResponse(notification, response) {
@@ -404,7 +404,7 @@ export function VrcNotificationCenterHost() {
                     })
                     .catch(() => {});
                 await expireNotificationLocally(notification);
-                toast.success(t('view.notification.generated.boop_sent'));
+                toast.success(t('view.notification.success.boop_sent'));
                 return;
             }
             await notificationRepository.sendNotificationResponse({
@@ -415,7 +415,7 @@ export function VrcNotificationCenterHost() {
             });
             await expireNotificationLocally(notification);
             toast.success(
-                t('view.notification.generated.notification_response_sent')
+                t('view.notification.success.notification_response_sent')
             );
         } catch (error) {
             if (notification.version >= 2) {
@@ -425,7 +425,7 @@ export function VrcNotificationCenterHost() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.vrc_notification_center.generated_toast.failed_to_send_notification_response'
+                          'host.vrc_notification_center.toast.failed_to_send_notification_response'
                       )
             );
         }
@@ -435,10 +435,10 @@ export function VrcNotificationCenterHost() {
         try {
             const result = await confirm({
                 title: t(
-                    'host.vrc_notification_center.generated_modal.delete_notification_log_entry'
+                    'host.vrc_notification_center.modal.delete_notification_log_entry'
                 ),
                 description: t(
-                    'host.vrc_notification_center.generated_modal.delete_the_local_value_log_entry',
+                    'host.vrc_notification_center.modal.delete_the_local_value_log_entry',
                     { value: notification.type || 'notification' }
                 ),
                 confirmText: t('common.actions.delete'),
@@ -454,14 +454,14 @@ export function VrcNotificationCenterHost() {
             });
             await refreshCenter();
             toast.success(
-                t('view.notification.generated.notification_log_entry_deleted')
+                t('view.notification.success.notification_log_entry_deleted')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'host.vrc_notification_center.generated_toast.failed_to_delete_notification'
+                          'host.vrc_notification_center.toast.failed_to_delete_notification'
                       )
             );
         }
@@ -505,7 +505,7 @@ export function VrcNotificationCenterHost() {
                                                             userFacingErrorMessage(
                                                                 error,
                                                                 t(
-                                                                    'host.vrc_notification_center.generated_toast.failed_to_refresh_notifications'
+                                                                    'host.vrc_notification_center.toast.failed_to_refresh_notifications'
                                                                 )
                                                             )
                                                         );

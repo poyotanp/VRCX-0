@@ -247,7 +247,7 @@ export function GroupPostEditorDialog({
                                 </FieldGroup>
                             ) : (
                                 <GroupListState
-                                    title={t('dialog.group.generated.no_roles')}
+                                    title={t('dialog.group.empty.no_roles')}
                                     description=""
                                     className="min-h-20 p-3"
                                 />
@@ -267,7 +267,7 @@ export function GroupPostEditorDialog({
                                 }
                                 disabled={submitting}
                                 placeholder={t(
-                                    'dialog.group.generated.gallery_image_id'
+                                    'dialog.group.label.gallery_image_id'
                                 )}
                             />
                             <InputGroupAddon align="inline-end">
@@ -332,10 +332,10 @@ export function GroupPostEditorDialog({
                         ) : (
                             <GroupListState
                                 title={t(
-                                    'dialog.group.generated.no_gallery_images'
+                                    'dialog.group.empty.no_gallery_images'
                                 )}
                                 description={t(
-                                    'dialog.group.generated.refresh_to_load_gallery_images'
+                                    'dialog.group.action.refresh_to_load_gallery_images'
                                 )}
                                 loading={galleryStatus === 'running'}
                                 error={galleryError}

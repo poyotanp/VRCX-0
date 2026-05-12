@@ -19,15 +19,15 @@ export const MY_AVATARS_DEFAULT_GRID_DENSITY = 'standard';
 export const MY_AVATARS_GRID_DENSITY_OPTIONS = Object.freeze([
     {
         value: 'standard',
-        labelKey: 'view.my_avatars.generated.grid_density_standard'
+        labelKey: 'view.my_avatars.label.grid_density_standard'
     },
     {
         value: 'compact',
-        labelKey: 'view.my_avatars.generated.grid_density_compact'
+        labelKey: 'view.my_avatars.label.grid_density_compact'
     },
     {
         value: 'dense',
-        labelKey: 'view.my_avatars.generated.grid_density_dense'
+        labelKey: 'view.my_avatars.label.grid_density_dense'
     }
 ]);
 export const MY_AVATARS_COLUMN_IDS = [

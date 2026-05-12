@@ -37,7 +37,7 @@ export function useGroupDialogPosts({
         const text = String(form.text || '').trim();
         if (!title || !text) {
             toast.warning(
-                t('dialog.group.generated.title_and_text_are_required')
+                t('dialog.group.error.title_and_text_are_required')
             );
             return;
         }
@@ -82,15 +82,15 @@ export function useGroupDialogPosts({
             setPostEditor(null);
             toast.success(
                 form.mode === 'edit'
-                    ? t('dialog.group.generated_toast.group_post_updated')
-                    : t('dialog.group.generated_toast.group_post_created')
+                    ? t('dialog.group.toast.group_post_updated')
+                    : t('dialog.group.toast.group_post_created')
             );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.group.generated_toast.failed_to_save_group_post'
+                          'dialog.group.toast.failed_to_save_group_post'
                       )
             );
         } finally {
@@ -113,7 +113,7 @@ export function useGroupDialogPosts({
 
     async function deleteGroupPost(post) {
         const result = await confirm({
-            title: t('dialog.group.generated_modal.delete_group_post'),
+            title: t('dialog.group.modal.delete_group_post'),
             description: post?.title || group.name || 'Group',
             confirmText: t('common.actions.delete'),
             cancelText: t('common.actions.cancel'),
@@ -132,13 +132,13 @@ export function useGroupDialogPosts({
                 ...current,
                 posts: current.posts.filter((row) => row.id !== post.id)
             }));
-            toast.success(t('dialog.group.generated.group_post_deleted'));
+            toast.success(t('dialog.group.success.group_post_deleted'));
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
                     : t(
-                          'dialog.group.generated_toast.failed_to_delete_group_post'
+                          'dialog.group.toast.failed_to_delete_group_post'
                       )
             );
         }

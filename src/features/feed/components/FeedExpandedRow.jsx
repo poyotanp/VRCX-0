@@ -181,7 +181,7 @@ function FeedExpandedRow({
                                     <img
                                         src={previousImage}
                                         alt={t(
-                                            'view.feed.generated.previous_avatar'
+                                            'view.feed.label.previous_avatar'
                                         )}
                                         className="h-30 w-40 rounded object-cover"
                                         loading="lazy"

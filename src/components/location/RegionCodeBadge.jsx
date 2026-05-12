@@ -29,7 +29,7 @@ export function RegionCodeBadge({ region, className }) {
                 className
             )}
             title={t(
-                'component.region_code_badge.generated_dynamic.region_value',
+                'component.region_code_badge.dynamic.region_value',
                 { value: label }
             )}
         >

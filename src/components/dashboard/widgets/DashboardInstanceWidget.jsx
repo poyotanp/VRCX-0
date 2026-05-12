@@ -587,9 +587,9 @@ export function DashboardInstanceWidget({ config = {}, configUpdater = null }) {
         return (
             <DashboardInstanceWidgetShell settingsMenu={settingsMenu}>
                 <DashboardWidgetEmptyState
-                    title={t('view.dashboard.generated.instance_widget_idle')}
+                    title={t('view.dashboard.label.instance_widget_idle')}
                     description={t(
-                        'view.dashboard.generated.start_vrchat_before_the_dashboard_can_rebuild_the_current_in'
+                        'view.dashboard.action.start_vrchat_before_the_dashboard_can_rebuild_the_current_instance_roster'
                     )}
                 />
             </DashboardInstanceWidgetShell>
@@ -600,7 +600,7 @@ export function DashboardInstanceWidget({ config = {}, configUpdater = null }) {
         return (
             <DashboardInstanceWidgetShell settingsMenu={settingsMenu}>
                 <DashboardWidgetEmptyState
-                    title={t('view.dashboard.generated.instance_widget_failed')}
+                    title={t('view.dashboard.error.instance_widget_failed')}
                     description={userFacingErrorMessage(
                         detail,
                         'Current players did not finish loading.'
@@ -615,7 +615,7 @@ export function DashboardInstanceWidget({ config = {}, configUpdater = null }) {
             <DashboardInstanceWidgetShell settingsMenu={settingsMenu}>
                 <div className="text-muted-foreground flex min-h-[180px] flex-1 items-center justify-center gap-2 text-sm">
                     <Spinner />
-                    {t('view.dashboard.generated.loading_instance_widget')}
+                    {t('view.dashboard.loading.loading_instance_widget')}
                 </div>
             </DashboardInstanceWidgetShell>
         );
@@ -625,9 +625,9 @@ export function DashboardInstanceWidget({ config = {}, configUpdater = null }) {
         return (
             <DashboardInstanceWidgetShell settingsMenu={settingsMenu}>
                 <DashboardWidgetEmptyState
-                    title={t('view.dashboard.generated.instance_widget_idle')}
+                    title={t('view.dashboard.label.instance_widget_idle')}
                     description={t(
-                        'view.dashboard.generated.current_players_are_not_available_yet'
+                        'view.dashboard.error.current_players_are_not_available_yet'
                     )}
                 />
             </DashboardInstanceWidgetShell>

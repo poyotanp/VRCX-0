@@ -96,7 +96,7 @@ function instanceDetailsSummary(row, t) {
     const dateText = formatDate(row?.created_at || row?.createdAt);
     return dateText !== '-'
         ? dateText
-        : t('dialog.previous_instances.generated.instance_details');
+        : t('dialog.previous_instances.description.instance_details');
 }
 
 export function InstanceOwnerCell({ userId, location = '', endpoint = '' }) {
@@ -291,7 +291,7 @@ export function PreviousInstanceDetailsPanel({
                         error instanceof Error
                             ? error.message
                             : t(
-                                  'dialog.previous_instances.generated.failed_to_load_instance_details'
+                                  'dialog.previous_instances.error.failed_to_load_instance_details'
                               ),
                     players: [],
                     details: []
@@ -343,10 +343,10 @@ export function PreviousInstanceDetailsPanel({
         return (
             <DialogEmptyState
                 title={t(
-                    'dialog.previous_instances.generated.no_instance_selected'
+                    'dialog.previous_instances.empty.no_instance_selected'
                 )}
                 description={t(
-                    'dialog.previous_instances.generated.select_an_instance_row_to_view_its_details'
+                    'dialog.previous_instances.description.select_an_instance_row_to_view_its_details'
                 )}
                 className={className}
             />
@@ -443,7 +443,7 @@ export function PreviousInstanceDetailsPanel({
                         </TabsList>
                         <span className="text-muted-foreground text-xs">
                             {t(
-                                'dialog.previous_instances.generated.players_count',
+                                'dialog.previous_instances.label.players_count',
                                 {
                                     count: infoData.players.length
                                 }
@@ -455,7 +455,7 @@ export function PreviousInstanceDetailsPanel({
                             <Spinner className="size-4" />
                             <span>
                                 {t(
-                                    'dialog.previous_instances.generated.loading_instance_details'
+                                    'dialog.previous_instances.loading.loading_instance_details'
                                 )}
                             </span>
                         </div>
@@ -539,7 +539,7 @@ export function PreviousInstanceDetailsPanel({
                                                         className="py-6 text-center"
                                                     >
                                                         {t(
-                                                            'dialog.previous_instances.generated.no_player_detail_rows_for_this_instance'
+                                                            'dialog.previous_instances.empty.no_player_detail_rows_for_this_instance'
                                                         )}
                                                     </TableCell>
                                                 </TableRow>
@@ -563,7 +563,7 @@ export function PreviousInstanceDetailsPanel({
                     <details className="shrink-0 rounded-md border p-3">
                         <summary className="cursor-pointer text-sm font-medium">
                             {t(
-                                'dialog.previous_instances.generated.leave_details_count',
+                                'dialog.previous_instances.action.leave_details_count',
                                 {
                                     count: infoData.details.length
                                 }

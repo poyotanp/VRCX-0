@@ -42,7 +42,7 @@ async function getCalendarIcs(event, t) {
         if (!normalizedContent.startsWith('BEGIN:VCALENDAR')) {
             toast.error(
                 t(
-                    'dialog.tools.generated.failed_to_download_ics_file_invalid_icalendar_content'
+                    'dialog.tools.error.failed_to_download_ics_file_invalid_icalendar_content'
                 )
             );
             return '';
@@ -53,7 +53,7 @@ async function getCalendarIcs(event, t) {
             userFacingErrorMessage(
                 error,
                 t(
-                    'host.tools_dialogs.generated_toast.failed_to_download_ics_file'
+                    'host.tools_dialogs.toast.failed_to_download_ics_file'
                 )
             )
         );
@@ -81,7 +81,7 @@ async function downloadEventIcs(event, t) {
         toast.error(
             userFacingErrorMessage(
                 error,
-                t('host.tools_dialogs.generated_toast.failed_to_save_ics_file')
+                t('host.tools_dialogs.toast.failed_to_save_ics_file')
             )
         );
     }
@@ -103,7 +103,7 @@ async function copyEventLink(event, t) {
             userFacingErrorMessage(
                 error,
                 t(
-                    'host.tools_dialogs.generated_toast.failed_to_copy_event_link'
+                    'host.tools_dialogs.toast.failed_to_copy_event_link'
                 )
             )
         );
@@ -273,7 +273,7 @@ export function GroupEventCard({
                                     size="icon-sm"
                                     variant="outline"
                                     aria-label={t(
-                                        'dialog.tools.generated.copy_event_link'
+                                        'dialog.tools.action.copy_event_link'
                                     )}
                                     onClick={stopAndRun(
                                         () => void copyEventLink(event, t)
@@ -290,10 +290,10 @@ export function GroupEventCard({
                                     aria-label={
                                         isFollowing
                                             ? t(
-                                                  'dialog.tools.generated.unfollow_event'
+                                                  'dialog.tools.label.unfollow_event'
                                               )
                                             : t(
-                                                  'dialog.tools.generated.follow_event'
+                                                  'dialog.tools.label.follow_event'
                                               )
                                     }
                                     disabled={!onToggleFollow}

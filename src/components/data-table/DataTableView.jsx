@@ -362,7 +362,7 @@ export function DataTablePagination({
                     </PaginationItem>
                     <PaginationItem>
                         <Badge variant="outline">
-                            {t('table.generated.page')} {resolvedPageIndex + 1}{' '}
+                            {t('table.label.page')} {resolvedPageIndex + 1}{' '}
                             / {resolvedPageCount}
                         </Badge>
                     </PaginationItem>
@@ -393,7 +393,7 @@ export function DataTableView({
     persistKey
 }) {
     const { t } = useTranslation();
-    const resolvedEmptyLabel = emptyLabel || t('table.generated.no_rows_yet');
+    const resolvedEmptyLabel = emptyLabel || t('table.empty.no_rows_yet');
     const columnIds = useMemo(
         () => columns.map((column) => getColumnId(column)).filter(Boolean),
         [columns]

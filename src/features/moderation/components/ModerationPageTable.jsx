@@ -56,18 +56,18 @@ export function ModerationPageTable({
 
             <PageFooter>
                 <div className="text-muted-foreground text-sm">
-                    {t('view.moderation.generated.showing')}{' '}
+                    {t('view.moderation.label.showing')}{' '}
                     <span className="text-foreground font-medium">
                         {table.getRowModel().rows.length}
                     </span>{' '}
-                    {t('view.moderation.generated.of')}{' '}
+                    {t('view.moderation.label.of')}{' '}
                     <span className="text-foreground font-medium">
                         {filteredRowsLength}
                     </span>{' '}
                     {t(
                         filteredRowsLength === 1
-                            ? 'view.moderation.generated.moderation_row'
-                            : 'view.moderation.generated.moderation_rows'
+                            ? 'view.moderation.label.moderation_row'
+                            : 'view.moderation.label.moderation_rows'
                     )}
                 </div>
                 <DataTablePagination

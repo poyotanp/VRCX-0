@@ -21,7 +21,7 @@ export function ChartLoadingState() {
     return (
         <AppLoadingState
             className="min-h-80"
-            label={t('view.charts.generated.loading_instance_activity')}
+            label={t('view.charts.loading.loading_instance_activity')}
         />
     );
 }
@@ -190,9 +190,9 @@ export function InstanceActivityDetailChart({
                 <div ref={setDetailChartElementRef} className="w-full" />
             ) : (
                 <ChartEmptyState
-                    title={t('view.charts.generated.no_detail_rows')}
+                    title={t('view.charts.empty.no_detail_rows')}
                     description={t(
-                        'view.charts.generated.no_matching_player_activity_rows_were_found_for_this_instanc'
+                        'view.charts.empty.no_matching_player_activity_rows_were_found_for_this_instance_visit'
                     )}
                 />
             )}

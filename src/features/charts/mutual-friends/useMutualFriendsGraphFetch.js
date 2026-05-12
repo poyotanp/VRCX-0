@@ -55,7 +55,7 @@ export function useMutualFriendsGraphFetch({
         if (!friendSnapshot.length) {
             toast.info(
                 t(
-                    'view.charts.generated.no_friends_are_available_for_mutual_graph_fetching'
+                    'view.charts.empty.no_friends_are_available_for_mutual_graph_fetching'
                 )
             );
             return;
@@ -135,7 +135,7 @@ export function useMutualFriendsGraphFetch({
             if (cancelled) {
                 toast.warning(
                     t(
-                        'view.charts.generated.mutual_graph_fetch_cancelled_the_cached_graph_was_not_replac'
+                        'view.charts.label.mutual_graph_fetch_cancelled_the_cached_graph_was_not_replaced'
                     )
                 );
                 return;
@@ -154,7 +154,7 @@ export function useMutualFriendsGraphFetch({
                 ownerUserId
             );
             toast.success(
-                t('view.charts.generated.mutual_friends_graph_refreshed')
+                t('view.charts.success.mutual_friends_graph_refreshed')
             );
         } catch (error) {
             setStatus('error');
@@ -167,7 +167,7 @@ export function useMutualFriendsGraphFetch({
                 error instanceof Error
                     ? error.message
                     : t(
-                          'view.charts.generated_toast.failed_to_fetch_mutual_friends_graph'
+                          'view.charts.toast.failed_to_fetch_mutual_friends_graph'
                       )
             );
         } finally {

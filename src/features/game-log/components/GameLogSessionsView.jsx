@@ -124,7 +124,7 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             {t(
-                                                'view.game_log.generated.time_spent_in_this_instance'
+                                                'view.game_log.label.time_spent_in_this_instance'
                                             )}
                                         </TooltipContent>
                                     </Tooltip>

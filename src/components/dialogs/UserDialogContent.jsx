@@ -403,7 +403,7 @@ export function UserDialogContent({
     if (profileIsLoading) {
         return (
             <UserDialogProfileSkeleton
-                label={t('dialog.user.generated.loading_user_profile')}
+                label={t('dialog.user.loading.loading_user_profile')}
                 visible={showProfileSkeleton}
             />
         );
@@ -412,7 +412,7 @@ export function UserDialogContent({
     if (!profile) {
         return (
             <UserDialogEmptyState
-                title={t('dialog.user.generated.user_profile_unavailable')}
+                title={t('dialog.user.error.user_profile_unavailable')}
                 description={
                     detail ||
                     'VRCX-0 could not resolve a user snapshot for this dialog.'

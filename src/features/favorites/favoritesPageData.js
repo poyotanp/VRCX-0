@@ -44,21 +44,21 @@ function resolveTranslator(t) {
 function defaultFavoriteEntityTitle(kind, t) {
     const translate = resolveTranslator(t);
     return kind === 'world'
-        ? translate('view.favorites.generated.world_fallback')
-        : translate('view.favorites.generated.avatar_fallback');
+        ? translate('view.favorites.empty.world_fallback')
+        : translate('view.favorites.empty.avatar_fallback');
 }
 
 function defaultFavoriteDetailSubtitle(kind, isUnavailable, t) {
     const translate = resolveTranslator(t);
     if (kind === 'world') {
         return isUnavailable
-            ? translate('view.favorites.generated.world_details_unavailable')
-            : translate('view.favorites.generated.loading_world_details');
+            ? translate('view.favorites.error.world_details_unavailable')
+            : translate('view.favorites.loading.loading_world_details');
     }
 
     return isUnavailable
-        ? translate('view.favorites.generated.avatar_details_unavailable')
-        : translate('view.favorites.generated.loading_avatar_details');
+        ? translate('view.favorites.error.avatar_details_unavailable')
+        : translate('view.favorites.loading.loading_avatar_details');
 }
 
 function resolveFavoriteSubtitle(friend, location) {
@@ -105,7 +105,7 @@ function buildFriendFavoriteItem({
         title:
             profile?.displayName ||
             profile?.username ||
-            translate('view.favorites.generated.user_fallback'),
+            translate('view.favorites.empty.user_fallback'),
         titleColor: profile?.$userColour || '',
         subtitle: resolveFavoriteSubtitle(profile, location),
         detailText: '',
@@ -302,7 +302,7 @@ export function buildFavoriteRemoteItemsByGroup({
             groupKey,
             groupLabel:
                 remoteGroupLabelByKey[groupKey] ||
-                translate('view.favorites.generated.favorites_fallback'),
+                translate('view.favorites.empty.favorites_fallback'),
             id: favoriteId,
             title: detail?.name || defaultFavoriteEntityTitle(kind, translate),
             subtitle,
@@ -432,7 +432,7 @@ export function buildFavoriteAvatarHistoryItems({ kind, avatarHistory, t }) {
             id: normalizedId,
             title:
                 detail?.name ||
-                translate('view.favorites.generated.avatar_fallback'),
+                translate('view.favorites.empty.avatar_fallback'),
             subtitle: detail?.authorName || '',
             description: detail?.description || '',
             seedData: detail || null,

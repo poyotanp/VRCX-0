@@ -35,7 +35,7 @@ export async function openGameLogUser(row, t) {
 
         toast.info(
             t(
-                'view.game_log.generated_dynamic.no_user_id_was_found_for_value',
+                'view.game_log.dynamic.no_user_id_was_found_for_value',
                 { value: displayName }
             )
         );
@@ -43,7 +43,7 @@ export async function openGameLogUser(row, t) {
         toast.error(
             error instanceof Error
                 ? error.message
-                : t('view.game_log.generated_toast.failed_to_look_up_value', {
+                : t('view.game_log.toast.failed_to_look_up_value', {
                       value: displayName
                   })
         );

@@ -133,7 +133,7 @@ export function AvatarActionsDropdown({
                     variant="ghost"
                     size="icon-xs"
                     aria-label={t(
-                        'view.my_avatars.generated.open_avatar_actions'
+                        'view.my_avatars.action.open_avatar_actions'
                     )}
                     disabled={isUpdating}
                     onPointerDown={(event) => event.stopPropagation()}
@@ -206,7 +206,7 @@ export function MyAvatarFilterPopover({
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1.5">
                         <div className="text-muted-foreground text-xs font-medium">
-                            {t('view.my_avatars.generated.visibility')}
+                            {t('view.my_avatars.label.visibility')}
                         </div>
                         <ToggleGroup
                             type="single"
@@ -237,7 +237,7 @@ export function MyAvatarFilterPopover({
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <div className="text-muted-foreground text-xs font-medium">
-                            {t('view.my_avatars.generated.platform')}
+                            {t('view.my_avatars.label.platform')}
                         </div>
                         <ToggleGroup
                             type="single"
@@ -321,7 +321,7 @@ export function MyAvatarFilterPopover({
                             size="sm"
                             onClick={onClearFilters}
                         >
-                            {t('view.my_avatars.generated.clear_filters')}
+                            {t('view.my_avatars.action.clear_filters')}
                         </Button>
                     ) : null}
                 </div>
@@ -340,7 +340,7 @@ export function GridSettingsMenu({ gridDensity, onGridDensityChange }) {
                     type="button"
                     size="icon-sm"
                     variant="ghost"
-                    aria-label={t('view.my_avatars.generated.grid_settings')}
+                    aria-label={t('view.my_avatars.label.grid_settings')}
                 >
                     <SettingsIcon data-icon="inline-start" />
                 </Button>
@@ -349,7 +349,7 @@ export function GridSettingsMenu({ gridDensity, onGridDensityChange }) {
                 <FieldGroup>
                     <Field>
                         <FieldLabel>
-                            {t('view.my_avatars.generated.grid_density')}
+                            {t('view.my_avatars.label.grid_density')}
                         </FieldLabel>
                         <ToggleGroup
                             type="single"

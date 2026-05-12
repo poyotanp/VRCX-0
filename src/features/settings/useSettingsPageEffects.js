@@ -45,7 +45,7 @@ export function useSettingsPageEffects({
                     error instanceof Error
                         ? error.message
                         : t(
-                              'view.settings.generated_toast.failed_to_load_settings'
+                              'view.settings.toast.failed_to_load_settings'
                           )
                 );
             })

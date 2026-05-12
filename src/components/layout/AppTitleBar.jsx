@@ -291,7 +291,7 @@ export function AppTitleBar() {
                 error instanceof Error
                     ? error.message
                     : t(
-                          'component.app_title_bar.generated_toast.failed_to_mark_notifications_as_seen'
+                          'component.app_title_bar.toast.failed_to_mark_notifications_as_seen'
                       )
             );
         }
@@ -462,7 +462,7 @@ export function AppTitleBar() {
                 ) : null}
                 <div className="flex h-full shrink-0 items-center">
                     <TitleBarWindowButton
-                        label={t('app_menu.generated.minimize_window')}
+                        label={t('app_menu.label.minimize_window')}
                         onClick={() =>
                             void runWindowAction(
                                 backend.webview.minimizeWindow,
@@ -483,7 +483,7 @@ export function AppTitleBar() {
                         <MaximizeIcon data-icon="inline-start" />
                     </TitleBarWindowButton>
                     <TitleBarWindowButton
-                        label={t('app_menu.generated.close_window')}
+                        label={t('app_menu.action.close_window')}
                         className="hover:bg-destructive hover:text-destructive-foreground"
                         onClick={() =>
                             void runWindowAction(

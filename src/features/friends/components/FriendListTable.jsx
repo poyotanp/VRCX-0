@@ -39,18 +39,18 @@ export function FriendListTable({
             {isLoading ? (
                 <LoadingState
                     label={t(
-                        'view.friend_list.generated.loading_the_friend_roster_snapshot'
+                        'view.friend_list.loading.loading_the_friend_roster_snapshot'
                     )}
                 />
             ) : isError ? (
                 <FriendListEmptyState
                     title={t(
-                        'view.friend_list.generated.friend_roster_failed_to_load'
+                        'view.friend_list.error.friend_roster_failed_to_load'
                     )}
                     description={
                         friendDetail ||
                         t(
-                            'view.friend_list.generated.roster_bootstrap_did_not_complete'
+                            'view.friend_list.success.roster_bootstrap_did_not_complete'
                         )
                     }
                 />
@@ -77,7 +77,7 @@ export function FriendListTable({
                                                 className="cursor-pointer"
                                                 tabIndex={0}
                                                 aria-label={t(
-                                                    'view.friend_list.generated_dynamic.open_value',
+                                                    'view.friend_list.dynamic.open_value',
                                                     {
                                                         value:
                                                             row.original
@@ -85,7 +85,7 @@ export function FriendListTable({
                                                             row.original
                                                                 ?.username ||
                                                             t(
-                                                                'view.friend_list.generated.friend'
+                                                                'view.friend_list.label.friend'
                                                             )
                                                     }
                                                 )}
@@ -125,18 +125,18 @@ export function FriendListTable({
 
                     <PageFooter>
                         <div className="text-muted-foreground text-sm">
-                            {t('view.friend_list.generated.showing')}{' '}
+                            {t('view.friend_list.label.showing')}{' '}
                             <span className="text-foreground font-medium">
                                 {table.getRowModel().rows.length}
                             </span>{' '}
-                            {t('view.friend_list.generated.of')}{' '}
+                            {t('view.friend_list.label.of')}{' '}
                             <span className="text-foreground font-medium">
                                 {filteredRowsLength}
                             </span>{' '}
                             {t(
                                 filteredRowsLength === 1
-                                    ? 'view.friend_list.generated.friend'
-                                    : 'view.friend_list.generated.friends'
+                                    ? 'view.friend_list.label.friend'
+                                    : 'view.friend_list.label.friends'
                             )}
                         </div>
                         <DataTablePagination
@@ -153,15 +153,15 @@ export function FriendListTable({
             ) : (
                 <FriendListEmptyState
                     title={t(
-                        'view.friend_list.generated.no_friends_match_the_current_filters'
+                        'view.friend_list.empty.no_friends_match_the_current_filters'
                     )}
                     description={
                         favoritesOnly
                             ? t(
-                                  'view.friend_list.generated.try_turning_off_favorites_only_or_broadening_the_search_query'
+                                  'view.friend_list.label.try_turning_off_favorites_only_or_broadening_the_search_query'
                               )
                             : t(
-                                  'view.friend_list.generated.the_current_search_filters_excluded_every_friend_in_the_roster'
+                                  'view.friend_list.label.the_current_search_filters_excluded_every_friend_in_the_roster'
                               )
                     }
                 />
