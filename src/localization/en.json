@@ -1551,6 +1551,9 @@
                 "diagnostics": {
                     "header": "Diagnostics"
                 },
+                "diagnostics_maintenance": {
+                    "header": "Diagnostics & Maintenance"
+                },
                 "database": {
                     "header": "Database"
                 },
@@ -1970,7 +1973,7 @@
                         "run_process_once": "Open Single Instance of App"
                     },
                     "cache_debug": {
-                        "header": "VRCX-0 Instance Cache/Debug",
+                        "header": "Cache",
                         "udon_exception_logging": "Udon Exception Logging",
                         "disable_gamelog": "Disable GameLog",
                         "disable_gamelog_notice": "(will likely break things)",

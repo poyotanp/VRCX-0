@@ -1551,6 +1551,9 @@
                 "diagnostics": {
                     "header": "诊断"
                 },
+                "diagnostics_maintenance": {
+                    "header": "诊断与维护"
+                },
                 "database": {
                     "header": "数据库"
                 },
@@ -1970,7 +1973,7 @@
                         "run_process_once": "仅允许启动应用的单个实例（禁止多开）"
                     },
                     "cache_debug": {
-                        "header": "VRCX-0 缓存/调试选项",
+                        "header": "缓存",
                         "udon_exception_logging": "显示 Udon 错误日志",
                         "disable_gamelog": "关闭游戏日志",
                         "disable_gamelog_notice": "（可能会弄坏很多东西！）",

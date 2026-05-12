@@ -4,7 +4,6 @@ import { Switch } from '@/ui/shadcn/switch';
 
 import { Field } from '../SettingsField.jsx';
 import { SettingsTabContent } from '../SettingsViewParts.jsx';
-import { SettingsAdvancedCacheCard } from './SettingsAdvancedCacheCard.jsx';
 import { SettingsAdvancedDataCards } from './SettingsAdvancedDataCards.jsx';
 
 export function SettingsAdvancedTab({
@@ -39,6 +38,10 @@ export function SettingsAdvancedTab({
     onRefreshConfigTreeData,
     onClearConfigTreeData
 }) {
+    const gameLogDisabledDescription = t(
+        'view.settings.advanced.advanced.cache_debug.disable_gamelog_notice'
+    );
+
     return (
         <SettingsTabContent value="advanced">
             <Card>
@@ -77,19 +80,6 @@ export function SettingsAdvancedTab({
                             onCheckedChange={onVrcQuitFixChange}
                         />
                     </Field>
-                    <Field
-                        label={t(
-                            'view.settings.advanced.advanced.auto_cache_management.header'
-                        )}
-                        description={t(
-                            'view.settings.advanced.advanced.auto_cache_management.description'
-                        )}
-                    >
-                        <Switch
-                            checked={prefs.autoSweepVRChatCache}
-                            onCheckedChange={onAutoSweepVRChatCacheChange}
-                        />
-                    </Field>
                 </CardContent>
             </Card>
             <Card>
@@ -117,7 +107,10 @@ export function SettingsAdvancedTab({
                             onCheckedChange={onLogResourceLoadChange}
                         />
                     </Field>
-                    <Field label={gameLogDisabledLabel}>
+                    <Field
+                        label={gameLogDisabledLabel}
+                        description={gameLogDisabledDescription}
+                    >
                         <Switch
                             checked={prefs.gameLogDisabled}
                             onCheckedChange={onGameLogDisabledChange}
@@ -215,23 +208,21 @@ export function SettingsAdvancedTab({
                     </Field>
                 </CardContent>
             </Card>
-            <SettingsAdvancedCacheCard
-                t={t}
-                cacheStats={cacheStats}
-                onClearVrcxCache={onClearVrcxCache}
-                onPromptAutoClearVrcxCacheFrequency={
-                    onPromptAutoClearVrcxCacheFrequency
-                }
-                onRefreshCacheSize={onRefreshCacheSize}
-            />
             <SettingsAdvancedDataCards
                 t={t}
                 prefs={prefs}
+                cacheStats={cacheStats}
                 avatarAutoCleanupOptions={avatarAutoCleanupOptions}
                 sqliteTableSizes={sqliteTableSizes}
                 sqliteTableSizeRows={sqliteTableSizeRows}
                 onlineVisitCount={onlineVisitCount}
                 configTreeData={configTreeData}
+                onAutoSweepVRChatCacheChange={onAutoSweepVRChatCacheChange}
+                onClearVrcxCache={onClearVrcxCache}
+                onPromptAutoClearVrcxCacheFrequency={
+                    onPromptAutoClearVrcxCacheFrequency
+                }
+                onRefreshCacheSize={onRefreshCacheSize}
                 onAvatarAutoCleanupChange={onAvatarAutoCleanupChange}
                 onOpenPurgeDialog={onOpenPurgeDialog}
                 onMigrateLegacyVrcxData={onMigrateLegacyVrcxData}

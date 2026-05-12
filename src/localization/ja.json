@@ -1551,6 +1551,9 @@
                 "diagnostics": {
                     "header": "診断情報"
                 },
+                "diagnostics_maintenance": {
+                    "header": "診断とメンテナンス"
+                },
                 "database": {
                     "header": "データベース"
                 },
@@ -1970,7 +1973,7 @@
                         "run_process_once": "アプリを単一インスタンスで開く"
                     },
                     "cache_debug": {
-                        "header": "VRCX-0 インスタンス キャッシュ/デバッグ",
+                        "header": "キャッシュ",
                         "udon_exception_logging": "Udon の例外エラーを記録",
                         "disable_gamelog": "ゲームログを無効化",
                         "disable_gamelog_notice": "(何かが壊れる可能性があります)",

@@ -36,15 +36,7 @@ export function SettingsAdvancedSection({ advanced }) {
             onlineVisitCount={onlineVisitCount}
             configTreeData={configTreeData}
             gameLogDisabledLabel={t(
-                'view.settings.dynamic.value_value',
-                {
-                    value: t(
-                        'view.settings.advanced.advanced.cache_debug.disable_gamelog'
-                    ),
-                    value2: t(
-                        'view.settings.advanced.advanced.cache_debug.disable_gamelog_notice'
-                    )
-                }
+                'view.settings.advanced.advanced.cache_debug.disable_gamelog'
             )}
             onRelaunchVRChatAfterCrashChange={(checked) =>
                 void saveBoolPreference(

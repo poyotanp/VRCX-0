@@ -5,10 +5,8 @@ import {
     APP_CJK_FONT_PACK_DEFAULT_KEY,
     APP_CJK_FONT_PACKS,
     APP_FONT_DEFAULT_KEY,
-    APP_FONT_FAMILIES,
-    formatZoomPercentage
+    APP_FONT_FAMILIES
 } from '@/services/themeService.js';
-import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/ui/shadcn/card';
 import {
@@ -83,7 +81,6 @@ export function SettingsInterfaceAppearanceCard({
     locale,
     prefs,
     zoomInput,
-    zoomLevel,
     onLanguageChange,
     onFontFamilyChange,
     onCjkFontPackChange,
@@ -214,9 +211,6 @@ export function SettingsInterfaceAppearanceCard({
                             }
                             onBlur={onZoomBlur}
                         />
-                        <Badge variant="outline">
-                            {formatZoomPercentage(zoomLevel)}
-                        </Badge>
                     </div>
                 </Field>
 
