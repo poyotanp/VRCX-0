@@ -3,7 +3,12 @@ import { initReactI18next } from 'react-i18next';
 
 import { getAllLocalizedStrings } from '@/localization/index.js';
 
-const allLocalizedStrings = getAllLocalizedStrings();
+type LocalizedMessages = Record<string, unknown>;
+type LocalizedStringMap = Record<string, LocalizedMessages>;
+type TimeUnitLabels = Record<string, string>;
+type TranslationParams = Record<string, unknown>;
+
+const allLocalizedStrings = getAllLocalizedStrings() as LocalizedStringMap;
 const i18nResources = Object.fromEntries(
     Object.entries(allLocalizedStrings).map(([locale, messages]) => [
         locale,
@@ -31,28 +36,40 @@ const i18nReady = i18n.use(initReactI18next).init({
 
 export default i18n;
 
-function resolveMessage(messages, key) {
-    return key.split('.').reduce((current, part) => current?.[part], messages);
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
 }
 
-function normalizeLocale(locale) {
+function resolveMessage(messages: unknown, key: string): unknown {
+    return key
+        .split('.')
+        .reduce(
+            (current, part) => (isRecord(current) ? current[part] : undefined),
+            messages
+        );
+}
+
+function normalizeLocale(locale: unknown): string {
     return typeof locale === 'string' && locale.trim() ? locale.trim() : 'en';
 }
 
-export async function setI18nLanguage(locale) {
+export async function setI18nLanguage(locale: unknown): Promise<string> {
     const normalizedLocale = normalizeLocale(locale);
     await i18nReady;
     await i18n.changeLanguage(normalizedLocale);
     return normalizedLocale;
 }
 
-export function getTimeUnitLabels(locale, defaultLabels) {
+export function getTimeUnitLabels(
+    locale: unknown,
+    defaultLabels: TimeUnitLabels
+): TimeUnitLabels {
     const normalizedLocale = allLocalizedStrings[normalizeLocale(locale)]
         ? normalizeLocale(locale)
         : 'en';
     const localizedMessages = allLocalizedStrings[normalizedLocale] ?? {};
     const fallbackMessages = allLocalizedStrings.en ?? {};
-    const labels = {};
+    const labels: TimeUnitLabels = {};
 
     for (const unit of Object.keys(defaultLabels)) {
         const key = `common.time_units.${unit}`;
@@ -69,12 +86,16 @@ export function getTimeUnitLabels(locale, defaultLabels) {
     return labels;
 }
 
-export async function translateForLocale(locale, key, params = {}) {
+export async function translateForLocale(
+    locale: unknown,
+    key: string,
+    params: TranslationParams = {}
+): Promise<string> {
     const normalizedLocale = normalizeLocale(locale);
     await i18nReady;
     const translated = i18n.getFixedT(normalizedLocale)(key, params);
 
-    if (translated !== key) {
+    if (typeof translated === 'string' && translated !== key) {
         return translated;
     }
 

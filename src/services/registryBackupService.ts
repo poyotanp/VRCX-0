@@ -3,18 +3,39 @@ import { configRepository } from '@/repositories/index.js';
 
 import { requireHostCapability } from './hostCapabilityService.js';
 
-function safeJsonParse(value, fallback) {
+type RegistryValue = {
+    type?: unknown;
+    data?: unknown;
+};
+type RegistryData = Record<string, RegistryValue>;
+type RegistryBackup = {
+    name: string;
+    date: string;
+    data: unknown;
+};
+type RegistryBackupSnapshot = RegistryBackup & {
+    key: string;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
+}
+
+function safeJsonParse<TFallback>(value: unknown, fallback: TFallback): unknown {
     if (!value) {
         return fallback;
     }
     try {
-        return JSON.parse(value);
+        return JSON.parse(value as string);
     } catch {
         return fallback;
     }
 }
 
-function normalizeBackup(backup, index) {
+function normalizeBackup(
+    backup: Partial<RegistryBackup> | null | undefined,
+    index: number
+): RegistryBackupSnapshot {
     return {
         key: `${backup?.date || index}-${backup?.name || 'backup'}`,
         name: backup?.name || 'Backup',
@@ -23,24 +44,31 @@ function normalizeBackup(backup, index) {
     };
 }
 
-async function listVrcRegistryBackups() {
+async function listVrcRegistryBackups(): Promise<RegistryBackupSnapshot[]> {
     const backups = safeJsonParse(
         await configRepository.getString('VRChatRegistryBackups', '[]'),
         []
     );
     return Array.isArray(backups)
-        ? backups.map((backup, index) => normalizeBackup(backup, index))
+        ? backups.map((backup, index) =>
+              normalizeBackup(
+                  isRecord(backup) ? (backup as Partial<RegistryBackup>) : null,
+                  index
+              )
+          )
         : [];
 }
 
-async function saveVrcRegistryBackups(backups) {
+async function saveVrcRegistryBackups(backups: RegistryBackup[]): Promise<void> {
     await configRepository.setString(
         'VRChatRegistryBackups',
         JSON.stringify(backups)
     );
 }
 
-async function backupVrcRegistry(name = 'Manual Backup') {
+async function backupVrcRegistry(
+    name = 'Manual Backup'
+): Promise<RegistryBackupSnapshot[]> {
     requireHostCapability('registryPrefs');
     const data = await backend.app.GetVRChatRegistry();
     if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
@@ -59,7 +87,9 @@ async function backupVrcRegistry(name = 'Manual Backup') {
     return nextBackups.map((backup, index) => normalizeBackup(backup, index));
 }
 
-async function restoreVrcRegistryBackup(key) {
+async function restoreVrcRegistryBackup(
+    key: string
+): Promise<RegistryBackupSnapshot> {
     requireHostCapability('registryPrefs');
     const backups = await listVrcRegistryBackups();
     const backup = backups.find((item) => item.key === key);
@@ -79,7 +109,7 @@ async function restoreVrcRegistryBackup(key) {
     return backup;
 }
 
-async function saveVrcRegistryBackupToFile(key) {
+async function saveVrcRegistryBackupToFile(key: string): Promise<unknown> {
     const backups = await listVrcRegistryBackups();
     const backup = backups.find((item) => item.key === key);
     if (!backup) {
@@ -93,7 +123,7 @@ async function saveVrcRegistryBackupToFile(key) {
     );
 }
 
-async function restoreVrcRegistryBackupFromFile() {
+async function restoreVrcRegistryBackupFromFile(): Promise<boolean> {
     requireHostCapability('registryPrefs');
     const filePath = await backend.app.OpenFileSelectorDialog(
         null,
@@ -105,12 +135,12 @@ async function restoreVrcRegistryBackupFromFile() {
     }
 
     const json = await backend.app.ReadVrcRegJsonFile(filePath);
-    const data = JSON.parse(json);
+    const data = JSON.parse(String(json)) as unknown;
     if (!data || typeof data !== 'object') {
         throw new Error('Invalid registry backup JSON.');
     }
 
-    for (const value of Object.values(data)) {
+    for (const value of Object.values(data as RegistryData)) {
         if (
             !value ||
             typeof value !== 'object' ||
@@ -129,12 +159,14 @@ async function restoreVrcRegistryBackupFromFile() {
     return true;
 }
 
-async function deleteVrcRegistryFolder() {
+async function deleteVrcRegistryFolder(): Promise<unknown> {
     requireHostCapability('registryPrefs');
     return backend.app.DeleteVRChatRegistryFolder();
 }
 
-async function deleteVrcRegistryBackup(key) {
+async function deleteVrcRegistryBackup(
+    key: string
+): Promise<RegistryBackupSnapshot[]> {
     const backups = await listVrcRegistryBackups();
     const nextBackups = backups
         .filter((backup) => backup.key !== key)

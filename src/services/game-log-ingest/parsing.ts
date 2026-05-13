@@ -1,17 +1,31 @@
-function normalizeString(value) {
+type RawGameLogRow = unknown[];
+type ParsedGameLog = Record<string, unknown> & {
+    dt: unknown;
+    type: unknown;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
+}
+
+function normalizeString(value: unknown): string {
     return typeof value === 'string'
         ? value.trim()
         : String(value ?? '').trim();
 }
 
-function delay(ms) {
+function delay(ms: number): Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 }
 
-function parseRawGameLog(dt, type, args) {
-    const gameLog = { dt, type };
+function parseRawGameLog(
+    dt: unknown,
+    type: unknown,
+    args: unknown[]
+): ParsedGameLog {
+    const gameLog: ParsedGameLog = { dt, type };
 
     switch (type) {
         case 'location':
@@ -69,7 +83,7 @@ function parseRawGameLog(dt, type, args) {
     return gameLog;
 }
 
-function toRawRow(payload) {
+function toRawRow(payload: unknown): RawGameLogRow {
     if (Array.isArray(payload)) {
         return payload;
     }
@@ -78,14 +92,14 @@ function toRawRow(payload) {
         return JSON.parse(payload);
     }
 
-    if (payload && typeof payload === 'object' && Array.isArray(payload.raw)) {
+    if (isRecord(payload) && Array.isArray(payload.raw)) {
         return payload.raw;
     }
 
     throw new Error('Unsupported game log payload shape.');
 }
 
-function parseRawRow(payload) {
+function parseRawRow(payload: unknown): ParsedGameLog {
     const row = toRawRow(payload);
     const [, dt, type, ...args] = row;
     if (!dt || !type) {
@@ -94,12 +108,12 @@ function parseRawRow(payload) {
     return parseRawGameLog(dt, type, args);
 }
 
-function getPlayerKey(userId, displayName) {
+function getPlayerKey(userId: unknown, displayName: unknown): string {
     const normalizedUserId = normalizeString(userId);
     return normalizedUserId || `display:${normalizeString(displayName)}`;
 }
 
-function parseYouTubeVideoId(videoUrl) {
+function parseYouTubeVideoId(videoUrl: string): string {
     try {
         let url = new URL(videoUrl);
         if (
@@ -107,7 +121,7 @@ function parseYouTubeVideoId(videoUrl) {
             url.origin === 'https://nextnex.com' ||
             url.origin === 'https://r.0cm.org'
         ) {
-            url = new URL(url.searchParams.get('url'));
+            url = new URL(url.searchParams.get('url') as string);
         }
         if (videoUrl.startsWith('https://u2b.cx/')) {
             url = new URL(videoUrl.substring(15));
@@ -131,17 +145,20 @@ function parseYouTubeVideoId(videoUrl) {
     return '';
 }
 
-function parseWebJson(response) {
-    if (response?.data && typeof response.data === 'object') {
-        return response.data;
+function parseWebJson(response: unknown): Record<string, unknown> {
+    const responseRecord = isRecord(response) ? response : {};
+    const data = responseRecord.data;
+    if (data && typeof data === 'object') {
+        return data as Record<string, unknown>;
     }
-    if (typeof response?.data === 'string' && response.data.trim()) {
-        return JSON.parse(response.data);
+    if (typeof data === 'string' && data.trim()) {
+        const parsed = JSON.parse(data);
+        return isRecord(parsed) ? parsed : {};
     }
     return {};
 }
 
-function convertYouTubeDurationToSeconds(duration) {
+function convertYouTubeDurationToSeconds(duration: unknown): number {
     const match =
         /^P(?:\d+Y)?(?:\d+M)?(?:\d+W)?(?:\d+D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(
             normalizeString(duration)
@@ -157,7 +174,7 @@ function convertYouTubeDurationToSeconds(duration) {
     );
 }
 
-function getFileNameFromPath(path) {
+function getFileNameFromPath(path: unknown): string {
     return (
         String(path || '')
             .split(/[/\\]/)

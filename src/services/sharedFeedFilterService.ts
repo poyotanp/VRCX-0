@@ -1,36 +1,67 @@
 import { onPreferenceChanged } from '@/lib/preferenceEvents.js';
 import { configRepository } from '@/repositories/index.js';
 import i18n from '@/services/i18nService.js';
-import { sharedFeedFiltersDefaults } from '@/shared/constants/feedFilters.js';
+import {
+    sharedFeedFiltersDefaults,
+    type SharedFeedFilterDefaults
+} from '@/shared/constants/feedFilters.js';
 import { useFavoriteStore } from '@/state/favoriteStore.js';
 import { useFriendRosterStore } from '@/state/friendRosterStore.js';
 import { useNotificationStore } from '@/state/notificationStore.js';
 
+type SharedFeedMode = keyof SharedFeedFilterDefaults;
+type SharedFeedFilters = {
+    noty: Record<string, unknown>;
+    wrist: Record<string, unknown>;
+};
+type SharedFeedEntry = Record<string, unknown> & {
+    type?: unknown;
+    userId?: unknown;
+    senderUserId?: unknown;
+    displayName?: unknown;
+    worldName?: unknown;
+    avatarName?: unknown;
+    videoName?: unknown;
+    notyName?: unknown;
+    message?: unknown;
+    status?: unknown;
+    statusDescription?: unknown;
+};
+type SharedFeedFilterContext = {
+    friend: boolean;
+    favorite: boolean;
+};
+
 const FEED_FILTER_KEY_BY_TYPE = Object.freeze({
     Avatar: 'AvatarChange'
-});
+}) satisfies Record<string, string>;
 
-let cachedSharedFeedFilters = normalizeSharedFeedFilters();
+let cachedSharedFeedFilters: SharedFeedFilters = normalizeSharedFeedFilters();
 let sharedFeedFiltersLoaded = false;
-let sharedFeedFiltersLoadPromise = null;
-let unsubscribeSharedFeedFilters = null;
+let sharedFeedFiltersLoadPromise: Promise<SharedFeedFilters> | null = null;
+let unsubscribeSharedFeedFilters: (() => void) | null = null;
 
-function normalizeSharedFeedFilters(value) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
+}
+
+function normalizeSharedFeedFilters(value?: unknown): SharedFeedFilters {
+    const record = isRecord(value) ? value : {};
+    const noty = isRecord(record.noty) ? record.noty : {};
+    const wrist = isRecord(record.wrist) ? record.wrist : {};
     return {
         noty: {
             ...sharedFeedFiltersDefaults.noty,
-            ...(value?.noty && typeof value.noty === 'object' ? value.noty : {})
+            ...noty
         },
         wrist: {
             ...sharedFeedFiltersDefaults.wrist,
-            ...(value?.wrist && typeof value.wrist === 'object'
-                ? value.wrist
-                : {})
+            ...wrist
         }
     };
 }
 
-function parseSharedFeedFilters(value) {
+function parseSharedFeedFilters(value: unknown): SharedFeedFilters {
     if (!value) {
         return normalizeSharedFeedFilters();
     }
@@ -38,13 +69,13 @@ function parseSharedFeedFilters(value) {
         return normalizeSharedFeedFilters(value);
     }
     try {
-        return normalizeSharedFeedFilters(JSON.parse(value));
+        return normalizeSharedFeedFilters(JSON.parse(value as string));
     } catch {
         return normalizeSharedFeedFilters();
     }
 }
 
-function initSharedFeedFilterSubscription() {
+function initSharedFeedFilterSubscription(): void {
     if (unsubscribeSharedFeedFilters) {
         return;
     }
@@ -58,7 +89,7 @@ function initSharedFeedFilterSubscription() {
     );
 }
 
-async function loadSharedFeedFilters() {
+async function loadSharedFeedFilters(): Promise<SharedFeedFilters> {
     initSharedFeedFilterSubscription();
     if (sharedFeedFiltersLoaded) {
         return cachedSharedFeedFilters;
@@ -85,17 +116,17 @@ async function loadSharedFeedFilters() {
     return sharedFeedFiltersLoadPromise;
 }
 
-function normalizeId(value) {
+function normalizeId(value: unknown): string {
     return typeof value === 'string'
         ? value.trim()
         : String(value ?? '').trim();
 }
 
-function getEntryUserId(entry) {
+function getEntryUserId(entry?: SharedFeedEntry | null): string {
     return normalizeId(entry?.userId || entry?.senderUserId);
 }
 
-function isLocalFavoriteFriend(userId) {
+function isLocalFavoriteFriend(userId: unknown): boolean {
     const normalizedUserId = normalizeId(userId);
     if (!normalizedUserId) {
         return false;
@@ -109,7 +140,7 @@ function isLocalFavoriteFriend(userId) {
     );
 }
 
-function isFriend(userId) {
+function isFriend(userId: unknown): boolean {
     const normalizedUserId = normalizeId(userId);
     if (!normalizedUserId) {
         return false;
@@ -119,11 +150,15 @@ function isFriend(userId) {
     );
 }
 
-function getFeedFilterKey(type) {
-    return FEED_FILTER_KEY_BY_TYPE[type] || type || '';
+function getFeedFilterKey(type: unknown): string {
+    const normalizedType = normalizeId(type);
+    return FEED_FILTER_KEY_BY_TYPE[normalizedType] || normalizedType;
 }
 
-function shouldShowForFilterValue(value, { friend, favorite }) {
+function shouldShowForFilterValue(
+    value: unknown,
+    { friend, favorite }: SharedFeedFilterContext
+): boolean {
     switch (value) {
         case 'On':
         case 'Everyone':
@@ -137,7 +172,10 @@ function shouldShowForFilterValue(value, { friend, favorite }) {
     }
 }
 
-export async function shouldIncludeSharedFeedEntry(entry, mode = 'noty') {
+export async function shouldIncludeSharedFeedEntry(
+    entry?: SharedFeedEntry | null,
+    mode: SharedFeedMode = 'noty'
+): Promise<boolean> {
     const filters = await loadSharedFeedFilters();
     const filterKey = getFeedFilterKey(entry?.type);
     const filterValue =
@@ -151,12 +189,15 @@ export async function shouldIncludeSharedFeedEntry(entry, mode = 'noty') {
     });
 }
 
-export async function pushSharedFeedNotification(entry) {
+export async function pushSharedFeedNotification(
+    entry?: SharedFeedEntry | null
+): Promise<void> {
     if (!(await shouldIncludeSharedFeedEntry(entry, 'noty'))) {
         return;
     }
-    const type = entry?.type || 'Feed';
-    const displayName = entry?.displayName || entry?.userId || 'Unknown';
+    const type = normalizeId(entry?.type) || 'Feed';
+    const displayName =
+        normalizeId(entry?.displayName || entry?.userId) || 'Unknown';
     const detail =
         entry?.worldName ||
         entry?.avatarName ||

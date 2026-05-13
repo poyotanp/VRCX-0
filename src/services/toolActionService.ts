@@ -7,14 +7,34 @@ import {
     isHostCapabilitySupported
 } from '@/services/hostCapabilityService.js';
 import i18n from '@/services/i18nService.js';
-import { toolDefinitionMap } from '@/shared/constants/tools.js';
+import {
+    toolDefinitionMap,
+    type ToolDefinition
+} from '@/shared/constants/tools.js';
 import { useRuntimeStore } from '@/state/runtimeStore.js';
+
+type Navigate = (to: string) => unknown;
+type Translate = (key: string) => string;
+type TriggerToolOptions = {
+    navigate: Navigate;
+    t: Translate;
+};
+type ToolDialogHostKey =
+    | 'presenceScheduleOpen'
+    | 'presenceRoomRulesOpen'
+    | 'presenceInviteRequestsOpen'
+    | 'groupCalendarOpen'
+    | 'exportDiscordNamesOpen'
+    | 'noteExportOpen'
+    | 'exportFriendsListOpen'
+    | 'exportAvatarsListOpen'
+    | 'editInviteMessagesOpen';
 
 const toolRouteMap = {
     gallery: '/tools/gallery',
     inventory: '/tools/inventory',
     'screenshot-metadata': '/tools/screenshot-metadata'
-};
+} satisfies Record<string, string>;
 
 const toolDialogHostMap = {
     'presence-schedule': 'presenceScheduleOpen',
@@ -26,13 +46,15 @@ const toolDialogHostMap = {
     'export-friends-list': 'exportFriendsListOpen',
     'export-avatars-list': 'exportAvatarsListOpen',
     'edit-invite-messages': 'editInviteMessagesOpen'
-};
+} satisfies Record<string, ToolDialogHostKey>;
 
 const legacyToolAliases = {
     'auto-change-status': 'presence-room-rules'
-};
+} satisfies Record<string, string>;
 
-export function isToolCapabilityAvailable(tool) {
+export function isToolCapabilityAvailable(
+    tool?: ToolDefinition | null
+): boolean {
     if (tool?.requiredCapabilityMode === 'supported') {
         return isHostCapabilitySupported(tool.requiredCapability);
     }
@@ -42,14 +64,19 @@ export function isToolCapabilityAvailable(tool) {
     );
 }
 
-export function getToolCapabilityUnavailableReason(tool) {
+export function getToolCapabilityUnavailableReason(
+    tool?: ToolDefinition | null
+): string {
     if (!tool?.requiredCapability) {
         return '';
     }
     return getHostCapabilityUnavailableReason(tool.requiredCapability);
 }
 
-export async function triggerToolByKey(toolKey, { navigate, t }) {
+export async function triggerToolByKey(
+    toolKey: string,
+    { navigate, t }: TriggerToolOptions
+): Promise<void> {
     const resolvedToolKey = legacyToolAliases[toolKey] ?? toolKey;
     const tool = toolDefinitionMap.get(resolvedToolKey);
     const action = tool?.action;
@@ -115,7 +142,7 @@ export async function triggerToolByKey(toolKey, { navigate, t }) {
     }
 
     if (action.type === 'dialog') {
-        const hostKey = toolDialogHostMap[action.dialogKey];
+        const hostKey = toolDialogHostMap[action.dialogKey as string];
         if (hostKey) {
             useRuntimeStore.getState().setSystemHostOpen(hostKey, true);
             return;

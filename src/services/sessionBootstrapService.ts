@@ -10,15 +10,23 @@ import { isHostCapabilityAvailable } from './hostCapabilityService.js';
 import { showSQLiteErrorDialog } from './sqliteErrorDialogService.js';
 import { syncStartupServicesTask } from './startupServicesStatus.js';
 
-function getCurrentUserDisplayName(user) {
-    return user?.displayName || user?.username || user?.id || '';
+type AuthenticatedUser = Record<string, unknown> & {
+    id?: unknown;
+    displayName?: unknown;
+    username?: unknown;
+};
+
+function getCurrentUserDisplayName(
+    user: AuthenticatedUser | null | undefined
+): string {
+    return String(user?.displayName || user?.username || user?.id || '');
 }
 
-function normalizeBootstrapError(error) {
+function normalizeBootstrapError(error: unknown): Error {
     return error instanceof Error ? error : new Error(String(error));
 }
 
-async function runAvatarAutoCleanup(userId) {
+async function runAvatarAutoCleanup(userId: string): Promise<boolean> {
     const cleanupSetting = await configRepository.getString(
         'VRCX_avatarAutoCleanup',
         'Off'
@@ -27,7 +35,7 @@ async function runAvatarAutoCleanup(userId) {
         return false;
     }
 
-    const days = Number.parseInt(cleanupSetting, 10);
+    const days = Number.parseInt(cleanupSetting as string, 10);
     if (Number.isNaN(days) || days <= 0) {
         return false;
     }
@@ -37,9 +45,9 @@ async function runAvatarAutoCleanup(userId) {
     const now = new Date();
 
     if (lastCleanupStr) {
-        const lastCleanup = new Date(lastCleanupStr);
+        const lastCleanup = new Date(lastCleanupStr as string | number);
         const daysSinceLastCleanup =
-            (now - lastCleanup) / (1000 * 60 * 60 * 24);
+            (now.getTime() - lastCleanup.getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceLastCleanup < 7) {
             return false;
         }
@@ -52,7 +60,7 @@ async function runAvatarAutoCleanup(userId) {
     return true;
 }
 
-async function requestGameRunningStateRefresh() {
+async function requestGameRunningStateRefresh(): Promise<boolean> {
     if (!isHostCapabilityAvailable('gameProcessMonitor')) {
         return false;
     }
@@ -69,7 +77,9 @@ async function requestGameRunningStateRefresh() {
     }
 }
 
-export async function bootstrapAuthenticatedSession(user) {
+export async function bootstrapAuthenticatedSession(
+    user: AuthenticatedUser | null | undefined
+): Promise<void> {
     const userId =
         typeof user?.id === 'string'
             ? user.id.trim()

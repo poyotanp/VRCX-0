@@ -2,7 +2,38 @@ import { useRuntimeStore } from '@/state/runtimeStore.js';
 
 import { normalizeString } from './parsing.js';
 
-const ingestState = {
+type GameLogPlayer = {
+    userId?: unknown;
+    displayName?: unknown;
+    joinTime?: unknown;
+};
+type CurrentLocationPlayer = {
+    id: string;
+    userId: string;
+    displayName: string;
+    joinedAt: string;
+    joinedAtMs: number;
+    lastDurationMs: number;
+    source: 'runtime';
+};
+type IngestState = {
+    initialized: boolean;
+    initializing: Promise<unknown> | null;
+    watcherInitialized: boolean;
+    syncing: boolean;
+    tailCaughtUp: boolean;
+    currentLocation: string;
+    currentWorldName: string;
+    currentLocationStartedAt: string;
+    playersByKey: Map<string, GameLogPlayer>;
+    lastVideoUrl: string;
+    lastResourceUrl: string;
+};
+type RuntimeAuthSnapshot = Record<string, unknown> & {
+    location?: unknown;
+};
+
+const ingestState: IngestState = {
     initialized: false,
     initializing: null,
     watcherInitialized: false,
@@ -16,17 +47,21 @@ const ingestState = {
     lastResourceUrl: ''
 };
 
-const nowPlayingState = {
+const nowPlayingState: { url: string } = {
     url: ''
 };
 
-const instanceMediaState = {
+const instanceMediaState: {
+    printIds: unknown[];
+    stickerInventoryIds: unknown[];
+    emojiInventoryIds: unknown[];
+} = {
     printIds: [],
     stickerInventoryIds: [],
     emojiInventoryIds: []
 };
 
-function getCurrentLocationPlayerIds() {
+function getCurrentLocationPlayerIds(): string[] {
     return Array.from(
         new Set(
             Array.from(ingestState.playersByKey.values())
@@ -36,7 +71,7 @@ function getCurrentLocationPlayerIds() {
     );
 }
 
-function getCurrentLocationPlayers() {
+function getCurrentLocationPlayers(): CurrentLocationPlayer[] {
     return Array.from(ingestState.playersByKey.values())
         .map((player) => {
             const userId = normalizeString(player.userId);
@@ -50,23 +85,23 @@ function getCurrentLocationPlayers() {
                 joinedAt: joinTime ? new Date(joinTime).toISOString() : '',
                 joinedAtMs: joinTime,
                 lastDurationMs: 0,
-                source: 'runtime'
+                source: 'runtime' as const
             };
         })
         .filter((player) => player.id && (player.userId || player.displayName));
 }
 
-function getCurrentLocation() {
+function getCurrentLocation(): string {
+    const currentUserSnapshot = useRuntimeStore.getState().auth
+        .currentUserSnapshot as RuntimeAuthSnapshot | null | undefined;
     return (
         ingestState.currentLocation ||
         normalizeString(useRuntimeStore.getState().gameState.currentLocation) ||
-        normalizeString(
-            useRuntimeStore.getState().auth.currentUserSnapshot?.location
-        )
+        normalizeString(currentUserSnapshot?.location)
     );
 }
 
-function resetCurrentGameLogSessionState() {
+function resetCurrentGameLogSessionState(): void {
     ingestState.currentLocation = '';
     ingestState.currentWorldName = '';
     ingestState.currentLocationStartedAt = '';

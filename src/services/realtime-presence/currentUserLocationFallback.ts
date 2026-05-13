@@ -13,7 +13,32 @@ import {
 } from './helpers.js';
 import { recordGameRuntimePresence } from '../domainIngestionService.js';
 
-function patchCurrentUserSnapshotFromGameState(runtimeStore) {
+type RuntimeSnapshot = Record<string, unknown> & {
+    auth: Record<string, unknown> & {
+        currentUserId?: unknown;
+        currentUserEndpoint?: unknown;
+        currentUserSnapshot?: Record<string, unknown> | null;
+    };
+    gameState: Record<string, unknown> & {
+        isGameRunning?: unknown;
+        currentLocation?: unknown;
+        currentLocationStartedAt?: unknown;
+    };
+    setGameState(patch: Record<string, unknown>): void;
+};
+type CurrentUserLocationContent = Record<string, unknown> & {
+    location?: unknown;
+    travelingToLocation?: unknown;
+    worldId?: unknown;
+};
+type CurrentUserLocationEventOptions = {
+    isGameLogDisabled: () => boolean | Promise<boolean>;
+    patchCurrentUserSnapshot: (patch: Record<string, unknown>) => void;
+};
+
+function patchCurrentUserSnapshotFromGameState(
+    runtimeStore: RuntimeSnapshot
+): boolean {
     const currentSnapshot = getCurrentUserSnapshot(runtimeStore);
     if (!currentSnapshot) {
         return false;
@@ -26,7 +51,7 @@ function patchCurrentUserSnapshotFromGameState(runtimeStore) {
         return false;
     }
     const startedAt = Date.parse(
-        runtimeStore.gameState.currentLocationStartedAt || ''
+        (runtimeStore.gameState.currentLocationStartedAt || '') as string
     );
     const locationTime = Number.isFinite(startedAt) ? startedAt : Date.now();
     setCurrentUserSnapshot(runtimeStore, {
@@ -39,7 +64,7 @@ function patchCurrentUserSnapshotFromGameState(runtimeStore) {
     return true;
 }
 
-async function updateRealtimeLocationFallback(location) {
+async function updateRealtimeLocationFallback(location: unknown): Promise<void> {
     const normalizedLocation = firstString(location);
     const runtimeStore = useRuntimeStore.getState();
     if (!normalizedLocation || runtimeStore.gameState.isGameRunning) {
@@ -79,7 +104,8 @@ async function updateRealtimeLocationFallback(location) {
     recordGameRuntimePresence({
         endpoint: latestRuntime.auth.currentUserEndpoint,
         currentUserId: latestRuntime.auth.currentUserId,
-        currentUserSnapshot: latestRuntime.auth.currentUserSnapshot,
+        currentUserSnapshot: latestRuntime.auth
+            .currentUserSnapshot as Record<string, unknown> | null | undefined,
         currentLocation: normalizedLocation,
         currentLocationStartedAt: createdAt,
         currentLocationPlayers: [],
@@ -110,9 +136,9 @@ async function updateRealtimeLocationFallback(location) {
 }
 
 async function applyCurrentUserLocationEvent(
-    content,
-    { isGameLogDisabled, patchCurrentUserSnapshot }
-) {
+    content: CurrentUserLocationContent,
+    { isGameLogDisabled, patchCurrentUserSnapshot }: CurrentUserLocationEventOptions
+): Promise<boolean> {
     const runtimeStore = useRuntimeStore.getState();
     patchCurrentUserSnapshot(
         buildLocationPatch(
@@ -120,7 +146,7 @@ async function applyCurrentUserLocationEvent(
             content.travelingToLocation,
             content.worldId,
             runtimeStore.auth.currentUserSnapshot
-        )
+        ) as Record<string, unknown>
     );
 
     if (
