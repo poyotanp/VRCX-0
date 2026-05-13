@@ -361,10 +361,9 @@ export function DataTablePagination({
                         </Button>
                     </PaginationItem>
                     <PaginationItem>
-                        <Badge variant="outline">
-                            {t('table.label.page')} {resolvedPageIndex + 1}{' '}
-                            / {resolvedPageCount}
-                        </Badge>
+                        <div className='text-xs mx-2 text-accent-foreground'>{resolvedPageIndex + 1}{' '}
+                            / {resolvedPageCount}</div>
+                            
                     </PaginationItem>
                     <PaginationItem>
                         <Button
