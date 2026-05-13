@@ -152,10 +152,13 @@ export function ScreenshotMetadataPage() {
                 rawMetadata,
                 extra
             );
+            const nextMetadataError = rawMetadata?.error
+                ? String(rawMetadata.error)
+                : '';
             imageVersionRef.current += 1;
 
             setMetadata(nextMetadata);
-            setMetadataError('');
+            setMetadataError(nextMetadataError);
             setSelectedPath(nextMetadata.filePath);
             setImageUrl(
                 `${convertFileSrc(nextMetadata.filePath, 'vrcx-0-img')}?v=${imageVersionRef.current}`

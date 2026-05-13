@@ -42,8 +42,7 @@ pub fn app__get_last_screenshot() -> Result<String, AppError> {
 #[tauri::command]
 pub fn app__delete_screenshot_metadata(path: String) -> Result<bool, AppError> {
     require_host_capability(HostCapability::ScreenshotCache)?;
-    screenshot::delete_text_metadata(&path, false);
-    Ok(true)
+    Ok(screenshot::delete_text_metadata(&path, true))
 }
 
 #[tauri::command]

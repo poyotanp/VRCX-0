@@ -8,6 +8,7 @@ use crate::error::AppError;
 
 const SCREENSHOT_READY_RETRY_COUNT: usize = 10;
 const SCREENSHOT_READY_RETRY_DELAY: Duration = Duration::from_secs(1);
+const SCREENSHOT_CONTENT_FOLDERS: [&str; 3] = ["Prints", "Stickers", "Emoji"];
 
 #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -27,7 +28,7 @@ pub struct ScreenshotMetadata {
     pub pos: Option<[f32; 3]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_file: Option<String>,
-    #[serde(skip)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
 }
 
@@ -106,15 +107,22 @@ pub fn read_text_metadata(path: &str) -> Vec<String> {
     result
 }
 
-pub fn delete_text_metadata(path: &str, delete_vrchat_metadata: bool) {
+pub fn delete_text_metadata(path: &str, delete_vrchat_metadata: bool) -> bool {
+    if path.is_empty() || !Path::new(path).exists() || !is_png_file(path) {
+        return false;
+    }
+
     let mut pf = match png::PngFile::open_rw(path) {
         Ok(p) => p,
-        Err(_) => return,
+        Err(_) => return false,
     };
-    if delete_vrchat_metadata {
-        png::delete_text_chunk("XML:com.adobe.xmp", &mut pf);
-    }
-    png::delete_text_chunk("Description", &mut pf);
+    let deleted_vrchat = if delete_vrchat_metadata {
+        png::delete_text_chunk("XML:com.adobe.xmp", &mut pf)
+    } else {
+        false
+    };
+    let deleted_vrcx = png::delete_text_chunk("Description", &mut pf);
+    deleted_vrchat || deleted_vrcx
 }
 
 pub fn write_vrcx_metadata(text: &str, path: &str) -> bool {
@@ -394,7 +402,12 @@ pub fn parse_lfs_picture(metadata_string: &str) -> ScreenshotMetadata {
 }
 
 pub fn get_screenshot_metadata(path: &str) -> Option<ScreenshotMetadata> {
-    if !Path::new(path).exists() || !path.ends_with(".png") {
+    let p = Path::new(path);
+    let is_png_extension = p
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("png"));
+    if !p.exists() || !is_png_extension {
         return None;
     }
 
@@ -410,7 +423,7 @@ pub fn get_screenshot_metadata(path: &str) -> Option<ScreenshotMetadata> {
     let mut got_vrchat = false;
 
     for s in &metadata_strs {
-        if s.starts_with("<x:xmpmeta") {
+        if s.contains("<x:xmpmeta") {
             result = parse_vrc_image(s);
             result.source_file = Some(path.into());
             got_vrchat = true;
@@ -496,12 +509,24 @@ pub fn extra_screenshot_data(path: &str, carousel_cache: bool) -> Result<String,
     serde_json::to_string(&result).map_err(|e| AppError::Custom(format!("serialize: {e}")))
 }
 
+fn screenshot_error_json(path: &str, error: &str) -> Result<String, AppError> {
+    serde_json::to_string(&serde_json::json!({
+        "sourceFile": path,
+        "error": error,
+    }))
+    .map_err(|e| AppError::Custom(format!("serialize: {e}")))
+}
+
 pub fn screenshot_metadata_json(path: &str) -> Result<String, AppError> {
     match get_screenshot_metadata(path) {
         Some(meta) => {
+            if let Some(error) = meta.error.as_deref() {
+                return screenshot_error_json(meta.source_file.as_deref().unwrap_or(path), error);
+            }
+
             serde_json::to_string(&meta).map_err(|e| AppError::Custom(format!("serialize: {e}")))
         }
-        None => Ok(String::new()),
+        None => screenshot_error_json(path, "Screenshot contains no metadata."),
     }
 }
 
@@ -519,34 +544,47 @@ pub fn find_screenshots_json(
     serde_json::to_string(&results).map_err(|e| AppError::Custom(format!("serialize: {e}")))
 }
 
+fn is_screenshot_content_asset_path(path: &Path) -> bool {
+    path.components().any(|component| {
+        let name = component.as_os_str().to_string_lossy();
+        SCREENSHOT_CONTENT_FOLDERS
+            .iter()
+            .any(|folder| name.eq_ignore_ascii_case(folder))
+    })
+}
+
+fn screenshot_file_time(path: &Path) -> Option<std::time::SystemTime> {
+    let meta = std::fs::metadata(path).ok()?;
+    meta.created().or_else(|_| meta.modified()).ok()
+}
+
+fn last_screenshot_in(photos_dir: &Path) -> String {
+    if !photos_dir.is_dir() {
+        return String::new();
+    }
+
+    walkdir::WalkDir::new(photos_dir)
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_type().is_file())
+        .map(|entry| entry.into_path())
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("png"))
+                && !is_screenshot_content_asset_path(path)
+        })
+        .filter_map(|path| screenshot_file_time(&path).map(|time| (path, time)))
+        .max_by_key(|(_, time)| *time)
+        .map(|(path, _)| path.to_string_lossy().into_owned())
+        .unwrap_or_default()
+}
+
 pub fn last_screenshot() -> String {
     let photos_dir = vrchat_paths::vrchat_photos_location();
     if photos_dir.is_empty() {
         return String::new();
     }
-    let mut newest: Option<(String, std::time::SystemTime)> = None;
-    if let Ok(entries) = walkdir::WalkDir::new(&photos_dir)
-        .into_iter()
-        .collect::<Result<Vec<_>, _>>()
-    {
-        for entry in entries {
-            if entry.file_type().is_file()
-                && entry
-                    .path()
-                    .extension()
-                    .is_some_and(|e| e.eq_ignore_ascii_case("png"))
-            {
-                if let Ok(meta) = entry.metadata() {
-                    if let Ok(modified) = meta.modified() {
-                        if newest.as_ref().is_none_or(|(_, t)| modified > *t) {
-                            newest = Some((entry.path().to_string_lossy().into_owned(), modified));
-                        }
-                    }
-                }
-            }
-        }
-    }
-    newest.map(|(p, _)| p).unwrap_or_default()
+    last_screenshot_in(Path::new(&photos_dir))
 }
 
 pub fn delete_all_screenshot_metadata(cache: &MetadataCacheDb) {
