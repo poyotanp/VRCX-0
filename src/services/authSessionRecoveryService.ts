@@ -8,16 +8,20 @@ import {
 import { useRuntimeStore } from '@/state/runtimeStore.js';
 import { useSessionStore } from '@/state/sessionStore.js';
 
-import {
-    resetCurrentUserRuntimeAuth,
-    setSignedOutSessionState
-} from './authExecutionService.js';
 import { refreshSavedAuthSnapshot } from './authSnapshotService.js';
 import i18n from './i18nService.js';
 
-let recoveryPromise = null;
+type AuthExecutionServiceModule = {
+    resetCurrentUserRuntimeAuth: () => void;
+    setSignedOutSessionState: () => void;
+};
 
-function shouldHandleRuntimeAuthFailure(error) {
+const authExecutionServiceLoaders =
+    import.meta.glob<AuthExecutionServiceModule>('./authExecutionService.js');
+
+let recoveryPromise: Promise<void> | null = null;
+
+function shouldHandleRuntimeAuthFailure(error: unknown): boolean {
     if (!isVrchatMissingCredentialsError(error)) {
         return false;
     }
@@ -31,7 +35,7 @@ function shouldHandleRuntimeAuthFailure(error) {
     );
 }
 
-async function runRuntimeAuthRecovery(error) {
+async function runRuntimeAuthRecovery(error: unknown): Promise<void> {
     if (!shouldHandleRuntimeAuthFailure(error)) {
         return;
     }
@@ -56,6 +60,13 @@ async function runRuntimeAuthRecovery(error) {
         );
     }
 
+    const loadAuthExecutionService =
+        authExecutionServiceLoaders['./authExecutionService.js'];
+    if (typeof loadAuthExecutionService !== 'function') {
+        throw new Error('Auth execution service is unavailable.');
+    }
+    const { resetCurrentUserRuntimeAuth, setSignedOutSessionState } =
+        await loadAuthExecutionService();
     setSignedOutSessionState();
     resetCurrentUserRuntimeAuth();
 
@@ -69,7 +80,7 @@ async function runRuntimeAuthRecovery(error) {
     }
 }
 
-function handleRuntimeAuthFailure(error) {
+function handleRuntimeAuthFailure(error: unknown): Promise<void> | undefined {
     if (!shouldHandleRuntimeAuthFailure(error)) {
         return;
     }
@@ -83,7 +94,7 @@ function handleRuntimeAuthFailure(error) {
     return recoveryPromise;
 }
 
-export function startRuntimeAuthFailureRecovery() {
+export function startRuntimeAuthFailureRecovery(): () => void {
     const unsubscribe = setVrchatAuthFailureHandler(handleRuntimeAuthFailure);
 
     return () => {

@@ -6,21 +6,38 @@ const OK_POLL_MS = 15 * 60 * 1000;
 const ISSUE_POLL_MS = 2 * 60 * 1000;
 const FOCUS_REFRESH_MS = 60 * 1000;
 
-let pollingTimer = null;
+type VrcStatusStatus = Record<string, unknown> & {
+    description?: unknown;
+    indicator?: unknown;
+};
+type VrcStatusPage = Record<string, unknown> & {
+    updated_at?: unknown;
+};
+type VrcStatusComponent = Record<string, unknown> & {
+    name?: unknown;
+    status?: unknown;
+};
+type VrcStatusResponse = Record<string, unknown> & {
+    status?: VrcStatusStatus;
+    page?: VrcStatusPage;
+    components?: unknown;
+};
+
+let pollingTimer: ReturnType<typeof window.setTimeout> | null = null;
 let pollingActive = false;
 let pollingGeneration = 0;
 
-function parseResponse(data) {
+function parseResponse(data: unknown): unknown {
     if (!data) {
         return null;
     }
     if (typeof data === 'object') {
         return data;
     }
-    return JSON.parse(data);
+    return JSON.parse(data as string);
 }
 
-async function getJson(path) {
+async function getJson(path: string): Promise<VrcStatusResponse | null> {
     const response = await webRepository.execute({
         url: `${STATUS_API_URL}/${path}`,
         method: 'GET',
@@ -33,12 +50,14 @@ async function getJson(path) {
         throw new Error(`VRChat status request failed (${response.status})`);
     }
 
-    return parseResponse(response.data);
+    return parseResponse(response.data) as VrcStatusResponse | null;
 }
 
-async function fetchSummary() {
+async function fetchSummary(): Promise<string> {
     const data = await getJson('summary.json');
-    const components = Array.isArray(data?.components) ? data.components : [];
+    const components = Array.isArray(data?.components)
+        ? (data.components as VrcStatusComponent[])
+        : [];
     return components
         .filter(
             (component) =>
@@ -49,7 +68,7 @@ async function fetchSummary() {
         .join(', ');
 }
 
-export async function refreshVrcStatus() {
+export async function refreshVrcStatus(): Promise<void> {
     const runtimeStore = useRuntimeStore.getState();
 
     try {
@@ -93,9 +112,9 @@ export async function refreshVrcStatus() {
     }
 }
 
-export function handleBrowserFocus() {
+export function handleBrowserFocus(): Promise<void> {
     const { vrcStatus } = useRuntimeStore.getState();
-    const lastFetchedAt = Date.parse(vrcStatus.lastFetchedAt || '');
+    const lastFetchedAt = Date.parse((vrcStatus.lastFetchedAt || '') as string);
     if (
         Number.isFinite(lastFetchedAt) &&
         Date.now() - lastFetchedAt < FOCUS_REFRESH_MS
@@ -106,7 +125,7 @@ export function handleBrowserFocus() {
     return refreshVrcStatus();
 }
 
-export function startVrcStatusPolling() {
+export function startVrcStatusPolling(): () => void {
     if (pollingActive) {
         return stopVrcStatusPolling;
     }
@@ -115,7 +134,7 @@ export function startVrcStatusPolling() {
     pollingGeneration += 1;
     const generation = pollingGeneration;
 
-    const tick = async () => {
+    const tick = async (): Promise<void> => {
         try {
             await refreshVrcStatus();
         } catch (error) {
@@ -127,8 +146,8 @@ export function startVrcStatusPolling() {
         }
 
         const interval =
-            useRuntimeStore.getState().vrcStatus.pollingIntervalMs ||
-            OK_POLL_MS;
+            (useRuntimeStore.getState().vrcStatus.pollingIntervalMs ||
+                OK_POLL_MS) as number;
         pollingTimer = window.setTimeout(
             tick,
             Math.max(FOCUS_REFRESH_MS, interval)
@@ -139,7 +158,7 @@ export function startVrcStatusPolling() {
     return stopVrcStatusPolling;
 }
 
-export function stopVrcStatusPolling() {
+export function stopVrcStatusPolling(): void {
     pollingActive = false;
     pollingGeneration += 1;
 

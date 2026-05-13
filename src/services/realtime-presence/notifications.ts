@@ -7,7 +7,20 @@ import { pushSharedFeedNotification } from '../sharedFeedFilterService.js';
 import { currentSessionUserId } from './feedWriter.js';
 import { firstString, parseStringArray } from './helpers.js';
 
-async function shouldNotifyInstanceClosed() {
+type InstanceClosedContent = Record<string, unknown> & {
+    instanceLocation?: unknown;
+    location?: unknown;
+};
+type InstanceClosedNotification = Record<string, unknown> & {
+    id: string;
+    type: 'instance.closed';
+    location: string;
+    message: string;
+    createdAt: string;
+    created_at: string;
+};
+
+async function shouldNotifyInstanceClosed(): Promise<boolean> {
     try {
         const filters = parseStringArray(
             await configRepository.getString(
@@ -21,10 +34,12 @@ async function shouldNotifyInstanceClosed() {
     }
 }
 
-async function handleInstanceClosedEvent(content) {
+async function handleInstanceClosedEvent(
+    content: InstanceClosedContent
+): Promise<boolean> {
     const location = firstString(content.instanceLocation, content.location);
     const createdAt = new Date().toISOString();
-    const notification = {
+    const notification: InstanceClosedNotification = {
         id: `instance.closed:${location || 'unknown'}:${createdAt}`,
         type: 'instance.closed',
         location,

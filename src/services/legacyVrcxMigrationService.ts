@@ -1,14 +1,38 @@
 import { backend } from '@/platform/index.js';
+import type { LegacyVrcxMigrationStatus } from '@/platform/tauri/backend.js';
 
-function errorMessage(error) {
+type ConfirmResult = {
+    ok?: boolean;
+};
+type ConfirmOptions = Record<string, unknown> & {
+    title: string;
+    description: string;
+    confirmText: string;
+    cancelText: string;
+    destructive?: boolean;
+};
+type LegacyMigrationPromptOptions = {
+    confirm: (options: ConfirmOptions) => Promise<ConfirmResult>;
+    t: (key: string, params?: Record<string, unknown>) => string;
+    toast: {
+        error: (message: string) => unknown;
+        warning: (message: string) => unknown;
+    };
+};
+
+function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
 const LEGACY_MIGRATION_I18N_PREFIX =
     'view.settings.advanced.advanced.database_cleanup';
 
-export async function promptLegacyVrcxForceMigration({ confirm, t, toast }) {
-    let status = null;
+export async function promptLegacyVrcxForceMigration({
+    confirm,
+    t,
+    toast
+}: LegacyMigrationPromptOptions): Promise<void> {
+    let status: LegacyVrcxMigrationStatus | null = null;
     try {
         status = await backend.app.GetLegacyVrcxForceMigrationStatus();
     } catch (error) {
