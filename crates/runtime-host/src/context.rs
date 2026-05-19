@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 
+use serde_json::{json, Map, Value};
 use vrcx_0_application::HostSessionRuntime;
 use vrcx_0_application::ImageCache;
 use vrcx_0_application::RuntimeAuthScope;
@@ -32,6 +33,7 @@ pub struct RuntimeHostContext {
     pub auth_scope: RuntimeAuthScope,
     pub config: ConfigRepository,
     game_log_snapshot: Arc<Mutex<RuntimeSnapshot>>,
+    now_playing: Arc<Mutex<Value>>,
 }
 
 impl RuntimeHostContext {
@@ -56,6 +58,7 @@ impl RuntimeHostContext {
             auth_scope: RuntimeAuthScope::new(),
             config,
             game_log_snapshot: Arc::new(Mutex::new(RuntimeSnapshot::default())),
+            now_playing: Arc::new(Mutex::new(default_now_playing_value())),
         }
     }
 
@@ -73,4 +76,74 @@ impl RuntimeHostContext {
             .map(|snapshot| snapshot.clone())
             .unwrap_or_default()
     }
+
+    pub fn now_playing(&self) -> Value {
+        self.now_playing
+            .lock()
+            .map(|snapshot| snapshot.clone())
+            .unwrap_or_else(|_| default_now_playing_value())
+    }
+
+    pub fn observe_runtime_event(&self, event: &str, payload: &Value) {
+        if event != "gameLogSideEffect" {
+            return;
+        }
+
+        let kind = payload
+            .get("kind")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        match kind {
+            "nowPlaying" => {
+                let Some(patch) = payload.get("payload").and_then(Value::as_object) else {
+                    return;
+                };
+                match self.now_playing.lock() {
+                    Ok(mut current) => {
+                        let mut merged = current
+                            .as_object()
+                            .cloned()
+                            .unwrap_or_else(default_now_playing_map);
+                        for (key, value) in patch {
+                            merged.insert(key.clone(), value.clone());
+                        }
+                        *current = Value::Object(merged);
+                    }
+                    Err(error) => {
+                        tracing::warn!("failed to lock now playing snapshot: {error}");
+                    }
+                }
+            }
+            "nowPlayingReset" => match self.now_playing.lock() {
+                Ok(mut current) => {
+                    *current = default_now_playing_value();
+                }
+                Err(error) => {
+                    tracing::warn!("failed to lock now playing snapshot: {error}");
+                }
+            },
+            _ => {}
+        }
+    }
+}
+
+fn default_now_playing_map() -> Map<String, Value> {
+    default_now_playing_value()
+        .as_object()
+        .cloned()
+        .unwrap_or_default()
+}
+
+fn default_now_playing_value() -> Value {
+    json!({
+        "url": "",
+        "name": "",
+        "source": "",
+        "displayName": "",
+        "thumbnailUrl": "",
+        "length": 0,
+        "position": 0,
+        "startedAt": null,
+        "updatedAt": null,
+    })
 }

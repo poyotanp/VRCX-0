@@ -5,7 +5,7 @@ use std::sync::{
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 
 use super::LogWatcher;
 
@@ -33,7 +33,11 @@ impl LogWatcherCompatBridge {
         let stop_requested = Arc::clone(&self.stop_requested);
         let handle = thread::spawn(move || loop {
             for payload in log_watcher.drain_compat_event_payloads() {
-                let _ = app_handle.emit("addGameLogEvent", payload);
+                crate::bootstrap::emit_to_main_window_if_visible(
+                    &app_handle,
+                    "addGameLogEvent",
+                    payload,
+                );
             }
             if stop_requested.load(Ordering::SeqCst) {
                 break;

@@ -15,9 +15,11 @@ import rustHostRegistrySource from '../../../src-tauri/src/commands/host/registr
 import rustHostScreenshotsSource from '../../../src-tauri/src/commands/host/screenshots.rs?raw';
 import rustHostShellSource from '../../../src-tauri/src/commands/host/shell.rs?raw';
 import rustHostUpdaterSource from '../../../src-tauri/src/commands/host/updater.rs?raw';
+import rustApplicationRegistryBackupSource from '../../../src-tauri/src/commands/application/registry_backup.rs?raw';
 import rustLocalConfigSource from '../../../src-tauri/src/commands/local/config.rs?raw';
 import rustWebSource from '../../../src-tauri/src/commands/web.rs?raw';
 import tauriDefaultCapabilitySource from '../../../src-tauri/capabilities/default.json?raw';
+import rustApplicationRegistryBackupServiceSource from '../../../crates/application/src/registry_backup.rs?raw';
 import rustIntegrationExternalApiSource from '../../../crates/integrations/src/external_api.rs?raw';
 import rustVrchatHttpApiSource from '../../../crates/vrchat-client/src/http_api.rs?raw';
 import rustVrchatRealtimeSource from '../../../crates/vrchat-client/src/realtime.rs?raw';
@@ -38,6 +40,10 @@ const repoFiles: Record<string, string> = {
     'src-tauri/src/commands/host/screenshots.rs': rustHostScreenshotsSource,
     'src-tauri/src/commands/host/shell.rs': rustHostShellSource,
     'src-tauri/src/commands/host/updater.rs': rustHostUpdaterSource,
+    'src-tauri/src/commands/application/registry_backup.rs':
+        rustApplicationRegistryBackupSource,
+    'crates/application/src/registry_backup.rs':
+        rustApplicationRegistryBackupServiceSource,
     'src-tauri/src/commands/local/config.rs': rustLocalConfigSource,
     'crates/integrations/src/external_api.rs': rustIntegrationExternalApiSource,
     'crates/vrchat-client/src/http_api.rs': rustVrchatHttpApiSource,
@@ -140,6 +146,9 @@ const highRiskCommands = [
     'app__set_vrchat_registry_key',
     'app__set_vrchat_registry',
     'app__delete_vrchat_registry_folder',
+    'app__registry_backup_restore',
+    'app__registry_backup_import_json',
+    'app__registry_backup_maintenance_run',
     'app__external_api_avatar_search_get',
     'app__external_api_image_data_url_get',
     'app__external_api_translation_request',
@@ -316,6 +325,19 @@ describe('tauri command mapping', () => {
         );
         expect(readRepoFile('src-tauri/src/commands/host/registry.rs')).toContain(
             'blocking_show'
+        );
+        expect(
+            readRepoFile(
+                'src-tauri/src/commands/application/registry_backup.rs'
+            )
+        ).toContain('RegistryBackupMaintenanceMode::Foreground');
+        expect(
+            readRepoFile(
+                'src-tauri/src/commands/application/registry_backup.rs'
+            )
+        ).toContain('require_host_capability');
+        expect(readRepoFile('crates/application/src/registry_backup.rs')).toContain(
+            'ALLOWED_REGISTRY_TYPES'
         );
         expect(readRepoFile('src-tauri/src/commands/local/config.rs')).toContain(
             'validate_config_writes'

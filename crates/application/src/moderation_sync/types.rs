@@ -16,9 +16,9 @@ pub struct ModerationSyncDeps<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModerationSyncRefreshInput {
-    pub(crate) user_id: String,
+    pub user_id: String,
     #[serde(default)]
-    pub(crate) endpoint: String,
+    pub endpoint: String,
 }
 
 #[derive(Debug, Deserialize)]

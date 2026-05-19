@@ -510,6 +510,21 @@ export interface BackendRuntimeFrontendSessionSnapshot {
     currentUserSnapshot: Record<string, unknown>;
 }
 
+export interface RegistryBackupSnapshot {
+    key: string;
+    name: string;
+    date: string;
+    data: unknown;
+}
+
+export interface RegistryBackupMaintenanceResult {
+    backups: RegistryBackupSnapshot[];
+    autoBackupCreated: boolean;
+    restorePromptNeeded: boolean;
+    restorePromptBackupDate?: string | null;
+    detail: string;
+}
+
 export interface AppTauriCommandNamespace extends TauriCommandNamespace {
     AppendErrorLog(entry: string): Promise<void>;
     ExitApplication(): Promise<void>;
@@ -525,6 +540,27 @@ export interface AppTauriCommandNamespace extends TauriCommandNamespace {
     GetBackendRuntimeSnapshot(): Promise<BackendRuntimeSnapshot>;
     GetBackendRuntimeFrontendSessionSnapshot(): Promise<BackendRuntimeFrontendSessionSnapshot | null>;
     EnsureMainWindow(): Promise<void>;
+    RegistryBackupList(): Promise<RegistryBackupSnapshot[]>;
+    RegistryBackupCreate(name: string): Promise<RegistryBackupSnapshot[]>;
+    RegistryBackupRestore(key: string): Promise<RegistryBackupSnapshot>;
+    RegistryBackupDelete(key: string): Promise<RegistryBackupSnapshot[]>;
+    RegistryBackupExportJson(key: string): Promise<string>;
+    RegistryBackupImportJson(json: string): Promise<void>;
+    RegistryBackupMaintenanceRun(
+        reason: string
+    ): Promise<RegistryBackupMaintenanceResult>;
+    OpenFileSelectorDialog(
+        defaultPath?: string | null,
+        defaultExt?: string | null,
+        defaultFilter?: string | null
+    ): Promise<string>;
+    ReadVrcRegJsonFile(filepath: string): Promise<string>;
+    SaveVrcRegJsonFile(
+        defaultPath: string | null,
+        defaultName: string,
+        json: string
+    ): Promise<string | null>;
+    DeleteVRChatRegistryFolder(): Promise<void>;
     VrchatAuthConfigGet(input: {
         endpoint?: string;
     }): Promise<VrchatHttpApiResult>;

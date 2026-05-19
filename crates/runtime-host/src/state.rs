@@ -4,23 +4,32 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
-    Arc, Mutex,
+    Arc, Mutex, MutexGuard,
 };
+use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use serde_json::{json, Value};
 
 use crate::{
     GameClientHostRuntime, GameLogEventSink, GameLogHostRuntime, HostFileAccess,
-    HostLogLocationSnapshotScanner, LogWatcher, Result, RuntimeHostContext, RuntimeHostEventSink,
+    HostLogLocationSnapshotScanner, HostRegistryBackupActions, LogWatcher, Result,
+    RuntimeHostContext, RuntimeHostEventSink,
 };
 use vrcx_0_application::{
-    build_friend_roster_baseline, record_login_success, saved_credential_login_start,
+    build_background_discord_presence_command, build_background_presence_facts,
+    build_favorites_baseline, build_friend_roster_baseline, record_login_success,
+    refresh_background_current_user, refresh_background_group_instances,
+    refresh_player_moderations, run_background_presence_automation, saved_credential_login_start,
     saved_snapshot, BackendRuntime, BackendRuntimeMode, BackendRuntimePhase,
-    BackendRuntimeSnapshot, BackendRuntimeTelemetry, GameProcessEventSink, ImageCache,
-    LoginSuccessRecordInput, ProcessMonitor, RealtimeHostRuntime, RealtimeHostRuntimeDeps,
-    RealtimeStopRequest, RuntimeEventSink, SavedCredentialLoginStartInput, SessionHostRuntime,
-    SocialBaselineDeps, SocialFriendRosterBaselineInput, WebClient,
+    BackendRuntimeSnapshot, BackendRuntimeTelemetry, BackgroundCapabilitySession,
+    BackgroundDiscordPresenceCommand, BackgroundDiscordPresenceState,
+    BackgroundPresenceAutomationState, BackgroundPresenceFactsInput, GameProcessEventSink,
+    ImageCache, LoginSuccessRecordInput, ModerationSyncDeps, ModerationSyncRefreshInput,
+    ProcessMonitor, RealtimeHostRuntime, RealtimeHostRuntimeDeps, RealtimeStopRequest,
+    RegistryBackupMaintenanceMode, RegistryBackupMaintenanceResult, RegistryBackupSnapshot,
+    RuntimeBackgroundJobs, RuntimeEventSink, SavedCredentialLoginStartInput, SessionHostRuntime,
+    SocialBaselineDeps, SocialFavoritesBaselineInput, SocialFriendRosterBaselineInput, WebClient,
 };
 use vrcx_0_core::friends::FriendRecord;
 use vrcx_0_core::json::RawJson;
@@ -45,6 +54,43 @@ use vrcx_0_vrchat_client::realtime::normalize_websocket_domain;
 
 const SAVED_CREDENTIALS_KEY: &str = "savedCredentials";
 const PROFILE_LOCK_FILE: &str = "runtime.lock";
+const REGISTRY_BACKUP_MAINTENANCE_JOB: &str = "registryBackupMaintenance";
+const REGISTRY_BACKUP_MAINTENANCE_CADENCE_SECONDS: u64 = 3 * 60 * 60;
+const BACKGROUND_PRESENCE_AUTOMATION_JOB: &str = "backgroundPresenceAutomation";
+const BACKGROUND_DISCORD_PRESENCE_JOB: &str = "backgroundDiscordPresence";
+const BACKGROUND_FACTS_REFRESH_JOB: &str = "backgroundFactsRefresh";
+const BACKGROUND_MODERATION_REFRESH_JOB: &str = "backgroundModerationRefresh";
+const BACKGROUND_PRESENCE_CADENCE_SECONDS: u64 = 3;
+const BACKGROUND_DISCORD_CADENCE_SECONDS: u64 = 3;
+const BACKGROUND_GROUP_INSTANCE_CADENCE_SECONDS: u64 = 300;
+const BACKGROUND_CURRENT_USER_CADENCE_SECONDS: u64 = 300;
+const BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS: u64 = 3_600;
+const BACKGROUND_MODERATION_CADENCE_SECONDS: u64 = 3_600;
+const CURRENT_USER_REFRESH_LOCAL_AUTHORITY_FIELDS: &[&str] = &[
+    "friends",
+    "onlineFriends",
+    "activeFriends",
+    "offlineFriends",
+    "status",
+    "statusDescription",
+    "state",
+    "stateBucket",
+    "pendingOffline",
+    "location",
+    "$location",
+    "$location_at",
+    "locationUpdatedAt",
+    "worldId",
+    "instanceId",
+    "travelingToLocation",
+    "travelingToWorld",
+    "travelingToInstance",
+    "$travelingToLocation",
+    "$travelingToTime",
+    "travelingToTime",
+    "$previousLocation",
+    "$previousLocation_at",
+];
 
 pub struct RuntimeHostOptions {
     pub realtime_origin: String,
@@ -66,7 +112,7 @@ pub struct RuntimeHostState {
     pub paths: AppPaths,
     pub storage: StorageService,
     pub db: Arc<DatabaseService>,
-    pub discord_rpc: DiscordRpc,
+    pub discord_rpc: Arc<DiscordRpc>,
     pub process_monitor: ProcessMonitor,
     pub log_watcher: LogWatcher,
     pub runtime_context: Arc<RuntimeHostContext>,
@@ -86,7 +132,10 @@ pub struct RuntimeHostState {
     pub legacy_vrcx_migration_status: LegacyVrcxMigrationStatus,
     pub launched_from_autostart: bool,
     backend_starting: AtomicBool,
-    backend_frontend_session: Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>,
+    registry_backup_maintenance_running: Arc<AtomicBool>,
+    background_capabilities_running: Arc<AtomicBool>,
+    registry_backup_lock: Arc<Mutex<()>>,
+    backend_frontend_session: Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
     _profile_lock: ProfileLock,
 }
 
@@ -110,7 +159,7 @@ impl RuntimeHostState {
         let storage = StorageService::new(&paths.config_file)?;
 
         let db = Arc::new(DatabaseService::new(&paths.db_file)?);
-        let discord_rpc = DiscordRpc::new();
+        let discord_rpc = Arc::new(DiscordRpc::new());
         let process_monitor = ProcessMonitor::new();
         let web = Arc::new(WebClient::new(&storage, &db, options.realtime_origin)?);
         let image_fetcher = web.image_fetcher()?;
@@ -178,7 +227,10 @@ impl RuntimeHostState {
             legacy_vrcx_migration_status,
             launched_from_autostart: options.launched_from_autostart,
             backend_starting: AtomicBool::new(false),
-            backend_frontend_session: Mutex::new(None),
+            registry_backup_maintenance_running: Arc::new(AtomicBool::new(false)),
+            background_capabilities_running: Arc::new(AtomicBool::new(false)),
+            registry_backup_lock: Arc::new(Mutex::new(())),
+            backend_frontend_session: Arc::new(Mutex::new(None)),
             _profile_lock: profile_lock,
         })
     }
@@ -191,12 +243,85 @@ impl RuntimeHostState {
             .event_bus
             .set_sink(RuntimeHostEventSink::new(
                 self.backend_runtime.clone(),
+                Arc::clone(&self.runtime_context),
                 sink,
             ));
     }
 
     pub fn snapshot_backend_runtime(&self) -> BackendRuntimeSnapshot {
         self.backend_runtime.snapshot()
+    }
+
+    pub fn registry_backup_list(&self) -> Result<Vec<RegistryBackupSnapshot>> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        Ok(vrcx_0_application::registry_backup_list(self.db.as_ref())?)
+    }
+
+    pub fn registry_backup_create(&self, name: &str) -> Result<Vec<RegistryBackupSnapshot>> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        let host = HostRegistryBackupActions;
+        Ok(vrcx_0_application::registry_backup_create(
+            self.db.as_ref(),
+            &host,
+            name,
+        )?)
+    }
+
+    pub fn registry_backup_restore(&self, key: &str) -> Result<RegistryBackupSnapshot> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        let host = HostRegistryBackupActions;
+        Ok(vrcx_0_application::registry_backup_restore(
+            self.db.as_ref(),
+            &host,
+            key,
+        )?)
+    }
+
+    pub fn registry_backup_delete(&self, key: &str) -> Result<Vec<RegistryBackupSnapshot>> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        Ok(vrcx_0_application::registry_backup_delete(
+            self.db.as_ref(),
+            key,
+        )?)
+    }
+
+    pub fn registry_backup_export_json(&self, key: &str) -> Result<String> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        Ok(vrcx_0_application::registry_backup_export_json(
+            self.db.as_ref(),
+            key,
+        )?)
+    }
+
+    pub fn registry_backup_import_json(&self, json: &str) -> Result<()> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        let host = HostRegistryBackupActions;
+        Ok(vrcx_0_application::registry_backup_import_json(
+            self.db.as_ref(),
+            &host,
+            json,
+        )?)
+    }
+
+    pub fn registry_backup_maintenance_run(
+        &self,
+        reason: &str,
+        mode: RegistryBackupMaintenanceMode,
+    ) -> Result<RegistryBackupMaintenanceResult> {
+        let _guard = self.acquire_registry_backup_lock()?;
+        let host = HostRegistryBackupActions;
+        Ok(vrcx_0_application::registry_backup_maintenance_run(
+            self.db.as_ref(),
+            &host,
+            mode,
+            reason,
+        )?)
+    }
+
+    fn acquire_registry_backup_lock(&self) -> Result<MutexGuard<'_, ()>> {
+        self.registry_backup_lock.lock().map_err(|error| {
+            crate::Error::Custom(format!("registry backup lock poisoned: {error}"))
+        })
     }
 
     pub fn backend_runtime_frontend_session_snapshot(
@@ -348,6 +473,12 @@ impl RuntimeHostState {
             return current;
         }
         let snapshot = self.backend_runtime.set_mode(mode);
+        if snapshot.mode == BackendRuntimeMode::Background
+            && snapshot.phase == BackendRuntimePhase::Running
+        {
+            self.start_gui_background_registry_backup_loop();
+            self.start_gui_background_capability_loops();
+        }
         let detail = match mode {
             BackendRuntimeMode::Foreground => "foreground",
             BackendRuntimeMode::Background => "background",
@@ -355,6 +486,17 @@ impl RuntimeHostState {
         };
         self.emit_backend_runtime_telemetry_snapshot("modeChanged", detail, snapshot.clone());
         snapshot
+    }
+
+    pub fn wait_for_gui_background_capability_loops_stopped(&self, timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        while self.background_capabilities_running.load(Ordering::Acquire) {
+            if Instant::now() >= deadline {
+                return false;
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        true
     }
 
     pub async fn start_backend_runtime(
@@ -372,6 +514,12 @@ impl RuntimeHostState {
                 | BackendRuntimePhase::Running
         ) {
             self.backend_runtime.set_mode(mode);
+            if mode == BackendRuntimeMode::Background
+                && current.phase == BackendRuntimePhase::Running
+            {
+                self.start_gui_background_registry_backup_loop();
+                self.start_gui_background_capability_loops();
+            }
             return Ok(self.backend_runtime.snapshot());
         }
 
@@ -434,6 +582,10 @@ impl RuntimeHostState {
             friends_by_id,
         )?;
         self.backend_runtime.set_phase(BackendRuntimePhase::Running);
+        if self.backend_runtime.snapshot().mode == BackendRuntimeMode::Background {
+            self.start_gui_background_registry_backup_loop();
+            self.start_gui_background_capability_loops();
+        }
         Ok(self.backend_runtime.snapshot())
     }
 
@@ -707,6 +859,314 @@ impl RuntimeHostState {
         self.emit_backend_runtime_telemetry_snapshot("gameLogWatcher", status, snapshot);
     }
 
+    fn start_gui_background_registry_backup_loop(&self) {
+        let current = self.backend_runtime.snapshot();
+        if current.mode != BackendRuntimeMode::Background
+            || current.phase != BackendRuntimePhase::Running
+        {
+            return;
+        }
+        if !is_host_capability_available(HostCapability::RegistryPrefs) {
+            self.runtime_context.background_jobs.register_job(
+                REGISTRY_BACKUP_MAINTENANCE_JOB,
+                "rust-host",
+                Some(REGISTRY_BACKUP_MAINTENANCE_CADENCE_SECONDS),
+                "unavailable",
+                "Registry backup maintenance is unavailable on this platform.",
+            );
+            return;
+        }
+        if self
+            .registry_backup_maintenance_running
+            .swap(true, Ordering::AcqRel)
+        {
+            return;
+        }
+
+        self.runtime_context.background_jobs.register_job(
+            REGISTRY_BACKUP_MAINTENANCE_JOB,
+            "rust-host",
+            Some(REGISTRY_BACKUP_MAINTENANCE_CADENCE_SECONDS),
+            "scheduled",
+            "Registry backup maintenance is scheduled for background mode.",
+        );
+
+        let db = Arc::clone(&self.db);
+        let backend_runtime = self.backend_runtime.clone();
+        let background_jobs = self.runtime_context.background_jobs.clone();
+        let running = Arc::clone(&self.registry_backup_maintenance_running);
+        let registry_backup_lock = Arc::clone(&self.registry_backup_lock);
+        self.runtime_context.tasks.spawn_cancellable_thread(
+            "registry-backup-maintenance",
+            move |stop_token| {
+                let host = HostRegistryBackupActions;
+                let cadence = Duration::from_secs(REGISTRY_BACKUP_MAINTENANCE_CADENCE_SECONDS);
+                let sleep_chunk = Duration::from_secs(5);
+
+                loop {
+                    if stop_token.is_stop_requested()
+                        || !is_background_registry_maintenance_active(&backend_runtime)
+                    {
+                        break;
+                    }
+
+                    background_jobs.mark_running(
+                        REGISTRY_BACKUP_MAINTENANCE_JOB,
+                        "Running background registry backup maintenance.",
+                    );
+                    let result = match registry_backup_lock.lock() {
+                        Ok(_guard) => vrcx_0_application::registry_backup_maintenance_run(
+                            db.as_ref(),
+                            &host,
+                            RegistryBackupMaintenanceMode::Silent,
+                            "background-mode",
+                        ),
+                        Err(error) => Err(vrcx_0_application::Error::Custom(format!(
+                            "registry backup lock poisoned: {error}"
+                        ))),
+                    };
+                    match result {
+                        Ok(result) => {
+                            if result.auto_backup_created {
+                                tracing::info!("background mode registry auto backup created");
+                            }
+                            background_jobs
+                                .mark_completed(REGISTRY_BACKUP_MAINTENANCE_JOB, result.detail);
+                            background_jobs.mark_scheduled(
+                                REGISTRY_BACKUP_MAINTENANCE_JOB,
+                                "Next background registry backup maintenance run is waiting.",
+                                REGISTRY_BACKUP_MAINTENANCE_CADENCE_SECONDS,
+                            );
+                        }
+                        Err(error) => {
+                            tracing::warn!(
+                                error = %error,
+                                "background registry backup maintenance failed"
+                            );
+                            background_jobs
+                                .mark_failed(REGISTRY_BACKUP_MAINTENANCE_JOB, error.to_string());
+                            background_jobs.mark_scheduled(
+                                REGISTRY_BACKUP_MAINTENANCE_JOB,
+                                "Next background registry backup maintenance retry is waiting.",
+                                REGISTRY_BACKUP_MAINTENANCE_CADENCE_SECONDS,
+                            );
+                        }
+                    }
+
+                    let mut remaining = cadence;
+                    while remaining > Duration::ZERO {
+                        if stop_token.is_stop_requested()
+                            || !is_background_registry_maintenance_active(&backend_runtime)
+                        {
+                            running.store(false, Ordering::Release);
+                            background_jobs.mark_completed(
+                                REGISTRY_BACKUP_MAINTENANCE_JOB,
+                                "Background registry backup maintenance stopped.",
+                            );
+                            return;
+                        }
+                        let chunk = remaining.min(sleep_chunk);
+                        std::thread::sleep(chunk);
+                        remaining = remaining.saturating_sub(chunk);
+                    }
+                }
+
+                running.store(false, Ordering::Release);
+                background_jobs.mark_completed(
+                    REGISTRY_BACKUP_MAINTENANCE_JOB,
+                    "Background registry backup maintenance stopped.",
+                );
+            },
+        );
+    }
+
+    fn start_gui_background_capability_loops(&self) {
+        let current = self.backend_runtime.snapshot();
+        if current.mode != BackendRuntimeMode::Background
+            || current.phase != BackendRuntimePhase::Running
+        {
+            return;
+        }
+        if self
+            .background_capabilities_running
+            .swap(true, Ordering::AcqRel)
+        {
+            return;
+        }
+
+        for (name, cadence, detail) in [
+            (
+                BACKGROUND_PRESENCE_AUTOMATION_JOB,
+                BACKGROUND_PRESENCE_CADENCE_SECONDS,
+                "Background presence automation is scheduled for GUI background mode.",
+            ),
+            (
+                BACKGROUND_DISCORD_PRESENCE_JOB,
+                BACKGROUND_DISCORD_CADENCE_SECONDS,
+                "Background Discord presence is scheduled for GUI background mode.",
+            ),
+            (
+                BACKGROUND_FACTS_REFRESH_JOB,
+                BACKGROUND_CURRENT_USER_CADENCE_SECONDS,
+                "Background facts refresh is scheduled for GUI background mode.",
+            ),
+            (
+                BACKGROUND_MODERATION_REFRESH_JOB,
+                BACKGROUND_MODERATION_CADENCE_SECONDS,
+                "Background moderation refresh is scheduled for GUI background mode.",
+            ),
+        ] {
+            self.runtime_context.background_jobs.register_job(
+                name,
+                "rust-host",
+                Some(cadence),
+                "scheduled",
+                detail,
+            );
+        }
+
+        let db = Arc::clone(&self.db);
+        let web = Arc::clone(&self.web);
+        let backend_runtime = self.backend_runtime.clone();
+        let background_jobs = self.runtime_context.background_jobs.clone();
+        let running = Arc::clone(&self.background_capabilities_running);
+        let session_slot = Arc::clone(&self.backend_frontend_session);
+        let realtime_runtime = Arc::clone(&self.realtime_runtime);
+        let runtime_context = Arc::clone(&self.runtime_context);
+        let discord_rpc = Arc::clone(&self.discord_rpc);
+
+        self.runtime_context
+            .tasks
+            .spawn_cancellable(move |stop_token| async move {
+                let mut presence_state = BackgroundPresenceAutomationState::default();
+                let mut discord_state = BackgroundDiscordPresenceState::default();
+                let mut next_presence = Instant::now();
+                let mut next_discord = Instant::now();
+                let mut next_current_user = Instant::now();
+                let mut next_group_instances = Instant::now();
+                let mut next_social = Instant::now();
+                let mut next_moderation = Instant::now();
+                let mut favorite_friend_groups_by_key: HashMap<String, Vec<String>> =
+                    HashMap::new();
+                let sleep_chunk = Duration::from_secs(1);
+
+                loop {
+                    if stop_token.is_stop_requested()
+                        || !is_background_registry_maintenance_active(&backend_runtime)
+                    {
+                        break;
+                    }
+
+                    let now = Instant::now();
+                    if now >= next_current_user {
+                        run_background_current_user_refresh(
+                            &db,
+                            &web,
+                            &session_slot,
+                            &realtime_runtime,
+                            &background_jobs,
+                        )
+                        .await;
+                        next_current_user =
+                            now + Duration::from_secs(BACKGROUND_CURRENT_USER_CADENCE_SECONDS);
+                    }
+
+                    if now >= next_group_instances {
+                        run_background_group_instance_refresh(
+                            &db,
+                            &web,
+                            &session_slot,
+                            &background_jobs,
+                        )
+                        .await;
+                        next_group_instances =
+                            now + Duration::from_secs(BACKGROUND_GROUP_INSTANCE_CADENCE_SECONDS);
+                    }
+
+                    if now >= next_social {
+                        run_background_social_baseline_refresh(
+                            &db,
+                            &web,
+                            &session_slot,
+                            &realtime_runtime,
+                            &runtime_context,
+                            &background_jobs,
+                            &mut favorite_friend_groups_by_key,
+                        )
+                        .await;
+                        next_social =
+                            now + Duration::from_secs(BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS);
+                    }
+
+                    if now >= next_moderation {
+                        run_background_moderation_refresh(
+                            &db,
+                            &web,
+                            &session_slot,
+                            &runtime_context,
+                            &background_jobs,
+                        )
+                        .await;
+                        next_moderation =
+                            now + Duration::from_secs(BACKGROUND_MODERATION_CADENCE_SECONDS);
+                    }
+
+                    if now >= next_presence {
+                        run_background_presence_tick(
+                            &db,
+                            &web,
+                            &session_slot,
+                            &realtime_runtime,
+                            &runtime_context,
+                            &background_jobs,
+                            &mut presence_state,
+                            &favorite_friend_groups_by_key,
+                        )
+                        .await;
+                        next_presence =
+                            now + Duration::from_secs(BACKGROUND_PRESENCE_CADENCE_SECONDS);
+                    }
+
+                    if now >= next_discord {
+                        run_background_discord_tick(
+                            &db,
+                            &web,
+                            &session_slot,
+                            &realtime_runtime,
+                            &runtime_context,
+                            &background_jobs,
+                            &discord_rpc,
+                            &mut discord_state,
+                            &favorite_friend_groups_by_key,
+                        )
+                        .await;
+                        next_discord =
+                            now + Duration::from_secs(BACKGROUND_DISCORD_CADENCE_SECONDS);
+                    }
+
+                    tokio::time::sleep(sleep_chunk).await;
+                }
+
+                running.store(false, Ordering::Release);
+                background_jobs.mark_completed(
+                    BACKGROUND_PRESENCE_AUTOMATION_JOB,
+                    "Background presence automation stopped.",
+                );
+                background_jobs.mark_completed(
+                    BACKGROUND_DISCORD_PRESENCE_JOB,
+                    "Background Discord presence stopped.",
+                );
+                background_jobs.mark_completed(
+                    BACKGROUND_FACTS_REFRESH_JOB,
+                    "Background facts refresh stopped.",
+                );
+                background_jobs.mark_completed(
+                    BACKGROUND_MODERATION_REFRESH_JOB,
+                    "Background moderation refresh stopped.",
+                );
+            });
+    }
+
     fn emit_backend_runtime_telemetry(&self, kind: &str, detail: impl Into<String>) {
         self.emit_backend_runtime_telemetry_snapshot(kind, detail, self.backend_runtime.snapshot());
     }
@@ -725,6 +1185,643 @@ impl RuntimeHostState {
                 snapshot,
             },
         );
+    }
+}
+
+fn is_background_registry_maintenance_active(runtime: &BackendRuntime) -> bool {
+    let snapshot = runtime.snapshot();
+    snapshot.mode == BackendRuntimeMode::Background
+        && snapshot.phase == BackendRuntimePhase::Running
+}
+
+fn background_capability_session(
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+) -> Option<BackgroundCapabilitySession> {
+    session_slot.lock().ok().and_then(|slot| {
+        slot.as_ref().map(|session| BackgroundCapabilitySession {
+            current_user_id: session.user_id.clone(),
+            endpoint: session.endpoint.clone(),
+            websocket: session.websocket.clone(),
+            current_user_snapshot: session.current_user_snapshot.clone(),
+        })
+    })
+}
+
+fn background_capability_session_matches(
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    session: &BackgroundCapabilitySession,
+) -> bool {
+    session_slot_matches(session_slot.lock().ok().as_deref(), session)
+}
+
+async fn run_background_presence_tick(
+    db: &Arc<DatabaseService>,
+    web: &Arc<WebClient>,
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    realtime_runtime: &Arc<RealtimeHostRuntime>,
+    runtime_context: &Arc<RuntimeHostContext>,
+    background_jobs: &RuntimeBackgroundJobs,
+    presence_state: &mut BackgroundPresenceAutomationState,
+    favorite_friend_groups_by_key: &HashMap<String, Vec<String>>,
+) {
+    background_jobs.mark_running(
+        BACKGROUND_PRESENCE_AUTOMATION_JOB,
+        "Running background presence automation.",
+    );
+    let Some(session) = background_capability_session(session_slot) else {
+        background_jobs.mark_scheduled(
+            BACKGROUND_PRESENCE_AUTOMATION_JOB,
+            "Background presence automation is waiting for an authenticated session.",
+            BACKGROUND_PRESENCE_CADENCE_SECONDS,
+        );
+        return;
+    };
+    let host_session = runtime_context.session.snapshot();
+    let friends_by_id = realtime_runtime
+        .friend_snapshot()
+        .map(|snapshot| snapshot.friends_by_id)
+        .unwrap_or_default();
+    let facts = match build_background_presence_facts(
+        db.as_ref(),
+        BackgroundPresenceFactsInput {
+            session: session.clone(),
+            is_game_running: host_session.is_game_running,
+            is_steamvr_running: host_session.is_steamvr_running,
+            last_game_started_at: host_session.last_game_started_at,
+            game_log_snapshot: runtime_context.game_log_snapshot(),
+            now_playing: runtime_context.now_playing(),
+            friends_by_id,
+            favorite_friend_groups_by_key: favorite_friend_groups_by_key.clone(),
+        },
+    ) {
+        Ok(facts) => facts,
+        Err(error) => {
+            tracing::warn!(error = %error, "background presence facts build failed");
+            background_jobs.mark_failed(BACKGROUND_PRESENCE_AUTOMATION_JOB, error.to_string());
+            return;
+        }
+    };
+    let result = match run_background_presence_automation(
+        runtime_context.config(),
+        web.as_ref(),
+        db.as_ref(),
+        &facts,
+        presence_state,
+    )
+    .await
+    {
+        Ok(result) => result,
+        Err(error) => {
+            tracing::warn!(error = %error, "background presence automation failed");
+            background_jobs.mark_failed(BACKGROUND_PRESENCE_AUTOMATION_JOB, error.to_string());
+            return;
+        }
+    };
+    if let Some(updated_user) = result.updated_user.clone() {
+        let overlay_patch = result.patch.clone();
+        let accepted = realtime_runtime
+            .sync_current_user_snapshot(
+                session.current_user_id.clone(),
+                session.endpoint.clone(),
+                session.websocket.clone(),
+                None,
+                updated_user.clone(),
+                overlay_patch,
+            )
+            .unwrap_or(false);
+        if !background_capability_session_matches(session_slot, &session) {
+            tracing::warn!("ignored stale background presence automation user update");
+        } else if accepted {
+            if let Some(snapshot) = realtime_runtime.current_user_snapshot() {
+                replace_backend_frontend_session_user_if_session_matches(
+                    session_slot,
+                    &session,
+                    &snapshot,
+                );
+            } else {
+                update_backend_frontend_session_user_if_session_matches(
+                    session_slot,
+                    &session,
+                    &updated_user,
+                );
+            }
+        } else {
+            tracing::warn!("ignored background presence automation update rejected by realtime");
+        }
+    }
+    if result.applied {
+        tracing::info!(
+            patch = %result.patch,
+            rules = ?result.matched_rule_ids,
+            "background presence automation applied"
+        );
+    }
+    background_jobs.mark_completed(
+        BACKGROUND_PRESENCE_AUTOMATION_JOB,
+        format!("Background presence automation tick: {}.", result.reason),
+    );
+    background_jobs.mark_scheduled(
+        BACKGROUND_PRESENCE_AUTOMATION_JOB,
+        "Next background presence automation tick is waiting.",
+        BACKGROUND_PRESENCE_CADENCE_SECONDS,
+    );
+}
+
+async fn run_background_discord_tick(
+    db: &Arc<DatabaseService>,
+    web: &Arc<WebClient>,
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    realtime_runtime: &Arc<RealtimeHostRuntime>,
+    runtime_context: &Arc<RuntimeHostContext>,
+    background_jobs: &RuntimeBackgroundJobs,
+    discord_rpc: &Arc<DiscordRpc>,
+    discord_state: &mut BackgroundDiscordPresenceState,
+    favorite_friend_groups_by_key: &HashMap<String, Vec<String>>,
+) {
+    background_jobs.mark_running(
+        BACKGROUND_DISCORD_PRESENCE_JOB,
+        "Running background Discord presence.",
+    );
+    let Some(session) = background_capability_session(session_slot) else {
+        background_jobs.mark_scheduled(
+            BACKGROUND_DISCORD_PRESENCE_JOB,
+            "Background Discord presence is waiting for an authenticated session.",
+            BACKGROUND_DISCORD_CADENCE_SECONDS,
+        );
+        return;
+    };
+    let host_session = runtime_context.session.snapshot();
+    let friends_by_id = realtime_runtime
+        .friend_snapshot()
+        .map(|snapshot| snapshot.friends_by_id)
+        .unwrap_or_default();
+    let facts = match build_background_presence_facts(
+        db.as_ref(),
+        BackgroundPresenceFactsInput {
+            session,
+            is_game_running: host_session.is_game_running,
+            is_steamvr_running: host_session.is_steamvr_running,
+            last_game_started_at: host_session.last_game_started_at,
+            game_log_snapshot: runtime_context.game_log_snapshot(),
+            now_playing: runtime_context.now_playing(),
+            friends_by_id,
+            favorite_friend_groups_by_key: favorite_friend_groups_by_key.clone(),
+        },
+    ) {
+        Ok(facts) => facts,
+        Err(error) => {
+            tracing::warn!(error = %error, "background Discord facts build failed");
+            background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+            return;
+        }
+    };
+    let command = match build_background_discord_presence_command(
+        runtime_context.config(),
+        web.as_ref(),
+        db.as_ref(),
+        &facts,
+        discord_state,
+        false,
+    )
+    .await
+    {
+        Ok(command) => command,
+        Err(error) => {
+            tracing::warn!(error = %error, "background Discord presence compose failed");
+            background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+            return;
+        }
+    };
+
+    let detail = match command {
+        BackgroundDiscordPresenceCommand::Noop { detail } => detail,
+        BackgroundDiscordPresenceCommand::SetActive { active, detail, .. } => {
+            let rpc = Arc::clone(discord_rpc);
+            match tokio::task::spawn_blocking(move || rpc.set_active(active)).await {
+                Ok(Ok(result)) => {
+                    discord_state.apply_set_active_result(result);
+                    detail
+                }
+                Ok(Err(error)) => {
+                    discord_state.apply_set_active_result(false);
+                    tracing::warn!(error = %error, "background Discord SetActive failed");
+                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    return;
+                }
+                Err(error) => {
+                    discord_state.apply_set_active_result(false);
+                    tracing::warn!(error = %error, "background Discord SetActive task failed");
+                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    return;
+                }
+            }
+        }
+        BackgroundDiscordPresenceCommand::SetAssets { payload } => {
+            let detail = payload.detail.clone();
+            let rpc = Arc::clone(discord_rpc);
+            let payload = json!({
+                "appId": payload.app_id,
+                "activity": payload.activity,
+            });
+            match tokio::task::spawn_blocking(move || rpc.set_assets(payload)).await {
+                Ok(Ok(result)) => {
+                    discord_state.apply_set_assets_result(result);
+                    detail
+                }
+                Ok(Err(error)) => {
+                    discord_state.apply_set_assets_result(false);
+                    tracing::warn!(error = %error, "background Discord SetAssets failed");
+                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    return;
+                }
+                Err(error) => {
+                    discord_state.apply_set_assets_result(false);
+                    tracing::warn!(error = %error, "background Discord SetAssets task failed");
+                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    return;
+                }
+            }
+        }
+    };
+    background_jobs.mark_completed(BACKGROUND_DISCORD_PRESENCE_JOB, detail);
+    background_jobs.mark_scheduled(
+        BACKGROUND_DISCORD_PRESENCE_JOB,
+        "Next background Discord presence tick is waiting.",
+        BACKGROUND_DISCORD_CADENCE_SECONDS,
+    );
+}
+
+async fn run_background_current_user_refresh(
+    db: &Arc<DatabaseService>,
+    web: &Arc<WebClient>,
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    realtime_runtime: &Arc<RealtimeHostRuntime>,
+    background_jobs: &RuntimeBackgroundJobs,
+) {
+    background_jobs.mark_running(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        "Refreshing background current user facts.",
+    );
+    let Some(session) = background_capability_session(session_slot) else {
+        background_jobs.mark_scheduled(
+            BACKGROUND_FACTS_REFRESH_JOB,
+            "Background facts refresh is waiting for an authenticated session.",
+            BACKGROUND_CURRENT_USER_CADENCE_SECONDS,
+        );
+        return;
+    };
+    match refresh_background_current_user(web.as_ref(), db.as_ref(), &session).await {
+        Ok(updated_user) => {
+            let accepted = realtime_runtime
+                .sync_current_user_snapshot(
+                    session.current_user_id.clone(),
+                    session.endpoint.clone(),
+                    session.websocket.clone(),
+                    None,
+                    updated_user.clone(),
+                    Value::Null,
+                )
+                .unwrap_or(false);
+            if !background_capability_session_matches(session_slot, &session) {
+                tracing::warn!("ignored stale background current user refresh");
+            } else if accepted {
+                if let Some(snapshot) = realtime_runtime.current_user_snapshot() {
+                    replace_backend_frontend_session_user_if_session_matches(
+                        session_slot,
+                        &session,
+                        &snapshot,
+                    );
+                } else {
+                    update_backend_frontend_session_user_filtered_if_session_matches(
+                        session_slot,
+                        &session,
+                        &updated_user,
+                    );
+                }
+            } else {
+                tracing::warn!("ignored background current user refresh rejected by realtime");
+            }
+            background_jobs.mark_completed(
+                BACKGROUND_FACTS_REFRESH_JOB,
+                "Background current user facts refreshed.",
+            );
+        }
+        Err(error) => {
+            tracing::warn!(error = %error, "background current user refresh failed");
+            background_jobs.mark_failed(BACKGROUND_FACTS_REFRESH_JOB, error.to_string());
+        }
+    }
+    background_jobs.mark_scheduled(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        "Next background current user facts refresh is waiting.",
+        BACKGROUND_CURRENT_USER_CADENCE_SECONDS,
+    );
+}
+
+async fn run_background_group_instance_refresh(
+    db: &Arc<DatabaseService>,
+    web: &Arc<WebClient>,
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    background_jobs: &RuntimeBackgroundJobs,
+) {
+    background_jobs.mark_running(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        "Refreshing background group instance facts.",
+    );
+    let Some(session) = background_capability_session(session_slot) else {
+        background_jobs.mark_scheduled(
+            BACKGROUND_FACTS_REFRESH_JOB,
+            "Background group instance refresh is waiting for an authenticated session.",
+            BACKGROUND_GROUP_INSTANCE_CADENCE_SECONDS,
+        );
+        return;
+    };
+    match refresh_background_group_instances(web.as_ref(), db.as_ref(), &session).await {
+        Ok(count) => background_jobs.mark_completed(
+            BACKGROUND_FACTS_REFRESH_JOB,
+            format!("Background group instance facts refreshed: {count} rows."),
+        ),
+        Err(error) => {
+            tracing::warn!(error = %error, "background group instance refresh failed");
+            background_jobs.mark_failed(BACKGROUND_FACTS_REFRESH_JOB, error.to_string());
+        }
+    }
+    background_jobs.mark_scheduled(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        "Next background group instance facts refresh is waiting.",
+        BACKGROUND_GROUP_INSTANCE_CADENCE_SECONDS,
+    );
+}
+
+async fn run_background_social_baseline_refresh(
+    db: &Arc<DatabaseService>,
+    web: &Arc<WebClient>,
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    realtime_runtime: &Arc<RealtimeHostRuntime>,
+    runtime_context: &Arc<RuntimeHostContext>,
+    background_jobs: &RuntimeBackgroundJobs,
+    favorite_friend_groups_by_key: &mut HashMap<String, Vec<String>>,
+) {
+    background_jobs.mark_running(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        "Refreshing background friend and favorite facts.",
+    );
+    let Some(session) = background_capability_session(session_slot) else {
+        background_jobs.mark_scheduled(
+            BACKGROUND_FACTS_REFRESH_JOB,
+            "Background social baseline refresh is waiting for an authenticated session.",
+            BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS,
+        );
+        return;
+    };
+    let deps = SocialBaselineDeps {
+        db: Arc::clone(db),
+        web: Arc::clone(web),
+        auth_scope: runtime_context.auth_scope.clone(),
+        session: runtime_context.session.clone(),
+    };
+    let friend_output = build_friend_roster_baseline(
+        deps.clone(),
+        SocialFriendRosterBaselineInput {
+            user_id: session.current_user_id.clone(),
+            endpoint: session.endpoint.clone(),
+            current_user_snapshot: RawJson::from(session.current_user_snapshot.clone()),
+            explicit_add_intent_user_ids: Vec::new(),
+        },
+    )
+    .await;
+    let friend_count = match friend_output {
+        Ok(output) => {
+            if let Some(snapshot) = output.snapshot {
+                let value = snapshot.into_value();
+                let friends_value = value
+                    .get("friendsById")
+                    .cloned()
+                    .unwrap_or_else(|| json!({}));
+                if let Ok(friends_by_id) =
+                    serde_json::from_value::<HashMap<String, FriendRecord>>(friends_value.clone())
+                {
+                    let count = friends_by_id.len();
+                    let _ = realtime_runtime.sync_friend_snapshot(
+                        session.current_user_id.clone(),
+                        session.endpoint.clone(),
+                        session.websocket.clone(),
+                        None,
+                        friends_by_id,
+                    );
+                    if let Ok(favorites_output) = build_favorites_baseline(
+                        deps,
+                        SocialFavoritesBaselineInput {
+                            user_id: session.current_user_id.clone(),
+                            endpoint: session.endpoint.clone(),
+                            current_user_snapshot: RawJson::from(
+                                session.current_user_snapshot.clone(),
+                            ),
+                            friend_roster_by_id: RawJson::from(friends_value),
+                        },
+                    )
+                    .await
+                    {
+                        if let Some(snapshot) = favorites_output.snapshot {
+                            *favorite_friend_groups_by_key =
+                                favorite_group_membership_from_snapshot(snapshot.into_value());
+                        }
+                    }
+                    count
+                } else {
+                    output.count
+                }
+            } else {
+                output.count
+            }
+        }
+        Err(error) => {
+            tracing::warn!(error = %error, "background social baseline refresh failed");
+            background_jobs.mark_failed(BACKGROUND_FACTS_REFRESH_JOB, error.to_string());
+            return;
+        }
+    };
+    background_jobs.mark_completed(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        format!("Background friend and favorite facts refreshed: {friend_count} friends."),
+    );
+    background_jobs.mark_scheduled(
+        BACKGROUND_FACTS_REFRESH_JOB,
+        "Next background friend and favorite facts refresh is waiting.",
+        BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS,
+    );
+}
+
+async fn run_background_moderation_refresh(
+    db: &Arc<DatabaseService>,
+    web: &Arc<WebClient>,
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    runtime_context: &Arc<RuntimeHostContext>,
+    background_jobs: &RuntimeBackgroundJobs,
+) {
+    background_jobs.mark_running(
+        BACKGROUND_MODERATION_REFRESH_JOB,
+        "Refreshing background moderation facts.",
+    );
+    let Some(session) = background_capability_session(session_slot) else {
+        background_jobs.mark_scheduled(
+            BACKGROUND_MODERATION_REFRESH_JOB,
+            "Background moderation refresh is waiting for an authenticated session.",
+            BACKGROUND_MODERATION_CADENCE_SECONDS,
+        );
+        return;
+    };
+    let deps = ModerationSyncDeps {
+        db: db.as_ref(),
+        web: web.as_ref(),
+        session: &runtime_context.session,
+        auth_scope: &runtime_context.auth_scope,
+    };
+    match refresh_player_moderations(
+        deps,
+        ModerationSyncRefreshInput {
+            user_id: session.current_user_id,
+            endpoint: session.endpoint,
+        },
+    )
+    .await
+    {
+        Ok(output) => background_jobs.mark_completed(
+            BACKGROUND_MODERATION_REFRESH_JOB,
+            format!(
+                "Background moderation facts refreshed: {} local rows.",
+                output.local_count
+            ),
+        ),
+        Err(error) => {
+            tracing::warn!(error = %error, "background moderation refresh failed");
+            background_jobs.mark_failed(BACKGROUND_MODERATION_REFRESH_JOB, error.to_string());
+        }
+    }
+    background_jobs.mark_scheduled(
+        BACKGROUND_MODERATION_REFRESH_JOB,
+        "Next background moderation refresh is waiting.",
+        BACKGROUND_MODERATION_CADENCE_SECONDS,
+    );
+}
+
+fn update_backend_frontend_session_user_if_session_matches(
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    expected: &BackgroundCapabilitySession,
+    updated_user: &Value,
+) -> bool {
+    let Ok(mut slot) = session_slot.lock() else {
+        return false;
+    };
+    if !session_slot_matches(Some(&slot), expected) {
+        return false;
+    }
+    let Some(session) = slot.as_mut() else {
+        return false;
+    };
+    let mut merged = session.current_user_snapshot.clone();
+    if let (Some(target), Some(source)) = (merged.as_object_mut(), updated_user.as_object()) {
+        for (key, value) in source {
+            target.insert(key.clone(), value.clone());
+        }
+    } else {
+        merged = updated_user.clone();
+    }
+    session.current_user_snapshot = merged;
+    if let Some(display_name) =
+        string_field(updated_user, "displayName").or_else(|| string_field(updated_user, "username"))
+    {
+        session.display_name = display_name;
+    }
+    true
+}
+
+fn update_backend_frontend_session_user_filtered_if_session_matches(
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    expected: &BackgroundCapabilitySession,
+    updated_user: &Value,
+) -> bool {
+    let mut filtered = updated_user.clone();
+    remove_current_user_refresh_local_authority_fields(&mut filtered);
+    update_backend_frontend_session_user_if_session_matches(session_slot, expected, &filtered)
+}
+
+fn replace_backend_frontend_session_user_if_session_matches(
+    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    expected: &BackgroundCapabilitySession,
+    snapshot: &Value,
+) -> bool {
+    let Ok(mut slot) = session_slot.lock() else {
+        return false;
+    };
+    if !session_slot_matches(Some(&slot), expected) {
+        return false;
+    }
+    let Some(session) = slot.as_mut() else {
+        return false;
+    };
+    session.current_user_snapshot = snapshot.clone();
+    if let Some(display_name) =
+        string_field(snapshot, "displayName").or_else(|| string_field(snapshot, "username"))
+    {
+        session.display_name = display_name;
+    }
+    true
+}
+
+fn session_slot_matches(
+    slot: Option<&Option<BackendRuntimeFrontendSessionSnapshot>>,
+    expected: &BackgroundCapabilitySession,
+) -> bool {
+    slot.and_then(Option::as_ref)
+        .map(|current| {
+            current.user_id == expected.current_user_id
+                && current.endpoint == expected.endpoint
+                && current.websocket == expected.websocket
+        })
+        .unwrap_or(false)
+}
+
+fn remove_current_user_refresh_local_authority_fields(value: &mut Value) {
+    let Some(object) = value.as_object_mut() else {
+        return;
+    };
+    for field in CURRENT_USER_REFRESH_LOCAL_AUTHORITY_FIELDS {
+        object.remove(*field);
+    }
+}
+
+fn favorite_group_membership_from_snapshot(snapshot: Value) -> HashMap<String, Vec<String>> {
+    let mut groups = HashMap::new();
+    append_favorite_group_membership(
+        &mut groups,
+        snapshot.get("groupedFavoriteFriendIdsByGroupKey"),
+        "",
+    );
+    append_favorite_group_membership(&mut groups, snapshot.get("localFriendFavorites"), "local:");
+    groups
+}
+
+fn append_favorite_group_membership(
+    groups: &mut HashMap<String, Vec<String>>,
+    value: Option<&Value>,
+    key_prefix: &str,
+) {
+    let Some(object) = value.and_then(Value::as_object) else {
+        return;
+    };
+    for (group_key, user_ids) in object {
+        let key = format!("{key_prefix}{group_key}");
+        let user_ids: Vec<String> = user_ids
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|value| value.as_str().map(str::trim).map(str::to_string))
+            .filter(|value| !value.is_empty())
+            .collect();
+        if !user_ids.is_empty() {
+            groups.insert(key, user_ids);
+        }
     }
 }
 

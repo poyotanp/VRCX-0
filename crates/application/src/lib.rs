@@ -2,6 +2,7 @@ mod auth_credentials;
 mod auth_scope;
 mod backend_runtime;
 mod background;
+mod background_capabilities;
 mod diagnostics;
 mod error;
 mod event_bus;
@@ -14,6 +15,7 @@ mod moderation_sync;
 mod process_monitor;
 mod proxy;
 mod realtime;
+mod registry_backup;
 mod runtime_lifecycle;
 mod screenshots;
 mod session;
@@ -45,6 +47,15 @@ pub use backend_runtime::{
     BackendRuntimeTelemetry,
 };
 pub use background::{RuntimeBackgroundJobSnapshot, RuntimeBackgroundJobs};
+pub use background_capabilities::{
+    build_background_discord_presence_command, build_background_presence_facts,
+    refresh_background_current_user, refresh_background_group_instances,
+    run_background_presence_automation, BackgroundCapabilitySession,
+    BackgroundDiscordActivityPayload, BackgroundDiscordPresenceCommand,
+    BackgroundDiscordPresenceState, BackgroundPresenceAutomationResult,
+    BackgroundPresenceAutomationState, BackgroundPresenceFacts, BackgroundPresenceFactsInput,
+    ParsedLocation, PresencePlayer,
+};
 pub use diagnostics::{RuntimeDiagnostics, RuntimeDiagnosticsSnapshot};
 pub use error::Error;
 pub use event_bus::{RuntimeEventBus, RuntimeEventSink};
@@ -86,6 +97,12 @@ pub use realtime::{
     RealtimeNotificationProjection, RealtimeNotificationUpsert, RealtimeSessionContext,
     RealtimeStopRequest, RealtimeTransportStartResult, RealtimeWsMessagePayload,
     RealtimeWsStatusPayload,
+};
+pub use registry_backup::{
+    registry_backup_create, registry_backup_delete, registry_backup_export_json,
+    registry_backup_import_json, registry_backup_list, registry_backup_maintenance_run,
+    registry_backup_restore, RegistryBackupHostActions, RegistryBackupMaintenanceMode,
+    RegistryBackupMaintenanceResult, RegistryBackupSnapshot,
 };
 pub use runtime_lifecycle::{RuntimeLifecycle, RuntimeLifecycleSnapshot};
 pub use screenshots::{

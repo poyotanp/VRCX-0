@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 use vrcx_0_host::local_ipc_server::{LocalIpcEventHandler, LocalIpcServer};
 
 use super::{IpcEventDisposition, IpcEventSink, IpcPacket};
@@ -28,7 +28,11 @@ impl IpcServer {
             };
             if should_forward {
                 if let Some(app_handle) = app_handle_for_handler.lock().unwrap().clone() {
-                    let _ = app_handle.emit("ipcEvent", &packet_str);
+                    crate::bootstrap::emit_to_main_window_if_visible(
+                        &app_handle,
+                        "ipcEvent",
+                        packet_str.clone(),
+                    );
                 } else {
                     tracing::warn!("IPC event received before Tauri AppHandle was attached");
                 }

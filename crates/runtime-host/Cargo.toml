@@ -10,6 +10,7 @@ test-utils = ["vrcx-0-application/test-utils"]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+tokio = { version = "1", features = ["time", "rt"] }
 tracing = "0.1"
 vrcx-0-application = { path = "../application" }
 vrcx-0-core = { path = "../core" }

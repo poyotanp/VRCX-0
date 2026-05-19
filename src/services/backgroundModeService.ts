@@ -1,6 +1,8 @@
 import { tauriClient } from '@/platform/tauri/client';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
+import { stopRuntimeUpdateLoopAndWaitForIdle } from './updateLoopService';
+
 function currentAuthScope() {
     const auth = useRuntimeStore.getState().auth;
     return {
@@ -11,6 +13,7 @@ function currentAuthScope() {
 
 export async function startBackgroundModeForCurrentSession() {
     const { userId, endpoint } = currentAuthScope();
+    await stopRuntimeUpdateLoopAndWaitForIdle();
     await tauriClient.app.RuntimeAuthScopeSet({ userId, endpoint });
     return tauriClient.app.StartBackgroundMode();
 }

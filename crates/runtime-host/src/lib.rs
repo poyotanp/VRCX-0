@@ -7,6 +7,7 @@ mod host_actions;
 mod host_file_access;
 mod log_watcher;
 mod process_monitor;
+mod registry_backup;
 mod state;
 
 pub use context::RuntimeHostContext;
@@ -20,4 +21,5 @@ pub use log_watcher::{
     GameLogEvent, GameLogEventSink, HostLogLocationSnapshotScanner, LogLocationSnapshot, LogWatcher,
 };
 pub use process_monitor::HostGameProcessMonitorActions;
+pub use registry_backup::HostRegistryBackupActions;
 pub use state::{BackendRuntimeFrontendSessionSnapshot, RuntimeHostOptions, RuntimeHostState};

@@ -20,6 +20,19 @@ import { showSQLiteErrorDialog } from './sqliteErrorDialogService';
 let updateLoopTimer = null;
 let lastGameLogCapabilityRefreshAt = 0;
 let stopped = true;
+let activeTickToken = 0;
+let activeTickCount = 0;
+const idleWaiters = new Set<() => void>();
+
+function notifyUpdateLoopIdle() {
+    if (activeTickCount !== 0) {
+        return;
+    }
+    for (const resolve of idleWaiters) {
+        resolve();
+    }
+    idleWaiters.clear();
+}
 
 async function refreshGameLogCapabilityIfPrewatching() {
     const capabilities = useRuntimeStore.getState().hostCapabilities;
@@ -48,6 +61,8 @@ async function tickRuntimeLoop() {
     if (stopped) {
         return;
     }
+    const tickToken = activeTickToken;
+    activeTickCount += 1;
 
     const runtimeStore = useRuntimeStore.getState();
     const tickCount = runtimeStore.updateLoop.tickCount + 1;
@@ -75,6 +90,9 @@ async function tickRuntimeLoop() {
                 lastGameLogSyncDetail:
                     getHostCapabilityUnavailableReason('gameLogWatcher')
             });
+        }
+        if (stopped || tickToken !== activeTickToken) {
+            return;
         }
         await runBackgroundMaintenanceTick();
         useRuntimeStore
@@ -107,6 +125,8 @@ async function tickRuntimeLoop() {
                 error instanceof Error ? error.message : String(error)
             );
     } finally {
+        activeTickCount = Math.max(0, activeTickCount - 1);
+        notifyUpdateLoopIdle();
         if (!stopped) {
             updateLoopTimer = window.setTimeout(tickRuntimeLoop, 5000);
         }
@@ -119,6 +139,7 @@ export function startRuntimeUpdateLoop() {
     }
 
     stopped = false;
+    activeTickToken += 1;
     useRuntimeStore
         .getState()
         .setStartupTask(
@@ -134,6 +155,7 @@ export function startRuntimeUpdateLoop() {
 
 export function stopRuntimeUpdateLoop() {
     stopped = true;
+    activeTickToken += 1;
     if (updateLoopTimer !== null) {
         window.clearTimeout(updateLoopTimer);
         updateLoopTimer = null;
@@ -150,4 +172,25 @@ export function stopRuntimeUpdateLoop() {
             'Game log tail sync is stopped.'
         );
     resetBackgroundMaintenance();
+    notifyUpdateLoopIdle();
+}
+
+export async function stopRuntimeUpdateLoopAndWaitForIdle(
+    timeoutMs = 10000
+) {
+    stopRuntimeUpdateLoop();
+    if (activeTickCount === 0) {
+        return;
+    }
+    const idle = await Promise.race([
+        new Promise<void>((resolve) => {
+            idleWaiters.add(() => resolve());
+        }),
+        new Promise<'timeout'>((resolve) => {
+            window.setTimeout(() => resolve('timeout'), timeoutMs);
+        })
+    ]);
+    if (idle === 'timeout' && activeTickCount !== 0) {
+        throw new Error('Timed out waiting for runtime update loop to stop.');
+    }
 }

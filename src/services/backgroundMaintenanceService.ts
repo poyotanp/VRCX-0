@@ -743,149 +743,29 @@ async function updateAutoStateChange() {
     await runPresenceAutomation();
 }
 
-async function backupVrcRegistry(name: any) {
-    if (!isHostCapabilityAvailable('registryPrefs')) {
-        return false;
-    }
-
-    let regJson;
-    try {
-        regJson = await tauriClient.app.GetVRChatRegistry();
-    } catch (error) {
-        console.warn('Failed to get VRChat registry for backup:', error);
-        return false;
-    }
-    if (
-        !regJson ||
-        typeof regJson !== 'object' ||
-        Object.keys(regJson).length === 0
-    ) {
-        return false;
-    }
-
-    const backup: any = {
-        name,
-        date: new Date().toJSON(),
-        data: regJson
-    };
-    const backups = safeJsonParse(
-        await configRepository.getString('VRChatRegistryBackups', '[]'),
-        []
-    ) as Record<string, any>[];
-    backups.push(backup);
-    await configRepository.setString(
-        'VRChatRegistryBackups',
-        JSON.stringify(backups)
-    );
-    return true;
-}
-
-async function tryAutoBackupVrcRegistry() {
+async function runRegistryBackupMaintenance(reason: string) {
     if (!isHostCapabilityAvailable('registryPrefs')) {
         return;
     }
 
-    if (!(await configRepository.getBool('vrcRegistryAutoBackup', true))) {
-        return;
-    }
-
-    let hasRegistryFolder = false;
+    let result: any;
     try {
-        hasRegistryFolder = Boolean(
-            await tauriClient.app.HasVRChatRegistryFolder()
-        );
+        result = await tauriClient.app.RegistryBackupMaintenanceRun(reason);
     } catch (error) {
         console.warn(
-            'Failed to check VRChat registry folder before backup:',
+            'Failed to run VRChat registry backup maintenance:',
             error
         );
         return;
     }
-    if (!hasRegistryFolder) {
+
+    if (!result?.restorePromptNeeded) {
         return;
     }
 
-    const now = new Date();
-    const lastBackupDate = await configRepository.getString(
-        'VRChatRegistryLastBackupDate',
-        ''
-    );
-    if (lastBackupDate) {
-        const lastBackup = Date.parse(String(lastBackupDate || ''));
-        if (
-            Number.isFinite(lastBackup) &&
-            now.getTime() - lastBackup < 3 * 24 * 60 * 60 * 1000
-        ) {
-            return;
-        }
-    }
-
-    const backups = safeJsonParse(
-        await configRepository.getString('VRChatRegistryBackups', '[]'),
-        []
-    ) as Record<string, any>[];
-    const freshBackups = backups.filter((backup: any) => {
-        if (backup?.name !== 'Auto Backup') {
-            return true;
-        }
-        const backupDate = Date.parse(backup.date || '');
-        return (
-            Number.isFinite(backupDate) &&
-            backupDate >= now.getTime() - 14 * 24 * 60 * 60 * 1000
-        );
-    });
-    await configRepository.setString(
-        'VRChatRegistryBackups',
-        JSON.stringify(freshBackups)
-    );
-    if (await backupVrcRegistry('Auto Backup')) {
-        await configRepository.setString(
-            'VRChatRegistryLastBackupDate',
-            now.toJSON()
-        );
-    }
-}
-
-async function checkAutoBackupRestoreVrcRegistry() {
-    if (!isHostCapabilityAvailable('registryPrefs')) {
-        return;
-    }
-
-    if (!(await configRepository.getBool('vrcRegistryAutoBackup', true))) {
-        return;
-    }
-
-    if (!(await configRepository.getBool('vrcRegistryAskRestore', true))) {
-        await tryAutoBackupVrcRegistry();
-        return;
-    }
-
-    let hasRegistryFolder = true;
-    try {
-        hasRegistryFolder = Boolean(
-            await tauriClient.app.HasVRChatRegistryFolder()
-        );
-    } catch (error) {
-        console.warn('Failed to check VRChat registry folder:', error);
-    }
-
-    if (hasRegistryFolder) {
-        await tryAutoBackupVrcRegistry();
-        return;
-    }
-
-    const lastBackupDate = await configRepository.getString(
-        'VRChatRegistryLastBackupDate',
-        ''
-    );
-    const lastRestoreCheck = await configRepository.getString(
-        'VRChatRegistryLastRestoreCheck',
-        ''
-    );
-    if (!lastBackupDate || lastRestoreCheck === lastBackupDate) {
-        return;
-    }
-
+    await tauriClient.app
+        .EnsureMainWindow()
+        .catch(() => tauriClient.app.FocusWindow().catch(() => {}));
     await useModalStore.getState().alert({
         title: i18n.t(
             'service.background_maintenance.label.vrchat_registry_backup'
@@ -896,10 +776,12 @@ async function checkAutoBackupRestoreVrcRegistry() {
     });
     useRuntimeStore.getState().setSystemHostOpen('registryBackupOpen', true);
     await tauriClient.app.FocusWindow().catch(() => {});
-    await configRepository.setString(
-        'VRChatRegistryLastRestoreCheck',
-        lastBackupDate
-    );
+    if (result.restorePromptBackupDate) {
+        await configRepository.setString(
+            'VRChatRegistryLastRestoreCheck',
+            result.restorePromptBackupDate
+        );
+    }
 }
 
 async function checkForAppUpdate({ includeRegistryBackup = true }: any = {}) {
@@ -1015,7 +897,7 @@ async function checkForAppUpdate({ includeRegistryBackup = true }: any = {}) {
     }
 
     if (includeRegistryBackup) {
-        await tryAutoBackupVrcRegistry();
+        await runRegistryBackupMaintenance('foreground-update');
     }
 }
 
@@ -1028,7 +910,7 @@ export async function runStartupMaintenance() {
         () =>
             Promise.all([
                 checkForAppUpdate({ includeRegistryBackup: false }),
-                checkAutoBackupRestoreVrcRegistry()
+                runRegistryBackupMaintenance('foreground-startup')
             ])
     );
 }
