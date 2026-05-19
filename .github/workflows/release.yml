@@ -304,7 +304,7 @@ jobs:
                   done
                   find release-assets -mindepth 1 -type d -empty -delete
 
-            - name: List release assets
+            - name: List prepared release assets
               run: find release-assets -type f | sort
 
             - name: Add macOS updater entries to Linux/macOS manifest
@@ -337,6 +337,12 @@ jobs:
                           --base "$manifest_path" \
                           --out "$manifest_path"
                   done
+
+            - name: Remove updater signatures from GitHub release assets
+              run: find release-assets -type f -name '*.sig' -delete
+
+            - name: List GitHub release assets
+              run: find release-assets -type f | sort
 
             - uses: softprops/action-gh-release@v3
               with:
