@@ -608,14 +608,14 @@ fn configure_tray(app: &tauri::App, state: &AppState) -> Result<(), tauri::Error
 pub fn refresh_tray_menu(app: &tauri::AppHandle, state: &AppState) -> Result<(), tauri::Error> {
     if let Some(tray) = app.tray_by_id("main") {
         let labels = tray_labels(state);
-        let background_mode_hidden = is_background_mode_hidden(app, state);
+        let background_mode_active = is_background_mode_active(state);
         let open_item = MenuItem::with_id(app, "tray-open", labels.open, true, None::<&str>)?;
         let background_item = CheckMenuItem::with_id(
             app,
             "tray-toggle-background-mode",
             labels.background_mode,
             true,
-            background_mode_hidden,
+            background_mode_active,
             None::<&str>,
         )?;
         let exit_item = MenuItem::with_id(app, "tray-exit", labels.exit, true, None::<&str>)?;
@@ -632,17 +632,10 @@ struct TrayLabels {
     exit: &'static str,
 }
 
-fn is_background_mode_hidden(app: &tauri::AppHandle, state: &AppState) -> bool {
+fn is_background_mode_active(state: &AppState) -> bool {
     let snapshot = state.snapshot_backend_runtime();
-    if snapshot.mode != BackendRuntimeMode::Background
-        || snapshot.phase != BackendRuntimePhase::Running
-    {
-        return false;
-    }
-    match app.get_webview_window("main") {
-        Some(window) => !window.is_visible().unwrap_or(true),
-        None => true,
-    }
+    snapshot.mode == BackendRuntimeMode::Background
+        && snapshot.phase == BackendRuntimePhase::Running
 }
 
 fn tray_labels(state: &AppState) -> TrayLabels {
