@@ -418,6 +418,19 @@ function handleBackendRealtimeProjectionEvent(
     return true;
 }
 
+function requestGameRunningStateRefresh(source: string): void {
+    if (!isHostCapabilityAvailable('gameProcessMonitor')) {
+        return;
+    }
+
+    tauriClient.app.CheckGameRunning().catch((error: any) => {
+        console.warn(
+            `Game process state refresh failed during ${source}:`,
+            error
+        );
+    });
+}
+
 function handleRuntimeEvent(name: RuntimeEventName, payload: unknown): void {
     const runtimeStore = useRuntimeStore.getState();
 
@@ -545,6 +558,7 @@ function handleRuntimeEvent(name: RuntimeEventName, payload: unknown): void {
         runtimeStore.setGameState({
             lastBrowserFocusAt: new Date().toISOString()
         });
+        requestGameRunningStateRefresh('browser focus');
         handleBrowserFocus().catch((error: any) => {
             console.warn('Browser focus status refresh failed:', error);
         });

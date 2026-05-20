@@ -79,6 +79,7 @@ fn is_vrchat_process_name(name: &str) -> bool {
 #[cfg(not(target_os = "linux"))]
 fn is_vrchat_process_name(name: &str) -> bool {
     name.eq_ignore_ascii_case("VRChat.exe")
+        || name.eq_ignore_ascii_case("VRChat")
 }
 
 #[cfg(target_os = "linux")]
@@ -88,7 +89,7 @@ fn is_steamvr_process_name(name: &str) -> bool {
 
 #[cfg(not(target_os = "linux"))]
 fn is_steamvr_process_name(name: &str) -> bool {
-    name.starts_with("vrserver")
+    name.to_ascii_lowercase().starts_with("vrserver")
 }
 
 #[cfg(test)]
@@ -124,10 +125,11 @@ mod tests {
     fn non_linux_vrchat_process_name_matches_game_process_only() {
         assert!(is_vrchat_process_name("VRChat.exe"));
         assert!(is_vrchat_process_name("vrchat.exe"));
-        assert!(!is_vrchat_process_name("VRChat"));
+        assert!(is_vrchat_process_name("VRChat"));
         assert!(!is_vrchat_process_name("VRChatHelper.exe"));
         assert!(is_steamvr_process_name("vrserver"));
         assert!(is_steamvr_process_name("vrserver.exe"));
+        assert!(is_steamvr_process_name("VRServer.exe"));
     }
 
     #[test]

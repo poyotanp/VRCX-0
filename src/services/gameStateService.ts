@@ -302,6 +302,20 @@ function buildNewGameSessionPatch(startedAt: any) {
     };
 }
 
+function buildStoppedGameSessionPatch(stoppedAt: any) {
+    return {
+        currentLocation: '',
+        currentWorldId: '',
+        currentWorldName: '',
+        currentDestination: '',
+        currentLocationStartedAt: null,
+        currentLocationPlayerIds: [],
+        currentLocationPlayers: [],
+        lastGameLogAt: stoppedAt,
+        lastGameLogType: 'game-stopped'
+    };
+}
+
 function clearStoppedGameLocationSnapshot(
     previousGameState: any,
     currentUserSnapshot: any
@@ -435,6 +449,10 @@ export async function handleGameRunningUpdate(
         gameRunningChanged && nextGameRunning
             ? buildNewGameSessionPatch(gameStartedAt)
             : {};
+    const stoppedSessionPatch =
+        gameRunningChanged && previousGameRunning === true && !nextGameRunning
+            ? buildStoppedGameSessionPatch(now)
+            : {};
 
     runtimeStore.setGameState({
         isGameRunning: nextGameRunning,
@@ -443,7 +461,8 @@ export async function handleGameRunningUpdate(
             ? now
             : runtimeStore.gameState.lastGameStateChangedAt,
         lastGameStartedAt: gameStartedAt,
-        ...newSessionPatch
+        ...newSessionPatch,
+        ...stoppedSessionPatch
     });
 
     if (gameRunningChanged && previousGameRunning !== null) {

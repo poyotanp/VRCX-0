@@ -124,7 +124,7 @@ pub use screenshots::{
     ScreenshotLibraryImage, ScreenshotLibraryScanStatus, ScreenshotMetadata, ScreenshotSearchType,
 };
 pub use session::{
-    HostSessionProjection, HostSessionRuntime,
+    GameProcessStatus as HostSessionGameProcessStatus, HostSessionProjection, HostSessionRuntime,
     RealtimeSessionContext as HostRealtimeSessionContext, SessionHostRuntime,
 };
 pub use social_baseline::{
