@@ -13,6 +13,7 @@ import { useFavoriteStore } from '@/state/favoriteStore';
 import { useFriendRosterStore } from '@/state/friendRosterStore';
 import { useModalStore } from '@/state/modalStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
+import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Checkbox } from '@/ui/shadcn/checkbox';
 import {
@@ -68,6 +69,13 @@ function displayNameForUser(userId: any, friendsById: any, currentUser: any) {
     const ref =
         friend?.ref && typeof friend.ref === 'object' ? friend.ref : friend;
     return ref?.displayName || ref?.username || friend?.name || userId;
+}
+
+function pushUniqueLabel(labels: string[], label: unknown) {
+    const normalizedLabel = normalizeId(label);
+    if (normalizedLabel && !labels.includes(normalizedLabel)) {
+        labels.push(normalizedLabel);
+    }
 }
 
 export function InstanceInviteDialog({
@@ -182,6 +190,72 @@ export function InstanceInviteDialog({
             );
         });
     }, [currentUser, friendsById, search, selectableUserIds]);
+
+    const selectedUserIdSet = useMemo(
+        () => new Set(selectedUserIds.map(normalizeId).filter(Boolean)),
+        [selectedUserIds]
+    );
+
+    const sortedFilteredUserIds = useMemo(
+        () =>
+            [...filteredUserIds].sort((left: any, right: any) => {
+                const leftSelected = selectedUserIdSet.has(normalizeId(left));
+                const rightSelected = selectedUserIdSet.has(
+                    normalizeId(right)
+                );
+                if (leftSelected !== rightSelected) {
+                    return leftSelected ? -1 : 1;
+                }
+                return 0;
+            }),
+        [filteredUserIds, selectedUserIdSet]
+    );
+
+    const favoriteGroupLabelsByUserId = useMemo(() => {
+        const labelsByUserId: Record<string, string[]> = {};
+        function addLabel(userId: unknown, label: unknown) {
+            const normalizedUserId = normalizeId(userId);
+            if (!normalizedUserId) {
+                return;
+            }
+            if (!labelsByUserId[normalizedUserId]) {
+                labelsByUserId[normalizedUserId] = [];
+            }
+            pushUniqueLabel(labelsByUserId[normalizedUserId], label);
+        }
+
+        for (const group of Array.isArray(favoriteFriendGroups)
+            ? favoriteFriendGroups
+            : []) {
+            const key = normalizeId(group?.key);
+            const label = group?.displayName || key;
+            for (const userId of Array.isArray(
+                groupedFavoriteFriendIdsByGroupKey?.[key]
+            )
+                ? groupedFavoriteFriendIdsByGroupKey[key]
+                : []) {
+                addLabel(userId, label);
+            }
+        }
+
+        for (const groupName of Array.isArray(localFriendFavoriteGroups)
+            ? localFriendFavoriteGroups
+            : Object.keys(localFriendFavorites || {})) {
+            const key = normalizeId(groupName);
+            for (const userId of Array.isArray(localFriendFavorites?.[key])
+                ? localFriendFavorites[key]
+                : []) {
+                addLabel(userId, key);
+            }
+        }
+
+        return labelsByUserId;
+    }, [
+        favoriteFriendGroups,
+        groupedFavoriteFriendIdsByGroupKey,
+        localFriendFavoriteGroups,
+        localFriendFavorites
+    ]);
 
     const friendsInCurrentInstanceIds = useMemo(() => {
         const ids = new Set(
@@ -477,19 +551,24 @@ export function InstanceInviteDialog({
                         onChange={(event: any) => setSearch(event.target.value)}
                     />
                     <div className="max-h-72 overflow-auto rounded-md border">
-                        {filteredUserIds.length ? (
-                            filteredUserIds.map((userId: any) => {
+                        {sortedFilteredUserIds.length ? (
+                            sortedFilteredUserIds.map((userId: any) => {
                                 const friend = friendsById[userId];
                                 const displayName = displayNameForUser(
                                     userId,
                                     friendsById,
                                     currentUser
                                 );
-                                const checked =
-                                    selectedUserIds.includes(userId);
+                                const checked = selectedUserIdSet.has(
+                                    normalizeId(userId)
+                                );
                                 const imageUrl = friend
                                     ? userImage(friend, true)
                                     : userImage(currentUser, true);
+                                const favoriteGroupLabels =
+                                    favoriteGroupLabelsByUserId[
+                                        normalizeId(userId)
+                                    ] || [];
                                 return (
                                     <Field
                                         key={userId}
@@ -526,6 +605,21 @@ export function InstanceInviteDialog({
                                                     {displayName}
                                                 </span>
                                             </span>
+                                            {favoriteGroupLabels.length ? (
+                                                <span className="ml-auto flex max-w-[45%] shrink-0 flex-wrap justify-end gap-1">
+                                                    {favoriteGroupLabels.map(
+                                                        (label: any) => (
+                                                            <Badge
+                                                                key={label}
+                                                                variant="outline"
+                                                                className="max-w-full truncate"
+                                                            >
+                                                                {label}
+                                                            </Badge>
+                                                        )
+                                                    )}
+                                                </span>
+                                            ) : null}
                                         </FieldLabel>
                                     </Field>
                                 );
