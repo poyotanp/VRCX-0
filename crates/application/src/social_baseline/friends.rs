@@ -25,6 +25,7 @@ fn add_state_bucket_ids(
 struct RemoteFriendProfile {
     id: String,
     raw: Value,
+    source_state_bucket: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -38,12 +39,19 @@ struct TrustLevelInfo {
 }
 
 impl RemoteFriendProfile {
-    fn from_raw(raw: Value) -> Option<Self> {
+    fn from_raw(raw: Value, source_state_bucket: Option<&str>) -> Option<Self> {
         let id = object_field_normalized(&raw, &["id"]);
         if id.is_empty() {
             return None;
         }
-        Some(Self { id, raw })
+        let source_state_bucket = source_state_bucket
+            .map(normalize_state_bucket)
+            .filter(|value| !value.is_empty());
+        Some(Self {
+            id,
+            raw,
+            source_state_bucket,
+        })
     }
 }
 
@@ -51,14 +59,6 @@ pub(super) fn build_friend_state_map(snapshot: &Value) -> (HashMap<String, Strin
     let mut state_by_id = HashMap::new();
     let mut ordered_ids = Vec::new();
     let mut seen = HashSet::new();
-    add_state_bucket_ids(
-        snapshot,
-        "friends",
-        "offline",
-        &mut state_by_id,
-        &mut ordered_ids,
-        &mut seen,
-    );
     add_state_bucket_ids(
         snapshot,
         "offlineFriends",
@@ -110,6 +110,58 @@ async fn fetch_all_friends(
     )
     .await?;
     Ok(rows.into_iter().filter(is_valid_friend_user).collect())
+}
+
+fn insert_fetched_friend(
+    fetched_friends_by_id: &mut HashMap<String, RemoteFriendProfile>,
+    fetched_friend_ids_ordered: &mut Vec<String>,
+    fetched_friend_ids_seen: &mut HashSet<String>,
+    friend: Value,
+    source_state_bucket: Option<&str>,
+) {
+    let Some(friend) = RemoteFriendProfile::from_raw(friend, source_state_bucket) else {
+        return;
+    };
+    let friend_id = friend.id.clone();
+    unique_push(
+        fetched_friend_ids_ordered,
+        fetched_friend_ids_seen,
+        friend_id.clone(),
+    );
+    let should_replace = fetched_friends_by_id
+        .get(&friend_id)
+        .map(|existing| {
+            existing.source_state_bucket.as_deref() != Some("online")
+                || friend.source_state_bucket.as_deref() == Some("online")
+        })
+        .unwrap_or(true);
+    if should_replace {
+        fetched_friends_by_id.insert(friend_id, friend);
+    }
+}
+
+fn profile_state_bucket(friend: &Value) -> Option<String> {
+    Some(normalize_state_bucket(&object_field_string(
+        friend,
+        &["stateBucket"],
+    )))
+    .filter(|value| !value.is_empty())
+    .or_else(|| {
+        Some(normalize_state_bucket(&object_field_string(
+            friend,
+            &["state"],
+        )))
+        .filter(|value| !value.is_empty())
+    })
+}
+
+fn fetched_source_state_bucket(profile: &RemoteFriendProfile) -> Option<String> {
+    if profile.source_state_bucket.as_deref() == Some("online")
+        && object_field_string(&profile.raw, &["platform"]).eq_ignore_ascii_case("web")
+    {
+        return Some("active".into());
+    }
+    profile.source_state_bucket.clone()
 }
 
 async fn fetch_user_profile(
@@ -660,17 +712,23 @@ pub async fn build_friend_roster_baseline(
     let mut fetched_friends_by_id: HashMap<String, RemoteFriendProfile> = HashMap::new();
     let mut fetched_friend_ids_ordered = Vec::new();
     let mut fetched_friend_ids_seen = HashSet::new();
-    for friend in online_friends.into_iter().chain(offline_friends) {
-        let Some(friend) = RemoteFriendProfile::from_raw(friend) else {
-            continue;
-        };
-        let friend_id = friend.id.clone();
-        unique_push(
+    for friend in online_friends {
+        insert_fetched_friend(
+            &mut fetched_friends_by_id,
             &mut fetched_friend_ids_ordered,
             &mut fetched_friend_ids_seen,
-            friend_id.clone(),
+            friend,
+            Some("online"),
         );
-        fetched_friends_by_id.insert(friend_id, friend);
+    }
+    for friend in offline_friends {
+        insert_fetched_friend(
+            &mut fetched_friends_by_id,
+            &mut fetched_friend_ids_ordered,
+            &mut fetched_friend_ids_seen,
+            friend,
+            Some("offline"),
+        );
     }
 
     let missing_ids = expected_ids
@@ -681,16 +739,13 @@ pub async fn build_friend_roster_baseline(
         .cloned()
         .collect::<Vec<_>>();
     for friend in fetch_missing_friends(&deps, &input.endpoint, missing_ids).await {
-        let Some(friend) = RemoteFriendProfile::from_raw(friend) else {
-            continue;
-        };
-        let friend_id = friend.id.clone();
-        unique_push(
+        insert_fetched_friend(
+            &mut fetched_friends_by_id,
             &mut fetched_friend_ids_ordered,
             &mut fetched_friend_ids_seen,
-            friend_id.clone(),
+            friend,
+            None,
         );
-        fetched_friends_by_id.insert(friend_id, friend);
     }
 
     let existing_rows = serde_json::to_value(
@@ -792,9 +847,8 @@ pub async fn build_friend_roster_baseline(
     let mut added_history_entries = Vec::new();
 
     for friend_id in &included_ids {
-        let friend = fetched_friends_by_id
-            .get(friend_id)
-            .map(|profile| &profile.raw);
+        let fetched_profile = fetched_friends_by_id.get(friend_id);
+        let friend = fetched_profile.map(|profile| &profile.raw);
         let mut existing_row = existing_rows_by_id
             .get(friend_id)
             .cloned()
@@ -818,20 +872,22 @@ pub async fn build_friend_roster_baseline(
             }
         }
 
-        let state_bucket = state_by_id
-            .get(friend_id)
-            .cloned()
+        let snapshot_state_bucket = state_by_id.get(friend_id).map(String::as_str);
+        let explicit_online_or_active_state = snapshot_state_bucket
+            .filter(|value| matches!(*value, "online" | "active"))
+            .map(|value| value.to_string());
+        let trusted_profile_state = fetched_profile
+            .filter(|profile| profile.source_state_bucket.is_none())
+            .and_then(|profile| profile_state_bucket(&profile.raw));
+        let source_state_bucket = fetched_profile.and_then(fetched_source_state_bucket);
+        let state_bucket = explicit_online_or_active_state
+            .or(trusted_profile_state)
+            .or(source_state_bucket)
             .or_else(|| {
-                friend.map(|friend| {
-                    normalize_state_bucket(&object_field_string(friend, &["stateBucket"]))
-                })
+                snapshot_state_bucket
+                    .filter(|value| *value == "offline")
+                    .map(|value| value.to_string())
             })
-            .filter(|value| !value.is_empty())
-            .or_else(|| {
-                friend
-                    .map(|friend| normalize_state_bucket(&object_field_string(friend, &["state"])))
-            })
-            .filter(|value| !value.is_empty())
             .unwrap_or_else(|| "offline".into());
         let normalized_friend = normalize_friend_entry(friend, &state_bucket, &existing_row);
         friends_by_id.insert(friend_id.clone(), normalized_friend.clone());

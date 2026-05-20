@@ -174,7 +174,6 @@ function addStateBucketIds(stateById: any, ids: any, state: any) {
 function buildFriendStateMap(currentUserSnapshot: any) {
     const stateById = new Map();
 
-    addStateBucketIds(stateById, currentUserSnapshot?.friends, 'offline');
     addStateBucketIds(
         stateById,
         currentUserSnapshot?.offlineFriends,
