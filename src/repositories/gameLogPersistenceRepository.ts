@@ -772,7 +772,6 @@ const gameLog = {
 
     /**
      * Get join/leave and video_play events for a set of location tags within a date range.
-     * Excludes the current user's own join/leave.
      * @param {string[]} locationTags - location values to match
      * @param {string} afterDate - ISO date (inclusive lower bound)
      * @param {string} beforeDate - ISO date (inclusive upper bound, with padding)
@@ -781,16 +780,14 @@ const gameLog = {
     async getSessionsEventsForSegments(
         locationTags: string[],
         afterDate: unknown,
-        beforeDate: unknown,
-        currentUserId: unknown = ''
+        beforeDate: unknown
     ) {
         if (!locationTags || locationTags.length === 0) return [];
 
         const rows = await queryGameLog('sessionsEventsForSegments', {
             locationTags,
             afterDate,
-            beforeDate,
-            currentUserId: normalizeCurrentUserId(currentUserId)
+            beforeDate
         });
         return Array.isArray(rows) ? rows : [];
     },

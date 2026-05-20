@@ -524,6 +524,22 @@ function deduplicateGameLogSessionVideoPlay(
     }
 }
 
+function getGameLogSessionEventDedupeKey(event: GameLogRow): string {
+    const rowId = event.rowId ?? event.id;
+    if (rowId !== undefined && rowId !== null && String(rowId) !== '') {
+        return `${event.type}\0row:${rowId}`;
+    }
+
+    return [
+        event.type,
+        event.created_at,
+        event.userId || '',
+        event.displayName || '',
+        event.location || '',
+        event.videoUrl || ''
+    ].join('\0');
+}
+
 export function buildGameLogSessions(
     locationSegments: GameLogRow[],
     flatEvents: GameLogRow[]
@@ -550,7 +566,7 @@ export function buildGameLogSessions(
     if (flatEvents && flatEvents.length > 0) {
         const seen = new Set();
         dedupedEvents = flatEvents.filter((event: any) => {
-            const key = `${event.type}\0${event.created_at}\0${event.userId || ''}\0${event.location || ''}\0${event.videoUrl || ''}`;
+            const key = getGameLogSessionEventDedupeKey(event);
             if (seen.has(key)) {
                 return false;
             }

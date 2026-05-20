@@ -1305,54 +1305,53 @@ pub fn game_log_query(db: &DatabaseService, query: GameLogQueryInput) -> Result<
             }
             let after_date = query_param_string(&params, "afterDate");
             let before_date = query_param_string(&params, "beforeDate");
-            let current_user_id = query_param_string(&params, "currentUserId");
             let mut db_params = HashMap::new();
             db_params.insert("@after_date".into(), Value::String(after_date));
             db_params.insert("@before_date".into(), Value::String(before_date));
-            db_params.insert("@self_id".into(), Value::String(current_user_id));
             let placeholders = add_list_params(&mut db_params, &location_tags, "location_tag");
             let location_in = placeholders.join(", ");
             let mut rows = Vec::new();
             for row in db.execute(
                 &format!(
-                    "SELECT type, created_at, display_name, user_id, location
+                    "SELECT id, type, created_at, display_name, user_id, location
                      FROM gamelog_join_leave
                      WHERE location IN ({location_in})
-                       AND user_id != @self_id
                        AND created_at >= @after_date
                        AND created_at <= @before_date
-                     ORDER BY created_at ASC"
+                     ORDER BY created_at ASC, id ASC"
                 ),
                 &db_params,
             )? {
                 rows.push(json!({
-                    "type": row_json(&row, 0),
-                    "created_at": row_json(&row, 1),
-                    "displayName": row_json(&row, 2),
-                    "userId": row_json(&row, 3),
-                    "location": row_json(&row, 4)
+                    "rowId": row_json(&row, 0),
+                    "type": row_json(&row, 1),
+                    "created_at": row_json(&row, 2),
+                    "displayName": row_json(&row, 3),
+                    "userId": row_json(&row, 4),
+                    "location": row_json(&row, 5)
                 }));
             }
             for row in db.execute(
                 &format!(
-                    "SELECT created_at, video_url, video_name, video_id, display_name, user_id, location
+                    "SELECT id, created_at, video_url, video_name, video_id, display_name, user_id, location
                      FROM gamelog_video_play
                      WHERE location IN ({location_in})
                        AND created_at >= @after_date
                        AND created_at <= @before_date
-                     ORDER BY created_at ASC"
+                     ORDER BY created_at ASC, id ASC"
                 ),
                 &db_params,
             )? {
                 rows.push(json!({
+                    "rowId": row_json(&row, 0),
                     "type": "VideoPlay",
-                    "created_at": row_json(&row, 0),
-                    "videoUrl": row_json(&row, 1),
-                    "videoName": row_json(&row, 2),
-                    "videoId": row_json(&row, 3),
-                    "displayName": row_json(&row, 4),
-                    "userId": row_json(&row, 5),
-                    "location": row_json(&row, 6)
+                    "created_at": row_json(&row, 1),
+                    "videoUrl": row_json(&row, 2),
+                    "videoName": row_json(&row, 3),
+                    "videoId": row_json(&row, 4),
+                    "displayName": row_json(&row, 5),
+                    "userId": row_json(&row, 6),
+                    "location": row_json(&row, 7)
                 }));
             }
             Ok(Value::Array(rows))

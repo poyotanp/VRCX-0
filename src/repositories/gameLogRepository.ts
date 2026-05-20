@@ -429,8 +429,7 @@ function resolveSessionFetchLimit({
 
 async function loadSessionEvents(
     locationSegments: unknown,
-    favoriteUserIds: Set<string>,
-    currentUserId: unknown = ''
+    favoriteUserIds: Set<string>
 ) {
     if (!Array.isArray(locationSegments) || locationSegments.length === 0) {
         return [];
@@ -456,8 +455,7 @@ async function loadSessionEvents(
     const events = await gameLogPersistenceRepository.getSessionsEventsForSegments(
         locationTags,
         new Date(minEpoch - dateWindowMs).toISOString(),
-        new Date(maxEpoch + dateWindowMs).toISOString(),
-        normalizeId(currentUserId)
+        new Date(maxEpoch + dateWindowMs).toISOString()
     );
 
     return events.map((event: unknown) => {
@@ -511,7 +509,6 @@ async function queryGameLog({
 }
 
 async function queryLatestSessions({
-    currentUserId = '',
     search = '',
     filters = [],
     favoriteUserIds = [],
@@ -571,8 +568,7 @@ async function queryLatestSessions({
 
             const batchEvents = await loadSessionEvents(
                 batch,
-                normalizedFavoriteSet,
-                normalizeId(currentUserId)
+                normalizedFavoriteSet
             );
             const batchRows = batch.map(toGameLogRow);
             allLocationSegments.push(...batchRows);
@@ -609,8 +605,7 @@ async function queryLatestSessions({
 
     const annotatedEvents = await loadSessionEvents(
         locationSegments,
-        normalizedFavoriteSet,
-        normalizeId(currentUserId)
+        normalizedFavoriteSet
     );
     const result = buildGameLogSessions(
         locationSegments.map(toGameLogRow),
