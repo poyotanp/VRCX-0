@@ -70,6 +70,16 @@ struct MutualGraphFetchInner {
     cancel_flag: Option<Arc<AtomicBool>>,
 }
 
+struct MutualGraphFetchJob {
+    run_id: u64,
+    owner_user_id: String,
+    endpoint: String,
+    friend_ids: Vec<String>,
+    db: Arc<DatabaseService>,
+    web: Arc<WebClient>,
+    cancel_flag: Arc<AtomicBool>,
+}
+
 impl Default for MutualGraphFetchRuntime {
     fn default() -> Self {
         Self::new()
@@ -155,7 +165,15 @@ impl MutualGraphFetchRuntime {
         let runtime = self.clone();
         tasks.spawn(async move {
             runtime
-                .run_fetch_job(run_id, owner_user_id, endpoint, friend_ids, db, web, cancel_flag)
+                .run_fetch_job(MutualGraphFetchJob {
+                    run_id,
+                    owner_user_id,
+                    endpoint,
+                    friend_ids,
+                    db,
+                    web,
+                    cancel_flag,
+                })
                 .await;
         });
 
@@ -183,16 +201,16 @@ impl MutualGraphFetchRuntime {
         Ok(inner.status.clone())
     }
 
-    async fn run_fetch_job(
-        &self,
-        run_id: u64,
-        owner_user_id: String,
-        endpoint: String,
-        friend_ids: Vec<String>,
-        db: Arc<DatabaseService>,
-        web: Arc<WebClient>,
-        cancel_flag: Arc<AtomicBool>,
-    ) {
+    async fn run_fetch_job(&self, job: MutualGraphFetchJob) {
+        let MutualGraphFetchJob {
+            run_id,
+            owner_user_id,
+            endpoint,
+            friend_ids,
+            db,
+            web,
+            cancel_flag,
+        } = job;
         let mut entries = Vec::new();
         let mut meta_entries = Vec::new();
         let mut processed_friends = 0usize;

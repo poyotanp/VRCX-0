@@ -53,7 +53,7 @@ pub fn quit_game() -> i32 {
 pub fn start_game(arguments: &str) -> Result<bool, Error> {
     #[cfg(target_os = "linux")]
     {
-        return start_game_linux(arguments);
+        start_game_linux(arguments)
     }
 
     #[cfg(target_os = "windows")]
@@ -86,7 +86,7 @@ pub fn start_game_from_path(path: &str, arguments: &str) -> Result<bool, Error> 
         }
 
         spawn_steam_app_launch(steam_sh, arguments)?;
-        return Ok(true);
+        Ok(true)
     }
 
     #[cfg(target_os = "windows")]

@@ -366,6 +366,11 @@ impl RuntimeHostState {
                 })
             });
         let friend_snapshot = self.realtime_runtime.friend_snapshot();
+        let auth_scope_endpoint = if auth_scope.active {
+            Some(auth_scope.endpoint)
+        } else {
+            None
+        };
 
         Some(BackendRuntimeFrontendSessionSnapshot {
             authenticated: true,
@@ -375,13 +380,7 @@ impl RuntimeHostState {
                 .as_ref()
                 .map(|snapshot| snapshot.endpoint.clone())
                 .filter(|endpoint| !endpoint.trim().is_empty())
-                .or_else(|| {
-                    if auth_scope.active {
-                        Some(auth_scope.endpoint)
-                    } else {
-                        None
-                    }
-                })
+                .or(auth_scope_endpoint)
                 .or_else(|| cached.as_ref().map(|snapshot| snapshot.endpoint.clone()))
                 .unwrap_or_default(),
             websocket: friend_snapshot
@@ -1209,15 +1208,19 @@ impl RuntimeHostState {
                             now + Duration::from_secs(BACKGROUND_GROUP_INSTANCE_CADENCE_SECONDS);
                     }
 
+                    let tick_context = BackgroundTickContext {
+                        db: &db,
+                        web: &web,
+                        session_slot: &session_slot,
+                        realtime_runtime: &realtime_runtime,
+                        runtime_context: &runtime_context,
+                        backend_runtime: &backend_runtime,
+                        background_jobs: &background_jobs,
+                    };
+
                     if now >= next_social {
                         run_background_social_baseline_refresh(
-                            &db,
-                            &web,
-                            &session_slot,
-                            &realtime_runtime,
-                            &runtime_context,
-                            &backend_runtime,
-                            &background_jobs,
+                            &tick_context,
                             &mut favorite_friend_groups_by_key,
                         )
                         .await;
@@ -1241,13 +1244,7 @@ impl RuntimeHostState {
 
                     if now >= next_presence {
                         run_background_presence_tick(
-                            &db,
-                            &web,
-                            &session_slot,
-                            &realtime_runtime,
-                            &runtime_context,
-                            &backend_runtime,
-                            &background_jobs,
+                            &tick_context,
                             &mut presence_state,
                             &favorite_friend_groups_by_key,
                         )
@@ -1258,13 +1255,7 @@ impl RuntimeHostState {
 
                     if now >= next_discord {
                         run_background_discord_tick(
-                            &db,
-                            &web,
-                            &session_slot,
-                            &realtime_runtime,
-                            &runtime_context,
-                            &backend_runtime,
-                            &background_jobs,
+                            &tick_context,
                             &discord_rpc,
                             &mut discord_state,
                             &mut discord_success_info,
@@ -1467,43 +1458,48 @@ fn read_group_order(user_id: &str) -> Value {
     }
 }
 
+struct BackgroundTickContext<'a> {
+    db: &'a Arc<DatabaseService>,
+    web: &'a Arc<WebClient>,
+    session_slot: &'a Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
+    realtime_runtime: &'a Arc<RealtimeHostRuntime>,
+    runtime_context: &'a Arc<RuntimeHostContext>,
+    backend_runtime: &'a BackendRuntime,
+    background_jobs: &'a RuntimeBackgroundJobs,
+}
+
 async fn run_background_presence_tick(
-    db: &Arc<DatabaseService>,
-    web: &Arc<WebClient>,
-    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
-    realtime_runtime: &Arc<RealtimeHostRuntime>,
-    runtime_context: &Arc<RuntimeHostContext>,
-    backend_runtime: &BackendRuntime,
-    background_jobs: &RuntimeBackgroundJobs,
+    context: &BackgroundTickContext<'_>,
     presence_state: &mut BackgroundPresenceAutomationState,
     favorite_friend_groups_by_key: &HashMap<String, Vec<String>>,
 ) {
-    background_jobs.mark_running(
+    context.background_jobs.mark_running(
         BACKGROUND_PRESENCE_AUTOMATION_JOB,
         "Running background presence automation.",
     );
-    let Some(session) = background_capability_session(session_slot) else {
-        background_jobs.mark_scheduled(
+    let Some(session) = background_capability_session(context.session_slot) else {
+        context.background_jobs.mark_scheduled(
             BACKGROUND_PRESENCE_AUTOMATION_JOB,
             "Background presence automation is waiting for an authenticated session.",
             BACKGROUND_PRESENCE_CADENCE_SECONDS,
         );
         return;
     };
-    let host_session = runtime_context.session.snapshot();
-    let friends_by_id = realtime_runtime
+    let host_session = context.runtime_context.session.snapshot();
+    let friends_by_id = context
+        .realtime_runtime
         .friend_snapshot()
         .map(|snapshot| snapshot.friends_by_id)
         .unwrap_or_default();
     let facts = match build_background_presence_facts(
-        db.as_ref(),
+        context.db.as_ref(),
         BackgroundPresenceFactsInput {
             session: session.clone(),
             is_game_running: host_session.is_game_running,
             is_steamvr_running: host_session.is_steamvr_running,
             last_game_started_at: host_session.last_game_started_at,
-            game_log_snapshot: runtime_context.game_log_snapshot(),
-            now_playing: runtime_context.now_playing(),
+            game_log_snapshot: context.runtime_context.game_log_snapshot(),
+            now_playing: context.runtime_context.now_playing(),
             friends_by_id,
             favorite_friend_groups_by_key: favorite_friend_groups_by_key.clone(),
         },
@@ -1512,18 +1508,20 @@ async fn run_background_presence_tick(
         Err(error) => {
             tracing::warn!(error = %error, "background presence facts build failed");
             emit_background_error(
-                runtime_context,
-                backend_runtime,
+                context.runtime_context,
+                context.backend_runtime,
                 format!("presence automation facts failed: {error}."),
             );
-            background_jobs.mark_failed(BACKGROUND_PRESENCE_AUTOMATION_JOB, error.to_string());
+            context
+                .background_jobs
+                .mark_failed(BACKGROUND_PRESENCE_AUTOMATION_JOB, error.to_string());
             return;
         }
     };
     let result = match run_background_presence_automation(
-        runtime_context.config(),
-        web.as_ref(),
-        db.as_ref(),
+        context.runtime_context.config(),
+        context.web.as_ref(),
+        context.db.as_ref(),
         &facts,
         presence_state,
     )
@@ -1533,17 +1531,20 @@ async fn run_background_presence_tick(
         Err(error) => {
             tracing::warn!(error = %error, "background presence automation failed");
             emit_background_error(
-                runtime_context,
-                backend_runtime,
+                context.runtime_context,
+                context.backend_runtime,
                 format!("presence automation failed: {error}."),
             );
-            background_jobs.mark_failed(BACKGROUND_PRESENCE_AUTOMATION_JOB, error.to_string());
+            context
+                .background_jobs
+                .mark_failed(BACKGROUND_PRESENCE_AUTOMATION_JOB, error.to_string());
             return;
         }
     };
     if let Some(updated_user) = result.updated_user.clone() {
         let overlay_patch = result.patch.clone();
-        let accepted = realtime_runtime
+        let accepted = context
+            .realtime_runtime
             .sync_current_user_snapshot(
                 session.current_user_id.clone(),
                 session.endpoint.clone(),
@@ -1553,18 +1554,18 @@ async fn run_background_presence_tick(
                 overlay_patch,
             )
             .unwrap_or(false);
-        if !background_capability_session_matches(session_slot, &session) {
+        if !background_capability_session_matches(context.session_slot, &session) {
             tracing::warn!("ignored stale background presence automation user update");
         } else if accepted {
-            if let Some(snapshot) = realtime_runtime.current_user_snapshot() {
+            if let Some(snapshot) = context.realtime_runtime.current_user_snapshot() {
                 replace_backend_frontend_session_user_if_session_matches(
-                    session_slot,
+                    context.session_slot,
                     &session,
                     &snapshot,
                 );
             } else {
                 update_backend_frontend_session_user_if_session_matches(
-                    session_slot,
+                    context.session_slot,
                     &session,
                     &updated_user,
                 );
@@ -1580,16 +1581,16 @@ async fn run_background_presence_tick(
             "background presence automation applied"
         );
         emit_background_info(
-            runtime_context,
-            backend_runtime,
+            context.runtime_context,
+            context.backend_runtime,
             background_presence_applied_detail(&result.patch, result.matched_rule_ids.len()),
         );
     }
-    background_jobs.mark_completed(
+    context.background_jobs.mark_completed(
         BACKGROUND_PRESENCE_AUTOMATION_JOB,
         format!("Background presence automation tick: {}.", result.reason),
     );
-    background_jobs.mark_scheduled(
+    context.background_jobs.mark_scheduled(
         BACKGROUND_PRESENCE_AUTOMATION_JOB,
         "Next background presence automation tick is waiting.",
         BACKGROUND_PRESENCE_CADENCE_SECONDS,
@@ -1597,44 +1598,39 @@ async fn run_background_presence_tick(
 }
 
 async fn run_background_discord_tick(
-    db: &Arc<DatabaseService>,
-    web: &Arc<WebClient>,
-    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
-    realtime_runtime: &Arc<RealtimeHostRuntime>,
-    runtime_context: &Arc<RuntimeHostContext>,
-    backend_runtime: &BackendRuntime,
-    background_jobs: &RuntimeBackgroundJobs,
+    context: &BackgroundTickContext<'_>,
     discord_rpc: &Arc<DiscordRpc>,
     discord_state: &mut BackgroundDiscordPresenceState,
     discord_success_info: &mut Option<String>,
     favorite_friend_groups_by_key: &HashMap<String, Vec<String>>,
 ) {
-    background_jobs.mark_running(
+    context.background_jobs.mark_running(
         BACKGROUND_DISCORD_PRESENCE_JOB,
         "Running background Discord presence.",
     );
-    let Some(session) = background_capability_session(session_slot) else {
-        background_jobs.mark_scheduled(
+    let Some(session) = background_capability_session(context.session_slot) else {
+        context.background_jobs.mark_scheduled(
             BACKGROUND_DISCORD_PRESENCE_JOB,
             "Background Discord presence is waiting for an authenticated session.",
             BACKGROUND_DISCORD_CADENCE_SECONDS,
         );
         return;
     };
-    let host_session = runtime_context.session.snapshot();
-    let friends_by_id = realtime_runtime
+    let host_session = context.runtime_context.session.snapshot();
+    let friends_by_id = context
+        .realtime_runtime
         .friend_snapshot()
         .map(|snapshot| snapshot.friends_by_id)
         .unwrap_or_default();
     let facts = match build_background_presence_facts(
-        db.as_ref(),
+        context.db.as_ref(),
         BackgroundPresenceFactsInput {
             session,
             is_game_running: host_session.is_game_running,
             is_steamvr_running: host_session.is_steamvr_running,
             last_game_started_at: host_session.last_game_started_at,
-            game_log_snapshot: runtime_context.game_log_snapshot(),
-            now_playing: runtime_context.now_playing(),
+            game_log_snapshot: context.runtime_context.game_log_snapshot(),
+            now_playing: context.runtime_context.now_playing(),
             friends_by_id,
             favorite_friend_groups_by_key: favorite_friend_groups_by_key.clone(),
         },
@@ -1644,18 +1640,20 @@ async fn run_background_discord_tick(
             tracing::warn!(error = %error, "background Discord facts build failed");
             *discord_success_info = None;
             emit_background_error(
-                runtime_context,
-                backend_runtime,
+                context.runtime_context,
+                context.backend_runtime,
                 format!("Discord presence facts failed: {error}."),
             );
-            background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+            context
+                .background_jobs
+                .mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
             return;
         }
     };
     let command = match build_background_discord_presence_command(
-        runtime_context.config(),
-        web.as_ref(),
-        db.as_ref(),
+        context.runtime_context.config(),
+        context.web.as_ref(),
+        context.db.as_ref(),
         &facts,
         discord_state,
         false,
@@ -1667,11 +1665,13 @@ async fn run_background_discord_tick(
             tracing::warn!(error = %error, "background Discord presence compose failed");
             *discord_success_info = None;
             emit_background_error(
-                runtime_context,
-                backend_runtime,
+                context.runtime_context,
+                context.backend_runtime,
                 format!("Discord presence compose failed: {error}."),
             );
-            background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+            context
+                .background_jobs
+                .mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
             return;
         }
     };
@@ -1684,8 +1684,8 @@ async fn run_background_discord_tick(
                 Ok(Ok(result)) => {
                     discord_state.apply_set_active_result(result);
                     emit_background_info_if_changed(
-                        runtime_context,
-                        backend_runtime,
+                        context.runtime_context,
+                        context.backend_runtime,
                         discord_success_info,
                         format!(
                             "Discord presence {}: {detail}",
@@ -1699,11 +1699,13 @@ async fn run_background_discord_tick(
                     tracing::warn!(error = %error, "background Discord SetActive failed");
                     *discord_success_info = None;
                     emit_background_error(
-                        runtime_context,
-                        backend_runtime,
+                        context.runtime_context,
+                        context.backend_runtime,
                         format!("Discord SetActive failed: {error}."),
                     );
-                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    context
+                        .background_jobs
+                        .mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
                     return;
                 }
                 Err(error) => {
@@ -1711,11 +1713,13 @@ async fn run_background_discord_tick(
                     tracing::warn!(error = %error, "background Discord SetActive task failed");
                     *discord_success_info = None;
                     emit_background_error(
-                        runtime_context,
-                        backend_runtime,
+                        context.runtime_context,
+                        context.backend_runtime,
                         format!("Discord SetActive task failed: {error}."),
                     );
-                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    context
+                        .background_jobs
+                        .mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
                     return;
                 }
             }
@@ -1731,8 +1735,8 @@ async fn run_background_discord_tick(
                 Ok(Ok(result)) => {
                     discord_state.apply_set_assets_result(result);
                     emit_background_info_if_changed(
-                        runtime_context,
-                        backend_runtime,
+                        context.runtime_context,
+                        context.backend_runtime,
                         discord_success_info,
                         format!("Discord activity sent: {detail}"),
                     );
@@ -1743,11 +1747,13 @@ async fn run_background_discord_tick(
                     tracing::warn!(error = %error, "background Discord SetAssets failed");
                     *discord_success_info = None;
                     emit_background_error(
-                        runtime_context,
-                        backend_runtime,
+                        context.runtime_context,
+                        context.backend_runtime,
                         format!("Discord SetAssets failed: {error}."),
                     );
-                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    context
+                        .background_jobs
+                        .mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
                     return;
                 }
                 Err(error) => {
@@ -1755,18 +1761,22 @@ async fn run_background_discord_tick(
                     tracing::warn!(error = %error, "background Discord SetAssets task failed");
                     *discord_success_info = None;
                     emit_background_error(
-                        runtime_context,
-                        backend_runtime,
+                        context.runtime_context,
+                        context.backend_runtime,
                         format!("Discord SetAssets task failed: {error}."),
                     );
-                    background_jobs.mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
+                    context
+                        .background_jobs
+                        .mark_failed(BACKGROUND_DISCORD_PRESENCE_JOB, error.to_string());
                     return;
                 }
             }
         }
     };
-    background_jobs.mark_completed(BACKGROUND_DISCORD_PRESENCE_JOB, detail);
-    background_jobs.mark_scheduled(
+    context
+        .background_jobs
+        .mark_completed(BACKGROUND_DISCORD_PRESENCE_JOB, detail);
+    context.background_jobs.mark_scheduled(
         BACKGROUND_DISCORD_PRESENCE_JOB,
         "Next background Discord presence tick is waiting.",
         BACKGROUND_DISCORD_CADENCE_SECONDS,
@@ -1985,21 +1995,15 @@ fn emit_stale_group_instance_refresh_idle(
 }
 
 async fn run_background_social_baseline_refresh(
-    db: &Arc<DatabaseService>,
-    web: &Arc<WebClient>,
-    session_slot: &Arc<Mutex<Option<BackendRuntimeFrontendSessionSnapshot>>>,
-    realtime_runtime: &Arc<RealtimeHostRuntime>,
-    runtime_context: &Arc<RuntimeHostContext>,
-    backend_runtime: &BackendRuntime,
-    background_jobs: &RuntimeBackgroundJobs,
+    context: &BackgroundTickContext<'_>,
     favorite_friend_groups_by_key: &mut HashMap<String, Vec<String>>,
 ) {
-    background_jobs.mark_running(
+    context.background_jobs.mark_running(
         BACKGROUND_FACTS_REFRESH_JOB,
         "Refreshing background friend and favorite facts.",
     );
-    let Some(session) = background_capability_session(session_slot) else {
-        background_jobs.mark_scheduled(
+    let Some(session) = background_capability_session(context.session_slot) else {
+        context.background_jobs.mark_scheduled(
             BACKGROUND_FACTS_REFRESH_JOB,
             "Background social baseline refresh is waiting for an authenticated session.",
             BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS,
@@ -2007,10 +2011,10 @@ async fn run_background_social_baseline_refresh(
         return;
     };
     let deps = SocialBaselineDeps {
-        db: Arc::clone(db),
-        web: Arc::clone(web),
-        auth_scope: runtime_context.auth_scope.clone(),
-        session: runtime_context.session.clone(),
+        db: Arc::clone(context.db),
+        web: Arc::clone(context.web),
+        auth_scope: context.runtime_context.auth_scope.clone(),
+        session: context.runtime_context.session.clone(),
     };
     let friend_output = build_friend_roster_baseline(
         deps.clone(),
@@ -2034,7 +2038,7 @@ async fn run_background_social_baseline_refresh(
                     serde_json::from_value::<HashMap<String, FriendRecord>>(friends_value.clone())
                 {
                     let count = friends_by_id.len();
-                    let _ = realtime_runtime.sync_friend_snapshot(
+                    let _ = context.realtime_runtime.sync_friend_snapshot(
                         session.current_user_id.clone(),
                         session.endpoint.clone(),
                         session.websocket.clone(),
@@ -2070,18 +2074,22 @@ async fn run_background_social_baseline_refresh(
         Err(error) => {
             tracing::warn!(error = %error, "background social baseline refresh failed");
             emit_background_error(
-                runtime_context,
-                backend_runtime,
+                context.runtime_context,
+                context.backend_runtime,
                 format!("social baseline refresh failed: {error}."),
             );
-            background_jobs.mark_failed(BACKGROUND_FACTS_REFRESH_JOB, error.to_string());
+            context
+                .background_jobs
+                .mark_failed(BACKGROUND_FACTS_REFRESH_JOB, error.to_string());
             return;
         }
     };
     let detail = format!("friend and favorite facts refreshed: {friend_count} friends.");
-    emit_background_info(runtime_context, backend_runtime, detail.clone());
-    background_jobs.mark_completed(BACKGROUND_FACTS_REFRESH_JOB, detail);
-    background_jobs.mark_scheduled(
+    emit_background_info(context.runtime_context, context.backend_runtime, detail.clone());
+    context
+        .background_jobs
+        .mark_completed(BACKGROUND_FACTS_REFRESH_JOB, detail);
+    context.background_jobs.mark_scheduled(
         BACKGROUND_FACTS_REFRESH_JOB,
         "Next background friend and favorite facts refresh is waiting.",
         BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS,

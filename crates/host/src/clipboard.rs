@@ -188,7 +188,7 @@ pub fn copy_image_to_clipboard(path: &str) -> Result<(), Error> {
     #[cfg(target_os = "linux")]
     {
         copy_image_with_xclip(path)?;
-        return Ok(());
+        Ok(())
     }
 
     #[cfg(not(any(windows, target_os = "linux")))]

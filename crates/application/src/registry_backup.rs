@@ -242,7 +242,7 @@ fn create_backup(
     now: chrono::DateTime<Utc>,
 ) -> Result<()> {
     let data = host.get_registry()?;
-    if !data.as_object().is_some_and(|object| !object.is_empty()) {
+    if data.as_object().is_none_or(|object| object.is_empty()) {
         return Err(Error::Custom(
             "No VRChat registry data was found to back up.".into(),
         ));

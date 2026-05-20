@@ -34,9 +34,9 @@ pub fn vrchat_config_path() -> PathBuf {
 pub fn vrchat_app_data() -> PathBuf {
     #[cfg(target_os = "linux")]
     {
-        return discover_linux_vrchat_paths()
+        discover_linux_vrchat_paths()
             .map(|paths| paths.app_data)
-            .unwrap_or_default();
+            .unwrap_or_default()
     }
 
     #[cfg(not(target_os = "linux"))]

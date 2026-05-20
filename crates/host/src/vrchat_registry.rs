@@ -58,7 +58,7 @@ pub fn get_registry_key(key: &str) -> Result<serde_json::Value, Error> {
 
     #[cfg(target_os = "linux")]
     {
-        return crate::linux_registry::get_registry_key(key).map_err(Error::Custom);
+        crate::linux_registry::get_registry_key(key).map_err(Error::Custom)
     }
 
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
@@ -82,7 +82,7 @@ pub fn has_registry_folder() -> Result<bool, Error> {
     }
     #[cfg(target_os = "linux")]
     {
-        return crate::linux_registry::has_registry_folder().map_err(Error::Custom);
+        crate::linux_registry::has_registry_folder().map_err(Error::Custom)
     }
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
@@ -103,7 +103,7 @@ pub fn delete_registry_folder() -> Result<(), Error> {
     }
     #[cfg(target_os = "linux")]
     {
-        return crate::linux_registry::delete_registry_folder().map_err(Error::Custom);
+        crate::linux_registry::delete_registry_folder().map_err(Error::Custom)
     }
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {
@@ -181,8 +181,7 @@ pub fn set_registry_key(
 
     #[cfg(target_os = "linux")]
     {
-        return crate::linux_registry::set_registry_key(key, value, type_int)
-            .map_err(Error::Custom);
+        crate::linux_registry::set_registry_key(key, value, type_int).map_err(Error::Custom)
     }
 
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
@@ -251,7 +250,7 @@ pub fn get_registry() -> Result<HashMap<String, HashMap<String, serde_json::Valu
 
     #[cfg(target_os = "linux")]
     {
-        return crate::linux_registry::get_registry().map_err(Error::Custom);
+        crate::linux_registry::get_registry().map_err(Error::Custom)
     }
 
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
@@ -334,7 +333,7 @@ pub fn set_registry(json: &str) -> Result<(), Error> {
     }
     #[cfg(target_os = "linux")]
     {
-        return crate::linux_registry::set_registry(json).map_err(Error::Custom);
+        crate::linux_registry::set_registry(json).map_err(Error::Custom)
     }
     #[cfg(not(any(target_os = "windows", target_os = "linux")))]
     {

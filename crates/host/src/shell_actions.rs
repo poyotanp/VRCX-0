@@ -111,7 +111,7 @@ pub fn open_folder_and_select_item(path: &str, is_folder: bool) -> Result<(), Er
 
     #[cfg(target_os = "linux")]
     {
-        return open_folder_and_select_item_linux(&p, is_folder);
+        open_folder_and_select_item_linux(&p, is_folder)
     }
 
     #[cfg(not(target_os = "linux"))]
