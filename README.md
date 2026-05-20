@@ -11,10 +11,11 @@ The current VRCX project is already largely stable, with future upstream changes
 ## Highlights
 
 - About 50%–70% lower memory usage compared to VRCX
-- Windows and macOS installers are in the 20 MB range
-- Much smaller application size
+- Background mode keeps core services running with only a few dozen MB of memory usage
+- Windows and macOS installers are in the 20 MB range, and much smaller application size
 - New UI and interaction model
 - Full keyboard navigation
+- Headless mode
 - Continued feature development and support
 
 ## Data Migration
