@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
     confirm: vi.fn(),
     getInstance: vi.fn(),
     closeInstance: vi.fn(),
-    selfInviteToInstance: vi.fn(),
+    selfInvite: vi.fn(),
     toastSuccess: vi.fn(),
     toastError: vi.fn()
 }));
@@ -28,12 +28,9 @@ vi.mock('sonner', () => ({
 vi.mock('@/repositories/vrchatInstanceRepository', () => ({
     default: {
         getInstance: mocks.getInstance,
-        closeInstance: mocks.closeInstance
+        closeInstance: mocks.closeInstance,
+        selfInvite: mocks.selfInvite
     }
-}));
-
-vi.mock('@/services/launchService', () => ({
-    selfInviteToInstance: mocks.selfInviteToInstance
 }));
 
 vi.mock('@/state/launchStore', () => ({
@@ -88,7 +85,11 @@ vi.mock('@/ui/shadcn/tooltip', async () => {
     };
 });
 
-import { InstanceActionBar } from './InstanceActionBar';
+import {
+    buildInstanceActionSelfInviteRequest,
+    InstanceActionBar
+} from './InstanceActionBar';
+import { buildInstanceActionTarget } from '@/components/location/locationModel';
 
 function renderActionBar(props: any = {}) {
     return renderToStaticMarkup(React.createElement(InstanceActionBar, props));
@@ -103,7 +104,7 @@ describe('InstanceActionBar', () => {
         mocks.confirm.mockReset();
         mocks.getInstance.mockReset();
         mocks.closeInstance.mockReset();
-        mocks.selfInviteToInstance.mockReset();
+        mocks.selfInvite.mockReset();
         mocks.toastSuccess.mockReset();
         mocks.toastError.mockReset();
     });
@@ -191,6 +192,44 @@ describe('InstanceActionBar', () => {
         expect(html).toContain('aria-label="Self invite"');
         expect(html).toContain('aria-label="Refresh instance info"');
         expect(html).toContain('4/12');
+    });
+
+    it('builds self invite requests from target shortName without resolving shortName first', () => {
+        const actionTarget = buildInstanceActionTarget({
+            target: {
+                location: 'wrld_test:12345~hidden(usr_owner)',
+                shortName: 'tok'
+            }
+        });
+
+        expect(
+            buildInstanceActionSelfInviteRequest(
+                actionTarget,
+                'https://api.example.test/api/1'
+            )
+        ).toEqual({
+            worldId: 'wrld_test',
+            instanceId: '12345~hidden(usr_owner)',
+            shortName: 'tok',
+            endpoint: 'https://api.example.test/api/1'
+        });
+    });
+
+    it('prefers shortName embedded in the invite location', () => {
+        const actionTarget = buildInstanceActionTarget({
+            target: {
+                location:
+                    'wrld_test:12345~hidden(usr_owner)&shortName=fromLocation',
+                shortName: 'fromTarget'
+            }
+        });
+
+        expect(
+            buildInstanceActionSelfInviteRequest(
+                actionTarget,
+                'https://api.example.test/api/1'
+            ).shortName
+        ).toBe('fromLocation');
     });
 
     it('does not render instance actions for private or non-instance locations', () => {

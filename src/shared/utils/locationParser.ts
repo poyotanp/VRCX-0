@@ -67,6 +67,48 @@ function displayLocation(
     return text;
 }
 
+function appendShortName(tag: string, shortName: string): string {
+    if (!tag || !shortName || tag.includes('&shortName=')) {
+        return tag;
+    }
+    return `${tag}&shortName=${shortName}`;
+}
+
+function normalizeLaunchUrlTag(tag: string): string {
+    const trimmed = tag.trim();
+    if (!/^(https?:\/\/|vrchat:\/\/)/i.test(trimmed)) {
+        return tag;
+    }
+
+    try {
+        const url = new URL(trimmed);
+        const host = url.hostname.toLowerCase();
+        const shortName = url.searchParams.get('shortName')?.trim() || '';
+
+        if (
+            (url.protocol === 'https:' || url.protocol === 'http:') &&
+            (host === 'vrchat.com' || host.endsWith('.vrchat.com')) &&
+            url.pathname === '/home/launch'
+        ) {
+            const worldId = url.searchParams.get('worldId')?.trim() || '';
+            const instanceId = url.searchParams.get('instanceId')?.trim() || '';
+            if (worldId && instanceId) {
+                return appendShortName(`${worldId}:${instanceId}`, shortName);
+            }
+            return worldId || tag;
+        }
+
+        if (url.protocol === 'vrchat:' && host === 'launch') {
+            const launchId = url.searchParams.get('id')?.trim() || '';
+            return appendShortName(launchId, shortName) || tag;
+        }
+    } catch {
+        return tag;
+    }
+
+    return tag;
+}
+
 /**
  *
  * @param {string} tag
@@ -74,7 +116,7 @@ function displayLocation(
  */
 function normalizeLocationTag(tag: unknown): string {
     if (typeof tag === 'string') {
-        return tag;
+        return normalizeLaunchUrlTag(tag);
     }
     if (!isLocationLike(tag)) {
         return String(tag || '');

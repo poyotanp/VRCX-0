@@ -20,7 +20,6 @@ import { formatDateFilter } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
 import vrchatInstanceRepository from '@/repositories/vrchatInstanceRepository';
 import { recordLocationHintsFromInstances } from '@/services/domainIngestionService';
-import { selfInviteToInstance } from '@/services/launchService';
 import { useLaunchStore } from '@/state/launchStore';
 import { useModalStore } from '@/state/modalStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
@@ -136,6 +135,20 @@ function canCloseInstance(instance: any, currentUserId: any) {
         hasGroupPermission(instance?.group, 'group-instance-moderate') ||
         hasGroupPermission(instance?.owner, 'group-instance-moderate')
     );
+}
+
+export function buildInstanceActionSelfInviteRequest(
+    actionTarget: any,
+    endpoint: string
+) {
+    return {
+        worldId: actionTarget.parsedInviteLocation.worldId,
+        instanceId: actionTarget.parsedInviteLocation.instanceId,
+        shortName:
+            actionTarget.parsedInviteLocation.shortName ||
+            actionTarget.shortName,
+        endpoint
+    };
 }
 
 function InstanceInfoTooltip({
@@ -334,10 +347,8 @@ export function InstanceActionBar({
         }
         setBusy('invite');
         try {
-            await selfInviteToInstance(
-                actionTarget.inviteLocation,
-                actionTarget.shortName,
-                endpoint
+            await vrchatInstanceRepository.selfInvite(
+                buildInstanceActionSelfInviteRequest(actionTarget, endpoint)
             );
             toast.success(t('message.invite.self_sent'));
         } catch (error) {

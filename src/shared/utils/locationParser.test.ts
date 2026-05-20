@@ -71,6 +71,33 @@ describe('locationParser', () => {
         expect(parsed.region).toBe('us');
     });
 
+    it('normalizes VRChat launch URLs before parsing', () => {
+        const parsed = parseLocation(
+            'https://vrchat.com/home/launch?worldId=wrld_123&instanceId=instance1~hidden(usr_abc)~region(jp)&shortName=abc123'
+        );
+
+        expect(parsed).toMatchObject({
+            worldId: 'wrld_123',
+            instanceId: 'instance1~hidden(usr_abc)~region(jp)',
+            hiddenId: 'usr_abc',
+            shortName: 'abc123',
+            region: 'jp'
+        });
+    });
+
+    it('normalizes vrchat launch scheme URLs before parsing', () => {
+        const parsed = parseLocation(
+            'vrchat://launch?ref=vrcx.app&id=wrld_123%3Ainstance1~region(us)&shortName=abc123'
+        );
+
+        expect(parsed).toMatchObject({
+            worldId: 'wrld_123',
+            instanceId: 'instance1~region(us)',
+            shortName: 'abc123',
+            region: 'us'
+        });
+    });
+
     it('resolves default regions for real instances only', () => {
         expect(resolveRegion(parseLocation('wrld_123:instance1'))).toBe('us');
         expect(

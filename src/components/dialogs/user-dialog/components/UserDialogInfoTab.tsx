@@ -258,6 +258,10 @@ function UserDialogPresenceSection({
                             className="min-w-0 flex-wrap"
                             target={{
                                 location: visiblePresenceLocation,
+                                shortName:
+                                    locationInstance?.shortName ||
+                                    profile?.$location?.shortName ||
+                                    '',
                                 worldName: locationWorldTitle
                             }}
                             instance={locationInstance}

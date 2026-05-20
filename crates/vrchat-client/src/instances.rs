@@ -3,9 +3,8 @@ use std::collections::HashMap;
 use serde_json::{json, Value};
 
 use crate::http_api::{
-    api_input_skip_empty_query_string as api_input, encode_path_segment,
-    get_input_skip_empty_query_string as get_input, object_body, require_text, HttpApiError,
-    HttpApiRequestInput,
+    api_input_skip_empty_query_string as api_input, get_input_skip_empty_query_string as get_input,
+    object_body, query_input, require_text, HttpApiError, HttpApiRequestInput,
 };
 
 pub fn instance_get_input(
@@ -20,11 +19,7 @@ pub fn instance_get_input(
         instance_id.clone(),
         get_input(
             endpoint,
-            format!(
-                "instances/{}:{}",
-                encode_path_segment(&world_id),
-                encode_path_segment(&instance_id)
-            ),
+            format!("instances/{world_id}:{instance_id}"),
             HashMap::new(),
         ),
     ))
@@ -50,11 +45,7 @@ pub fn instance_short_name_get_input(
         instance_id.clone(),
         get_input(
             endpoint,
-            format!(
-                "instances/{}:{}/shortName",
-                encode_path_segment(&world_id),
-                encode_path_segment(&instance_id)
-            ),
+            format!("instances/{world_id}:{instance_id}/shortName"),
             params,
         ),
     ))
@@ -73,21 +64,17 @@ pub fn instance_self_invite_input(
     let world_id = require_text(world_id, "VrchatInstanceSelfInvite requires worldId.")?;
     let instance_id = require_text(instance_id, "VrchatInstanceSelfInvite requires instanceId.")?;
     let body = if short_name.is_empty() {
-        json!({})
+        HashMap::new()
     } else {
-        json!({ "shortName": short_name })
+        HashMap::from([("shortName".to_string(), Value::String(short_name))])
     };
     Ok((
         world_id.clone(),
         instance_id.clone(),
-        api_input(
+        query_input(
             endpoint,
             "POST",
-            format!(
-                "invite/myself/to/{}:{}",
-                encode_path_segment(&world_id),
-                encode_path_segment(&instance_id)
-            ),
+            format!("invite/myself/to/{world_id}:{instance_id}"),
             body,
         ),
     ))
@@ -108,4 +95,51 @@ pub fn instance_close_input(
             json!({ "hardClose": hard_close }),
         ),
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn short_name_lookup_keeps_instance_tag_unescaped_like_legacy_api() {
+        let (_, _, request) = instance_short_name_get_input(
+            "".into(),
+            "wrld_123".into(),
+            "12345~hidden(usr_owner)".into(),
+            "".into(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            request.path.as_deref(),
+            Some("instances/wrld_123:12345~hidden(usr_owner)/shortName")
+        );
+    }
+
+    #[test]
+    fn self_invite_uses_short_name_as_query_param_without_json_body() {
+        let (_, _, request) = instance_self_invite_input(
+            "".into(),
+            "wrld_123".into(),
+            "12345~hidden(usr_owner)".into(),
+            "abc123".into(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            request.path.as_deref(),
+            Some("invite/myself/to/wrld_123:12345~hidden(usr_owner)")
+        );
+        assert_eq!(request.method.as_deref(), Some("POST"));
+        assert_eq!(request.body, None);
+        assert_eq!(request.json_body, Some(false));
+        assert_eq!(
+            request
+                .query_params
+                .as_ref()
+                .and_then(|params| params.get("shortName")),
+            Some(&Value::String("abc123".into()))
+        );
+    }
 }
