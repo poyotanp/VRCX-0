@@ -45,8 +45,8 @@ const webview2BuildTarget = {
     browserslist: 'Edge 130'
 };
 const webkitBuildTarget = {
-    vite: 'safari17.4',
-    browserslist: 'Safari 17.4'
+    vite: 'safari17',
+    browserslist: 'Safari 17.0'
 };
 
 function getPlatformBuildTarget() {
