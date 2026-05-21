@@ -50,6 +50,8 @@ const defaultPrefs: any = {
     sidebarTabDisplayMode: 'auto'
 };
 
+const FRIEND_REFRESH_COOLDOWN_MS = 5 * 60 * 1000;
+
 function parseConfigArray(value: any) {
     if (Array.isArray(value)) {
         return value;
@@ -435,6 +437,8 @@ export const SidePanel = forwardRef(function SidePanel(
     const [activeTab, setActiveTab] = useState('friends');
     const [prefs, setPrefs] = useState(defaultPrefs);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [friendRefreshCooldownUntil, setFriendRefreshCooldownUntil] =
+        useState(0);
     const [customTabsDialogOpen, setCustomTabsDialogOpen] = useState(false);
 
     useEffect(() => {
@@ -548,6 +552,15 @@ export const SidePanel = forwardRef(function SidePanel(
         if (isRefreshing) {
             return;
         }
+        const cooldownRemainingMs = friendRefreshCooldownUntil - Date.now();
+        if (cooldownRemainingMs > 0) {
+            toast.info(
+                t('side_panel.refresh_available_in_minutes', {
+                    count: Math.max(1, Math.ceil(cooldownRemainingMs / 60000))
+                })
+            );
+            return;
+        }
         const auth = useRuntimeStore.getState().auth;
         if (!auth.currentUserId || !auth.currentUserSnapshot) {
             toast.error(
@@ -560,6 +573,9 @@ export const SidePanel = forwardRef(function SidePanel(
         setIsRefreshing(true);
         try {
             await refreshFriendAndFavoriteSnapshots();
+            setFriendRefreshCooldownUntil(
+                Date.now() + FRIEND_REFRESH_COOLDOWN_MS
+            );
             toast.success(
                 t('side_panel.success.friend_and_favorite_snapshots_refreshed')
             );
