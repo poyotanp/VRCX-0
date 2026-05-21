@@ -2,8 +2,7 @@ import {
     ExternalLinkIcon,
     GlobeIcon,
     PencilIcon,
-    UserIcon,
-    UsersIcon
+    UserIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -281,14 +280,12 @@ export function FriendLocationCard({
     canBoop = false,
     onOpenUser,
     onOpenWorld,
-    onOpenGroup,
     onLaunchLocation,
     onSelfInviteLocation,
     onSendInvite,
     onRequestInvite,
     onSendBoop,
-    worldActionLabel,
-    groupActionLabel
+    worldActionLabel
 }: any) {
     const { t } = useTranslation();
 
@@ -299,7 +296,6 @@ export function FriendLocationCard({
     const tone = resolveStatusTone(friend, currentUserSnapshot);
     const canOpenUser = typeof onOpenUser === 'function';
     const canOpenWorld = typeof onOpenWorld === 'function';
-    const canOpenGroup = typeof onOpenGroup === 'function';
     const cardLocation = resolveCardLocation(rawLocation, friend);
     const source = readFriendRef(friend);
     const hasRef = hasFriendRef(friend);
@@ -330,8 +326,6 @@ export function FriendLocationCard({
     const isDense = resolvedDensityConfig.layout === 'item';
     const resolvedWorldActionLabel =
         worldActionLabel || t('view.friend_list.label.world');
-    const resolvedGroupActionLabel =
-        groupActionLabel || t('view.friend_list.label.group');
     const locationLineClampClass = resolveLineClampClass(
         resolvedDensityConfig.locationLineClamp
     );
@@ -531,13 +525,6 @@ export function FriendLocationCard({
                     >
                         <GlobeIcon />
                         {resolvedWorldActionLabel}
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                        disabled={!canOpenGroup}
-                        onSelect={onOpenGroup}
-                    >
-                        <UsersIcon />
-                        {resolvedGroupActionLabel}
                     </ContextMenuItem>
                 </ContextMenuGroup>
                 <ContextMenuSeparator />

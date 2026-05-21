@@ -119,7 +119,6 @@ export function FriendsLocationCardItem({
     canBoop,
     onOpenUser,
     onOpenWorld,
-    onOpenGroup,
     onLaunchLocation,
     onSelfInviteLocation,
     onSendInvite,
@@ -163,7 +162,6 @@ export function FriendsLocationCardItem({
             onOpenWorld={
                 target.worldId ? () => onOpenWorld(target, location) : undefined
             }
-            onOpenGroup={target.groupId ? () => onOpenGroup(target) : undefined}
             onLaunchLocation={() => onLaunchLocation(rawLocation)}
             onSelfInviteLocation={() => onSelfInviteLocation(rawLocation)}
             onSendInvite={() => onSendInvite(friend)}

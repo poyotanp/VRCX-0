@@ -20,6 +20,7 @@ export function useFriendsLocationsPageController() {
         changeDensityPreference,
         changeShowSameInstanceInOnline,
         density,
+        preferencesReady,
         showSameInstanceInOnline,
         sidebarFavoritePrefs,
         sidebarSortMethods
@@ -86,6 +87,7 @@ export function useFriendsLocationsPageController() {
             changeDensityPreference,
             changeShowSameInstanceInOnline,
             density,
+            preferencesReady,
             showSameInstanceInOnline
         },
         runtime: {

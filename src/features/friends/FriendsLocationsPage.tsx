@@ -38,14 +38,16 @@ export function FriendsLocationsPage({
                 }
                 onDensityChange={preferences.changeDensityPreference}
             />
-            <FriendsLocationsVirtualList
-                derived={derived}
-                filters={filters}
-                load={load}
-                locationCommands={actions}
-                runtime={runtime}
-                scroll={scroll}
-            />
+            {preferences.preferencesReady ? (
+                <FriendsLocationsVirtualList
+                    derived={derived}
+                    filters={filters}
+                    load={load}
+                    locationCommands={actions}
+                    runtime={runtime}
+                    scroll={scroll}
+                />
+            ) : null}
         </div>
     );
 }

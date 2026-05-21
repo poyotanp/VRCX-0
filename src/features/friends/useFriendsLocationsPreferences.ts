@@ -10,6 +10,7 @@ import {
 } from './friendsLocationsDensity';
 
 export function useFriendsLocationsPreferences() {
+    const [preferencesReady, setPreferencesReady] = useState(false);
     const [showSameInstanceInOnline, setShowSameInstanceInOnline] =
         useState(false);
     const [density, setDensity] = useState(DEFAULT_FRIENDS_LOCATIONS_DENSITY);
@@ -70,9 +71,14 @@ export function useFriendsLocationsPreferences() {
                         nextSortMethod2 || '',
                         nextSortMethod3 || ''
                     ]);
+                    setPreferencesReady(true);
                 }
             )
-            .catch(() => {});
+            .catch(() => {
+                if (active) {
+                    setPreferencesReady(true);
+                }
+            });
 
         return () => {
             active = false;
@@ -163,6 +169,7 @@ export function useFriendsLocationsPreferences() {
         changeDensityPreference,
         changeShowSameInstanceInOnline,
         density,
+        preferencesReady,
         showSameInstanceInOnline,
         sidebarFavoritePrefs,
         sidebarSortMethods
