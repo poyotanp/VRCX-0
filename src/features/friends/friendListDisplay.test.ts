@@ -25,7 +25,7 @@ describe('friendListDisplay', () => {
             statusDescription: '',
             state: 'online'
         });
-        expect(active.label).toBe('active');
+        expect(active.label).toBe('');
         expect(active.badgeVariant).toBe('outline');
         expect(active.showIndicator).toBe(true);
         expect(active.sortRank).toEqual(expect.any(Number));

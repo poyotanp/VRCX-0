@@ -1,5 +1,4 @@
 import {
-    normalizeUserStatus,
     userStatusIndicatorClassName,
     userStatusSortRank
 } from '@/shared/utils/userStatus';
@@ -25,12 +24,7 @@ export function resolveFriendLanguageRows(friend: any) {
 }
 
 function resolveFriendStatusLabel(friend: any) {
-    const statusDescription = String(friend?.statusDescription ?? '').trim();
-    if (statusDescription) {
-        return statusDescription;
-    }
-    const status = String(friend?.status ?? '').trim();
-    return status ? normalizeUserStatus(status) : '';
+    return String(friend?.statusDescription ?? '').trim();
 }
 
 export function resolveFriendStatusMeta(friend: any) {
