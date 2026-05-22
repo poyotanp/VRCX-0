@@ -1,10 +1,24 @@
-import { ChevronRightIcon } from 'lucide-react';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import {
+    CalendarDaysIcon,
+    ChevronRightIcon,
+    UserMinusIcon,
+    UserPlusIcon,
+    VideoIcon
+} from 'lucide-react';
+import {
+    Fragment,
+    memo,
+    useCallback,
+    useEffect,
+    useRef,
+    useState
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Location } from '@/components/Location';
 import { formatDateFilter, timeToText } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
+import gameLogRepository from '@/repositories/gameLogRepository';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import {
@@ -12,17 +26,128 @@ import {
     CollapsibleContent,
     CollapsibleTrigger
 } from '@/ui/shadcn/collapsible';
+import { Separator } from '@/ui/shadcn/separator';
 import { Spinner } from '@/ui/shadcn/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
+    countGameLogSessionEvent,
     getGameLogSessionKey,
     resolveGameLogSessionDuration as resolveSessionDuration,
     resolveGameLogWorldTarget as resolveWorldTarget
 } from '../gameLogRows';
+import {
+    buildGameLogSessionDurationDetails,
+    createEmptyGameLogSessionDurationDetails,
+    type GameLogSessionDurationDetails
+} from '../gameLogSessionDurations';
 import { SessionEventGroups } from './GameLogSessionEventRow';
 
 const DEFAULT_OPEN_SESSION_COUNT = 3;
+const EMPTY_DURATION_BY_KEY = new Map<string, number>();
+const sessionDurationDetailsCache = new Map<
+    string,
+    GameLogSessionDurationDetails
+>();
+
+type PlayerDurationDetailsState = GameLogSessionDurationDetails & {
+    location: string;
+};
+
+function createPlayerDurationDetailsState({
+    details = createEmptyGameLogSessionDurationDetails(),
+    location
+}: {
+    details?: GameLogSessionDurationDetails;
+    location: string;
+}): PlayerDurationDetailsState {
+    return {
+        ...details,
+        location
+    };
+}
+
+function sessionStartValue(session: any) {
+    return session?.created_at || session?.createdAt || '';
+}
+
+function sessionDayKey(session: any) {
+    const value = sessionStartValue(session);
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return String(value || '').slice(0, 10);
+    }
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0')
+    ].join('-');
+}
+
+function SessionDayDivider({ session }: any) {
+    const value = sessionStartValue(session);
+    const label = formatDateFilter(value, 'date');
+
+    return (
+        <div className="bg-background flex items-center gap-2 px-3 py-2">
+            <Separator className="flex-1" />
+            <Badge
+                variant="secondary"
+                className="h-5 shrink-0 gap-1 px-2 text-xs font-medium tabular-nums"
+            >
+                <CalendarDaysIcon data-icon="inline-start" />
+                {label}
+            </Badge>
+            <Separator className="flex-1" />
+        </div>
+    );
+}
+
+function formatSessionEventRange(summary: any, fallbackCreatedAt: any) {
+    const firstEventAt = summary?.firstEventAt;
+    const lastEventAt = summary?.lastEventAt;
+    if (firstEventAt && lastEventAt && firstEventAt !== lastEventAt) {
+        return `${formatDateFilter(firstEventAt, 'short')} - ${formatDateFilter(lastEventAt, 'short')}`;
+    }
+    return formatDateFilter(firstEventAt || fallbackCreatedAt, 'long');
+}
+
+function buildSessionSummary(events: any[] = []) {
+    let firstEventAt = '';
+    let lastEventAt = '';
+
+    for (const event of events) {
+        const eventTime = String(event?.created_at || '');
+        if (!eventTime) {
+            continue;
+        }
+        const eventEpoch = Date.parse(eventTime);
+        const firstEpoch = Date.parse(firstEventAt);
+        const lastEpoch = Date.parse(lastEventAt);
+        if (
+            !firstEventAt ||
+            (Number.isFinite(eventEpoch) &&
+                (!Number.isFinite(firstEpoch) || eventEpoch < firstEpoch))
+        ) {
+            firstEventAt = eventTime;
+        }
+        if (
+            !lastEventAt ||
+            (Number.isFinite(eventEpoch) &&
+                (!Number.isFinite(lastEpoch) || eventEpoch > lastEpoch))
+        ) {
+            lastEventAt = eventTime;
+        }
+    }
+
+    return {
+        firstEventAt,
+        joinedCount: countGameLogSessionEvent(events, 'OnPlayerJoined'),
+        lastEventAt,
+        leftCount: countGameLogSessionEvent(events, 'OnPlayerLeft'),
+        videoCount: countGameLogSessionEvent(events, 'VideoPlay')
+    };
+}
 
 const GameLogSessionSegment = memo(function GameLogSessionSegment({
     sessionKey,
@@ -37,8 +162,24 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
     const worldTarget = resolveWorldTarget(session);
     const durationMs = resolveSessionDuration(session);
     const sessionStartedAt = Date.parse(session?.created_at);
+    const sessionLocation = session.location || '';
+    const shouldLoadDurationDetails = Boolean(sessionLocation) && (
+        isOpen ||
+        durationMs <= 0
+    );
+    const [playerDurationDetails, setPlayerDurationDetails] =
+        useState<PlayerDurationDetailsState>(() =>
+            createPlayerDurationDetailsState({
+                location: ''
+            })
+        );
+    const playerMaxDurationMs =
+        playerDurationDetails.location === sessionLocation
+            ? playerDurationDetails.maxDurationMs
+            : 0;
+    const effectiveDurationMs = Math.max(durationMs, playerMaxDurationMs);
     const shouldShowLiveDuration =
-        durationMs <= 0 &&
+        effectiveDurationMs <= 0 &&
         isLatest &&
         isGameRunning &&
         Number.isFinite(sessionStartedAt);
@@ -47,17 +188,91 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
         ? Math.max(0, liveNow - sessionStartedAt)
         : 0;
     const durationText =
-        durationMs > 0
-            ? timeToText(durationMs)
+        effectiveDurationMs > 0
+            ? timeToText(effectiveDurationMs)
             : liveDurationMs > 0
               ? timeToText(liveDurationMs)
               : '';
-    const sessionLocation = session.location || '';
+    const summary = buildSessionSummary(session?.events ?? []);
+    const eventRangeText = formatSessionEventRange(summary, session.created_at);
+    const durationByKey =
+        playerDurationDetails.location === sessionLocation
+            ? playerDurationDetails.durationByKey
+            : EMPTY_DURATION_BY_KEY;
     const handleOpenChange = (nextOpen: any) => {
         if (sessionKey) {
             onOpenChange?.(sessionKey, nextOpen);
         }
     };
+
+    useEffect(() => {
+        if (!sessionLocation) {
+            setPlayerDurationDetails(
+                createPlayerDurationDetailsState({
+                    location: ''
+                })
+            );
+            return undefined;
+        }
+
+        if (!shouldLoadDurationDetails) {
+            return undefined;
+        }
+
+        const cachedDetails =
+            sessionDurationDetailsCache.get(sessionLocation);
+        if (cachedDetails) {
+            setPlayerDurationDetails(
+                createPlayerDurationDetailsState({
+                    details: cachedDetails,
+                    location: sessionLocation
+                })
+            );
+            return undefined;
+        }
+
+        let active = true;
+        setPlayerDurationDetails(
+            createPlayerDurationDetailsState({
+                location: sessionLocation
+            })
+        );
+
+        gameLogRepository
+            .getPlayerDetailFromInstance(sessionLocation)
+            .then((rows: unknown) => {
+                if (!active) {
+                    return;
+                }
+                const details = buildGameLogSessionDurationDetails(
+                    Array.isArray(rows) ? rows : []
+                );
+                sessionDurationDetailsCache.set(sessionLocation, details);
+                setPlayerDurationDetails(
+                    createPlayerDurationDetailsState({
+                        details,
+                        location: sessionLocation
+                    })
+                );
+            })
+            .catch(() => {
+                if (!active) {
+                    return;
+                }
+                const details = createEmptyGameLogSessionDurationDetails();
+                sessionDurationDetailsCache.set(sessionLocation, details);
+                setPlayerDurationDetails(
+                    createPlayerDurationDetailsState({
+                        details,
+                        location: sessionLocation
+                    })
+                );
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [sessionLocation, shouldLoadDurationDetails]);
 
     useEffect(() => {
         if (!shouldShowLiveDuration) {
@@ -110,7 +325,7 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
                                     grouphint={session.groupName || ''}
                                     enableContextMenu
                                     stopPropagation
-                                    className="min-w-0 text-sm font-medium"
+                                    className="min-w-0 text-sm font-normal"
                                 />
                                 {durationText ? (
                                     <Tooltip>
@@ -134,6 +349,31 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
                             <span className="truncate text-sm" />
                         )}
                     </div>
+                    <div className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs tabular-nums">
+                        <Badge
+                            variant="outline"
+                            className="h-4 gap-1 px-1 text-xs"
+                        >
+                            <UserPlusIcon data-icon="inline-start" />
+                            {summary.joinedCount}
+                        </Badge>
+                        <Badge
+                            variant="outline"
+                            className="h-4 gap-1 px-1 text-xs"
+                        >
+                            <UserMinusIcon data-icon="inline-start" />
+                            {summary.leftCount}
+                        </Badge>
+                        {summary.videoCount > 0 ? (
+                            <Badge
+                                variant="outline"
+                                className="h-4 gap-1 px-1 text-xs"
+                            >
+                                <VideoIcon data-icon="inline-start" />
+                                {summary.videoCount}
+                            </Badge>
+                        ) : null}
+                    </div>
                     {!durationText && isLatest && isGameRunning ? (
                         <Badge
                             variant="outline"
@@ -143,13 +383,16 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
                         </Badge>
                     ) : null}
                     <span className="text-muted-foreground ml-auto shrink-0 text-xs">
-                        {formatDateFilter(session.created_at, 'long')}
+                        {eventRangeText}
                     </span>
                 </div>
             </div>
 
             <CollapsibleContent>
-                <SessionEventGroups events={session.events} />
+                <SessionEventGroups
+                    durationByKey={durationByKey}
+                    events={session.events}
+                />
             </CollapsibleContent>
         </Collapsible>
     );
@@ -265,21 +508,31 @@ export function GameLogSessionsView({
             >
                 {sessions.map((session: any, index: any) => {
                     const sessionKey = getGameLogSessionKey(session);
+                    const currentDayKey = sessionDayKey(session);
+                    const previousDayKey =
+                        index > 0 ? sessionDayKey(sessions[index - 1]) : '';
+                    const showDayDivider =
+                        Boolean(currentDayKey) &&
+                        currentDayKey !== previousDayKey;
                     const isOpen = sessionKey
                         ? (sessionOpenOverrides.get(sessionKey) ??
                           index < DEFAULT_OPEN_SESSION_COUNT)
                         : index < DEFAULT_OPEN_SESSION_COUNT;
                     return (
-                        <GameLogSessionSegment
-                            key={sessionKey || `session:${index}`}
-                            sessionKey={sessionKey}
-                            session={session}
-                            isLatest={index === 0}
-                            isLast={index === sessions.length - 1}
-                            isGameRunning={isGameRunning}
-                            isOpen={isOpen}
-                            onOpenChange={handleSessionOpenChange}
-                        />
+                        <Fragment key={sessionKey || `session:${index}`}>
+                            {showDayDivider ? (
+                                <SessionDayDivider session={session} />
+                            ) : null}
+                            <GameLogSessionSegment
+                                sessionKey={sessionKey}
+                                session={session}
+                                isLatest={index === 0}
+                                isLast={index === sessions.length - 1}
+                                isGameRunning={isGameRunning}
+                                isOpen={isOpen}
+                                onOpenChange={handleSessionOpenChange}
+                            />
+                        </Fragment>
                     );
                 })}
                 <div

@@ -9,9 +9,12 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { formatDateFilter } from '@/lib/dateTime';
-import { copyTextToClipboard, openExternalLink } from '@/services/entityMediaService';
+import { formatDateFilter, timeToText } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
+import {
+    copyTextToClipboard,
+    openExternalLink
+} from '@/services/entityMediaService';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import {
@@ -28,6 +31,7 @@ import {
     ContextMenuTrigger
 } from '@/ui/shadcn/context-menu';
 
+import { getGameLogSessionPlayerDuration } from '../gameLogSessionDurations';
 import { normalizeId, openGameLogUser } from '../gameLogUserLookup';
 
 const VIDEO_SOURCE_WITHOUT_LINK = new Set(['LSMedia', 'PopcornPalace']);
@@ -69,11 +73,47 @@ function getGroupMembers(event: any) {
     return [];
 }
 
-function getGroupCount(event: any, members: any) {
+function getGroupCount(event: any, members: any[]) {
     if (members.length > 0) {
         return members.length;
     }
     return Number.isFinite(event?.count) && event.count > 0 ? event.count : 0;
+}
+
+function EventTime({ value }: { value: unknown }) {
+    return (
+        <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+            {formatDateFilter(value, 'short')}
+        </span>
+    );
+}
+
+function EventBadge({ event }: { event: any }) {
+    const { t } = useTranslation();
+
+    return (
+        <Badge
+            variant="outline"
+            className="text-muted-foreground h-5 justify-center px-1.5 text-xs font-normal"
+        >
+            {getEventLabel(event, t)}
+        </Badge>
+    );
+}
+
+function DurationBadge({ value }: { value: number }) {
+    if (value <= 0) {
+        return <span aria-hidden="true" />;
+    }
+
+    return (
+        <Badge
+            variant="outline"
+            className="h-5 shrink-0 px-1.5 text-xs tabular-nums"
+        >
+            {timeToText(value)}
+        </Badge>
+    );
 }
 
 function AffinityBadges({ item }: any) {
@@ -128,55 +168,59 @@ function PlayerNameButton({ item }: any) {
     );
 }
 
-function PlayerActivityRow({ item, muted = false }: any) {
+function PlayerCell({ item }: any) {
     return (
-        <div
-            className={cn(
-                'hover:bg-muted/50 grid min-h-7 grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded px-2 py-0.5 text-sm',
-                muted && 'text-muted-foreground'
-            )}
-        >
-            <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                {formatDateFilter(item?.created_at, 'short')}
-            </span>
+        <div className="flex min-w-0 items-center gap-1.5">
             <PlayerNameButton item={item} />
             <AffinityBadges item={item} />
         </div>
     );
 }
 
-function SinglePlayerActivityRow({ event, muted = false }: any) {
-    const { t } = useTranslation();
+function PlayerActivityRow({
+    durationByKey,
+    item
+}: {
+    durationByKey: Map<string, number>;
+    item: any;
+}) {
+    return (
+        <div className="hover:bg-muted/40 grid min-h-7 grid-cols-[5.75rem_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-0.5 text-sm">
+            <EventTime value={item?.created_at} />
+            <PlayerCell item={item} />
+            <DurationBadge
+                value={getGameLogSessionPlayerDuration(durationByKey, item)}
+            />
+        </div>
+    );
+}
+
+function SinglePlayerActivityRow({
+    durationByKey,
+    event
+}: {
+    durationByKey: Map<string, number>;
+    event: any;
+}) {
     const item = normalizeSessionMember(event, event?.created_at);
 
     return (
-        <div
-            className={cn(
-                'hover:bg-muted/50 grid min-h-7 grid-cols-[5.5rem_7rem_minmax(0,1fr)_auto] items-center gap-2 rounded px-2 py-0.5 text-sm',
-                muted && 'text-muted-foreground'
-            )}
-        >
-            <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                {formatDateFilter(event?.created_at, 'short')}
-            </span>
-            <Badge
-                variant="outline"
-                className="text-muted-foreground justify-center"
-            >
-                {getEventLabel(event, t)}
-            </Badge>
-            <PlayerNameButton item={item} />
-            <AffinityBadges item={item} />
+        <div className="hover:bg-muted/45 grid min-h-8 grid-cols-[5.75rem_7rem_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1 text-sm">
+            <EventTime value={event?.created_at} />
+            <EventBadge event={event} />
+            <PlayerCell item={item} />
+            <DurationBadge
+                value={getGameLogSessionPlayerDuration(durationByKey, item)}
+            />
         </div>
     );
 }
 
-function GroupActivityRow({ event, isJoin }: any) {
+function GroupActivityRow({ durationByKey, event, isJoin }: any) {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const members = getGroupMembers(event);
     const count = getGroupCount(event, members);
-    const label = getEventLabel(event, t);
 
     return (
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
@@ -185,18 +229,11 @@ function GroupActivityRow({ event, isJoin }: any) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-muted-foreground hover:bg-muted/50 grid min-h-7 w-full grid-cols-[5.5rem_7rem_minmax(0,1fr)_auto] items-center gap-2 rounded px-2 py-0.5 text-left text-sm"
+                    className="hover:bg-muted/45 grid min-h-8 w-full grid-cols-[5.75rem_7rem_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1 text-left text-sm"
                 >
-                    <span className="shrink-0 text-xs tabular-nums">
-                        {formatDateFilter(event?.created_at, 'short')}
-                    </span>
-                    <Badge
-                        variant="outline"
-                        className="text-muted-foreground justify-center"
-                    >
-                        {label}
-                    </Badge>
-                    <span className="text-foreground min-w-0 truncate font-medium">
+                    <EventTime value={event?.created_at} />
+                    <EventBadge event={event} />
+                    <span className="min-w-0 truncate font-normal">
                         {t(
                             isJoin
                                 ? 'view.game_log.sessions.players_joined'
@@ -207,7 +244,7 @@ function GroupActivityRow({ event, isJoin }: any) {
                     <ChevronRightIcon
                         data-icon="inline-end"
                         className={cn(
-                            'shrink-0 transition-transform duration-150',
+                            'text-muted-foreground shrink-0 transition-transform duration-150',
                             isExpanded && 'rotate-90'
                         )}
                     />
@@ -215,12 +252,12 @@ function GroupActivityRow({ event, isJoin }: any) {
             </CollapsibleTrigger>
             {members.length ? (
                 <CollapsibleContent>
-                    <div className="pb-1 pl-20">
+                    <div className="border-border/70 ml-[5.75rem] border-l pl-3">
                         {members.map((member: any, index: any) => (
                             <PlayerActivityRow
                                 key={`${member.userId}:${member.created_at}:${member.displayName}:${index}`}
+                                durationByKey={durationByKey}
                                 item={member}
-                                muted={!isJoin}
                             />
                         ))}
                     </div>
@@ -243,16 +280,9 @@ function VideoActivityRow({ event }: any) {
     return (
         <ContextMenu>
             <ContextMenuTrigger asChild>
-                <div className="hover:bg-muted/50 grid min-h-7 grid-cols-[5.5rem_7rem_minmax(0,1fr)_auto] items-center gap-2 rounded px-2 py-0.5 text-sm">
-                    <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-                        {formatDateFilter(event?.created_at, 'short')}
-                    </span>
-                    <Badge
-                        variant="outline"
-                        className="text-muted-foreground justify-center"
-                    >
-                        {getEventLabel(event, t)}
-                    </Badge>
+                <div className="hover:bg-muted/45 grid min-h-8 grid-cols-[5.75rem_7rem_minmax(0,1fr)_auto] items-center gap-2 rounded-md px-2 py-1 text-sm">
+                    <EventTime value={event?.created_at} />
+                    <EventBadge event={event} />
                     <div className="flex min-w-0 items-center gap-1.5">
                         <VideoIcon className="text-muted-foreground size-3.5 shrink-0" />
                         {showVideoLink ? (
@@ -289,7 +319,9 @@ function VideoActivityRow({ event }: any) {
                                 name: event.displayName
                             })}
                         </span>
-                    ) : null}
+                    ) : (
+                        <span aria-hidden="true" />
+                    )}
                 </div>
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -323,14 +355,26 @@ function VideoActivityRow({ event }: any) {
     );
 }
 
-function SessionEventRow({ event }: any) {
+function SessionEventRow({
+    durationByKey,
+    event
+}: {
+    durationByKey: Map<string, number>;
+    event: any;
+}) {
     const isJoin =
         event?.type === 'OnPlayerJoined' || event?.type === 'JoinGroup';
     const isLeave =
         event?.type === 'OnPlayerLeft' || event?.type === 'LeftGroup';
 
     if (event?.type === 'JoinGroup' || event?.type === 'LeftGroup') {
-        return <GroupActivityRow event={event} isJoin={isJoin} />;
+        return (
+            <GroupActivityRow
+                durationByKey={durationByKey}
+                event={event}
+                isJoin={isJoin}
+            />
+        );
     }
 
     if (event?.type === 'VideoPlay') {
@@ -338,24 +382,32 @@ function SessionEventRow({ event }: any) {
     }
 
     if (isJoin || isLeave) {
-        return <SinglePlayerActivityRow event={event} muted={isLeave} />;
+        return (
+            <SinglePlayerActivityRow
+                durationByKey={durationByKey}
+                event={event}
+            />
+        );
     }
 
     return null;
 }
 
-export function SessionEventGroups({ events }: any) {
+export function SessionEventGroups({
+    durationByKey = new Map(),
+    events
+}: any) {
+    const { t } = useTranslation();
     const visibleEvents = (events ?? []).filter((event: any) =>
-        [
-            'JoinGroup',
-            'LeftGroup',
-            'OnPlayerJoined',
-            'OnPlayerLeft',
-            'VideoPlay'
-        ].includes(event?.type)
+        ['JoinGroup', 'LeftGroup', 'OnPlayerJoined', 'OnPlayerLeft'].includes(
+            event?.type
+        )
+    );
+    const videoEvents = (events ?? []).filter(
+        (event: any) => event?.type === 'VideoPlay'
     );
 
-    if (!visibleEvents.length) {
+    if (!visibleEvents.length && !videoEvents.length) {
         return null;
     }
 
@@ -363,10 +415,26 @@ export function SessionEventGroups({ events }: any) {
         <div className="flex flex-col gap-0.5 px-2 py-1.5">
             {visibleEvents.map((event: any, index: any) => (
                 <SessionEventRow
-                    key={`${event.type}:${event.created_at}:${event.userId || event.videoUrl || index}`}
+                    key={`${event.type}:${event.created_at}:${event.userId || index}`}
+                    durationByKey={durationByKey}
                     event={event}
                 />
             ))}
+            {videoEvents.length ? (
+                <div className="border-border mt-2 border-t pt-2">
+                    <div className="text-muted-foreground px-2 pb-1 text-xs font-medium">
+                        {t('view.game_log.sessions.videos')}
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        {videoEvents.map((event: any, index: any) => (
+                            <VideoActivityRow
+                                key={`${event.type}:${event.created_at}:${event.videoUrl || index}`}
+                                event={event}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }
