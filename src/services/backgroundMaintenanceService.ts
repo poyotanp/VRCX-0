@@ -102,6 +102,12 @@ const CURRENT_USER_LOCAL_AUTHORITY_FIELDS = [
     '$previousLocation',
     '$previousLocation_at'
 ];
+const CURRENT_USER_FRIEND_ARRAY_FIELDS = new Set([
+    'friends',
+    'onlineFriends',
+    'activeFriends',
+    'offlineFriends'
+]);
 
 function mergeCurrentUserRefreshOverlayPatch(record: any, patch: any) {
     if (!patch || typeof patch !== 'object') {
@@ -153,6 +159,12 @@ function mergeCurrentUserRefreshSnapshot({
             : { ...responseUser };
 
     for (const field of CURRENT_USER_LOCAL_AUTHORITY_FIELDS) {
+        if (
+            CURRENT_USER_FRIEND_ARRAY_FIELDS.has(field) &&
+            hasCurrentUserSnapshotField(responseUser, field)
+        ) {
+            continue;
+        }
         if (hasCurrentUserSnapshotField(currentSnapshot, field)) {
             user[field] = currentSnapshot[field];
         }
@@ -172,6 +184,12 @@ function mergeCurrentUserRefreshSnapshot({
         ]);
         keys.delete('id');
         for (const key of keys) {
+            if (
+                CURRENT_USER_FRIEND_ARRAY_FIELDS.has(key) &&
+                hasCurrentUserSnapshotField(responseUser, key)
+            ) {
+                continue;
+            }
             if (
                 !areCurrentUserSnapshotValuesEqual(
                     baseSnapshot[key],

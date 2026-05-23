@@ -194,6 +194,10 @@ function hasFriendStateSnapshot(currentUserSnapshot: any) {
     );
 }
 
+function hasCompleteFriendRosterSnapshot(currentUserSnapshot: any) {
+    return Array.isArray(currentUserSnapshot?.friends);
+}
+
 function buildUnfriendHistoryEntry(
     row: Record<string, any>,
     createdAt: string
@@ -364,9 +368,11 @@ export function syncFriendRosterStateFromCurrentUserSnapshot(
 
     const rosterStore = useFriendRosterStore.getState();
     const snapshotIds = new Set(Array.from(stateById.keys()));
-    const removedIds = Object.keys(rosterStore.friendsById || {}).filter(
-        (userId) => !snapshotIds.has(userId)
-    );
+    const removedIds = hasCompleteFriendRosterSnapshot(currentUserSnapshot)
+        ? Object.keys(rosterStore.friendsById || {}).filter(
+              (userId) => !snapshotIds.has(userId)
+          )
+        : [];
 
     if (patchEntries.length) {
         rosterStore.applyFriendPatches(patchEntries, detail);

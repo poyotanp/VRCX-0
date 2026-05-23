@@ -189,13 +189,12 @@ pub(super) fn apply_friend_event(
             let previous = get_friend_value(state, &user_id);
             let user_patch =
                 event_user_patch(content, &user_id).unwrap_or_else(|| json!({ "id": user_id }));
-            let state_bucket =
-                resolve_location_event_state_bucket(content, &user_patch, previous.as_ref());
-            let patch = if state_bucket == "online" {
-                online_patch(content, user_patch, previous.as_ref(), now, &state_bucket)
-            } else {
-                offline_like_patch(content, &user_id, &state_bucket)
+            let Some(state_bucket) =
+                resolve_location_event_state_bucket(content, previous.as_ref())
+            else {
+                return None;
             };
+            let patch = online_patch(content, user_patch, previous.as_ref(), now, &state_bucket);
             if let Some(previous) = previous.as_ref() {
                 add_gps_feed_entry_if_not_repeated(
                     state,
@@ -339,46 +338,34 @@ pub(super) fn event_user_patch(content: &Value, user_id: &str) -> Option<Value> 
     Some(Value::Object(patch))
 }
 
-fn is_offline_location_tag(location: &str) -> bool {
-    let normalized = location.trim().to_ascii_lowercase();
-    matches!(normalized.as_str(), "offline" | "offline:offline")
-}
-
-fn is_active_state_tag(value: Option<&Value>) -> bool {
-    value
+fn has_embedded_location_user(content: &Value) -> bool {
+    content
+        .get("user")
+        .and_then(|user| user.get("id"))
         .and_then(Value::as_str)
-        .map(|value| value.trim().eq_ignore_ascii_case("active"))
+        .map(|id| !id.trim().is_empty())
         .unwrap_or(false)
-}
-
-fn has_event_active_state_bucket(content: &Value) -> bool {
-    [
-        content.get("stateBucket"),
-        content.get("state"),
-        content.get("user").and_then(|user| user.get("stateBucket")),
-        content.get("user").and_then(|user| user.get("state")),
-    ]
-    .into_iter()
-    .any(is_active_state_tag)
 }
 
 fn resolve_location_event_state_bucket(
     content: &Value,
-    user_patch: &Value,
     previous: Option<&Value>,
-) -> String {
-    if has_event_active_state_bucket(content) {
-        return "active".into();
+) -> Option<String> {
+    if has_embedded_location_user(content) {
+        return Some("online".into());
     }
-    let user_location = first_string([user_patch.get("location").and_then(Value::as_str)]);
-    let content_location = first_string([content.get("location").and_then(Value::as_str)]);
-    if is_offline_location_tag(&user_location) || is_offline_location_tag(&content_location) {
-        return "offline".into();
+    for candidate in [
+        previous.and_then(|previous| previous.get("stateBucket")),
+        previous.and_then(|previous| previous.get("state")),
+    ] {
+        if let Some(normalized) = candidate
+            .and_then(Value::as_str)
+            .and_then(normalize_state_bucket)
+        {
+            return Some(normalized);
+        }
     }
-    if has_event_state_bucket(content) {
-        return resolve_state_bucket(content, user_patch, previous, "online");
-    }
-    "online".into()
+    None
 }
 
 pub(super) fn online_patch(
