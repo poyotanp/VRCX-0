@@ -25,8 +25,9 @@ pub fn app__runtime_auth_scope_set(
         .runtime_context
         .auth_scope
         .set(input.user_id, input.endpoint);
-    if !snapshot.active
-        || previous.current_user_id != snapshot.current_user_id
+    if !snapshot.active {
+        state.clear_backend_authenticated_session("Runtime auth scope changed.");
+    } else if previous.current_user_id != snapshot.current_user_id
         || previous.endpoint != snapshot.endpoint
     {
         state.clear_backend_frontend_session();

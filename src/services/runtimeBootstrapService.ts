@@ -76,6 +76,7 @@ function isBackendRuntimeOwningRealtime(context: any): boolean {
         snapshot?.phase === 'running' &&
             snapshot?.authStatus === 'authenticated' &&
             snapshot?.authUserId === context?.userId &&
+            snapshot?.wsStatus !== 'authFailure' &&
             snapshot?.mode === 'background'
     );
 }

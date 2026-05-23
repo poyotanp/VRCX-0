@@ -7,6 +7,7 @@ import {
 import { useSessionStore } from '@/state/sessionStore';
 import { normalizeVrchatEndpointDomain } from '@/shared/vrchatEndpoint';
 
+import { handleRuntimeAuthFailure } from './authSessionRecoveryService';
 import { resumeFrontendSessionFromBackendRuntime } from './backendRuntimeSessionResumeService';
 import { recordRuntimeGameClientEvent } from './gameClientLifecycle';
 import {
@@ -113,6 +114,7 @@ function hydrateBackendRuntimeSnapshot(
                 });
                 try {
                     await resumeFrontendSessionFromBackendRuntime(nextSnapshot);
+                    handleBackendRuntimeAuthFailureSnapshot(nextSnapshot);
                     flushPendingBackendRealtimeProjectionEvents();
                 } catch (error) {
                     console.warn(
@@ -251,6 +253,7 @@ function isBackendRuntimeRealtimeOwner(): boolean {
     return Boolean(
         snapshot.phase === 'running' &&
             snapshot.authStatus === 'authenticated' &&
+            snapshot.wsStatus !== 'authFailure' &&
             snapshot.mode !== 'headless' &&
             authUserId &&
             runtimeState.auth.currentUserId === authUserId &&
@@ -264,6 +267,7 @@ function isBackendRuntimeRealtimeCandidate(): boolean {
         isRecord(snapshot) &&
             snapshot.phase === 'running' &&
             snapshot.authStatus === 'authenticated' &&
+            snapshot.wsStatus !== 'authFailure' &&
             snapshot.mode !== 'headless' &&
             normalizeString(snapshot.authUserId)
     );
@@ -404,6 +408,41 @@ function prunePendingBackendRealtimeProjectionEvents(
     }
 }
 
+function isBackendRuntimeAuthFailureSnapshot(
+    snapshot: Record<string, unknown> | null
+): boolean {
+    return Boolean(
+        isRecord(snapshot) &&
+            snapshot.phase === 'running' &&
+            snapshot.authStatus === 'authenticated' &&
+            normalizeString(snapshot.authUserId) &&
+            normalizeString(snapshot.wsStatus) === 'authFailure'
+    );
+}
+
+function handleBackendRuntimeAuthFailureSnapshot(
+    snapshot: Record<string, unknown> | null
+): void {
+    if (!isBackendRuntimeAuthFailureSnapshot(snapshot)) {
+        return;
+    }
+
+    const error = Object.assign(new Error('Backend realtime auth failed.'), {
+        status: 401,
+        endpoint: 'auth',
+        payload: { snapshot }
+    });
+    const handled = handleRuntimeAuthFailure(error);
+    if (handled) {
+        handled.catch((recoveryError: unknown) => {
+            console.warn(
+                'Backend runtime auth failure recovery failed:',
+                recoveryError
+            );
+        });
+    }
+}
+
 function handleBackendRealtimeProjectionEvent(
     name: RuntimeEventName,
     payload: unknown
@@ -482,7 +521,10 @@ function handleRuntimeEvent(name: RuntimeEventName, payload: unknown): void {
                         error
                     );
                 }
-            ).then(flushPendingBackendRealtimeProjectionEvents);
+            ).then(() => {
+                handleBackendRuntimeAuthFailureSnapshot(snapshot);
+                flushPendingBackendRealtimeProjectionEvents();
+            });
         }
         return;
     }

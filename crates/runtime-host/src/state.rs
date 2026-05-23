@@ -532,6 +532,16 @@ impl RuntimeHostState {
         }
     }
 
+    pub fn clear_backend_authenticated_session(
+        &self,
+        reason: impl Into<String>,
+    ) -> BackendRuntimeSnapshot {
+        self.clear_backend_frontend_session();
+        let snapshot = self.backend_runtime.clear_authentication();
+        self.emit_backend_runtime_telemetry_snapshot("authCleared", reason, snapshot.clone());
+        snapshot
+    }
+
     pub async fn refresh_runtime_group_instances(&self) {
         run_background_group_instance_refresh(
             &self.db,

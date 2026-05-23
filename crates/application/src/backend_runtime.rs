@@ -164,6 +164,17 @@ impl BackendRuntime {
         })
     }
 
+    pub fn clear_authentication(&self) -> BackendRuntimeSnapshot {
+        self.update(|state| {
+            state.phase = BackendRuntimePhase::Idle;
+            state.auth_status = "signedOut".into();
+            state.auth_user_id.clear();
+            state.auth_display_name.clear();
+            state.ws_status = "idle".into();
+            state.last_error = None;
+        })
+    }
+
     pub fn set_ws_status(&self, status: impl Into<String>) -> BackendRuntimeSnapshot {
         self.update(|state| {
             state.ws_status = status.into();
