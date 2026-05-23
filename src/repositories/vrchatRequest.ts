@@ -62,8 +62,32 @@ export function isVrchatMissingCredentialsError(
     );
 }
 
+export function isVrchatSessionRecoveryError(
+    error: unknown
+): error is VrchatRequestError {
+    const status =
+        error && typeof error === 'object'
+            ? (error as Partial<VrchatRequestError>).status
+            : undefined;
+    const endpoint =
+        error && typeof error === 'object'
+            ? (error as Partial<VrchatRequestError>).endpoint
+            : undefined;
+    const normalizedEndpoint =
+        typeof endpoint === 'string'
+            ? endpoint.trim().replace(/^\/+/, '').split('?')[0]
+            : '';
+    return Boolean(
+        isVrchatMissingCredentialsError(error) ||
+            (status === 403 &&
+                (normalizedEndpoint === 'config' ||
+                    normalizedEndpoint === 'auth' ||
+                    normalizedEndpoint === 'auth/user'))
+    );
+}
+
 export function notifyVrchatAuthFailure(error: VrchatRequestError): void {
-    if (!isVrchatMissingCredentialsError(error) || !vrchatAuthFailureHandler) {
+    if (!isVrchatSessionRecoveryError(error) || !vrchatAuthFailureHandler) {
         return;
     }
 

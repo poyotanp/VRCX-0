@@ -148,9 +148,9 @@ pub fn extract_auth_token(body: &str) -> Result<String, Error> {
 }
 
 pub fn auth_token_from_response(status: i32, body: &str) -> Result<String, Error> {
-    if status == 401 {
+    if matches!(status, 401 | 403) {
         return Err(Error::AuthFailure {
-            reason: format!("auth transport bootstrap failed (401): {body}"),
+            reason: format!("auth transport bootstrap failed ({status}): {body}"),
             status_code: Some(status),
         });
     }

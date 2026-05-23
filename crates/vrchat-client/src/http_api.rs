@@ -92,7 +92,7 @@ pub fn classify_api_response(status: i32, scope: ApiScope) -> ApiResponsePolicy 
         retryable: matches!(status, 408 | 409 | 425 | 429 | 500..=599),
         rate_limited: status == 429,
         session_recovery_required: matches!(scope, ApiScope::Vrchat | ApiScope::VrchatMedia)
-            && status == 401,
+            && matches!(status, 401 | 403),
     }
 }
 
@@ -608,7 +608,7 @@ mod tests {
 
         let forbidden = classify_api_response(403, ApiScope::Vrchat);
         assert_eq!(forbidden.class, "auth");
-        assert!(!forbidden.session_recovery_required);
+        assert!(forbidden.session_recovery_required);
         assert!(!forbidden.retryable);
 
         let rate_limited = classify_api_response(429, ApiScope::Vrchat);

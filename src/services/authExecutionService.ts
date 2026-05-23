@@ -4,6 +4,7 @@ import { clearEntityQueryCache } from '@/lib/entityQueryCache';
 import { tauriClient } from '@/platform/tauri/client';
 import authRepository from '@/repositories/authRepository';
 import avatarProfileRepository from '@/repositories/avatarProfileRepository';
+import { isVrchatSessionRecoveryError } from '@/repositories/vrchatRequest';
 import vrchatAuthRepository from '@/repositories/vrchatAuthRepository';
 import webRepository from '@/repositories/webRepository';
 import { useDialogStore } from '@/state/dialogStore';
@@ -383,6 +384,15 @@ async function finalizeSuccessfulLogin(
 }
 
 async function restoreAuthSnapshotOnFailure(error: AuthExecutionError) {
+    const shouldClearAutoLoginTarget = Boolean(
+        isVrchatSessionRecoveryError(error)
+    );
+    const failedUserId = String(
+        useRuntimeStore.getState().auth.currentUserId ||
+            useRuntimeStore.getState().auth.lastUserLoggedIn ||
+            ''
+    );
+
     try {
         await webRepository.clearCookies();
     } catch {
@@ -393,7 +403,16 @@ async function restoreAuthSnapshotOnFailure(error: AuthExecutionError) {
     setSignedOutSessionState();
 
     try {
-        error.authSnapshot = await refreshSavedAuthSnapshot();
+        if (shouldClearAutoLoginTarget) {
+            error.authSnapshot = applySavedAuthSnapshot(
+                await authRepository.recordLogout(failedUserId, {
+                    clearLastUserLoggedIn: true,
+                    cookies: null
+                })
+            );
+        } else {
+            error.authSnapshot = await refreshSavedAuthSnapshot();
+        }
     } catch {
         error.authSnapshot = null;
     }

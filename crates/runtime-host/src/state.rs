@@ -736,7 +736,8 @@ impl RuntimeHostState {
         endpoint: String,
         websocket: String,
     ) -> std::result::Result<AuthenticatedRuntimeSession, NonInteractiveAuthError> {
-        self.web
+        let config_response = self
+            .web
             .execute_api(
                 config_get_input(endpoint.clone()),
                 ApiScope::Vrchat,
@@ -744,6 +745,13 @@ impl RuntimeHostState {
             )
             .await
             .map_err(|error| NonInteractiveAuthError::Failed(error.to_string()))?;
+        if config_response.status == 403 {
+            return Err(NonInteractiveAuthError::Failed(format!(
+                "VRChat config request failed with HTTP {}.",
+                config_response.status
+            )));
+        }
+
         let response = self
             .web
             .execute_api(

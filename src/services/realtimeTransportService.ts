@@ -248,9 +248,11 @@ function handleRealtimeMessageFailure(error: unknown) {
 function handleRealtimeAuthFailure(payload: Record<string, any>) {
     const reason = String(payload.reason || '').trim();
     const statusCode = Number(payload.statusCode);
-    const isMissingCredentials =
-        statusCode === 401 && reason.includes('Missing Credentials');
-    if (!isMissingCredentials) {
+    const isRecoverableAuthFailure =
+        statusCode === 401 ||
+        statusCode === 403 ||
+        reason.includes('Missing Credentials');
+    if (!isRecoverableAuthFailure) {
         useNotificationStore.getState().pushNotification({
             level: 'warning',
             title: 'Realtime auth failed',
@@ -260,7 +262,7 @@ function handleRealtimeAuthFailure(payload: Record<string, any>) {
     }
 
     const error = Object.assign(new Error(reason), {
-        status: statusCode,
+        status: Number.isFinite(statusCode) ? statusCode : 401,
         endpoint: 'auth',
         payload
     });

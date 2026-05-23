@@ -193,13 +193,17 @@ pub async fn app__vrchat_auth_cookie_session_restore(
     input: VrchatAuthEndpointInput,
 ) -> Result<VrchatApiResponse, AppError> {
     let endpoint = input.endpoint;
-    execute_auth_api(
+    let config_response = execute_auth_api(
         state.clone(),
         "app__vrchat_auth_cookie_session_restore_config",
         "Preparing VRChat config before cookie session restore.",
         config_get_input(endpoint.clone()),
     )
     .await?;
+    if config_response.status == 403 {
+        return Ok(config_response);
+    }
+
     execute_auth_api(
         state,
         "app__vrchat_auth_cookie_session_restore",

@@ -1,14 +1,18 @@
 import { toast } from 'sonner';
 
+import authRepository from '@/repositories/authRepository';
 import webRepository from '@/repositories/webRepository';
 import {
-    isVrchatMissingCredentialsError,
+    isVrchatSessionRecoveryError,
     setVrchatAuthFailureHandler
 } from '@/repositories/vrchatRequest';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
 
-import { refreshSavedAuthSnapshot } from './authSnapshotService';
+import {
+    applySavedAuthSnapshot,
+    refreshSavedAuthSnapshot
+} from './authSnapshotService';
 import i18n from './i18nService';
 
 type AuthExecutionServiceModule = {
@@ -27,7 +31,7 @@ export function shouldHandleRuntimeAuthFailure(error: unknown): boolean {
         return false;
     }
 
-    if (!isVrchatMissingCredentialsError(error)) {
+    if (!isVrchatSessionRecoveryError(error)) {
         return false;
     }
 
@@ -46,6 +50,16 @@ async function runRuntimeAuthRecovery(error: unknown): Promise<void> {
     }
 
     const runtimeStore = useRuntimeStore.getState();
+    const failedStatus =
+        error && typeof error === 'object'
+            ? (error as { status?: unknown }).status
+            : undefined;
+    const shouldClearAutoLoginTarget = failedStatus === 403;
+    const failedUserId = String(
+        runtimeStore.auth.currentUserId ||
+            runtimeStore.auth.lastUserLoggedIn ||
+            ''
+    );
     const [title, description] = await Promise.all([
         i18n.t('message.auth.session_expired'),
         i18n.t('message.auth.session_restore_available')
@@ -76,7 +90,16 @@ async function runRuntimeAuthRecovery(error: unknown): Promise<void> {
     setSignedOutSessionState();
 
     try {
-        await refreshSavedAuthSnapshot();
+        if (shouldClearAutoLoginTarget) {
+            applySavedAuthSnapshot(
+                await authRepository.recordLogout(failedUserId, {
+                    clearLastUserLoggedIn: true,
+                    cookies: null
+                })
+            );
+        } else {
+            await refreshSavedAuthSnapshot();
+        }
     } catch (snapshotError) {
         console.warn(
             'Failed to refresh saved auth snapshot after VRChat session expired:',
