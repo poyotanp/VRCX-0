@@ -55,6 +55,14 @@ fn query_feed_rows(
     } else {
         format!("AND user_id IN ({})", vip_placeholders.join(", "))
     };
+    let excluded_placeholders =
+        add_list_params(&mut params, &query.excluded_user_ids, "excluded");
+    let excluded_query = if excluded_placeholders.is_empty() {
+        String::new()
+    } else {
+        format!("AND user_id NOT IN ({})", excluded_placeholders.join(", "))
+    };
+    let user_scope_query = format!("{vip_query} {excluded_query}");
 
     let mode = normalize_text(&query.mode);
     let search = normalize_text(&query.search);
@@ -75,7 +83,7 @@ fn query_feed_rows(
                 "feed_gps",
                 FEED_GPS_PROJECTION,
                 FEED_GPS_SOURCE_RANK,
-                &format!("location LIKE @instance_like {vip_query}"),
+                &format!("location LIKE @instance_like {user_scope_query}"),
                 "created_at DESC, id DESC",
                 has_cursor,
             );
@@ -91,7 +99,7 @@ fn query_feed_rows(
                 &user_prefix,
                 "location LIKE @instance_like",
                 type_filter,
-                &vip_query,
+                &user_scope_query,
                 has_cursor,
             );
         }
@@ -103,7 +111,7 @@ fn query_feed_rows(
                 "feed_gps",
                 FEED_GPS_PROJECTION,
                 FEED_GPS_SOURCE_RANK,
-                &format!("1=1 {vip_query}"),
+                &format!("1=1 {user_scope_query}"),
                 "created_at DESC, id DESC",
                 has_cursor,
             );
@@ -115,7 +123,7 @@ fn query_feed_rows(
                 "feed_status",
                 FEED_STATUS_PROJECTION,
                 FEED_STATUS_SOURCE_RANK,
-                &format!("1=1 {vip_query}"),
+                &format!("1=1 {user_scope_query}"),
                 "created_at DESC, id DESC",
                 has_cursor,
             );
@@ -127,7 +135,7 @@ fn query_feed_rows(
                 "feed_bio",
                 FEED_BIO_PROJECTION,
                 FEED_BIO_SOURCE_RANK,
-                &format!("1=1 {vip_query}"),
+                &format!("1=1 {user_scope_query}"),
                 "created_at DESC, id DESC",
                 has_cursor,
             );
@@ -139,7 +147,7 @@ fn query_feed_rows(
                 "feed_avatar",
                 FEED_AVATAR_PROJECTION,
                 FEED_AVATAR_SOURCE_RANK,
-                &format!("1=1 {vip_query}"),
+                &format!("1=1 {user_scope_query}"),
                 "created_at DESC, id DESC",
                 has_cursor,
             );
@@ -155,7 +163,7 @@ fn query_feed_rows(
                 &user_prefix,
                 "1=1",
                 type_filter,
-                &vip_query,
+                &user_scope_query,
                 has_cursor,
             );
         }
@@ -178,7 +186,7 @@ fn query_feed_rows(
                 FEED_GPS_PROJECTION,
                 FEED_GPS_SOURCE_RANK,
                 &format!(
-                    "(display_name LIKE @search_like OR world_name LIKE @search_like OR group_name LIKE @search_like) {date_query} {vip_query}"
+                    "(display_name LIKE @search_like OR world_name LIKE @search_like OR group_name LIKE @search_like) {date_query} {user_scope_query}"
                 ),
                 "created_at DESC, id DESC",
                 has_cursor,
@@ -192,7 +200,7 @@ fn query_feed_rows(
                 FEED_STATUS_PROJECTION,
                 FEED_STATUS_SOURCE_RANK,
                 &format!(
-                    "(display_name LIKE @search_like OR status LIKE @search_like OR status_description LIKE @search_like) {date_query} {vip_query}"
+                    "(display_name LIKE @search_like OR status LIKE @search_like OR status_description LIKE @search_like) {date_query} {user_scope_query}"
                 ),
                 "created_at DESC, id DESC",
                 has_cursor,
@@ -206,7 +214,7 @@ fn query_feed_rows(
                 FEED_BIO_PROJECTION,
                 FEED_BIO_SOURCE_RANK,
                 &format!(
-                    "(display_name LIKE @search_like OR bio LIKE @search_like) {date_query} {vip_query}"
+                    "(display_name LIKE @search_like OR bio LIKE @search_like) {date_query} {user_scope_query}"
                 ),
                 "created_at DESC, id DESC",
                 has_cursor,
@@ -227,7 +235,7 @@ fn query_feed_rows(
                 FEED_AVATAR_PROJECTION,
                 FEED_AVATAR_SOURCE_RANK,
                 &format!(
-                    "(display_name LIKE @search_like OR avatar_name LIKE @search_like) {avatar_query} {date_query} {vip_query}"
+                    "(display_name LIKE @search_like OR avatar_name LIKE @search_like) {avatar_query} {date_query} {user_scope_query}"
                 ),
                 "created_at DESC, id DESC",
                 has_cursor,
@@ -246,7 +254,7 @@ fn query_feed_rows(
                 &user_prefix,
                 where_sql,
                 &format!("{type_filter} {date_query}"),
-                &vip_query,
+                &user_scope_query,
                 has_cursor,
             );
         }
@@ -279,6 +287,7 @@ fn query_feed_read_model(
         search: query.search.clone(),
         filters: query.filters.clone(),
         vip_list: query.vip_list.clone(),
+        excluded_user_ids: query.excluded_user_ids.clone(),
         max_entries: query.max_entries,
         date_from: query.date_from.clone(),
         date_to: query.date_to.clone(),
@@ -304,6 +313,7 @@ fn query_feed_read_model(
         date_to: query.date_to,
         favorites_only: query.favorites_only,
         favorite_user_ids: query.favorite_user_ids,
+        excluded_user_ids: query.excluded_user_ids,
         live_entries: query.live_entries,
         min_live_sequence: query.min_live_sequence,
         max_rows,
@@ -552,6 +562,7 @@ fn feed_live_entry_matches(
     row: &Value,
     context: &FeedLiveRowsMergeContext<'_>,
     favorite_user_ids: &HashSet<String>,
+    excluded_user_ids: &HashSet<String>,
 ) -> bool {
     if !row.is_object() {
         return false;
@@ -577,6 +588,10 @@ fn feed_live_entry_matches(
         if user_id.is_empty() || !favorite_user_ids.contains(&user_id) {
             return false;
         }
+    }
+    let user_id = feed_entry_string(row, &["userId", "user_id"]);
+    if !user_id.is_empty() && excluded_user_ids.contains(&user_id) {
+        return false;
     }
 
     let created_at = feed_entry_string(row, &["created_at", "createdAt"]);
@@ -608,6 +623,7 @@ pub(crate) struct FeedLiveRowsMergeContext<'a> {
     pub(crate) date_to: &'a str,
     pub(crate) favorites_only: bool,
     pub(crate) favorite_user_ids: &'a [String],
+    pub(crate) excluded_user_ids: &'a [String],
     pub(crate) max_rows: i64,
 }
 
@@ -623,6 +639,12 @@ fn merge_feed_rows_with_live(
         .map(normalize_text)
         .filter(|value| !value.is_empty())
         .collect::<HashSet<_>>();
+    let excluded_user_ids = context
+        .excluded_user_ids
+        .iter()
+        .map(normalize_text)
+        .filter(|value| !value.is_empty())
+        .collect::<HashSet<_>>();
     let mut max_sequence = min_live_sequence;
     let mut matching_entries = Vec::new();
 
@@ -631,7 +653,12 @@ fn merge_feed_rows_with_live(
         .filter(|entry| entry.sequence > min_live_sequence)
     {
         max_sequence = max_sequence.max(live_entry.sequence);
-        if feed_live_entry_matches(live_entry.entry.as_value(), &context, &favorite_user_ids) {
+        if feed_live_entry_matches(
+            live_entry.entry.as_value(),
+            &context,
+            &favorite_user_ids,
+            &excluded_user_ids,
+        ) {
             matching_entries.push(live_entry.entry.clone().into_value());
         }
     }
@@ -651,6 +678,10 @@ fn merge_feed_rows_with_live(
         }
     }
     for row in rows {
+        let user_id = feed_entry_string(&row, &["userId", "user_id"]);
+        if !user_id.is_empty() && excluded_user_ids.contains(&user_id) {
+            continue;
+        }
         let key = feed_row_key(&row);
         if seen.insert(key) {
             output_rows.push(row);
@@ -673,6 +704,7 @@ fn merge_feed_live_rows(query: FeedLiveRowsMergeInput) -> FeedReadModelOutput {
         date_to: &query.date_to,
         favorites_only: query.favorites_only,
         favorite_user_ids: &query.favorite_user_ids,
+        excluded_user_ids: &query.excluded_user_ids,
         max_rows: query.max_rows,
     };
     merge_feed_rows_with_live(

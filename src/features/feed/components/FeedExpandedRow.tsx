@@ -7,6 +7,7 @@ import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 
 import type { FeedLocationActionPayload, FeedRow } from '../feedTypes';
+import { resolveFeedLocationForDisplay } from '../feedRows';
 import { AvatarInfoLine } from './FeedAvatarInfoLine';
 import { formatDifferenceHtml } from './FeedDifferenceHtml';
 import { FeedLocationLink } from './FeedLocationLink';
@@ -29,6 +30,7 @@ function FeedExpandedRow({
     const openImagePreview = useModalStore(
         (state: any) => state.openImagePreview
     );
+    const displayLocation = resolveFeedLocationForDisplay(row);
 
     if (row?.type === 'GPS') {
         return (
@@ -57,12 +59,12 @@ function FeedExpandedRow({
                         </span>
                     </>
                 ) : null}
-                {row.location ? (
+                {displayLocation ? (
                     <FeedLocationLink
                         disableTooltip
                         groupName={row.groupName}
                         loadingHistoryKey={loadingHistoryKey}
-                        location={row.location}
+                        location={displayLocation}
                         onNewInstance={onNewInstance}
                         onOpenPreviousInstances={onOpenPreviousInstances}
                         worldName={row.worldName}
@@ -74,13 +76,13 @@ function FeedExpandedRow({
     }
 
     if (row?.type === 'Offline') {
-        return row.location ? (
+        return displayLocation ? (
             <div className="pl-5 text-sm">
                 <FeedLocationLink
                     disableTooltip
                     groupName={row.groupName}
                     loadingHistoryKey={loadingHistoryKey}
-                    location={row.location}
+                    location={displayLocation}
                     onNewInstance={onNewInstance}
                     onOpenPreviousInstances={onOpenPreviousInstances}
                     worldName={row.worldName}
@@ -96,13 +98,13 @@ function FeedExpandedRow({
     }
 
     if (row?.type === 'Online') {
-        return row.location ? (
+        return displayLocation ? (
             <div className="pl-5 text-sm">
                 <FeedLocationLink
                     disableTooltip
                     groupName={row.groupName}
                     loadingHistoryKey={loadingHistoryKey}
-                    location={row.location}
+                    location={displayLocation}
                     onNewInstance={onNewInstance}
                     onOpenPreviousInstances={onOpenPreviousInstances}
                     worldName={row.worldName}

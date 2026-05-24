@@ -9,6 +9,7 @@ import {
     parseDateInput,
     resolveDisplayNameCandidate,
     resolveFeedCurrentInviteLocation,
+    resolveFeedLocationForDisplay,
     resolveFeedFriendStateBucket,
     resolveFeedStatusMeta,
     resolveFeedUserDisplayName,
@@ -83,6 +84,33 @@ describe('feed row helpers', () => {
                 { $locationTag: 'wrld_profile:456' }
             )
         ).toBe('wrld_profile:456');
+    });
+
+    it('hides stale offline locations only for online feed display rows', () => {
+        expect(
+            resolveFeedLocationForDisplay({
+                type: 'Online',
+                location: 'offline'
+            })
+        ).toBe('');
+        expect(
+            resolveFeedLocationForDisplay({
+                type: 'Online',
+                location: 'offline:offline'
+            })
+        ).toBe('');
+        expect(
+            resolveFeedLocationForDisplay({
+                type: 'Offline',
+                location: 'offline'
+            })
+        ).toBe('offline');
+        expect(
+            resolveFeedLocationForDisplay({
+                type: 'Online',
+                location: 'private'
+            })
+        ).toBe('private');
     });
 
     it('builds favorite friend ids from selected remote groups and local favorites', () => {

@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from 'lucide-react';
 
 import type { FeedLocationActionPayload, FeedRow } from '../feedTypes';
+import { resolveFeedLocationForDisplay } from '../feedRows';
 import { AvatarInfoLine } from './FeedAvatarInfoLine';
 import { FeedLocationLink } from './FeedLocationLink';
 import { FeedStatusBadge } from './FeedStatusBadge';
@@ -21,12 +22,13 @@ function FeedDetailCell({
     const type = row?.type;
 
     if (type === 'GPS' || type === 'Online' || type === 'Offline') {
+        const location = resolveFeedLocationForDisplay(row);
         return (
             <FeedLocationLink
                 disableTooltip
                 groupName={row?.groupName}
                 loadingHistoryKey={loadingHistoryKey}
-                location={row?.location}
+                location={location}
                 onNewInstance={onNewInstance}
                 onOpenPreviousInstances={onOpenPreviousInstances}
                 worldName={row?.worldName}

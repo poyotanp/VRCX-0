@@ -92,6 +92,15 @@ export function normalizePresenceState(value: any) {
     return state;
 }
 
+export function resolveFeedLocationForDisplay(row: any) {
+    const type = normalizeFeedId(row?.type);
+    const location = normalizeFeedId(row?.location);
+    if (type === 'Online' && normalizePresenceState(location) === 'offline') {
+        return '';
+    }
+    return location;
+}
+
 export function resolveFeedFriendStateBucket(friend: any, currentUserSnapshot: any) {
     const friendId = normalizeFeedId(friend?.id || friend?.userId);
     const explicitState = normalizePresenceState(

@@ -20,6 +20,8 @@ pub struct FeedRowsQueryInput {
     pub filters: Vec<String>,
     #[serde(default)]
     pub vip_list: Vec<String>,
+    #[serde(default)]
+    pub excluded_user_ids: Vec<String>,
     pub max_entries: i64,
     #[serde(default)]
     pub date_from: String,
@@ -65,6 +67,8 @@ pub struct FeedReadModelQueryInput {
     #[serde(default)]
     pub favorite_user_ids: Vec<String>,
     #[serde(default)]
+    pub excluded_user_ids: Vec<String>,
+    #[serde(default)]
     pub max_rows: i64,
 }
 
@@ -87,6 +91,8 @@ pub struct FeedLiveRowsMergeInput {
     pub favorites_only: bool,
     #[serde(default)]
     pub favorite_user_ids: Vec<String>,
+    #[serde(default)]
+    pub excluded_user_ids: Vec<String>,
     #[serde(default)]
     pub live_entries: Vec<FeedLiveEntryInput>,
     #[serde(default)]
