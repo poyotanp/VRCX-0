@@ -5,10 +5,8 @@ import {
     buildPlayerSourceRows,
     buildPlayerDialogSeedData,
     isLiveLocation,
-    mergePlayerRowsWithApiUsers,
     normalizeString,
-    parseTimeMs,
-    shouldFetchInstanceUsers
+    parseTimeMs
 } from './playerListRows';
 
 describe('playerListRows', () => {
@@ -160,37 +158,6 @@ describe('playerListRows', () => {
                 currentLocationStartedAt: ''
             })
         ).toEqual([]);
-    });
-
-    it('fetches and merges instance users when log rows only have display names', () => {
-        const playerRows = [
-            {
-                rowId: 'row_1',
-                displayName: 'Display Name',
-                joinedAt: '2026-01-02T03:04:05.000Z'
-            }
-        ];
-        const apiUsers = [
-            {
-                id: 'usr_player',
-                displayName: 'Display Name',
-                tags: ['system_trust_known', 'language_jpn'],
-                status: 'active',
-                statusDescription: 'Original status'
-            }
-        ];
-
-        expect(shouldFetchInstanceUsers(playerRows)).toBe(true);
-        expect(mergePlayerRowsWithApiUsers(playerRows, apiUsers)).toEqual([
-            expect.objectContaining({
-                rowId: 'row_1',
-                displayName: 'Display Name',
-                joinedAt: '2026-01-02T03:04:05.000Z',
-                id: 'usr_player',
-                userId: 'usr_player',
-                ref: apiUsers[0]
-            })
-        ]);
     });
 
     it('builds dialog seed data from the enriched profile on the player row', () => {

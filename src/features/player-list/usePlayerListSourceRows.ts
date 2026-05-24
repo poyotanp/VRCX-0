@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
 
-import { useCurrentInstancePresence } from '@/domain/presence/useCurrentInstancePresence';
-
 import { buildPlayerSourceRows } from './playerListRows';
 
 export function usePlayerListSourceRows({
@@ -12,14 +10,10 @@ export function usePlayerListSourceRows({
     currentUserSnapshot,
     isGameRunning,
     playerRows,
+    runtimeRosterAvailable,
     runtimePlayerRows
 }: any) {
-    const domainCurrentInstancePresence = useCurrentInstancePresence();
-
     return useMemo(() => {
-        const domainRuntimeRows = domainCurrentInstancePresence
-            ? Object.values(domainCurrentInstancePresence.playersById || {})
-            : [];
         return buildPlayerSourceRows({
             context,
             currentLocationStartedAt,
@@ -28,10 +22,8 @@ export function usePlayerListSourceRows({
             currentUserSnapshot,
             isGameRunning,
             playerRows,
-            runtimePlayerRows:
-                runtimePlayerRows && runtimePlayerRows.length
-                    ? runtimePlayerRows
-                    : domainRuntimeRows
+            runtimePlayerRows,
+            runtimeRosterAvailable
         });
     }, [
         context,
@@ -39,9 +31,9 @@ export function usePlayerListSourceRows({
         currentUserId,
         currentUserLocation,
         currentUserSnapshot,
-        domainCurrentInstancePresence,
         isGameRunning,
         playerRows,
+        runtimeRosterAvailable,
         runtimePlayerRows
     ]);
 }

@@ -12,6 +12,9 @@ export function usePlayerListRuntime() {
     const currentUserSnapshot = useRuntimeStore(
         (state: any) => state.auth.currentUserSnapshot
     );
+    const gameLogLocation = useRuntimeStore(
+        (state: any) => state.gameState.currentLocation || ''
+    );
     const currentUserLocation = useRuntimeStore((state: any) => {
         return (
             state.gameState.currentLocation ||
@@ -52,6 +55,7 @@ export function usePlayerListRuntime() {
         currentUserLocation,
         currentUserSnapshot,
         currentUserWorldId,
+        gameLogLocation,
         gameLogDisabled,
         gameLogTailSyncedAt,
         isGameRunning,

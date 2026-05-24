@@ -22,117 +22,6 @@ export function resolvePlayerRowUserId(row: any) {
     );
 }
 
-function normalizeDisplayNameKey(value: any) {
-    return normalizeString(value).toLowerCase();
-}
-
-function normalizeApiUserId(value: any) {
-    return normalizePlayerUserId(value?.id || value?.userId || value?.user_id);
-}
-
-function normalizeApiDisplayName(value: any) {
-    return normalizeString(
-        value?.displayName ||
-            value?.display_name ||
-            value?.username ||
-            value?.name
-    );
-}
-
-export function shouldFetchInstanceUsers(playerRows: any) {
-    const rows = Array.isArray(playerRows) ? playerRows : [];
-    return !rows.length || rows.some((row: any) => !resolvePlayerRowUserId(row));
-}
-
-export function mergePlayerRowsWithApiUsers(playerRows: any, apiUsers: any) {
-    const sourceRows = Array.isArray(playerRows) ? playerRows : [];
-    const users = Array.isArray(apiUsers) ? apiUsers : [];
-    const usersById = new Map();
-    const usersByName = new Map();
-
-    for (const user of users) {
-        if (!user || typeof user !== 'object') {
-            continue;
-        }
-
-        const userId = normalizeApiUserId(user);
-        const displayName = normalizeApiDisplayName(user);
-        if (userId && !usersById.has(userId)) {
-            usersById.set(userId, user);
-        }
-        const nameKey = normalizeDisplayNameKey(displayName);
-        if (nameKey && !usersByName.has(nameKey)) {
-            usersByName.set(nameKey, user);
-        }
-    }
-
-    const matchedUserIds = new Set();
-    const matchedNames = new Set();
-    const mergedRows = sourceRows.map((row: any) => {
-        const rowUserId = resolvePlayerRowUserId(row);
-        const rowNameKey = normalizeDisplayNameKey(
-            row?.displayName || row?.ref?.displayName
-        );
-        const apiUser =
-            (rowUserId && usersById.get(rowUserId)) ||
-            (rowNameKey && usersByName.get(rowNameKey));
-
-        if (!apiUser) {
-            return row;
-        }
-
-        const apiUserId = normalizeApiUserId(apiUser);
-        const apiDisplayName = normalizeApiDisplayName(apiUser);
-        const existingRef =
-            row?.ref && typeof row.ref === 'object' ? row.ref : null;
-        const ref = existingRef ? { ...apiUser, ...existingRef } : apiUser;
-        if (apiUserId) {
-            matchedUserIds.add(apiUserId);
-        }
-        const matchedNameKey = normalizeDisplayNameKey(apiDisplayName);
-        if (matchedNameKey) {
-            matchedNames.add(matchedNameKey);
-        }
-
-        return {
-            ...apiUser,
-            ...row,
-            id: apiUserId || row?.id,
-            userId: apiUserId || row?.userId || '',
-            displayName:
-                normalizeString(row?.displayName) ||
-                apiDisplayName ||
-                apiUserId ||
-                '',
-            ref
-        };
-    });
-
-    for (const apiUser of users) {
-        const apiUserId = normalizeApiUserId(apiUser);
-        const apiDisplayName = normalizeApiDisplayName(apiUser);
-        const nameKey = normalizeDisplayNameKey(apiDisplayName);
-        if (
-            (apiUserId && matchedUserIds.has(apiUserId)) ||
-            (nameKey && matchedNames.has(nameKey))
-        ) {
-            continue;
-        }
-        mergedRows.push({
-            ...apiUser,
-            id: apiUserId || apiUser?.id,
-            userId: apiUserId,
-            displayName: apiDisplayName || apiUserId || '',
-            ref:
-                apiUser?.ref && typeof apiUser.ref === 'object'
-                    ? apiUser.ref
-                    : apiUser
-        });
-    }
-
-    return mergedRows;
-}
-
 export function buildPlayerDialogSeedData(row: any) {
     if (!row || typeof row !== 'object') {
         return null;
@@ -224,7 +113,8 @@ export function buildPlayerSourceRows({
     isGameRunning,
     context,
     currentUserLocation,
-    currentLocationStartedAt
+    currentLocationStartedAt,
+    runtimeRosterAvailable = false
 }: any) {
     const rows = [];
     const knownKeys = new Set();
@@ -256,13 +146,10 @@ export function buildPlayerSourceRows({
     };
 
     if (canUseLiveRows) {
-        for (const row of Array.isArray(playerRows) ? playerRows : []) {
-            addRow(row);
-        }
-
-        for (const row of Array.isArray(runtimePlayerRows)
+        const sourceRows = runtimeRosterAvailable
             ? runtimePlayerRows
-            : []) {
+            : playerRows;
+        for (const row of Array.isArray(sourceRows) ? sourceRows : []) {
             addRow(row);
         }
     }
