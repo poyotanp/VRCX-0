@@ -224,9 +224,6 @@ export const DEFAULT_PREFERENCES: PreferenceInputSnapshot = Object.freeze({
     gameLogDisabled: false,
     avatarAutoCleanup: 'Off',
     defaultLaunchMode: 'vr',
-    enableAppLauncher: true,
-    enableAppLauncherAutoClose: true,
-    enableAppLauncherRunProcessOnce: true,
     udonExceptionLogging: false,
     logResourceLoad: false,
     autoLoginDelayEnabled: false,
@@ -339,13 +336,6 @@ export function normalizePreferenceSnapshot(
         avatarAutoCleanup: next.avatarAutoCleanup || 'Off',
         defaultLaunchMode: normalizeDefaultLaunchMode(
             next.defaultLaunchMode
-        ),
-        enableAppLauncher: normalizeBool(next.enableAppLauncher),
-        enableAppLauncherAutoClose: normalizeBool(
-            next.enableAppLauncherAutoClose
-        ),
-        enableAppLauncherRunProcessOnce: normalizeBool(
-            next.enableAppLauncherRunProcessOnce
         ),
         udonExceptionLogging: normalizeBool(next.udonExceptionLogging),
         logResourceLoad: normalizeBool(next.logResourceLoad),

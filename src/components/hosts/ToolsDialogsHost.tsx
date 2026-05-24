@@ -6,6 +6,7 @@ import {
     ExportDiscordNamesDialog,
     ExportFriendsListDialog
 } from './tools-dialogs/ExportListDialogs';
+import { AppLauncherDialog } from './tools-dialogs/AppLauncherDialog';
 import { GroupCalendarDialog } from './tools-dialogs/GroupCalendarDialog';
 import { NoteExportDialog } from './tools-dialogs/NoteExportDialog';
 import {
@@ -21,6 +22,9 @@ import {
 export function ToolsDialogsHost() {
     const presenceScheduleOpen = useRuntimeStore(
         (state: any) => state.systemHosts.presenceScheduleOpen
+    );
+    const appLauncherOpen = useRuntimeStore(
+        (state: any) => state.systemHosts.appLauncherOpen
     );
     const presenceRoomRulesOpen = useRuntimeStore(
         (state: any) => state.systemHosts.presenceRoomRulesOpen
@@ -52,6 +56,12 @@ export function ToolsDialogsHost() {
 
     return (
         <>
+            <AppLauncherDialog
+                open={Boolean(appLauncherOpen)}
+                onOpenChange={(open: any) =>
+                    setSystemHostOpen('appLauncherOpen', open)
+                }
+            />
             <PresenceScheduleDialog
                 open={Boolean(presenceScheduleOpen)}
                 onOpenChange={(open: any) =>

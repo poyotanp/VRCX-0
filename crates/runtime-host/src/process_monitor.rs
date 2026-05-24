@@ -32,4 +32,8 @@ impl GameProcessMonitorActions for HostGameProcessMonitorActions {
     fn on_game_stopped(&mut self) {
         self.auto_launch.on_game_stopped();
     }
+
+    fn on_steamvr_changed(&mut self, steamvr_running: bool) {
+        self.auto_launch.on_steamvr_changed(steamvr_running);
+    }
 }

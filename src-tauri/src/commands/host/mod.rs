@@ -1,3 +1,4 @@
+pub mod app_launcher;
 pub mod calendar;
 pub mod clipboard;
 pub mod error_log;

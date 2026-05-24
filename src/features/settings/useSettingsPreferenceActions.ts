@@ -18,7 +18,6 @@ export function useSettingsPreferenceActions({
     prefs,
     prompt,
     resetTrustColorsPreference,
-    setAppLauncherPreference,
     setBoolConfigPreference,
     setConfigTreeData,
     setCustomFontDialogOpen,
@@ -407,19 +406,6 @@ export function useSettingsPreferenceActions({
             }
         );
     }
-    async function saveAppLauncherField(key: any, value: any) {
-        const nextPrefs: any = {
-            ...prefs,
-            [key]: value
-        };
-        await savePreferenceValue(key, value, () =>
-            setAppLauncherPreference({
-                enabled: nextPrefs.enableAppLauncher,
-                autoClose: nextPrefs.enableAppLauncherAutoClose,
-                runProcessOnce: nextPrefs.enableAppLauncherRunProcessOnce
-            })
-        );
-    }
     function speakNotificationTts(
         text: any,
         voiceIndex: any = Number.parseInt(prefs.notificationTTSVoice, 10) || 0
@@ -467,7 +453,6 @@ export function useSettingsPreferenceActions({
         openTableLimitsDialog,
         saveTableLimitsDialog,
         toggleLocalFavoriteFriendsGroup,
-        saveAppLauncherField,
         speakNotificationTts
     };
 }

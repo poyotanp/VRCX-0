@@ -19,7 +19,7 @@
             "view_details": "查看详情",
             "configure": "配置",
             "refresh": "刷新",
-            "cancel": "取消",
+            "close": "关闭",
             "accept": "接受",
             "decline": "拒绝",
             "copy": "复制",
@@ -27,7 +27,7 @@
             "save": "保存",
             "search": "搜索",
             "select": "选择",
-            "close": "关闭"
+            "cancel": "取消"
         },
         "sort_by": "排序方式：",
         "time_units": {
@@ -263,7 +263,6 @@
         "zoom_out": "缩小",
         "reset_zoom": "重置缩放",
         "all_tools": "所有工具...",
-        "open_shortcut_folder": "打开应用启动器快捷方式文件夹",
         "github": "在 GitHub 上查看",
         "report_issue": "反馈问题",
         "open_source_licenses": "开源许可证",
@@ -274,8 +273,7 @@
         "messages": {
             "zoom_failed": "应用缩放失败",
             "logout_failed": "退出 VRCX-0 登录失败",
-            "restart_failed": "重启 VRCX-0 失败",
-            "open_shortcut_folder_failed": "打开应用启动器快捷方式文件夹失败"
+            "restart_failed": "重启 VRCX-0 失败"
         },
         "label": {
             "started_at": "开始时间",
@@ -1365,6 +1363,8 @@
                 "vrchat_log": "VRChat 日志查看器",
                 "vrchat_log_description": "查看本地 VRChat Output Log",
                 "launch_options_description": "编辑 VRChat 的启动选项",
+                "app_launcher": "VRChat Startup Apps",
+                "app_launcher_description": "VRChat 启动时自动启动选定的应用。",
                 "registry_backup": "VRChat 设置数据备份工具",
                 "registry_backup_description": "创建或恢复 VRChat 的设置备份"
             },
@@ -2062,14 +2062,6 @@
                         "modify_filename_tooltip": "除了文件元数据外，还将把世界ID添加到截图文件名中。",
                         "copy_to_clipboard": "复制到剪贴板"
                     },
-                    "app_launcher": {
-                        "header": "应用启动器",
-                        "folder": "打开启动文件夹",
-                        "folder_tooltip": "如果要在 VRChat 启动时一并启动一些APP，请将其快捷方式放在这个文件夹中.",
-                        "enable": "启用应用启动器",
-                        "auto_close": "在 VRChat 关闭后自动关闭这些APP",
-                        "run_process_once": "仅允许启动应用的单个实例（禁止多开）"
-                    },
                     "data_directory": {
                         "header": "数据目录",
                         "description": "当前来源：{source}。这里只保存目录位置，VRCX-0 不会复制数据。",
@@ -2503,6 +2495,47 @@
         },
         "prompt": {
             "input_invalid": "输入无效"
+        },
+        "app_launcher": {
+            "header": "VRChat Startup Apps",
+            "global_enabled": "启用",
+            "add_app": "添加应用或快捷方式",
+            "choose_target": "选择目标",
+            "loading": "正在加载 VRChat Startup Apps",
+            "empty": "还没有启动规则",
+            "details": "规则详情",
+            "no_selection": "选择一条规则",
+            "enabled": "启用",
+            "name": "名称",
+            "scope": "Scope",
+            "target": "目标",
+            "policy": "策略",
+            "run": "Run",
+            "stop": "Stop",
+            "actions": "操作",
+            "scope_all": "All",
+            "scope_desktop": "Desktop",
+            "scope_vr": "VR",
+            "run_policy_always": "每次 VRChat 启动",
+            "run_policy_skipIfRunning": "已运行则跳过",
+            "run_policy_short_always": "每次启动",
+            "run_policy_short_skipIfRunning": "已运行跳过",
+            "stop_policy_keepRunning": "保持运行",
+            "stop_policy_closeByVrcx": "由 VRCX-0 关闭",
+            "stop_policy_short_keepRunning": "保持",
+            "stop_policy_short_closeByVrcx": "关闭",
+            "delete": "删除",
+            "steam_app_id": "Steam App ID",
+            "delay_seconds": "启动延迟秒数",
+            "args": "参数",
+            "close": "关闭",
+            "save": "保存",
+            "toast": {
+                "load_failed": "加载 VRChat Startup Apps 失败",
+                "save_failed": "保存 VRChat Startup Apps 失败",
+                "pick_failed": "选择应用或快捷方式失败",
+                "name_target_required": "名称和目标不能为空"
+            }
         },
         "user": {
             "status": {

@@ -11,6 +11,7 @@ import commandSource from './commands.ts?raw';
 import updaterSource from './updater.ts?raw';
 import rustExternalApiSource from '../../../src-tauri/src/commands/integrations/external_api/service.rs?raw';
 import rustHostGameSource from '../../../src-tauri/src/commands/host/game.rs?raw';
+import rustHostAppLauncherSource from '../../../src-tauri/src/commands/host/app_launcher.rs?raw';
 import rustHostRegistrySource from '../../../src-tauri/src/commands/host/registry.rs?raw';
 import rustHostScreenshotsSource from '../../../src-tauri/src/commands/host/screenshots.rs?raw';
 import rustHostShellSource from '../../../src-tauri/src/commands/host/shell.rs?raw';
@@ -36,6 +37,7 @@ const repoFiles: Record<string, string> = {
     'src-tauri/src/commands/integrations/external_api/service.rs':
         rustExternalApiSource,
     'src-tauri/src/commands/host/game.rs': rustHostGameSource,
+    'src-tauri/src/commands/host/app_launcher.rs': rustHostAppLauncherSource,
     'src-tauri/src/commands/host/registry.rs': rustHostRegistrySource,
     'src-tauri/src/commands/host/screenshots.rs': rustHostScreenshotsSource,
     'src-tauri/src/commands/host/shell.rs': rustHostShellSource,
@@ -139,6 +141,9 @@ const highRiskCommands = [
     'app__get_file_bytes',
     'app__open_file_selector_dialog',
     'app__open_folder_selector_dialog',
+    'app__app_launcher_target_pick',
+    'app__app_launcher_entry_test',
+    'app__app_launcher_test_run_stop',
     'app__save_vrc_reg_json_file',
     'app__save_image_file',
     'app__open_folder_and_select_item',
@@ -198,12 +203,14 @@ describe('tauri command mapping', () => {
             value: 'value'
         });
         expect(
-            toNamedArgs('app__set_app_launcher_settings', [true, false, true])
-        ).toEqual({
-            enabled: true,
-            killOnExit: false,
-            runProcessOnce: true
-        });
+            toNamedArgs('app__app_launcher_enabled_set', [true])
+        ).toEqual({ enabled: true });
+        expect(
+            toNamedArgs('app__app_launcher_entry_test', ['entry-1'])
+        ).toEqual({ entryId: 'entry-1' });
+        expect(
+            toNamedArgs('app__app_launcher_entries_set', [[{ id: 'entry-1' }]])
+        ).toEqual({ entries: [{ id: 'entry-1' }] });
         expect(toNamedArgs('app__get_host_capabilities', [])).toEqual({});
         expect(
             toNamedArgs('app__get_legacy_vrcx_migration_status', [])
@@ -287,6 +294,19 @@ describe('tauri command mapping', () => {
         expect(missing).toEqual([]);
     });
 
+    it('exposes VRChat Startup Apps as a system tool dialog with host capabilities', () => {
+        expect(toolsSource).toContain(`key: 'app-launcher'`);
+        expect(toolsSource).toContain(`category: 'system'`);
+        expect(toolsSource).toContain(`navIcon: 'lucide:Rocket'`);
+        expect(toolsSource).toContain(
+            `requiredCapabilities: ['gameProcessMonitor', 'gameLaunch']`
+        );
+        expect(toolsSource).toContain(`dialogKey: 'app-launcher'`);
+        expect(toolActionServiceSource).toContain(
+            `'app-launcher': 'appLauncherOpen'`
+        );
+    });
+
     it('keeps dynamic tauriClient.app method sources registered in Rust', () => {
         const rustCommands = rustRegisteredCommands();
         const missing = Array.from(dynamicAppMethodSourceNames()).filter(
@@ -317,6 +337,12 @@ describe('tauri command mapping', () => {
         expect(readRepoFile('src-tauri/src/commands/host/shell.rs')).toContain(
             'ensure_read_allowed'
         );
+        expect(
+            readRepoFile('src-tauri/src/commands/host/app_launcher.rs')
+        ).toContain('require_app_launcher_supported');
+        expect(
+            readRepoFile('src-tauri/src/commands/host/app_launcher.rs')
+        ).toContain('require_host_capability');
         expect(readRepoFile('src-tauri/src/commands/host/game.rs')).toContain(
             'ensure_vrchat_launch_path_allowed'
         );

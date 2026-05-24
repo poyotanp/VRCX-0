@@ -49,6 +49,7 @@ interface ToolDefinition {
     descriptionKey: string;
     navEligible: boolean;
     requiredCapability?: string;
+    requiredCapabilities?: string[];
     requiredCapabilityMode?: 'supported';
     action: ToolAction;
 }
@@ -226,6 +227,20 @@ const toolDefinitions: ToolDefinition[] = [
             type: 'store-action',
             target: 'launch',
             method: 'showLaunchOptions'
+        }
+    },
+    {
+        key: 'app-launcher',
+        category: 'system',
+        iconKey: 'rocket',
+        navIcon: 'lucide:Rocket',
+        titleKey: 'view.tools.system_tools.app_launcher',
+        descriptionKey: 'view.tools.system_tools.app_launcher_description',
+        navEligible: true,
+        requiredCapabilities: ['gameProcessMonitor', 'gameLaunch'],
+        action: {
+            type: 'dialog',
+            dialogKey: 'app-launcher'
         }
     },
     {

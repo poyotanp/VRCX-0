@@ -20,6 +20,7 @@ type TriggerToolOptions = {
     t: Translate;
 };
 type ToolDialogHostKey =
+    | 'appLauncherOpen'
     | 'presenceScheduleOpen'
     | 'presenceRoomRulesOpen'
     | 'presenceInviteRequestsOpen'
@@ -38,6 +39,7 @@ const toolRouteMap = {
 } satisfies Record<string, string>;
 
 const toolDialogHostMap = {
+    'app-launcher': 'appLauncherOpen',
     'presence-schedule': 'presenceScheduleOpen',
     'presence-room-rules': 'presenceRoomRulesOpen',
     'presence-invite-requests': 'presenceInviteRequestsOpen',
@@ -56,22 +58,30 @@ const legacyToolAliases = {
 export function isToolCapabilityAvailable(
     tool?: ToolDefinition | null
 ): boolean {
-    if (tool?.requiredCapabilityMode === 'supported') {
-        return isHostCapabilitySupported(tool.requiredCapability);
+    const capabilities = [
+        ...(tool?.requiredCapabilities ?? []),
+        ...(tool?.requiredCapability ? [tool.requiredCapability] : [])
+    ];
+    if (capabilities.length === 0) {
+        return true;
     }
-    return (
-        !tool?.requiredCapability ||
-        isHostCapabilityAvailable(tool.requiredCapability)
-    );
+    if (tool?.requiredCapabilityMode === 'supported') {
+        return capabilities.every(isHostCapabilitySupported);
+    }
+    return capabilities.every(isHostCapabilityAvailable);
 }
 
 export function getToolCapabilityUnavailableReason(
     tool?: ToolDefinition | null
 ): string {
-    if (!tool?.requiredCapability) {
+    const capabilities = [
+        ...(tool?.requiredCapabilities ?? []),
+        ...(tool?.requiredCapability ? [tool.requiredCapability] : [])
+    ];
+    if (capabilities.length === 0) {
         return '';
     }
-    return getHostCapabilityUnavailableReason(tool.requiredCapability);
+    return getHostCapabilityUnavailableReason(capabilities[0]);
 }
 
 export async function triggerToolByKey(

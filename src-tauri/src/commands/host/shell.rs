@@ -100,11 +100,6 @@ pub fn app__open_crash_vrc_crash_dumps() -> Result<bool, AppError> {
 }
 
 #[tauri::command]
-pub fn app__open_shortcut_folder(state: State<'_, AppState>) -> Result<(), AppError> {
-    Ok(shell_actions::open_shortcut_folder(&state.paths.app_data)?)
-}
-
-#[tauri::command]
 pub fn app__open_folder_and_select_item(
     state: State<'_, AppState>,
     path: String,

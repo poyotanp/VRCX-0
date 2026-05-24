@@ -29,7 +29,6 @@ import {
 } from '@/state/shellStore';
 
 import { refreshDiscordPresence } from './discordPresenceService';
-import { requireHostCapabilitySupported } from './hostCapabilityService';
 import {
     configureRecentActionCooldown,
     readRecentActionCooldown
@@ -170,9 +169,6 @@ export async function loadPreferenceSnapshot() {
         gameLogDisabled,
         avatarAutoCleanup,
         defaultLaunchMode,
-        enableAppLauncher,
-        enableAppLauncherAutoClose,
-        enableAppLauncherRunProcessOnce,
         udonExceptionLogging,
         logResourceLoad,
         autoLoginDelayEnabled,
@@ -253,9 +249,6 @@ export async function loadPreferenceSnapshot() {
         configRepository.getBool('gameLogDisabled', false),
         configRepository.getString('avatarAutoCleanup', 'Off'),
         configRepository.getString('defaultLaunchMode', 'vr'),
-        configRepository.getBool('enableAppLauncher', true),
-        configRepository.getBool('enableAppLauncherAutoClose', true),
-        configRepository.getBool('enableAppLauncherRunProcessOnce', true),
         configRepository.getBool('udonExceptionLogging', false),
         configRepository.getBool('logResourceLoad', false),
         configRepository.getBool('autoLoginDelayEnabled', false),
@@ -398,11 +391,6 @@ export async function loadPreferenceSnapshot() {
         gameLogDisabled: Boolean(gameLogDisabled),
         avatarAutoCleanup: avatarAutoCleanup || 'Off',
         defaultLaunchMode: normalizeDefaultLaunchMode(defaultLaunchMode),
-        enableAppLauncher: Boolean(enableAppLauncher),
-        enableAppLauncherAutoClose: Boolean(enableAppLauncherAutoClose),
-        enableAppLauncherRunProcessOnce: Boolean(
-            enableAppLauncherRunProcessOnce
-        ),
         udonExceptionLogging: Boolean(udonExceptionLogging),
         logResourceLoad: Boolean(logResourceLoad),
         autoLoginDelayEnabled: Boolean(autoLoginDelayEnabled),
@@ -721,60 +709,6 @@ export async function setIntConfigPreference(
     patchPreferenceValue(key, nextValue);
     publishPreferenceChanged(key, nextValue);
     return nextValue;
-}
-
-export async function setAppLauncherPreference({
-    enabled,
-    autoClose,
-    runProcessOnce
-}: any) {
-    requireHostCapabilitySupported('gameLaunch');
-    const nextEnabled = Boolean(enabled);
-    const nextAutoClose = Boolean(autoClose);
-    const nextRunProcessOnce = Boolean(runProcessOnce);
-    const [previousEnabled, previousAutoClose, previousRunProcessOnce] =
-        await Promise.all([
-            configRepository.getBool('enableAppLauncher', true),
-            configRepository.getBool('enableAppLauncherAutoClose', true),
-            configRepository.getBool('enableAppLauncherRunProcessOnce', true)
-        ]);
-    await tauriClient.app.SetAppLauncherSettings(
-        nextEnabled,
-        nextAutoClose,
-        nextRunProcessOnce
-    );
-    try {
-        await configRepository.setMany([
-            ['enableAppLauncher', nextEnabled],
-            ['enableAppLauncherAutoClose', nextAutoClose],
-            ['enableAppLauncherRunProcessOnce', nextRunProcessOnce]
-        ]);
-    } catch (error) {
-        await tauriClient.app
-            .SetAppLauncherSettings(
-                Boolean(previousEnabled),
-                Boolean(previousAutoClose),
-                Boolean(previousRunProcessOnce)
-            )
-            .catch((rollbackError: any) => {
-                console.warn(
-                    'Failed to roll back app launcher settings:',
-                    rollbackError
-                );
-            });
-        throw error;
-    }
-    patchPreferences({
-        enableAppLauncher: nextEnabled,
-        enableAppLauncherAutoClose: nextAutoClose,
-        enableAppLauncherRunProcessOnce: nextRunProcessOnce
-    });
-    publishPreferenceChanged('enableAppLauncher', nextEnabled);
-    publishPreferenceChanged('enableAppLauncherAutoClose', nextAutoClose);
-    publishPreferenceChanged(
-        'enableAppLauncherRunProcessOnce',
-        nextRunProcessOnce
-    );
 }
 
 export async function setProxyServerPreference(

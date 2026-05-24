@@ -34,7 +34,11 @@ use vrcx_0_application::{
 use vrcx_0_core::friends::FriendRecord;
 use vrcx_0_core::json::RawJson;
 use vrcx_0_host::app_paths::{AppDataDirResolution, AppPaths};
-use vrcx_0_host::auto_launch::AutoAppLaunchManager;
+use vrcx_0_host::auto_launch::{
+    deserialize_app_launcher_entries, normalize_app_launcher_entries, AppLauncherEntry,
+    AppLauncherSnapshot, AutoAppLaunchManager, APP_LAUNCHER_ENABLED_CONFIG_KEY,
+    APP_LAUNCHER_ENTRIES_CONFIG_KEY,
+};
 use vrcx_0_host::discord_rpc::DiscordRpc;
 use vrcx_0_host::host_capabilities::{
     current_host_capabilities, is_host_capability_available, HostCapability,
@@ -210,7 +214,15 @@ impl RuntimeHostState {
         ));
         let screenshot_cache = MetadataCacheDb::new(&paths.app_data.join("metadataCache.db"))?;
 
-        let auto_launch = AutoAppLaunchManager::new(&paths.app_data);
+        let app_launcher_enabled = runtime_context
+            .config()
+            .get_bool(APP_LAUNCHER_ENABLED_CONFIG_KEY, true)?;
+        let app_launcher_entries = deserialize_app_launcher_entries(
+            runtime_context
+                .config()
+                .get_json(APP_LAUNCHER_ENTRIES_CONFIG_KEY, json!([]))?,
+        );
+        let auto_launch = AutoAppLaunchManager::new(app_launcher_enabled, app_launcher_entries);
 
         Ok(Self {
             app_data_dir,
@@ -260,6 +272,41 @@ impl RuntimeHostState {
 
     pub fn snapshot_backend_runtime(&self) -> BackendRuntimeSnapshot {
         self.backend_runtime.snapshot()
+    }
+
+    pub fn app_launcher_snapshot(&self) -> AppLauncherSnapshot {
+        self.auto_launch.snapshot()
+    }
+
+    pub fn set_app_launcher_enabled(&self, enabled: bool) -> Result<AppLauncherSnapshot> {
+        self.runtime_context
+            .config()
+            .set_bool(APP_LAUNCHER_ENABLED_CONFIG_KEY, enabled)?;
+        Ok(self.auto_launch.set_enabled(enabled))
+    }
+
+    pub fn set_app_launcher_entries(
+        &self,
+        entries: Vec<AppLauncherEntry>,
+    ) -> Result<AppLauncherSnapshot> {
+        let entries = normalize_app_launcher_entries(entries);
+        self.runtime_context.config().set_json(
+            APP_LAUNCHER_ENTRIES_CONFIG_KEY,
+            &serde_json::to_value(&entries)?,
+        )?;
+        Ok(self.auto_launch.set_entries(entries))
+    }
+
+    pub fn test_app_launcher_entry(&self, entry_id: &str) -> Result<AppLauncherSnapshot> {
+        self.auto_launch
+            .test_entry(entry_id)
+            .map_err(crate::Error::Custom)
+    }
+
+    pub fn stop_app_launcher_test_run(&self, run_id: &str) -> Result<AppLauncherSnapshot> {
+        self.auto_launch
+            .stop_test_run(run_id)
+            .map_err(crate::Error::Custom)
     }
 
     pub fn registry_backup_list(&self) -> Result<Vec<RegistryBackupSnapshot>> {

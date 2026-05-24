@@ -19,7 +19,7 @@
             "view_details": "詳細を表示",
             "configure": "設定",
             "refresh": "更新",
-            "cancel": "キャンセル",
+            "close": "閉じる",
             "accept": "受け入れる",
             "decline": "断る",
             "copy": "コピー",
@@ -27,7 +27,7 @@
             "save": "保存",
             "search": "検索",
             "select": "選択",
-            "close": "閉じる"
+            "cancel": "キャンセル"
         },
         "sort_by": "並び替え:",
         "time_units": {
@@ -263,7 +263,6 @@
         "zoom_out": "縮小",
         "reset_zoom": "ズームをリセット",
         "all_tools": "すべてのツール...",
-        "open_shortcut_folder": "アプリランチャーのショートカットフォルダーを開く",
         "github": "GitHub",
         "report_issue": "問題を報告",
         "open_source_licenses": "オープンソースライセンス",
@@ -274,8 +273,7 @@
         "messages": {
             "zoom_failed": "ズームの適用に失敗しました",
             "logout_failed": "VRCX-0 からのログアウトに失敗しました",
-            "restart_failed": "VRCX-0 の再起動に失敗しました",
-            "open_shortcut_folder_failed": "アプリランチャーのショートカットフォルダーを開けませんでした"
+            "restart_failed": "VRCX-0 の再起動に失敗しました"
         },
         "label": {
             "started_at": "開始時刻",
@@ -1365,6 +1363,8 @@
                 "vrchat_log": "VRChat ログビューアー",
                 "vrchat_log_description": "ローカルの VRChat Output Log を表示",
                 "launch_options_description": "VRChat の起動オプションを編集する",
+                "app_launcher": "VRChat Startup Apps",
+                "app_launcher_description": "VRChat の起動時に選択したアプリを自動起動します。",
                 "registry_backup": "VRChat レジストリバックアップ",
                 "registry_backup_description": "VRChat のレジストリバックアップを作成または復元"
             },
@@ -2062,14 +2062,6 @@
                         "modify_filename_tooltip": "スクリーンショットのファイル名にワールドIDを追加",
                         "copy_to_clipboard": "クリップボードにコピー"
                     },
-                    "app_launcher": {
-                        "header": "アプリケーションの自動起動",
-                        "folder": "自動起動フォルダ",
-                        "folder_tooltip": "VRChat と一緒に起動させたいアプリケーションのショートカットを配置してください。",
-                        "enable": "アプリケーションの自動起動を有効化",
-                        "auto_close": "VRChat 終了時に自動終了",
-                        "run_process_once": "アプリを単一インスタンスで開く"
-                    },
                     "data_directory": {
                         "header": "データディレクトリ",
                         "description": "現在のソース: {source}。ここではフォルダーの場所だけを保存します。VRCX-0 はデータをコピーしません。",
@@ -2503,6 +2495,47 @@
         },
         "prompt": {
             "input_invalid": "無効な入力です"
+        },
+        "app_launcher": {
+            "header": "VRChat Startup Apps",
+            "global_enabled": "有効",
+            "add_app": "アプリまたはショートカットを追加",
+            "choose_target": "ターゲットを選択",
+            "loading": "VRChat Startup Apps を読み込み中",
+            "empty": "起動ルールはありません",
+            "details": "ルール詳細",
+            "no_selection": "ルールを選択",
+            "enabled": "有効",
+            "name": "名前",
+            "scope": "Scope",
+            "target": "ターゲット",
+            "policy": "ポリシー",
+            "run": "Run",
+            "stop": "Stop",
+            "actions": "操作",
+            "scope_all": "All",
+            "scope_desktop": "Desktop",
+            "scope_vr": "VR",
+            "run_policy_always": "VRChat 起動ごと",
+            "run_policy_skipIfRunning": "実行中ならスキップ",
+            "run_policy_short_always": "毎回起動",
+            "run_policy_short_skipIfRunning": "実行中はスキップ",
+            "stop_policy_keepRunning": "実行を継続",
+            "stop_policy_closeByVrcx": "VRCX-0 が終了",
+            "stop_policy_short_keepRunning": "継続",
+            "stop_policy_short_closeByVrcx": "終了",
+            "delete": "削除",
+            "steam_app_id": "Steam App ID",
+            "delay_seconds": "起動遅延秒数",
+            "args": "引数",
+            "close": "閉じる",
+            "save": "保存",
+            "toast": {
+                "load_failed": "VRChat Startup Apps の読み込みに失敗しました",
+                "save_failed": "VRChat Startup Apps の保存に失敗しました",
+                "pick_failed": "アプリまたはショートカットの選択に失敗しました",
+                "name_target_required": "名前とターゲットは必須です"
+            }
         },
         "user": {
             "status": {

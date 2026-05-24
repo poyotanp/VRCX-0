@@ -84,10 +84,6 @@ export async function openFileSelectorDialog(
     return typeof selected === 'string' ? selected : '';
 }
 
-export async function openShortcutFolder(): Promise<void> {
-    await tauriClient.app.OpenShortcutFolder();
-}
-
 export async function openCalendarFile(icsContent: string): Promise<void> {
     await tauriClient.app.OpenCalendarFile(icsContent);
 }

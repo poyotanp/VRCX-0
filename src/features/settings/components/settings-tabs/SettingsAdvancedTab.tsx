@@ -43,10 +43,6 @@ export function SettingsAdvancedTab({ advanced }: any) {
         onAutoSweepVRChatCacheChange,
         onUdonExceptionLoggingChange,
         onLogResourceLoadChange,
-        onOpenShortcutFolder,
-        onEnableAppLauncherChange,
-        onEnableAppLauncherAutoCloseChange,
-        onEnableAppLauncherRunProcessOnceChange,
         onDefaultLaunchModeChange,
         onShowConfirmationOnSwitchAvatarChange,
         onClearVrcxCache,
@@ -247,70 +243,6 @@ export function SettingsAdvancedTab({ advanced }: any) {
                         <Switch
                             checked={prefs.gameLogDisabled}
                             onCheckedChange={onGameLogDisabledChange}
-                        />
-                    </Field>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>
-                        {t(
-                            'view.settings.advanced.advanced.app_launcher.header'
-                        )}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col">
-                    <Field
-                        label={t(
-                            'view.settings.advanced.advanced.app_launcher.folder'
-                        )}
-                        description={t(
-                            'view.settings.advanced.advanced.app_launcher.folder_tooltip'
-                        )}
-                    >
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={onOpenShortcutFolder}
-                        >
-                            {t(
-                                'view.settings.advanced.advanced.app_launcher.folder'
-                            )}
-                        </Button>
-                    </Field>
-                    <Field
-                        label={t(
-                            'view.settings.advanced.advanced.app_launcher.enable'
-                        )}
-                        description={t(
-                            'view.settings.advanced.advanced.app_launcher.folder_tooltip'
-                        )}
-                    >
-                        <Switch
-                            checked={prefs.enableAppLauncher}
-                            onCheckedChange={onEnableAppLauncherChange}
-                        />
-                    </Field>
-                    <Field
-                        label={t(
-                            'view.settings.advanced.advanced.app_launcher.auto_close'
-                        )}
-                    >
-                        <Switch
-                            checked={prefs.enableAppLauncherAutoClose}
-                            onCheckedChange={onEnableAppLauncherAutoCloseChange}
-                        />
-                    </Field>
-                    <Field
-                        label={t(
-                            'view.settings.advanced.advanced.app_launcher.run_process_once'
-                        )}
-                    >
-                        <Switch
-                            checked={prefs.enableAppLauncherRunProcessOnce}
-                            onCheckedChange={
-                                onEnableAppLauncherRunProcessOnceChange
-                            }
                         />
                     </Field>
                 </CardContent>

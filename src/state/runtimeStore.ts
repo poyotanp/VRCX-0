@@ -361,6 +361,7 @@ const initialState = {
         databaseUpgradeOpen: false,
         updaterOpen: false,
         registryBackupOpen: false,
+        appLauncherOpen: false,
         launchOptionsOpen: false,
         vrchatConfigOpen: false,
         presenceScheduleOpen: false,

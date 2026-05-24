@@ -19,7 +19,7 @@
             "view_details": "View Details",
             "configure": "Configure",
             "refresh": "Refresh",
-            "cancel": "Cancel",
+            "close": "Close",
             "accept": "Accept",
             "decline": "Decline",
             "copy": "Copy",
@@ -27,7 +27,7 @@
             "save": "Save",
             "search": "Search",
             "select": "Select",
-            "close": "Close"
+            "cancel": "Cancel"
         },
         "sort_by": "Sort by:",
         "time_units": {
@@ -263,7 +263,6 @@
         "zoom_out": "Zoom Out",
         "reset_zoom": "Reset Zoom",
         "all_tools": "All Tools...",
-        "open_shortcut_folder": "Open App Launcher Shortcuts Folder",
         "github": "GitHub",
         "report_issue": "Report Issue",
         "open_source_licenses": "Open Source Licenses",
@@ -274,8 +273,7 @@
         "messages": {
             "zoom_failed": "Failed to apply zoom",
             "logout_failed": "Failed to sign out of VRCX-0",
-            "restart_failed": "Failed to restart VRCX-0",
-            "open_shortcut_folder_failed": "Failed to open the app launcher shortcuts folder"
+            "restart_failed": "Failed to restart VRCX-0"
         },
         "label": {
             "started_at": "Started at",
@@ -1365,6 +1363,8 @@
                 "vrchat_log": "VRChat Log Viewer",
                 "vrchat_log_description": "Read local VRChat output logs",
                 "launch_options_description": "Edit VRChat launch options",
+                "app_launcher": "VRChat Startup Apps",
+                "app_launcher_description": "Automatically launch selected apps when VRChat starts.",
                 "registry_backup": "VRChat Registry Backup",
                 "registry_backup_description": "Create or restore a VRChat registry backup"
             },
@@ -2062,14 +2062,6 @@
                         "modify_filename_tooltip": "Will add the World ID to screenshot filename, in addition to file metadata.",
                         "copy_to_clipboard": "Copy to Clipboard"
                     },
-                    "app_launcher": {
-                        "header": "App Launcher",
-                        "folder": "Auto-Launch Folder",
-                        "folder_tooltip": "To auto-launch apps with VRChat, place shortcuts inside this folder, alteratively use the platform-specific subfolders, Steam app shortcuts are also supported",
-                        "enable": "Enable App Launcher",
-                        "auto_close": "Auto Close Apps",
-                        "run_process_once": "Open Single Instance of App"
-                    },
                     "data_directory": {
                         "header": "Data Directory",
                         "description": "Active source: {source}. Changing this only saves the folder location; VRCX-0 will not copy data.",
@@ -2503,6 +2495,47 @@
         },
         "prompt": {
             "input_invalid": "Invalid input"
+        },
+        "app_launcher": {
+            "header": "VRChat Startup Apps",
+            "global_enabled": "Enabled",
+            "add_app": "Add app or shortcut",
+            "choose_target": "Choose target",
+            "loading": "Loading VRChat Startup Apps",
+            "empty": "No launcher entries",
+            "details": "Rule details",
+            "no_selection": "Select a rule",
+            "enabled": "Enabled",
+            "name": "Name",
+            "scope": "Scope",
+            "target": "Target",
+            "policy": "Policy",
+            "run": "Run",
+            "stop": "Stop",
+            "actions": "Actions",
+            "scope_all": "All",
+            "scope_desktop": "Desktop",
+            "scope_vr": "VR",
+            "run_policy_always": "Every VRChat start",
+            "run_policy_skipIfRunning": "Skip if running",
+            "run_policy_short_always": "Every start",
+            "run_policy_short_skipIfRunning": "Skip running",
+            "stop_policy_keepRunning": "Keep running",
+            "stop_policy_closeByVrcx": "Close by VRCX-0",
+            "stop_policy_short_keepRunning": "Keep",
+            "stop_policy_short_closeByVrcx": "Close",
+            "delete": "Delete",
+            "steam_app_id": "Steam App ID",
+            "delay_seconds": "Launch delay seconds",
+            "args": "Args",
+            "close": "Close",
+            "save": "Save",
+            "toast": {
+                "load_failed": "Failed to load VRChat Startup Apps",
+                "save_failed": "Failed to save VRChat Startup Apps",
+                "pick_failed": "Failed to pick app or shortcut",
+                "name_target_required": "Name and target are required"
+            }
         },
         "user": {
             "status": {

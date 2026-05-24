@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import { openShortcutFolder } from '@/services/shellIntegrationService';
-
 import { SettingsAdvancedTab } from './settings-tabs/SettingsAdvancedTab';
 
 export function SettingsAdvancedSection({ advanced }: any) {
@@ -18,7 +16,6 @@ export function SettingsAdvancedSection({ advanced }: any) {
         appDataDirState,
         tauriAppSnapshot,
         saveBoolPreference,
-        saveAppLauncherField,
         clearVrcxCache,
         promptAutoClearVrcxCacheFrequency,
         refreshCacheSize,
@@ -76,18 +73,6 @@ export function SettingsAdvancedSection({ advanced }: any) {
         },
         onLogResourceLoadChange: (checked: any) => {
             saveBoolPreference('logResourceLoad', 'logResourceLoad', checked);
-        },
-        onOpenShortcutFolder: () => {
-            openShortcutFolder();
-        },
-        onEnableAppLauncherChange: (checked: any) => {
-            saveAppLauncherField('enableAppLauncher', checked);
-        },
-        onEnableAppLauncherAutoCloseChange: (checked: any) => {
-            saveAppLauncherField('enableAppLauncherAutoClose', checked);
-        },
-        onEnableAppLauncherRunProcessOnceChange: (checked: any) => {
-            saveAppLauncherField('enableAppLauncherRunProcessOnce', checked);
         },
         onDefaultLaunchModeChange: (value: any) => {
             saveStringPreference(

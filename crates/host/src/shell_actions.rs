@@ -95,14 +95,6 @@ pub fn open_crash_dumps_folder() -> Result<bool, Error> {
     open_existing_folder(&vrchat_paths::vrchat_crashes_location())
 }
 
-pub fn open_shortcut_folder(app_data: &Path) -> Result<(), Error> {
-    let shortcut_dir = app_data.join("Shortcuts");
-    std::fs::create_dir_all(&shortcut_dir)?;
-    open::that(shortcut_dir.to_string_lossy().as_ref())
-        .map_err(|e| Error::Custom(format!("open shortcut folder: {e}")))?;
-    Ok(())
-}
-
 pub fn open_folder_and_select_item(path: &str, is_folder: bool) -> Result<(), Error> {
     let p = PathBuf::from(path);
     if !p.exists() {

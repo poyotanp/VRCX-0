@@ -6,9 +6,7 @@ use crate::adapters::ipc::IpcPacket;
 use crate::error::AppError;
 use crate::state::AppState;
 
-use vrcx_0_host::host_capabilities::{
-    require_host_capability, require_host_capability_supported, HostCapability,
-};
+use vrcx_0_host::host_capabilities::{require_host_capability, HostCapability};
 
 #[tauri::command]
 pub fn app__ipc_announce_start(state: State<'_, AppState>) -> Result<(), AppError> {
@@ -35,20 +33,6 @@ pub fn app__send_ipc(
         msg_type: None,
     };
     state.ipc.send(&packet);
-    Ok(())
-}
-
-#[tauri::command]
-pub fn app__set_app_launcher_settings(
-    state: State<'_, AppState>,
-    enabled: bool,
-    kill_on_exit: bool,
-    run_process_once: bool,
-) -> Result<(), AppError> {
-    require_host_capability_supported(HostCapability::GameLaunch)?;
-    state
-        .auto_launch
-        .set_settings(enabled, kill_on_exit, run_process_once);
     Ok(())
 }
 

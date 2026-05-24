@@ -62,6 +62,72 @@ export interface HostCapabilities {
     screenshotCache: HostCapabilityStatus;
 }
 
+export type AppLauncherEntryKind = 'localApp' | 'steamApp';
+export type AppLauncherScope = 'all' | 'desktop' | 'vr';
+export type AppLauncherRunPolicy = 'always' | 'skipIfRunning';
+export type AppLauncherStopPolicy = 'keepRunning' | 'closeByVrcx';
+export type AppLauncherRunStatus =
+    | 'waiting'
+    | 'running'
+    | 'skipped'
+    | 'failed'
+    | 'stopped'
+    | 'completed';
+
+export interface AppLauncherEntry {
+    id: string;
+    enabled: boolean;
+    name: string;
+    kind: AppLauncherEntryKind;
+    scope: AppLauncherScope;
+    target: string;
+    args?: string;
+    launchDelaySeconds: number;
+    runPolicy: AppLauncherRunPolicy;
+    stopPolicy: AppLauncherStopPolicy;
+    processName?: string | null;
+    workingDirectory?: string | null;
+}
+
+export interface AppLauncherRun {
+    id: string;
+    entryId: string;
+    entryName: string;
+    kind: AppLauncherEntryKind;
+    target: string;
+    status: AppLauncherRunStatus;
+    stopPolicy: AppLauncherStopPolicy;
+    test: boolean;
+    rootPid?: number | null;
+    trackedPids: number[];
+    startedAt?: number | null;
+    finishedAt?: number | null;
+    error?: string | null;
+    skippedReason?: string | null;
+}
+
+export interface AppLauncherSession {
+    id: string;
+    steamvrRunning: boolean;
+    startedAt: number;
+    runs: AppLauncherRun[];
+}
+
+export interface AppLauncherSnapshot {
+    enabled: boolean;
+    entries: AppLauncherEntry[];
+    activeSession?: AppLauncherSession | null;
+    testRuns: AppLauncherRun[];
+}
+
+export interface AppLauncherPickedTarget {
+    kind: AppLauncherEntryKind;
+    name: string;
+    target: string;
+    processName?: string | null;
+    workingDirectory?: string | null;
+}
+
 export type AppDataDirSource = 'cli' | 'persisted' | 'default';
 
 export interface AppDataDirState {
@@ -665,6 +731,16 @@ export interface AppTauriCommandNamespace extends TauriCommandNamespace {
     RegistryBackupMaintenanceRun(
         reason: string
     ): Promise<RegistryBackupMaintenanceResult>;
+    AppLauncherSnapshotGet(): Promise<AppLauncherSnapshot>;
+    AppLauncherEnabledSet(enabled: boolean): Promise<AppLauncherSnapshot>;
+    AppLauncherEntriesSet(
+        entries: AppLauncherEntry[]
+    ): Promise<AppLauncherSnapshot>;
+    AppLauncherEntryTest(entryId: string): Promise<AppLauncherSnapshot>;
+    AppLauncherTestRunStop(runId: string): Promise<AppLauncherSnapshot>;
+    AppLauncherTargetPick(
+        kind: 'auto' | 'localApp'
+    ): Promise<AppLauncherPickedTarget | null>;
     OpenFileSelectorDialog(
         defaultPath?: string | null,
         defaultExt?: string | null,

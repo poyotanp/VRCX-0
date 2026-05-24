@@ -17,7 +17,6 @@ import mediaRepository from '@/repositories/mediaRepository';
 import runtimeDiagnosticsRepository from '@/repositories/runtimeDiagnosticsRepository';
 import vrchatAuthRepository from '@/repositories/vrchatAuthRepository';
 import {
-    setAppLauncherPreference,
     setBoolConfigPreference,
     setCropInstancePrintsPreference,
     setIntConfigPreference,
@@ -134,7 +133,6 @@ export function useSettingsActions(deps: any) {
         parseIntegerInput,
         prompt,
         resetTrustColorsPreference,
-        setAppLauncherPreference,
         setBoolConfigPreference,
         setCropInstancePrintsPreference,
         setIntConfigPreference,
