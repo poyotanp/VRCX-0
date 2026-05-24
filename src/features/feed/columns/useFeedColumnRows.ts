@@ -7,7 +7,10 @@ import { useFeedLiveStore } from '@/state/feedLiveStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
 
-import { buildFeedColumnFavoriteIds } from '../feedColumnScope';
+import {
+    buildFeedColumnExcludedFavoriteIds,
+    buildFeedColumnFavoriteIds
+} from '../feedColumnScope';
 import type { FeedColumnConfig } from '../feedColumnsState';
 import { getFeedRowId, normalizeFeedId as normalizeId } from '../feedRows';
 import type { FeedLoadStatus, FeedRow } from '../feedTypes';
@@ -80,9 +83,26 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             ),
         [column, localFriendFavorites, remoteFavoritesById]
     );
+    const excludedFavoriteUserIds = useMemo(
+        () =>
+            Array.from(
+                buildFeedColumnExcludedFavoriteIds({
+                    column,
+                    localFriendFavorites,
+                    remoteFavoritesById
+                })
+            ),
+        [column, localFriendFavorites, remoteFavoritesById]
+    );
+    const excludedGroupKeys = column.friendScope.excludedFavoriteGroupKeys;
+    const excludesFavoriteGroups = Boolean(
+        excludedGroupKeys === 'all' ||
+            (Array.isArray(excludedGroupKeys) && excludedGroupKeys.length)
+    );
 
     const favoritesReady =
-        column.friendScope.kind !== 'favorites' || isFavoritesLoaded;
+        (column.friendScope.kind !== 'favorites' && !excludesFavoriteGroups) ||
+        isFavoritesLoaded;
     const scopeHasRows =
         column.friendScope.kind !== 'favorites' || favoriteUserIds.length > 0;
     const queryKey = useMemo(
@@ -90,11 +110,12 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             JSON.stringify({
                 columnId: column.id,
                 currentUserId: normalizeId(currentUserId),
+                excludedFavoriteUserIds,
                 favoriteUserIds,
                 feedTypes: column.feedTypes,
                 scope: column.friendScope
             }),
-        [column, currentUserId, favoriteUserIds]
+        [column, currentUserId, excludedFavoriteUserIds, favoriteUserIds]
     );
 
     const mergeWithLiveRows = useCallback(
@@ -116,6 +137,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
                 rows,
                 userId: currentUserId,
                 filters: column.feedTypes,
+                excludedFavoriteUserIds,
                 favoriteUserIds,
                 liveEntries: liveSnapshot.entries,
                 minLiveSequence,
@@ -127,7 +149,13 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             }
             return result as { rows: FeedRow[]; maxSequence: number };
         },
-        [column.feedTypes, column.friendScope.kind, currentUserId, favoriteUserIds]
+        [
+            column.feedTypes,
+            column.friendScope.kind,
+            currentUserId,
+            excludedFavoriteUserIds,
+            favoriteUserIds
+        ]
     );
 
     useEffect(() => {
@@ -156,6 +184,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             .queryFeedPage({
                 userId: currentUserId,
                 filters: column.feedTypes,
+                excludedFavoriteUserIds,
                 favoriteUserIds,
                 maxEntries: FEED_COLUMN_PAGE_SIZE
             })
@@ -189,6 +218,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
     }, [
         column.feedTypes,
         currentUserId,
+        excludedFavoriteUserIds,
         favoriteUserIds,
         favoritesReady,
         mergeWithLiveRows,
@@ -243,6 +273,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             .queryFeedPage({
                 userId: currentUserId,
                 filters: column.feedTypes,
+                excludedFavoriteUserIds,
                 favoriteUserIds,
                 maxEntries: FEED_COLUMN_PAGE_SIZE,
                 cursor
@@ -271,6 +302,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
     }, [
         column.feedTypes,
         currentUserId,
+        excludedFavoriteUserIds,
         favoriteUserIds,
         hasMore,
         loadingOlder,

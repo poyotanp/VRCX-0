@@ -14,7 +14,7 @@ import {
     useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ListPlusIcon } from 'lucide-react';
+import { ListPlusIcon, Settings2Icon } from 'lucide-react';
 import {
     type CSSProperties,
     type ReactNode,
@@ -40,7 +40,20 @@ import {
     AlertDialogTitle
 } from '@/ui/shadcn/alert-dialog';
 import { Button } from '@/ui/shadcn/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger
+} from '@/ui/shadcn/dropdown-menu';
+import { Field, FieldGroup, FieldLabel } from '@/ui/shadcn/field';
+import { ToggleGroup, ToggleGroupItem } from '@/ui/shadcn/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
+import {
+    FEED_COLUMN_DENSITY_OPTIONS,
+    type FeedColumnDensity,
+    getFeedColumnDensityConfig
+} from '../feedColumnsDensity';
 import {
     createFeedColumnsPresetConfig,
     type FeedColumnConfig
@@ -53,8 +66,10 @@ import { FeedColumnsManagerDialog } from './FeedColumnsManagerDialog';
 
 type FeedColumnsModeProps = {
     columns: FeedColumnConfig[];
+    density: FeedColumnDensity;
     modeToggle: ReactNode;
     onColumnsChange(columns: FeedColumnConfig[]): void;
+    onDensityChange(value: FeedColumnDensity): void;
 };
 
 type SortableFeedColumnProps = {
@@ -111,16 +126,85 @@ function useFeedTimeTicker() {
     return nowMs;
 }
 
+function FeedColumnsSettingsMenu({
+    density,
+    onDensityChange
+}: {
+    density: FeedColumnDensity;
+    onDensityChange(value: FeedColumnDensity): void;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <DropdownMenu>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:text-foreground shrink-0"
+                            aria-label={t('view.feed.columns.settings')}
+                        >
+                            <Settings2Icon data-icon="icon" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{t('view.feed.columns.settings')}</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent className="w-72 p-3" align="end">
+                <FieldGroup>
+                    <Field>
+                        <FieldLabel>{t('view.feed.columns.density')}</FieldLabel>
+                        <ToggleGroup
+                            type="single"
+                            variant="outline"
+                            size="sm"
+                            spacing={1}
+                            value={density}
+                            onValueChange={(nextValue) => {
+                                if (nextValue) {
+                                    onDensityChange(
+                                        nextValue as FeedColumnDensity
+                                    );
+                                }
+                            }}
+                            className="grid w-full grid-cols-2"
+                        >
+                            {FEED_COLUMN_DENSITY_OPTIONS.map((option) => (
+                                <ToggleGroupItem
+                                    key={option.value}
+                                    value={option.value}
+                                    aria-label={t(option.labelKey)}
+                                    className="w-full min-w-0 justify-center px-2"
+                                >
+                                    <span className="truncate">
+                                        {t(option.labelKey)}
+                                    </span>
+                                </ToggleGroupItem>
+                            ))}
+                        </ToggleGroup>
+                    </Field>
+                </FieldGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
 export function FeedColumnsMode({
     columns,
+    density,
     modeToggle,
-    onColumnsChange
+    onColumnsChange,
+    onDensityChange
 }: FeedColumnsModeProps) {
     const { t } = useTranslation();
     const friendActions = useFeedFriendActions();
     const previousInstancesDialog = useFeedPreviousInstancesDialog();
     const timeDisplayMode = useFeedTimeDisplayMode();
     const nowMs = useFeedTimeTicker();
+    const densityConfig = getFeedColumnDensityConfig(density);
     const [managerOpen, setManagerOpen] = useState(false);
     const [restorePresetPromptOpen, setRestorePresetPromptOpen] =
         useState(false);
@@ -188,21 +272,29 @@ export function FeedColumnsMode({
                     <div className="flex shrink-0 items-center">
                         {modeToggle}
                     </div>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="shrink-0"
-                        onClick={() => {
-                            setSelectedColumnId(
-                                selectedColumnId || orderedColumns[0]?.id || ''
-                            );
-                            setManagerOpen(true);
-                        }}
-                    >
-                        <ListPlusIcon data-icon="inline-start" />
-                        {t('view.feed.columns.manage_list')}
-                    </Button>
+                    <div className="ml-auto flex shrink-0 items-center gap-1">
+                        <FeedColumnsSettingsMenu
+                            density={density}
+                            onDensityChange={onDensityChange}
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => {
+                                setSelectedColumnId(
+                                    selectedColumnId ||
+                                        orderedColumns[0]?.id ||
+                                        ''
+                                );
+                                setManagerOpen(true);
+                            }}
+                        >
+                            <ListPlusIcon data-icon="inline-start" />
+                            {t('view.feed.columns.manage_list')}
+                        </Button>
+                    </div>
                 </PageToolbarRow>
             </PageToolbar>
             <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
@@ -216,7 +308,7 @@ export function FeedColumnsMode({
                         items={orderedColumns.map((column) => column.id)}
                         strategy={horizontalListSortingStrategy}
                     >
-                        <div className="flex h-full min-w-max gap-2 pb-1">
+                        <div className="flex h-full min-w-max gap-1.5 pb-1">
                             {orderedColumns.map((column) => (
                                 <SortableFeedColumn
                                     key={column.id}
@@ -240,6 +332,7 @@ export function FeedColumnsMode({
                                             <FeedColumnPane
                                                 actions={friendActions}
                                                 column={column}
+                                                densityConfig={densityConfig}
                                                 dragHandleProps={{
                                                     attributes,
                                                     listeners

@@ -40,9 +40,11 @@ import {
     describeFeedColumnScope
 } from '../feedColumnScope';
 import {
+    copyFeedColumnExclusion,
     createFeedColumnsPresetConfig,
     createFeedColumnConfig,
     type FeedColumnConfig,
+    type FeedColumnFavoriteGroupSelection,
     type FeedColumnFriendScope
 } from '../feedColumnsState';
 
@@ -66,6 +68,30 @@ function resolveScopeSelectValue(scope: FeedColumnFriendScope) {
         return 'all';
     }
     return scope.groupKeys === 'all' ? 'favorites-all' : 'favorites-selected';
+}
+
+function resolveExcludedFavoriteGroupSelectValue(scope: FeedColumnFriendScope) {
+    const excludedGroupKeys = scope.excludedFavoriteGroupKeys;
+    if (excludedGroupKeys === 'all') {
+        return 'exclude-all';
+    }
+    return Array.isArray(excludedGroupKeys) && excludedGroupKeys.length
+        ? 'exclude-selected'
+        : 'exclude-none';
+}
+
+function withExcludedFavoriteGroups(
+    scope: FeedColumnFriendScope,
+    excludedFavoriteGroupKeys: FeedColumnFavoriteGroupSelection | undefined
+): FeedColumnFriendScope {
+    if (!excludedFavoriteGroupKeys) {
+        const { excludedFavoriteGroupKeys: _excluded, ...nextScope } = scope;
+        return nextScope;
+    }
+    return {
+        ...scope,
+        excludedFavoriteGroupKeys
+    };
 }
 
 export function FeedColumnsManagerDialog({
@@ -112,6 +138,11 @@ export function FeedColumnsManagerDialog({
         describeFeedColumnScope(column, {
             allFavoritesLabel: t('view.feed.columns.all_favorites'),
             allFriendsLabel: t('view.feed.columns.all_friends'),
+            excludedAllFavoritesLabel: t(
+                'view.feed.columns.except_all_favorites'
+            ),
+            excludedGroupCountLabel: (count) =>
+                t('view.feed.columns.except_groups_count', { count }),
             groupCountLabel: (count) =>
                 t('view.feed.columns.groups_count', { count }),
             typeLabel: (type) => t(`view.feed.filters.${type}`)
@@ -178,6 +209,11 @@ export function FeedColumnsManagerDialog({
         selectedColumn.friendScope.groupKeys !== 'all'
             ? selectedColumn.friendScope.groupKeys
             : [];
+    const selectedExcludedGroupKeys = Array.isArray(
+        selectedColumn?.friendScope.excludedFavoriteGroupKeys
+    )
+        ? selectedColumn.friendScope.excludedFavoriteGroupKeys
+        : [];
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -270,29 +306,43 @@ export function FeedColumnsManagerDialog({
                                     onValueChange={(value) => {
                                         if (value === 'all') {
                                             updateSelectedColumn({
-                                                friendScope: { kind: 'all' }
+                                                friendScope:
+                                                    copyFeedColumnExclusion(
+                                                        selectedColumn.friendScope,
+                                                        { kind: 'all' }
+                                                    )
                                             });
                                         } else if (value === 'favorites-all') {
                                             updateSelectedColumn({
-                                                friendScope: {
-                                                    kind: 'favorites',
-                                                    groupKeys: 'all'
-                                                }
+                                                friendScope:
+                                                    copyFeedColumnExclusion(
+                                                        selectedColumn.friendScope,
+                                                        {
+                                                            kind: 'favorites',
+                                                            groupKeys: 'all'
+                                                        }
+                                                    )
                                             });
                                         } else {
                                             updateSelectedColumn({
-                                                friendScope: {
-                                                    kind: 'favorites',
-                                                    groupKeys:
-                                                        selectedGroupKeys.length
-                                                            ? selectedGroupKeys
-                                                            : favoriteGroupOptions
-                                                                  .slice(0, 1)
-                                                                  .map(
-                                                                      (group) =>
-                                                                          group.key
-                                                                  )
-                                                }
+                                                friendScope:
+                                                    copyFeedColumnExclusion(
+                                                        selectedColumn.friendScope,
+                                                        {
+                                                            kind: 'favorites',
+                                                            groupKeys:
+                                                                selectedGroupKeys.length
+                                                                    ? selectedGroupKeys
+                                                                    : favoriteGroupOptions
+                                                                          .slice(0, 1)
+                                                                          .map(
+                                                                              (
+                                                                                  group
+                                                                              ) =>
+                                                                                  group.key
+                                                                          )
+                                                        }
+                                                    )
                                             });
                                         }
                                     }}
@@ -321,6 +371,73 @@ export function FeedColumnsManagerDialog({
                                     </SelectContent>
                                 </Select>
                             </Field>
+                            <Field>
+                                <FieldLabel>
+                                    {t('view.feed.columns.exclude_favorites')}
+                                </FieldLabel>
+                                <Select
+                                    value={resolveExcludedFavoriteGroupSelectValue(
+                                        selectedColumn.friendScope
+                                    )}
+                                    onValueChange={(value) => {
+                                        if (value === 'exclude-all') {
+                                            updateSelectedColumn({
+                                                friendScope:
+                                                    withExcludedFavoriteGroups(
+                                                        selectedColumn.friendScope,
+                                                        'all'
+                                                    )
+                                            });
+                                        } else if (value === 'exclude-selected') {
+                                            updateSelectedColumn({
+                                                friendScope:
+                                                    withExcludedFavoriteGroups(
+                                                        selectedColumn.friendScope,
+                                                        selectedExcludedGroupKeys.length
+                                                            ? selectedExcludedGroupKeys
+                                                            : favoriteGroupOptions
+                                                                  .slice(0, 1)
+                                                                  .map(
+                                                                      (group) =>
+                                                                          group.key
+                                                                  )
+                                                    )
+                                            });
+                                        } else {
+                                            updateSelectedColumn({
+                                                friendScope:
+                                                    withExcludedFavoriteGroups(
+                                                        selectedColumn.friendScope,
+                                                        undefined
+                                                    )
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="exclude-none">
+                                                {t(
+                                                    'view.feed.columns.exclude_none'
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="exclude-all">
+                                                {t(
+                                                    'view.feed.columns.exclude_all_favorites'
+                                                )}
+                                            </SelectItem>
+                                            <SelectItem value="exclude-selected">
+                                                {t(
+                                                    'view.feed.columns.exclude_selected_favorites'
+                                                )}
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
                             {resolveScopeSelectValue(selectedColumn.friendScope) ===
                             'favorites-selected' ? (
                                 <FieldSet>
@@ -341,15 +458,63 @@ export function FeedColumnsManagerDialog({
                                                     )}
                                                     onCheckedChange={() =>
                                                         updateSelectedColumn({
-                                                            friendScope: {
-                                                                kind: 'favorites',
-                                                                groupKeys: toggleValue(
-                                                                    selectedGroupKeys,
-                                                                    group.key
+                                                            friendScope:
+                                                                copyFeedColumnExclusion(
+                                                                    selectedColumn.friendScope,
+                                                                    {
+                                                                        kind: 'favorites',
+                                                                        groupKeys: toggleValue(
+                                                                            selectedGroupKeys,
+                                                                            group.key
+                                                                        )
+                                                                    }
                                                                 )
-                                                            }
                                                         })
                                                     }
+                                                />
+                                                <FieldLabel className="min-w-0 truncate">
+                                                    {group.label}
+                                                </FieldLabel>
+                                            </Field>
+                                        ))}
+                                    </div>
+                                </FieldSet>
+                            ) : null}
+                            {resolveExcludedFavoriteGroupSelectValue(
+                                selectedColumn.friendScope
+                            ) === 'exclude-selected' ? (
+                                <FieldSet>
+                                    <FieldLegend variant="label">
+                                        {t(
+                                            'view.feed.columns.excluded_favorite_groups'
+                                        )}
+                                    </FieldLegend>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {favoriteGroupOptions.map((group) => (
+                                            <Field
+                                                key={group.key}
+                                                orientation="horizontal"
+                                            >
+                                                <Checkbox
+                                                    checked={selectedExcludedGroupKeys.includes(
+                                                        group.key
+                                                    )}
+                                                    onCheckedChange={() => {
+                                                        const nextGroupKeys =
+                                                            toggleValue(
+                                                                selectedExcludedGroupKeys,
+                                                                group.key
+                                                            );
+                                                        updateSelectedColumn({
+                                                            friendScope:
+                                                                withExcludedFavoriteGroups(
+                                                                    selectedColumn.friendScope,
+                                                                    nextGroupKeys.length
+                                                                        ? nextGroupKeys
+                                                                        : undefined
+                                                                )
+                                                        });
+                                                    }}
                                                 />
                                                 <FieldLabel className="min-w-0 truncate">
                                                     {group.label}

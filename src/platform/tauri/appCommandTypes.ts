@@ -396,6 +396,7 @@ export interface FeedRowsQueryInput {
     search?: string;
     filters?: string[];
     vipList?: string[];
+    excludedUserIds?: string[];
     maxEntries: number;
     dateFrom?: string;
     dateTo?: string;
@@ -418,6 +419,7 @@ export interface FeedReadModelQueryInput extends FeedRowsQueryInput {
     minLiveSequence?: number;
     favoritesOnly?: boolean;
     favoriteUserIds?: string[];
+    excludedUserIds?: string[];
     maxRows?: number;
 }
 
@@ -430,6 +432,7 @@ export interface FeedLiveRowsMergeInput {
     dateTo?: string;
     favoritesOnly?: boolean;
     favoriteUserIds?: string[];
+    excludedUserIds?: string[];
     liveEntries?: FeedLiveEntryInput[];
     minLiveSequence?: number;
     maxRows?: number;

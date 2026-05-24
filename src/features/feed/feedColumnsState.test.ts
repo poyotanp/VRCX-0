@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     FEED_COLUMNS_DEFAULT_CONFIG,
+    copyFeedColumnExclusion,
     sanitizeFeedColumnConfig,
     sanitizeFeedColumnsConfig,
     sanitizeFeedViewMode
@@ -16,14 +17,19 @@ describe('feed columns state helpers', () => {
 
     it('provides the accepted default columns without an All column', () => {
         expect(FEED_COLUMNS_DEFAULT_CONFIG.map((column) => column.title)).toEqual([
-            'Location',
             'Favorites',
+            'Location',
             'Profile',
             'Presence'
         ]);
-        expect(FEED_COLUMNS_DEFAULT_CONFIG[1]).toMatchObject({
+        expect(FEED_COLUMNS_DEFAULT_CONFIG[0]).toMatchObject({
             friendScope: { kind: 'favorites', groupKeys: 'all' }
         });
+        expect(FEED_COLUMNS_DEFAULT_CONFIG.slice(1).map((column) => column.friendScope)).toEqual([
+            { kind: 'all', excludedFavoriteGroupKeys: 'all' },
+            { kind: 'all', excludedFavoriteGroupKeys: 'all' },
+            { kind: 'all', excludedFavoriteGroupKeys: 'all' }
+        ]);
     });
 
     it('sanitizes column scope, types, and width', () => {
@@ -80,6 +86,92 @@ describe('feed columns state helpers', () => {
                 kind: 'favorites',
                 groupKeys: []
             }
+        });
+    });
+
+    it('sanitizes selected favorite group exclusions', () => {
+        expect(
+            sanitizeFeedColumnConfig({
+                id: 'excluded-favorites',
+                title: 'Excluded Favorites',
+                friendScope: {
+                    kind: 'all',
+                    excludedFavoriteGroupKeys: [
+                        'group-a',
+                        '',
+                        'group-a',
+                        'local:group-b'
+                    ]
+                },
+                feedTypes: ['GPS']
+            })
+        ).toMatchObject({
+            friendScope: {
+                kind: 'all',
+                excludedFavoriteGroupKeys: ['group-a', 'local:group-b']
+            }
+        });
+    });
+
+    it('adds favorite exclusions to legacy default profile and presence presets', () => {
+        expect(
+            sanitizeFeedColumnsConfig([
+                {
+                    id: 'profile',
+                    title: 'Profile',
+                    width: 320,
+                    friendScope: { kind: 'all' },
+                    feedTypes: ['Status', 'Avatar', 'Bio']
+                },
+                {
+                    id: 'presence',
+                    title: 'Presence',
+                    width: 320,
+                    friendScope: { kind: 'all' },
+                    feedTypes: ['Online', 'Offline']
+                }
+            ]).map((column) => column.friendScope)
+        ).toEqual([
+            { kind: 'all', excludedFavoriteGroupKeys: 'all' },
+            { kind: 'all', excludedFavoriteGroupKeys: 'all' }
+        ]);
+    });
+
+    it('does not force favorite exclusions onto edited preset-derived columns', () => {
+        expect(
+            sanitizeFeedColumnConfig({
+                id: 'profile',
+                title: 'Profile',
+                width: 320,
+                friendScope: { kind: 'all' },
+                feedTypes: ['Status']
+            })
+        ).toMatchObject({
+            friendScope: { kind: 'all' },
+            feedTypes: ['Status']
+        });
+    });
+
+    it('copies exclusions when replacing a column scope base', () => {
+        const sourceScope = {
+            kind: 'all' as const,
+            excludedFavoriteGroupKeys: ['group-a']
+        };
+        const nextScope = copyFeedColumnExclusion(sourceScope, {
+            kind: 'favorites',
+            groupKeys: 'all'
+        });
+
+        expect(nextScope).toEqual({
+            kind: 'favorites',
+            groupKeys: 'all',
+            excludedFavoriteGroupKeys: ['group-a']
+        });
+        sourceScope.excludedFavoriteGroupKeys.push('group-b');
+        expect(nextScope).toEqual({
+            kind: 'favorites',
+            groupKeys: 'all',
+            excludedFavoriteGroupKeys: ['group-a']
         });
     });
 

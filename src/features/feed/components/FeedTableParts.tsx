@@ -16,7 +16,10 @@ import { toast } from 'sonner';
 import { useKnownUserFact } from '@/domain/users/useKnownUser';
 import { formatDateFilter } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
-import { copyTextToClipboard } from '@/services/entityMediaService';
+import {
+    copyTextToClipboard,
+    userImage
+} from '@/services/entityMediaService';
 import userProfileRepository from '@/repositories/userProfileRepository';
 import {
     openGroupDialog,
@@ -29,6 +32,11 @@ import {
 } from '@/shared/utils/location';
 import { useFriendRosterStore } from '@/state/friendRosterStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage
+} from '@/ui/shadcn/avatar';
 import { Button } from '@/ui/shadcn/button';
 import {
     ContextMenu,
@@ -110,14 +118,18 @@ function SortButton({
 
 function FeedUserLink({
     actions,
+    avatarSize = 28,
     cachedDisplayName = '',
     className = '',
-    row
+    row,
+    showAvatar = false
 }: {
     actions: FeedFriendActions;
+    avatarSize?: number;
     cachedDisplayName?: string;
     className?: string;
     row: FeedRow;
+    showAvatar?: boolean;
 }) {
     const { t } = useTranslation();
     const userId = resolveFeedUserId(row);
@@ -181,6 +193,7 @@ function FeedUserLink({
     }, [currentEndpoint, displayName, userId]);
 
     const userLabel = displayName || UNKNOWN_FEED_USER_DISPLAY_NAME;
+    const imageUrl = showAvatar ? userImage(displayUser || null, true, '64') : '';
     const actionTarget = (friend || row) as FeedRow;
 
     return (
@@ -191,6 +204,7 @@ function FeedUserLink({
                     variant="ghost"
                     className={cn(
                         'hover:text-primary h-auto max-w-full justify-start self-start text-left font-medium',
+                        showAvatar && 'gap-2',
                         className
                     )}
                     disabled={!userId}
@@ -202,7 +216,38 @@ function FeedUserLink({
                         })
                     }
                 >
-                    <span className="max-w-full truncate">{userLabel}</span>
+                    {showAvatar ? (
+                        <Avatar
+                            size="default"
+                            style={{
+                                height: avatarSize,
+                                width: avatarSize
+                            }}
+                        >
+                            {imageUrl ? (
+                                <AvatarImage src={imageUrl} alt="" />
+                            ) : null}
+                            <AvatarFallback
+                                className={cn(
+                                    avatarSize >= 40 ? 'text-xs' : 'text-[10px]'
+                                )}
+                            >
+                                <UserIcon
+                                    className={
+                                        avatarSize >= 40 ? 'size-4' : 'size-3.5'
+                                    }
+                                />
+                            </AvatarFallback>
+                        </Avatar>
+                    ) : null}
+                    <span
+                        className={cn(
+                            'truncate',
+                            showAvatar ? 'min-w-0 flex-1' : 'max-w-full'
+                        )}
+                    >
+                        {userLabel}
+                    </span>
                 </Button>
             </ContextMenuTrigger>
             <ContextMenuContent className="w-56">
@@ -320,9 +365,84 @@ function FeedUserLink({
     );
 }
 
+function FeedUserAvatarButton({
+    avatarSize = 32,
+    className = '',
+    row
+}: {
+    avatarSize?: number;
+    className?: string;
+    row: FeedRow;
+}) {
+    const userId = resolveFeedUserId(row);
+    const currentEndpoint = useRuntimeStore(
+        (state: any) => state.auth.currentUserEndpoint
+    );
+    const friend = useFriendRosterStore((state: any) =>
+        userId ? state.friendsById[userId] || null : null
+    );
+    const knownUser = useKnownUserFact(userId, { endpoint: currentEndpoint });
+    const displayUser = friend
+        ? {
+              ...(knownUser || {}),
+              ...friend,
+              displayName: friend.displayName || knownUser?.displayName,
+              username: friend.username || knownUser?.username
+          }
+        : knownUser;
+    const displayName = resolveFeedUserDisplayName(row, displayUser);
+
+    useEffect(() => {
+        if (!userId || displayName !== UNKNOWN_FEED_USER_DISPLAY_NAME) {
+            return;
+        }
+
+        userProfileRepository
+            .getUserProfile({ userId, endpoint: currentEndpoint })
+            .catch(() => {});
+    }, [currentEndpoint, displayName, userId]);
+
+    const userLabel = displayName || UNKNOWN_FEED_USER_DISPLAY_NAME;
+    const imageUrl = userImage(displayUser || null, true, '64');
+
+    return (
+        <Button
+            type="button"
+            variant="ghost"
+            className={cn('h-auto w-auto shrink-0 rounded-full p-0', className)}
+            disabled={!userId}
+            onClick={() =>
+                openUserDialog({
+                    userId,
+                    title: userLabel,
+                    seedData: displayUser || null
+                })
+            }
+        >
+            <Avatar
+                size="default"
+                style={{
+                    height: avatarSize,
+                    width: avatarSize
+                }}
+            >
+                {imageUrl ? <AvatarImage src={imageUrl} alt="" /> : null}
+                <AvatarFallback
+                    className={cn(avatarSize >= 40 ? 'text-xs' : 'text-[10px]')}
+                >
+                    <UserIcon
+                        className={avatarSize >= 40 ? 'size-4' : 'size-3.5'}
+                    />
+                </AvatarFallback>
+            </Avatar>
+        </Button>
+    );
+}
+
 export {
     FeedDetailCell,
     FeedExpandedRow,
+    FeedUserAvatarButton,
     FeedUserLink,
     SortButton,
     formatTimestamp,

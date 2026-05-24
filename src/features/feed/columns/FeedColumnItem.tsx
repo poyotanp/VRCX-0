@@ -2,7 +2,7 @@ import { ArrowRightIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { FeedFilterType } from '@/repositories/feedRepository';
+import { cn } from '@/lib/utils';
 import type { FeedTimeDisplayModePreference } from '@/state/preferencesStore';
 import { Button } from '@/ui/shadcn/button';
 import {
@@ -17,8 +17,8 @@ import { AvatarInfoLine } from '../components/FeedAvatarInfoLine';
 import { formatDifferenceHtml } from '../components/FeedDifferenceHtml';
 import { FeedLocationLink } from '../components/FeedLocationLink';
 import { FeedStatusBadge } from '../components/FeedStatusBadge';
-import { FeedUserLink } from '../components/FeedTableParts';
-import type { FeedColumnConfig } from '../feedColumnsState';
+import { FeedUserAvatarButton, FeedUserLink } from '../components/FeedTableParts';
+import type { FeedColumnDensityConfig } from '../feedColumnsDensity';
 import { resolveFeedColumnTimeDisplay } from '../feedTimeDisplay';
 import type {
     FeedFriendActions,
@@ -28,11 +28,13 @@ import type {
 
 type FeedColumnItemProps = {
     actions: FeedFriendActions;
-    column: FeedColumnConfig;
+    animateEntry?: boolean;
+    densityConfig: FeedColumnDensityConfig;
     loadingPreviousInstancesKey: string;
     nowMs: number;
     onOpenPreviousInstances(payload?: FeedLocationActionPayload): void;
     row: FeedRow;
+    showTypeHint: boolean;
     timeDisplayMode: FeedTimeDisplayModePreference;
 };
 
@@ -128,40 +130,25 @@ function FeedColumnTypeHint({
     type: string;
     typeLabel: string;
 }) {
-    if (
-        type === 'Online' ||
-        type === 'Offline' ||
-        type === 'Avatar' ||
-        type === 'Bio'
-    ) {
-        return (
-            <span className="text-muted-foreground shrink-0 text-[10px] font-medium">
-                {typeLabel || type}
-            </span>
-        );
-    }
-
-    return null;
+    return (
+        <span
+            className="bg-muted/70 text-muted-foreground ring-border/40 max-w-24 shrink-0 truncate rounded-sm px-1.5 py-0 text-[10px] leading-4 font-medium ring-1"
+            title={typeLabel || type}
+        >
+            {typeLabel || type}
+        </span>
+    );
 }
 
 function FeedColumnTime({
     label,
-    showTypeHint,
-    title,
-    type,
-    typeLabel
+    title
 }: {
     label: string;
-    showTypeHint: boolean;
     title: string;
-    type: string;
-    typeLabel: string;
 }) {
     return (
-        <div className="ml-auto flex shrink-0 items-center gap-1.5">
-            {showTypeHint ? (
-                <FeedColumnTypeHint type={type} typeLabel={typeLabel} />
-            ) : null}
+        <div className="ml-auto flex shrink-0 items-center">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <span className="text-muted-foreground text-[11px] tabular-nums">
@@ -174,29 +161,20 @@ function FeedColumnTime({
     );
 }
 
-function shouldShowFeedColumnTypeHint(
-    column: FeedColumnConfig,
-    type: FeedFilterType | string
-) {
-    if (type === 'GPS' || type === 'Status') {
-        return false;
-    }
-    if (type === 'Online' || type === 'Offline') {
-        return true;
-    }
-    if (type === 'Avatar' || type === 'Bio') {
-        return (column.feedTypes || []).some((feedType) => feedType !== type);
-    }
-    return false;
-}
-
 export function FeedColumnItem(props: FeedColumnItemProps) {
-    const { column, nowMs, row, timeDisplayMode } = props;
+    const {
+        animateEntry = false,
+        densityConfig,
+        nowMs,
+        row,
+        showTypeHint,
+        timeDisplayMode
+    } = props;
     const { t } = useTranslation();
     const [bioDiffOpen, setBioDiffOpen] = useState(false);
     const type = String(row?.type || '');
     const typeLabel = type ? t(`view.feed.filters.${type}`) : '';
-    const showTypeHint = shouldShowFeedColumnTypeHint(column, type);
+    const showAvatar = densityConfig.showAvatar;
     const bioDiffHtml = useMemo(
         () => formatDifferenceHtml(row?.previousBio, row?.bio),
         [row?.bio, row?.previousBio]
@@ -210,37 +188,73 @@ export function FeedColumnItem(props: FeedColumnItemProps) {
 
     return (
         <>
-            <div className="hover:bg-accent/20 border-border/35 flex h-[60px] min-w-0 flex-col justify-center gap-1 border-b px-2 py-1.5 transition-colors">
-                <div className="flex min-w-0 items-center gap-1.5">
-                    <div className="flex min-w-0 flex-1 items-center gap-1.5">
-                        <FeedUserLink
-                            actions={props.actions}
-                            className="h-5 min-w-0 flex-1 px-0 py-0 text-xs"
+            <div
+                className={cn(
+                    'border-border/35 hover:bg-accent/20 group/feed-column-item flex min-w-0 items-start border-b bg-background/20 transition-colors',
+                    animateEntry && 'feed-column-row-new',
+                    densityConfig.rowPaddingClassName
+                )}
+                style={{ height: densityConfig.rowHeight }}
+            >
+                <div
+                    className={cn(
+                        'min-w-0 flex-1',
+                        showAvatar
+                            ? 'grid grid-cols-[auto_minmax(0,1fr)]'
+                            : 'flex flex-col',
+                        densityConfig.itemClassName
+                    )}
+                >
+                    {showAvatar ? (
+                        <FeedUserAvatarButton
+                            avatarSize={densityConfig.avatarSize}
+                            className={densityConfig.avatarClassName}
                             row={row}
                         />
-                        {showTypeHint &&
-                        (type === 'Online' || type === 'Offline') ? (
-                            <FeedColumnTypeHint
-                                type={type}
-                                typeLabel={typeLabel}
+                    ) : null}
+                    <div
+                        className={cn(
+                            'flex min-w-0 flex-col',
+                            densityConfig.contentGapClassName
+                        )}
+                    >
+                        <div
+                            className={cn(
+                                'flex min-w-0 items-center',
+                                densityConfig.topRowGapClassName
+                            )}
+                        >
+                            <FeedUserLink
+                                actions={props.actions}
+                                className={cn(
+                                    'min-w-0 flex-1 px-0 py-0',
+                                    densityConfig.userLinkClassName
+                                )}
+                                row={row}
                             />
-                        ) : null}
+                            {showTypeHint && type ? (
+                                <FeedColumnTypeHint
+                                    type={type}
+                                    typeLabel={typeLabel}
+                                />
+                            ) : null}
+                            <FeedColumnTime
+                                label={time.label}
+                                title={time.title}
+                            />
+                        </div>
+                        <div
+                            className={cn(
+                                'text-muted-foreground min-w-0 truncate',
+                                densityConfig.detailClassName
+                            )}
+                        >
+                            <FeedColumnDetail
+                                {...props}
+                                onOpenBioDiff={() => setBioDiffOpen(true)}
+                            />
+                        </div>
                     </div>
-                    <FeedColumnTime
-                        label={time.label}
-                        showTypeHint={
-                            showTypeHint && (type === 'Avatar' || type === 'Bio')
-                        }
-                        title={time.title}
-                        type={type}
-                        typeLabel={typeLabel}
-                    />
-                </div>
-                <div className="text-muted-foreground min-w-0 truncate text-xs leading-4">
-                    <FeedColumnDetail
-                        {...props}
-                        onOpenBioDiff={() => setBioDiffOpen(true)}
-                    />
                 </div>
             </div>
             {type === 'Bio' ? (

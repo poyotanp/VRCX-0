@@ -155,6 +155,7 @@ export const ConfigKeys = {
     feedTableFilters: { type: 'string', default: '[]' },
     feedViewMode: { type: 'string', default: 'table' },
     feedColumnsConfig: { type: 'string', default: '[]' },
+    feedColumnsDensity: { type: 'string', default: 'compact' },
     feedTimeDisplayMode: { type: 'string', default: 'relative' },
     hidePrivateFromFeed: { type: 'bool', default: false },
     hideDevicesFromFeed: { type: 'bool', default: false },

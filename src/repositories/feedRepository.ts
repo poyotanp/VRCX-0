@@ -20,6 +20,7 @@ export interface FeedQueryOptions {
     search?: unknown;
     filters?: unknown[];
     favoriteUserIds?: unknown[];
+    excludedFavoriteUserIds?: unknown[];
     dateFrom?: string;
     dateTo?: string;
     maxEntries?: number;
@@ -98,6 +99,7 @@ class FeedRepository {
         search = '',
         filters = [],
         favoriteUserIds = [],
+        excludedFavoriteUserIds = [],
         dateFrom = '',
         dateTo = '',
         maxEntries,
@@ -113,6 +115,16 @@ class FeedRepository {
                     .filter(Boolean)
             )
         );
+        const normalizedExcludedFavorites = Array.from(
+            new Set(
+                (Array.isArray(excludedFavoriteUserIds)
+                    ? excludedFavoriteUserIds
+                    : []
+                )
+                    .map((value) => normalizeUserId(value))
+                    .filter(Boolean)
+            )
+        );
         const normalizedSearch = String(search || '').trim();
 
         if (normalizedSearch || dateFrom || dateTo) {
@@ -123,7 +135,8 @@ class FeedRepository {
                 maxEntries ?? searchLimit,
                 dateFrom,
                 dateTo,
-                normalizedUserId
+                normalizedUserId,
+                normalizedExcludedFavorites
             );
         }
 
@@ -132,7 +145,8 @@ class FeedRepository {
             normalizedFilters,
             normalizedFavorites,
             maxEntries ?? maxTableSize,
-            cursor
+            cursor,
+            normalizedExcludedFavorites
         );
     }
 
@@ -145,6 +159,7 @@ class FeedRepository {
         search = '',
         filters = [],
         favoriteUserIds = [],
+        excludedFavoriteUserIds = [],
         dateFrom = '',
         dateTo = '',
         liveEntries = [],
@@ -163,6 +178,16 @@ class FeedRepository {
                     .filter(Boolean)
             )
         );
+        const normalizedExcludedFavorites = Array.from(
+            new Set(
+                (Array.isArray(excludedFavoriteUserIds)
+                    ? excludedFavoriteUserIds
+                    : []
+                )
+                    .map((value) => normalizeUserId(value))
+                    .filter(Boolean)
+            )
+        );
         const normalizedSearch = String(search || '').trim();
         const isSearchMode = Boolean(normalizedSearch || dateFrom || dateTo);
         const maxEntries = isSearchMode ? searchLimit : maxTableSize;
@@ -173,6 +198,7 @@ class FeedRepository {
             search: normalizedSearch,
             filters: normalizedFilters,
             vipList: favoritesOnly ? normalizedFavorites : [],
+            excludedUserIds: normalizedExcludedFavorites,
             maxEntries,
             dateFrom,
             dateTo,
@@ -193,6 +219,7 @@ class FeedRepository {
         search = '',
         filters = [],
         favoriteUserIds = [],
+        excludedFavoriteUserIds = [],
         dateFrom = '',
         dateTo = '',
         liveEntries = [],
@@ -209,11 +236,22 @@ class FeedRepository {
                     .filter(Boolean)
             )
         );
+        const normalizedExcludedFavorites = Array.from(
+            new Set(
+                (Array.isArray(excludedFavoriteUserIds)
+                    ? excludedFavoriteUserIds
+                    : []
+                )
+                    .map((value) => normalizeUserId(value))
+                    .filter(Boolean)
+            )
+        );
 
         return feedPersistenceRepository.mergeFeedLiveRows({
             rows,
             currentUserId: normalizedUserId,
             filters: normalizedFilters,
+            excludedUserIds: normalizedExcludedFavorites,
             search: String(search || '').trim(),
             dateFrom,
             dateTo,

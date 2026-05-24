@@ -2,9 +2,18 @@ import { FEED_FILTER_TYPES, type FeedFilterType } from '@/repositories/feedRepos
 
 export type FeedViewMode = 'table' | 'columns';
 
+export type FeedColumnFavoriteGroupSelection = 'all' | string[];
+
 export type FeedColumnFriendScope =
-    | { kind: 'all' }
-    | { kind: 'favorites'; groupKeys: 'all' | string[] };
+    | {
+          kind: 'all';
+          excludedFavoriteGroupKeys?: FeedColumnFavoriteGroupSelection;
+      }
+    | {
+          kind: 'favorites';
+          groupKeys: FeedColumnFavoriteGroupSelection;
+          excludedFavoriteGroupKeys?: FeedColumnFavoriteGroupSelection;
+      };
 
 export type FeedColumnConfig = {
     id: string;
@@ -19,15 +28,13 @@ const MAX_COLUMN_WIDTH = 420;
 const DEFAULT_COLUMN_WIDTH = 320;
 
 const ALL_FEED_TYPES = [...FEED_FILTER_TYPES];
+const FAVORITE_EXCLUDED_PRESET_IDS = new Set([
+    'location',
+    'profile',
+    'presence'
+]);
 
 export const FEED_COLUMNS_DEFAULT_CONFIG: FeedColumnConfig[] = [
-    {
-        id: 'location',
-        title: 'Location',
-        width: DEFAULT_COLUMN_WIDTH,
-        friendScope: { kind: 'all' },
-        feedTypes: ['GPS']
-    },
     {
         id: 'fav',
         title: 'Favorites',
@@ -36,17 +43,24 @@ export const FEED_COLUMNS_DEFAULT_CONFIG: FeedColumnConfig[] = [
         feedTypes: ALL_FEED_TYPES
     },
     {
+        id: 'location',
+        title: 'Location',
+        width: DEFAULT_COLUMN_WIDTH,
+        friendScope: { kind: 'all', excludedFavoriteGroupKeys: 'all' },
+        feedTypes: ['GPS']
+    },
+    {
         id: 'profile',
         title: 'Profile',
         width: DEFAULT_COLUMN_WIDTH,
-        friendScope: { kind: 'all' },
+        friendScope: { kind: 'all', excludedFavoriteGroupKeys: 'all' },
         feedTypes: ['Status', 'Avatar', 'Bio']
     },
     {
         id: 'presence',
         title: 'Presence',
         width: DEFAULT_COLUMN_WIDTH,
-        friendScope: { kind: 'all' },
+        friendScope: { kind: 'all', excludedFavoriteGroupKeys: 'all' },
         feedTypes: ['Online', 'Offline']
     }
 ];
@@ -87,19 +101,66 @@ function sanitizeFeedTypes(value: unknown): FeedFilterType[] {
     });
 }
 
+function feedTypesEqual(left: FeedFilterType[], right: FeedFilterType[]) {
+    return (
+        left.length === right.length &&
+        left.every((type, index) => type === right[index])
+    );
+}
+
+function sanitizeFavoriteGroupSelection(
+    value: unknown
+): FeedColumnFavoriteGroupSelection | undefined {
+    if (value === 'all') {
+        return 'all';
+    }
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+    const groupKeys = Array.from(
+        new Set(value.map(normalizeString).filter(Boolean))
+    );
+    return groupKeys.length ? groupKeys : undefined;
+}
+
+function applyExcludedFavoriteGroups<T extends FeedColumnFriendScope>(
+    scope: T,
+    excludedFavoriteGroupKeys: FeedColumnFavoriteGroupSelection | undefined
+): T {
+    if (!excludedFavoriteGroupKeys) {
+        return scope;
+    }
+    return {
+        ...scope,
+        excludedFavoriteGroupKeys
+    };
+}
+
 function sanitizeFriendScope(value: unknown): FeedColumnFriendScope {
     if (!value || typeof value !== 'object') {
         return { kind: 'all' };
     }
     const scope = value as Record<string, unknown>;
+    const excludedFavoriteGroupKeys = sanitizeFavoriteGroupSelection(
+        scope.excludedFavoriteGroupKeys
+    );
     if (scope.kind !== 'favorites') {
-        return { kind: 'all' };
+        return applyExcludedFavoriteGroups(
+            { kind: 'all' },
+            excludedFavoriteGroupKeys
+        );
     }
     if (scope.groupKeys === 'all') {
-        return { kind: 'favorites', groupKeys: 'all' };
+        return applyExcludedFavoriteGroups(
+            { kind: 'favorites', groupKeys: 'all' },
+            excludedFavoriteGroupKeys
+        );
     }
     if (!Array.isArray(scope.groupKeys)) {
-        return { kind: 'favorites', groupKeys: 'all' };
+        return applyExcludedFavoriteGroups(
+            { kind: 'favorites', groupKeys: 'all' },
+            excludedFavoriteGroupKeys
+        );
     }
     const groupKeys = Array.from(
         new Set(
@@ -108,7 +169,8 @@ function sanitizeFriendScope(value: unknown): FeedColumnFriendScope {
     );
     return {
         kind: 'favorites',
-        groupKeys
+        groupKeys,
+        ...(excludedFavoriteGroupKeys ? { excludedFavoriteGroupKeys } : {})
     };
 }
 
@@ -130,12 +192,34 @@ export function sanitizeFeedColumnConfig(value: unknown): FeedColumnConfig | nul
     if (!title) {
         return null;
     }
-    return {
+    return applyPresetScopeDefaults({
         id,
         title: id === 'fav' && title === 'Fav' ? 'Favorites' : title,
         width: sanitizeWidth(column.width),
         friendScope: sanitizeFriendScope(column.friendScope),
         feedTypes
+    });
+}
+
+function applyPresetScopeDefaults(column: FeedColumnConfig): FeedColumnConfig {
+    if (
+        !FAVORITE_EXCLUDED_PRESET_IDS.has(column.id) ||
+        column.friendScope.kind !== 'all' ||
+        column.friendScope.excludedFavoriteGroupKeys
+    ) {
+        return column;
+    }
+
+    const preset = FEED_COLUMNS_DEFAULT_CONFIG.find(
+        (defaultColumn) => defaultColumn.id === column.id
+    );
+    if (!preset || !feedTypesEqual(column.feedTypes, preset.feedTypes)) {
+        return column;
+    }
+
+    return {
+        ...column,
+        friendScope: copyFeedColumnFriendScope(preset.friendScope)
     };
 }
 
@@ -150,15 +234,57 @@ export function createFeedColumnsPresetConfig(): FeedColumnConfig[] {
     return FEED_COLUMNS_DEFAULT_CONFIG.map((column) => ({
         ...column,
         feedTypes: [...column.feedTypes],
-        friendScope:
-            column.friendScope.kind === 'favorites' &&
-            column.friendScope.groupKeys !== 'all'
-                ? {
-                      kind: 'favorites',
-                      groupKeys: [...column.friendScope.groupKeys]
-                  }
-                : { ...column.friendScope }
+        friendScope: copyFeedColumnFriendScope(column.friendScope)
     }));
+}
+
+function copyFavoriteGroupSelection(
+    selection: FeedColumnFavoriteGroupSelection | undefined
+) {
+    return Array.isArray(selection) ? [...selection] : selection;
+}
+
+export function copyFeedColumnExclusion(
+    sourceScope: FeedColumnFriendScope,
+    targetScope: FeedColumnFriendScope
+): FeedColumnFriendScope {
+    const excludedFavoriteGroupKeys = copyFavoriteGroupSelection(
+        sourceScope.excludedFavoriteGroupKeys
+    );
+    return excludedFavoriteGroupKeys
+        ? {
+              ...targetScope,
+              excludedFavoriteGroupKeys
+          }
+        : targetScope;
+}
+
+function copyFeedColumnFriendScope(
+    scope: FeedColumnFriendScope
+): FeedColumnFriendScope {
+    if (scope.kind === 'favorites') {
+        return {
+            kind: 'favorites',
+            groupKeys: copyFavoriteGroupSelection(scope.groupKeys) || 'all',
+            ...(scope.excludedFavoriteGroupKeys
+                ? {
+                      excludedFavoriteGroupKeys: copyFavoriteGroupSelection(
+                          scope.excludedFavoriteGroupKeys
+                      )
+                  }
+                : {})
+        };
+    }
+    return {
+        kind: 'all',
+        ...(scope.excludedFavoriteGroupKeys
+            ? {
+                  excludedFavoriteGroupKeys: copyFavoriteGroupSelection(
+                      scope.excludedFavoriteGroupKeys
+                  )
+              }
+            : {})
+    };
 }
 
 export function createFeedColumnConfig(

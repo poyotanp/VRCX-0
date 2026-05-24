@@ -63,8 +63,15 @@ function FeedViewModeToggle({
 }
 
 export function FeedPage({ embedded = false }: FeedPageProps = {}) {
-    const { columns, ready, setColumns, setViewMode, viewMode } =
-        useFeedViewModeState();
+    const {
+        columns,
+        density,
+        ready,
+        setColumns,
+        setDensity,
+        setViewMode,
+        viewMode
+    } = useFeedViewModeState();
     const modeToggle = (
         <FeedViewModeToggle value={viewMode} onValueChange={setViewMode} />
     );
@@ -85,8 +92,10 @@ export function FeedPage({ embedded = false }: FeedPageProps = {}) {
                 <PageBody className="gap-2">
                     <FeedColumnsMode
                         columns={columns}
+                        density={density}
                         modeToggle={modeToggle}
                         onColumnsChange={setColumns}
+                        onDensityChange={setDensity}
                     />
                 </PageBody>
             ) : (
