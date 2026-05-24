@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 
 import { tauriClient } from '@/platform/tauri/client';
+import authRepository from '@/repositories/authRepository';
 import webRepository from '@/repositories/webRepository';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
@@ -191,6 +192,10 @@ export async function executeReactAutoLogin(
         String(snapshot?.autoLoginDisplayName || '').trim() ||
         snapshot?.lastUserLoggedIn ||
         'saved account';
+    const lastUserLoggedIn = String(snapshot?.lastUserLoggedIn || '').trim();
+    const throttleKey =
+        String(snapshot?.autoLoginThrottleKey || '').trim() ||
+        lastUserLoggedIn;
 
     const cookieRestoreEligible = Boolean(snapshot?.cookieRestoreEligible);
     const savedCredentialFallbackAvailable = Boolean(
@@ -204,7 +209,42 @@ export async function executeReactAutoLogin(
         };
     }
 
+    let didRecordAutoLoginAttempt = false;
+    function recordAutoLoginAttemptBeforeRequest() {
+        if (didRecordAutoLoginAttempt) {
+            return;
+        }
+        recordReactAutoLoginAttempt(throttleKey);
+        didRecordAutoLoginAttempt = true;
+    }
+
     try {
+        if (!canAttemptReactAutoLogin(throttleKey)) {
+            try {
+                await webRepository.clearCookies();
+            } catch {
+                // ignore cleanup failure and still clear the auto-login target
+            }
+            setSignedOutSessionState();
+            const throttledSnapshot = applySavedAuthSnapshot(
+                await authRepository.recordLogout(lastUserLoggedIn, {
+                    clearLastUserLoggedIn: true,
+                    cookies: null
+                })
+            );
+            runtimeStore.setStartupTask(
+                'auth',
+                'completed',
+                `Automatic login paused for ${displayName} after ${AUTO_LOGIN_MAX_ATTEMPTS} attempts in the last hour.`
+            );
+            await flashWindowSafely();
+            toast.error(await i18n.t('message.auth.auto_login_failed'));
+            return {
+                status: 'throttled',
+                snapshot: throttledSnapshot
+            };
+        }
+
         if (cookieRestoreEligible) {
             runtimeStore.setStartupTask(
                 'auth',
@@ -227,6 +267,7 @@ export async function executeReactAutoLogin(
             }
 
             try {
+                recordAutoLoginAttemptBeforeRequest();
                 const restoredSnapshot = await executeCookieSessionRestore();
                 toast.success(await i18n.t('message.auth.auto_login_success'));
                 return {
@@ -256,30 +297,12 @@ export async function executeReactAutoLogin(
             };
         }
 
-        const throttleKey = String(snapshot?.autoLoginThrottleKey || '').trim();
-        if (!canAttemptReactAutoLogin(throttleKey)) {
-            await webRepository.clearCookies();
-            setSignedOutSessionState();
-            applySavedAuthSnapshot(snapshot as any);
-            runtimeStore.setStartupTask(
-                'auth',
-                'completed',
-                `Automatic login paused for ${displayName} after ${AUTO_LOGIN_MAX_ATTEMPTS} attempts in the last hour.`
-            );
-            await flashWindowSafely();
-            toast.error(await i18n.t('message.auth.auto_login_failed'));
-            return {
-                status: 'throttled',
-                snapshot
-            };
-        }
-
         runtimeStore.setStartupTask(
             'auth',
             'running',
             `Attempting saved-credential login for ${displayName}.`
         );
-        recordReactAutoLoginAttempt(throttleKey);
+        recordAutoLoginAttemptBeforeRequest();
         const nextSnapshot = await executeSavedCredentialLogin(savedCredential);
 
         toast.success(await i18n.t('message.auth.auto_login_success'));
