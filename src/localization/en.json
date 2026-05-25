@@ -2514,7 +2514,9 @@
             },
             "status": {
                 "active": "Active",
-                "installed": "Installed"
+                "installed": "Installed",
+                "compatible": "Compatible",
+                "maybe_incompatible": "Not guaranteed"
             },
             "field": {
                 "name": "Name",
@@ -2531,7 +2533,7 @@
             },
             "action": {
                 "install": "Install and enable",
-                "update_enable": "Update and enable",
+                "update_enable": "Update",
                 "enable_theme": "Enable theme",
                 "disable_theme": "Disable theme",
                 "delete_theme": "Delete theme",
@@ -2573,7 +2575,8 @@
                 "override_active": "Override CSS active"
             },
             "menu": {
-                "accent_disabled": "Accent colors are controlled by the active community theme."
+                "accent_disabled": "Accent colors are controlled by the active community theme.",
+                "appearance_disabled": "Light and dark mode are fixed while a community theme is active."
             },
             "toast": {
                 "catalog_failed": "Failed to load community themes.",

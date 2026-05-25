@@ -14,6 +14,10 @@ import { useModalStore } from '@/state/modalStore';
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
+import {
+    communityThemeControlsAppearance,
+    useCommunityThemeStore
+} from '@/state/communityThemeStore';
 import { useShellStore } from '@/state/shellStore';
 import { useVrcNotificationStore } from '@/state/vrcNotificationStore';
 
@@ -337,6 +341,15 @@ export function AppNavMenu({ isCollapsed }: any) {
     const { t } = useTranslation();
     const sidebarOpen = useShellStore((state: any) => state.sidebarOpen);
     const themeMode = useShellStore((state: any) => state.themeMode);
+    const communityThemeEnabled = useCommunityThemeStore(
+        (state: any) => state.enabled
+    );
+    const installedCommunityTheme = useCommunityThemeStore(
+        (state: any) => state.installedTheme
+    );
+    const localCommunityThemePreview = useCommunityThemeStore(
+        (state: any) => state.localPreview
+    );
     const dashboards = useDashboardStore((state: any) => state.dashboards);
     const dashboardsLoaded = useDashboardStore((state: any) => state.loaded);
     const ensureDashboardsLoaded = useDashboardStore(
@@ -413,6 +426,11 @@ export function AppNavMenu({ isCollapsed }: any) {
 
     const shouldShowCreateDashboard =
         showNewDashboardButton || (dashboardsLoaded && dashboards.length === 0);
+    const communityThemeAppearanceControlled = communityThemeControlsAppearance(
+        communityThemeEnabled,
+        installedCommunityTheme,
+        localCommunityThemePreview
+    );
 
     async function handleSelectEntry(entry: any) {
         if (!entry) {
@@ -492,15 +510,19 @@ export function AppNavMenu({ isCollapsed }: any) {
             <AppNavFooter
                 sidebarOpen={sidebarOpen}
                 themeMode={themeMode}
+                themeToggleDisabled={communityThemeAppearanceControlled}
                 onNavigateSettings={() => navigate(routePathByName.settings)}
                 onToggleSidebar={() =>
                     setSidebarCollapsedPreference(sidebarOpen)
                 }
-                onToggleTheme={() =>
+                onToggleTheme={() => {
+                    if (communityThemeAppearanceControlled) {
+                        return;
+                    }
                     setThemeModePreference(
                         themeMode === 'light' ? 'dark' : 'light'
-                    )
-                }
+                    );
+                }}
             />
             <CustomNavDialog
                 open={customNavDialogOpen}

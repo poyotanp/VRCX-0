@@ -16,14 +16,17 @@ import {
 import configRepository from '@/repositories/configRepository';
 import {
     communityThemeControlsAccent,
+    communityThemeControlsAppearance,
     useCommunityThemeStore
 } from '@/state/communityThemeStore';
 import { isThemeDeveloperBuild } from '@/shared/buildLabel';
 
 import {
     applyThemeColor,
+    resolveThemeMode,
     clearThemeColorInlineProperties,
-    resolveThemeColor
+    resolveThemeColor,
+    setCommunityThemeAppearanceControl
 } from './themeService';
 
 const INSTALLED_THEME_LAYER = 'installed-theme';
@@ -39,7 +42,12 @@ const CONFIG_KEYS = {
     version: 'VRCX_communityThemeVersion',
     cssSnapshot: 'VRCX_communityThemeCssSnapshot',
     overrideCss: 'VRCX_communityThemeOverrideCss',
-    installMetadata: 'VRCX_communityThemeInstallMetadata'
+    installMetadata: 'VRCX_communityThemeInstallMetadata',
+    installedThemes: 'VRCX_communityThemeInstalledThemes'
+};
+
+type CommunityThemeInstalledSnapshot = CommunityThemeInstallMetadata & {
+    cssSnapshot: string;
 };
 
 let installedThemeCssSnapshot = '';
@@ -94,6 +102,28 @@ async function applySavedThemeColor(): Promise<void> {
         'default'
     );
     applyThemeColor(resolveThemeColor(savedThemeColor));
+}
+
+async function applySavedThemeMode(): Promise<void> {
+    const savedThemeMode = await configRepository.getString('ThemeMode', 'system');
+    await setCommunityThemeAppearanceControl(false, resolveThemeMode(savedThemeMode));
+}
+
+async function syncCommunityThemeAppearanceControl(): Promise<void> {
+    const { enabled, installedTheme, localPreview } =
+        useCommunityThemeStore.getState();
+    const controlsAppearance = communityThemeControlsAppearance(
+        enabled,
+        installedTheme,
+        localPreview
+    );
+
+    if (controlsAppearance) {
+        await setCommunityThemeAppearanceControl(true);
+        return;
+    }
+
+    await applySavedThemeMode();
 }
 
 async function syncCommunityThemeAccentControl(): Promise<void> {
@@ -195,6 +225,57 @@ function normalizeInstallMetadata(
     };
 }
 
+function normalizeInstallRecord(
+    value: unknown
+): CommunityThemeInstalledSnapshot | null {
+    const metadata = normalizeInstallMetadata(value);
+    if (!metadata || !value || typeof value !== 'object') {
+        return null;
+    }
+
+    const entry = value as Record<string, unknown>;
+    const cssSnapshot = String(entry.cssSnapshot || '');
+    if (!cssSnapshot.trim()) {
+        return null;
+    }
+
+    return {
+        ...metadata,
+        cssSnapshot
+    };
+}
+
+function normalizeInstallRecords(
+    value: unknown
+): CommunityThemeInstalledSnapshot[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value
+        .map((entry) => normalizeInstallRecord(entry))
+        .filter(Boolean) as CommunityThemeInstalledSnapshot[];
+}
+
+function stripCssSnapshot(
+    record: CommunityThemeInstalledSnapshot
+): CommunityThemeInstallMetadata {
+    const { cssSnapshot: _cssSnapshot, ...metadata } = record;
+    return metadata;
+}
+
+function mergeInstallRecords(
+    records: CommunityThemeInstalledSnapshot[]
+): CommunityThemeInstalledSnapshot[] {
+    const merged = new Map<string, CommunityThemeInstalledSnapshot>();
+    records.forEach((record) => {
+        if (record.themeId && record.cssSnapshot.trim()) {
+            merged.set(record.themeId, record);
+        }
+    });
+    return Array.from(merged.values());
+}
+
 function resolveCurrentCatalogThemeCssUrl(themeId: string): string {
     return resolveCommunityThemeAssetUrl(
         COMMUNITY_THEME_CATALOG_URL,
@@ -203,17 +284,54 @@ function resolveCurrentCatalogThemeCssUrl(themeId: string): string {
     );
 }
 
-function isInstallFromCurrentCatalog(
-    metadata: CommunityThemeInstallMetadata
+function isInstallRecordFromCurrentCatalog(
+    record: CommunityThemeInstalledSnapshot
 ): boolean {
-    return (
-        metadata.sourceUrl === resolveCurrentCatalogThemeCssUrl(metadata.themeId)
-    );
+    return record.sourceUrl === resolveCurrentCatalogThemeCssUrl(record.themeId);
 }
 
-async function clearStoredCommunityThemeInstall(): Promise<void> {
+async function clearStoredCommunityThemeInstallState(): Promise<void> {
     await Promise.all([
         configRepository.setBool(CONFIG_KEYS.enabled, false),
+        configRepository.remove(CONFIG_KEYS.id),
+        configRepository.remove(CONFIG_KEYS.version),
+        configRepository.remove(CONFIG_KEYS.cssSnapshot),
+        configRepository.remove(CONFIG_KEYS.installMetadata),
+        configRepository.remove(CONFIG_KEYS.installedThemes)
+    ]);
+}
+
+async function persistCommunityThemeInstallState({
+    records,
+    enabled,
+    activeRecord
+}: {
+    records: CommunityThemeInstalledSnapshot[];
+    enabled: boolean;
+    activeRecord: CommunityThemeInstalledSnapshot | null;
+}): Promise<void> {
+    const installedThemesJson = JSON.stringify(records);
+    if (enabled && activeRecord) {
+        await configRepository.setMany([
+            [CONFIG_KEYS.enabled, 'true'],
+            [CONFIG_KEYS.id, activeRecord.themeId],
+            [CONFIG_KEYS.version, activeRecord.version],
+            [CONFIG_KEYS.cssSnapshot, activeRecord.cssSnapshot],
+            [
+                CONFIG_KEYS.installMetadata,
+                JSON.stringify(stripCssSnapshot(activeRecord))
+            ],
+            [CONFIG_KEYS.installedThemes, installedThemesJson]
+        ]);
+        return;
+    }
+
+    await Promise.all([
+        configRepository.setBool(CONFIG_KEYS.enabled, false),
+        configRepository.setString(
+            CONFIG_KEYS.installedThemes,
+            installedThemesJson
+        ),
         configRepository.remove(CONFIG_KEYS.id),
         configRepository.remove(CONFIG_KEYS.version),
         configRepository.remove(CONFIG_KEYS.cssSnapshot),
@@ -244,35 +362,67 @@ export async function loadCatalog(): Promise<CommunityThemeCatalog> {
 }
 
 export async function initializeCommunityThemes(): Promise<void> {
-    const [enabled, metadata, cssSnapshot, overrideCss] = await Promise.all([
+    const [
+        enabled,
+        activeThemeId,
+        legacyMetadata,
+        legacyCssSnapshot,
+        installedThemeRecords,
+        overrideCss
+    ] = await Promise.all([
         configRepository.getBool(CONFIG_KEYS.enabled, false),
+        configRepository.getString(CONFIG_KEYS.id, ''),
         configRepository.getObject(CONFIG_KEYS.installMetadata, null),
         configRepository.getString(CONFIG_KEYS.cssSnapshot, ''),
+        configRepository.getObject(CONFIG_KEYS.installedThemes, null),
         configRepository.getString(CONFIG_KEYS.overrideCss, ''),
         configRepository.remove('VRCX_themeMarketplaceCatalogUrl')
     ]);
 
-    const normalizedInstalledTheme = normalizeInstallMetadata(metadata);
-    const installedTheme =
-        normalizedInstalledTheme &&
-        isInstallFromCurrentCatalog(normalizedInstalledTheme)
-            ? normalizedInstalledTheme
+    const legacyInstallMetadata = normalizeInstallMetadata(legacyMetadata);
+    const legacyInstallRecord =
+        legacyInstallMetadata && String(legacyCssSnapshot || '').trim()
+            ? {
+                  ...legacyInstallMetadata,
+                  cssSnapshot: String(legacyCssSnapshot || '')
+              }
             : null;
-    if (normalizedInstalledTheme && !installedTheme) {
-        await clearStoredCommunityThemeInstall();
+    const records = mergeInstallRecords([
+        ...normalizeInstallRecords(installedThemeRecords),
+        ...(legacyInstallRecord ? [legacyInstallRecord] : [])
+    ]).filter(isInstallRecordFromCurrentCatalog);
+    const activeRecord =
+        records.find((record) => record.themeId === activeThemeId) ??
+        records.find((record) => record.themeId === legacyInstallMetadata?.themeId) ??
+        null;
+
+    if (
+        (legacyInstallMetadata || Array.isArray(installedThemeRecords)) &&
+        !records.length
+    ) {
+        await clearStoredCommunityThemeInstallState();
+    } else {
+        await persistCommunityThemeInstallState({
+            records,
+            enabled: Boolean(enabled && activeRecord),
+            activeRecord: enabled && activeRecord ? activeRecord : null
+        });
     }
     installedThemeCssSnapshot =
-        enabled && installedTheme ? String(cssSnapshot || '') : '';
+        enabled && activeRecord ? activeRecord.cssSnapshot : '';
     overrideCssSnapshot = String(overrideCss || '');
 
     useCommunityThemeStore.getState().hydrate({
         catalogUrl: COMMUNITY_THEME_CATALOG_URL,
-        enabled: Boolean(enabled && installedTheme),
-        installedTheme,
+        enabled: Boolean(enabled && activeRecord),
+        installedTheme:
+            enabled && activeRecord ? stripCssSnapshot(activeRecord) : null,
+        installedThemes: records.map(stripCssSnapshot),
         overrideCssLength: overrideCssSnapshot.length,
         localPreview: null
     });
     syncCommunityStyleLayers();
+    await syncCommunityThemeAppearanceControl();
     await syncCommunityThemeAccentControl();
     await refreshCommunityThemeTrayMenu();
 }
@@ -287,7 +437,9 @@ export async function installCommunityTheme(
         const catalogUrl = COMMUNITY_THEME_CATALOG_URL;
         const cssText = await loadCommunityThemeCss(catalogUrl, theme);
         const now = currentTimestamp();
-        const previous = store.installedTheme;
+        const previous = store.installedThemes.find(
+            (installedTheme) => installedTheme.themeId === theme.id
+        );
         const metadata: CommunityThemeInstallMetadata = {
             themeId: theme.id,
             themeName: theme.name,
@@ -305,20 +457,40 @@ export async function installCommunityTheme(
             updatedAt: now,
             accentMode: theme.accentMode === true
         };
+        const record: CommunityThemeInstalledSnapshot = {
+            ...metadata,
+            cssSnapshot: cssText
+        };
+        const records = mergeInstallRecords([
+            ...store.installedThemes.map(
+                (installedTheme) =>
+                    ({
+                        ...installedTheme,
+                        cssSnapshot:
+                            installedTheme.themeId === store.installedTheme?.themeId
+                                ? installedThemeCssSnapshot
+                                : ''
+                    }) as CommunityThemeInstalledSnapshot
+            ),
+            ...normalizeInstallRecords(
+                await configRepository.getObject(CONFIG_KEYS.installedThemes, null)
+            ),
+            record
+        ]).filter(isInstallRecordFromCurrentCatalog);
 
         installedThemeCssSnapshot = cssText;
-        await configRepository.setMany([
-            [CONFIG_KEYS.enabled, 'true'],
-            [CONFIG_KEYS.id, metadata.themeId],
-            [CONFIG_KEYS.version, metadata.version],
-            [CONFIG_KEYS.cssSnapshot, cssText],
-            [CONFIG_KEYS.installMetadata, JSON.stringify(metadata)]
-        ]);
+        await persistCommunityThemeInstallState({
+            records,
+            enabled: true,
+            activeRecord: record
+        });
         store.setInstalledState({
             enabled: true,
-            installedTheme: metadata
+            installedTheme: metadata,
+            installedThemes: records.map(stripCssSnapshot)
         });
         syncCommunityStyleLayers();
+        await syncCommunityThemeAppearanceControl();
         await syncCommunityThemeAccentControl();
         await refreshCommunityThemeTrayMenu();
         return metadata;
@@ -334,48 +506,87 @@ export async function installCommunityTheme(
     }
 }
 
-export async function enableInstalledCommunityTheme(): Promise<void> {
+export async function enableInstalledCommunityTheme(themeId?: string): Promise<void> {
     const store = useCommunityThemeStore.getState();
-    if (!store.installedTheme) {
+    const records = normalizeInstallRecords(
+        await configRepository.getObject(CONFIG_KEYS.installedThemes, null)
+    ).filter(isInstallRecordFromCurrentCatalog);
+    const targetThemeId =
+        themeId || store.installedTheme?.themeId || records[0]?.themeId || '';
+    const activeRecord =
+        records.find((record) => record.themeId === targetThemeId) ?? null;
+    if (!activeRecord) {
         return;
     }
-    const cssSnapshot = await configRepository.getString(
-        CONFIG_KEYS.cssSnapshot,
-        ''
-    );
-    installedThemeCssSnapshot = String(cssSnapshot || '');
-    await configRepository.setBool(CONFIG_KEYS.enabled, true);
+    installedThemeCssSnapshot = activeRecord.cssSnapshot;
+    await persistCommunityThemeInstallState({
+        records,
+        enabled: true,
+        activeRecord
+    });
     store.setInstalledState({
         enabled: true,
-        installedTheme: store.installedTheme
+        installedTheme: stripCssSnapshot(activeRecord),
+        installedThemes: records.map(stripCssSnapshot)
     });
     syncCommunityStyleLayers();
+    await syncCommunityThemeAppearanceControl();
     await syncCommunityThemeAccentControl();
     await refreshCommunityThemeTrayMenu();
 }
 
 export async function disableInstalledCommunityTheme(): Promise<void> {
     const store = useCommunityThemeStore.getState();
+    const records = normalizeInstallRecords(
+        await configRepository.getObject(CONFIG_KEYS.installedThemes, null)
+    ).filter(isInstallRecordFromCurrentCatalog);
     installedThemeCssSnapshot = '';
-    await configRepository.setBool(CONFIG_KEYS.enabled, false);
+    await persistCommunityThemeInstallState({
+        records,
+        enabled: false,
+        activeRecord: null
+    });
     store.setInstalledState({
         enabled: false,
-        installedTheme: store.installedTheme
+        installedTheme: null,
+        installedThemes: records.map(stripCssSnapshot)
     });
     syncCommunityStyleLayers();
+    await syncCommunityThemeAppearanceControl();
     await syncCommunityThemeAccentControl();
     await refreshCommunityThemeTrayMenu();
 }
 
-export async function deleteInstalledCommunityTheme(): Promise<void> {
+export async function deleteInstalledCommunityTheme(themeId?: string): Promise<void> {
     const store = useCommunityThemeStore.getState();
-    installedThemeCssSnapshot = '';
-    await clearStoredCommunityThemeInstall();
+    const targetThemeId = themeId || store.installedTheme?.themeId || '';
+    if (!targetThemeId) {
+        return;
+    }
+    const records = normalizeInstallRecords(
+        await configRepository.getObject(CONFIG_KEYS.installedThemes, null)
+    )
+        .filter(isInstallRecordFromCurrentCatalog)
+        .filter((record) => record.themeId !== targetThemeId);
+    const activeRecord =
+        store.enabled && store.installedTheme?.themeId !== targetThemeId
+            ? records.find(
+                  (record) => record.themeId === store.installedTheme?.themeId
+              ) ?? null
+            : null;
+    installedThemeCssSnapshot = activeRecord ? activeRecord.cssSnapshot : '';
+    await persistCommunityThemeInstallState({
+        records,
+        enabled: Boolean(activeRecord),
+        activeRecord
+    });
     store.setInstalledState({
-        enabled: false,
-        installedTheme: null
+        enabled: Boolean(activeRecord),
+        installedTheme: activeRecord ? stripCssSnapshot(activeRecord) : null,
+        installedThemes: records.map(stripCssSnapshot)
     });
     syncCommunityStyleLayers();
+    await syncCommunityThemeAppearanceControl();
     await syncCommunityThemeAccentControl();
     await refreshCommunityThemeTrayMenu();
 }
@@ -430,6 +641,7 @@ export async function loadLocalCommunityThemePreview(
     };
     useCommunityThemeStore.getState().setLocalPreview(preview);
     syncCommunityStyleLayers();
+    await syncCommunityThemeAppearanceControl();
     await syncCommunityThemeAccentControl();
     return preview;
 }
@@ -438,6 +650,7 @@ export async function stopLocalCommunityThemePreview(): Promise<void> {
     localPreviewCssSnapshot = '';
     useCommunityThemeStore.getState().setLocalPreview(null);
     syncCommunityStyleLayers();
+    await syncCommunityThemeAppearanceControl();
     await syncCommunityThemeAccentControl();
 }
 

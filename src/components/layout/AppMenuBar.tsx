@@ -1,3 +1,4 @@
+import { CheckIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +49,7 @@ import {
 } from '@/shared/buildLabel';
 import {
     communityThemeControlsAccent,
+    communityThemeControlsAppearance,
     useCommunityThemeStore
 } from '@/state/communityThemeStore';
 import { usePreferencesStore } from '@/state/preferencesStore';
@@ -183,6 +185,9 @@ export function AppMenuBar({
     const installedCommunityTheme = useCommunityThemeStore(
         (state: any) => state.installedTheme
     );
+    const installedCommunityThemes = useCommunityThemeStore(
+        (state: any) => state.installedThemes
+    );
     const localCommunityThemePreview = useCommunityThemeStore(
         (state: any) => state.localPreview
     );
@@ -236,6 +241,11 @@ export function AppMenuBar({
         [availableToolMap, quickAccessKeys]
     );
     const communityThemeAccentControlled = communityThemeControlsAccent(
+        communityThemeEnabled,
+        installedCommunityTheme,
+        localCommunityThemePreview
+    );
+    const communityThemeAppearanceControlled = communityThemeControlsAppearance(
         communityThemeEnabled,
         installedCommunityTheme,
         localCommunityThemePreview
@@ -330,13 +340,16 @@ export function AppMenuBar({
         }
     }
 
-    async function runEnableInstalledCommunityTheme() {
-        if (!installedCommunityTheme || communityThemeEnabled) {
+    async function runEnableInstalledCommunityTheme(themeId?: string) {
+        if (
+            !themeId ||
+            (communityThemeEnabled && installedCommunityTheme?.themeId === themeId)
+        ) {
             return;
         }
 
         try {
-            await enableInstalledCommunityTheme();
+            await enableInstalledCommunityTheme(themeId);
             toast.success(t('view.community_themes.toast.theme_enabled'));
         } catch (error) {
             toast.error(
@@ -482,6 +495,11 @@ export function AppMenuBar({
                                     <MenubarRadioGroup
                                         value={themeMode}
                                         onValueChange={(value: any) => {
+                                            if (
+                                                communityThemeAppearanceControlled
+                                            ) {
+                                                return;
+                                            }
                                             setThemeModePreference(value);
                                         }}
                                     >
@@ -489,12 +507,22 @@ export function AppMenuBar({
                                             <MenuRadioItem
                                                 key={mode}
                                                 value={mode}
+                                                disabled={
+                                                    communityThemeAppearanceControlled
+                                                }
                                             >
                                                 {themeModeLabel(mode, t)}
                                             </MenuRadioItem>
                                         ))}
                                     </MenubarRadioGroup>
                                     <MenubarSeparator />
+                                    {communityThemeAppearanceControlled ? (
+                                        <MenubarLabel className="text-muted-foreground px-2 py-1.5 text-[11px] leading-snug whitespace-normal">
+                                            {t(
+                                                'view.community_themes.menu.appearance_disabled'
+                                            )}
+                                        </MenubarLabel>
+                                    ) : null}
                                     {communityThemeAccentControlled ? (
                                         <MenubarLabel className="text-muted-foreground px-2 py-1.5 text-[11px] leading-snug whitespace-normal">
                                             {t(
@@ -530,25 +558,36 @@ export function AppMenuBar({
                                     {t('view.community_themes.header')}
                                 </MenubarSubTrigger>
                                 <MenubarSubContent className="w-60">
-                                    {installedCommunityTheme ? (
-                                        <MenuItem
-                                            onSelect={() => {
-                                                runEnableInstalledCommunityTheme();
-                                            }}
-                                        >
-                                            <span className="min-w-0 truncate">
-                                                {
-                                                    installedCommunityTheme.themeName
-                                                }
-                                            </span>
-                                            <MenubarShortcut className="tracking-normal">
-                                                {t(
-                                                    communityThemeEnabled
-                                                        ? 'view.community_themes.status.active'
-                                                        : 'view.community_themes.status.installed'
-                                                )}
-                                            </MenubarShortcut>
-                                        </MenuItem>
+                                    {installedCommunityThemes?.length ? (
+                                        installedCommunityThemes.map(
+                                            (theme: any) => {
+                                                const active =
+                                                    communityThemeEnabled &&
+                                                    installedCommunityTheme?.themeId ===
+                                                        theme.themeId;
+                                                return (
+                                                    <MenuItem
+                                                        key={theme.themeId}
+                                                        onSelect={() => {
+                                                            runEnableInstalledCommunityTheme(
+                                                                theme.themeId
+                                                            );
+                                                        }}
+                                                    >
+                                                        <span className="flex min-w-0 items-center gap-2">
+                                                            <span className="inline-flex size-3.5 shrink-0 items-center justify-center">
+                                                                {active ? (
+                                                                    <CheckIcon data-icon="inline-start" />
+                                                                ) : null}
+                                                            </span>
+                                                            <span className="min-w-0 truncate">
+                                                                {theme.themeName}
+                                                            </span>
+                                                        </span>
+                                                    </MenuItem>
+                                                );
+                                            }
+                                        )
                                     ) : (
                                         <MenubarLabel className="text-muted-foreground px-2 py-1.5 text-xs font-normal">
                                             {t(

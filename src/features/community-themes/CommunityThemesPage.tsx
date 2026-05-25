@@ -3,6 +3,7 @@ import {
     BrushIcon,
     DownloadIcon,
     EraserIcon,
+    ExternalLinkIcon,
     FolderOpenIcon,
     PaletteIcon,
     RefreshCwIcon,
@@ -31,6 +32,7 @@ import {
     saveCommunityThemeOverrideCss,
     stopLocalCommunityThemePreview
 } from '@/services/communityThemeService';
+import { openExternalLink } from '@/services/entityMediaService';
 import { tauriClient } from '@/platform/tauri/client';
 import { isThemeDeveloperBuild } from '@/shared/buildLabel';
 import {
@@ -43,7 +45,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/ui/shadcn/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 import { Textarea } from '@/ui/shadcn/textarea';
 
-import type { CommunityThemeManifest } from './communityThemeTypes';
+import type {
+    CommunityThemeInstallMetadata,
+    CommunityThemeManifest
+} from './communityThemeTypes';
 
 function ThemeTags({ tags }: { tags: string[] }) {
     return (
@@ -57,10 +62,39 @@ function ThemeTags({ tags }: { tags: string[] }) {
     );
 }
 
+function normalizeVersionForThemeCompatibility(version: string): string {
+    return String(version || '')
+        .trim()
+        .replace(/^v/i, '');
+}
+
+function isThemeTestedWithCurrentVersion(theme: CommunityThemeManifest): boolean {
+    return (
+        normalizeVersionForThemeCompatibility(theme.testedWith) ===
+        normalizeVersionForThemeCompatibility(VERSION)
+    );
+}
+
+function isSameThemeVersion(left: string, right: string): boolean {
+    return (
+        normalizeVersionForThemeCompatibility(left) ===
+        normalizeVersionForThemeCompatibility(right)
+    );
+}
+
+function resolveThemeAuthorUrl(theme: CommunityThemeManifest): string {
+    const authorUrl = theme.author.url?.trim();
+    if (authorUrl) {
+        return authorUrl;
+    }
+    return `https://github.com/${theme.author.github}`;
+}
+
 function ThemeCatalogCard({
     theme,
     active,
     installed,
+    updateAvailable,
     loading,
     onInstall,
     t
@@ -68,12 +102,20 @@ function ThemeCatalogCard({
     theme: CommunityThemeManifest;
     active: boolean;
     installed: boolean;
+    updateAvailable: boolean;
     loading: boolean;
     onInstall: () => void;
     t: (key: string, options?: any) => string;
 }) {
+    const authorUrl = resolveThemeAuthorUrl(theme);
+    const compatibleWithCurrentVersion =
+        isThemeTestedWithCurrentVersion(theme);
+
     return (
-        <Card className="min-w-0">
+        <Card
+            size="sm"
+            className={`min-w-0 ${active && !updateAvailable ? 'opacity-70' : ''}`}
+        >
             <CardHeader className="gap-1.5">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -96,7 +138,7 @@ function ThemeCatalogCard({
                     ) : null}
                 </div>
             </CardHeader>
-            <CardContent className="flex min-h-0 flex-col gap-3">
+            <CardContent className="flex min-h-0 flex-col gap-2.5">
                 <div className="bg-muted overflow-hidden rounded-md border">
                     <img
                         src={theme.previewUrl}
@@ -109,38 +151,62 @@ function ThemeCatalogCard({
                 <div className="grid gap-1 text-xs">
                     <div className="text-muted-foreground">
                         {t('view.community_themes.field.author')}:{' '}
-                        {theme.author.name} (@{theme.author.github})
+                        <Button
+                            type="button"
+                            variant="link"
+                            size="xs"
+                            className="inline-flex h-auto max-w-full justify-start gap-1 p-0 align-baseline text-xs font-normal"
+                            title={authorUrl}
+                            onClick={() => {
+                                void openExternalLink(authorUrl);
+                            }}
+                        >
+                            <span className="truncate">{theme.author.name}</span>
+                            <ExternalLinkIcon data-icon="inline-end" />
+                        </Button>
                     </div>
                     <div className="text-muted-foreground">
                         {t('view.community_themes.field.version')}:{' '}
                         {theme.version}
                     </div>
-                    <div className="text-muted-foreground">
-                        {t('view.community_themes.field.license')}:{' '}
-                        {theme.license}
-                    </div>
-                    <div className="text-muted-foreground">
+                    <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-1.5">
                         {t('view.community_themes.field.tested_with')}:{' '}
                         {theme.testedWith}
-                    </div>
-                    <div className="text-muted-foreground">
-                        {t('view.community_themes.field.remote_assets')}:{' '}
-                        {theme.remoteAssets
-                            ? t('view.community_themes.value.yes')
-                            : t('view.community_themes.value.no')}
+                        <Badge
+                            variant={
+                                compatibleWithCurrentVersion
+                                    ? 'default'
+                                    : 'outline'
+                            }
+                        >
+                            {t(
+                                compatibleWithCurrentVersion
+                                    ? 'view.community_themes.status.compatible'
+                                    : 'view.community_themes.status.maybe_incompatible'
+                            )}
+                        </Badge>
                     </div>
                 </div>
                 <Button
                     type="button"
                     size="sm"
                     className="w-fit"
-                    disabled={loading}
+                    variant={active && !updateAvailable ? 'outline' : 'default'}
+                    disabled={loading || (active && !updateAvailable)}
                     onClick={onInstall}
                 >
-                    <DownloadIcon data-icon="inline-start" />
-                    {installed
+                    {active && !updateAvailable ? (
+                        <BadgeCheckIcon data-icon="inline-start" />
+                    ) : (
+                        <DownloadIcon data-icon="inline-start" />
+                    )}
+                    {updateAvailable
                         ? t('view.community_themes.action.update_enable')
-                        : t('view.community_themes.action.install')}
+                        : installed
+                          ? active
+                              ? t('view.community_themes.status.active')
+                              : t('view.community_themes.action.enable_theme')
+                          : t('view.community_themes.action.install')}
                 </Button>
             </CardContent>
         </Card>
@@ -153,6 +219,9 @@ export function CommunityThemesPage() {
     const enabled = useCommunityThemeStore((state: any) => state.enabled);
     const installedTheme = useCommunityThemeStore(
         (state: any) => state.installedTheme
+    );
+    const installedThemes = useCommunityThemeStore(
+        (state: any) => state.installedThemes
     );
     const localPreview = useCommunityThemeStore(
         (state: any) => state.localPreview
@@ -260,9 +329,9 @@ export function CommunityThemesPage() {
         }
     }
 
-    async function deleteTheme() {
+    async function deleteTheme(themeId?: string) {
         try {
-            await deleteInstalledCommunityTheme();
+            await deleteInstalledCommunityTheme(themeId);
             toast.success(t('view.community_themes.toast.theme_deleted'));
         } catch (deleteError) {
             toast.error(
@@ -273,9 +342,9 @@ export function CommunityThemesPage() {
         }
     }
 
-    async function enableTheme() {
+    async function enableTheme(themeId?: string) {
         try {
-            await enableInstalledCommunityTheme();
+            await enableInstalledCommunityTheme(themeId);
             toast.success(t('view.community_themes.toast.theme_enabled'));
         } catch (enableError) {
             toast.error(
@@ -373,6 +442,12 @@ export function CommunityThemesPage() {
         installedTheme,
         localPreview
     );
+    const installedThemeById = new Map<string, CommunityThemeInstallMetadata>(
+        installedThemes.map((theme: CommunityThemeInstallMetadata) => [
+            theme.themeId,
+            theme
+        ])
+    );
 
     return (
         <PageScaffold className="flex-1">
@@ -414,23 +489,42 @@ export function CommunityThemesPage() {
                             </div>
                         ) : null}
                         {catalog.length ? (
-                            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-                                {catalog.map((theme: any) => (
-                                    <ThemeCatalogCard
-                                        key={theme.id}
-                                        theme={theme}
-                                        active={
-                                            enabled &&
-                                            installedTheme?.themeId === theme.id
-                                        }
-                                        installed={
-                                            installedTheme?.themeId === theme.id
-                                        }
-                                        loading={loading}
-                                        t={t}
-                                        onInstall={() => installTheme(theme)}
-                                    />
-                                ))}
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-2">
+                                {catalog.map((theme: any) => {
+                                    const installedEntry =
+                                        installedThemeById.get(theme.id);
+                                    const active =
+                                        enabled &&
+                                        installedTheme?.themeId === theme.id;
+                                    const updateAvailable = Boolean(
+                                        installedEntry &&
+                                            !isSameThemeVersion(
+                                                installedEntry.version,
+                                                theme.version
+                                            )
+                                    );
+                                    return (
+                                        <ThemeCatalogCard
+                                            key={theme.id}
+                                            theme={theme}
+                                            active={active}
+                                            installed={Boolean(installedEntry)}
+                                            updateAvailable={updateAvailable}
+                                            loading={loading}
+                                            t={t}
+                                            onInstall={() => {
+                                                if (
+                                                    installedEntry &&
+                                                    !updateAvailable
+                                                ) {
+                                                    enableTheme(theme.id);
+                                                    return;
+                                                }
+                                                installTheme(theme);
+                                            }}
+                                        />
+                                    );
+                                })}
                             </div>
                         ) : (
                             <Card>
@@ -455,80 +549,122 @@ export function CommunityThemesPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3 text-sm">
-                                {installedTheme ? (
-                                    <>
-                                        <div className="grid gap-1 text-xs">
-                                            <div>
-                                                {t(
-                                                    'view.community_themes.field.name'
-                                                )}
-                                                : {installedTheme.themeName}
-                                            </div>
-                                            <div>
-                                                {t(
-                                                    'view.community_themes.field.version'
-                                                )}
-                                                : {installedTheme.version}
-                                            </div>
-                                            <div>
-                                                {t(
-                                                    'view.community_themes.field.accent_mode'
-                                                )}
-                                                :{' '}
-                                                {installedTheme.accentMode
-                                                    ? t(
-                                                          'view.community_themes.value.yes'
-                                                      )
-                                                    : t(
-                                                          'view.community_themes.value.no'
-                                                    )}
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {enabled ? (
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={disableTheme}
-                                                >
-                                                    <BrushIcon data-icon="inline-start" />
-                                                    {t(
-                                                        'view.community_themes.action.disable_theme'
-                                                    )}
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    onClick={enableTheme}
-                                                >
-                                                    <BrushIcon data-icon="inline-start" />
-                                                    {t(
-                                                        'view.community_themes.action.enable_theme'
-                                                    )}
-                                                </Button>
-                                            )}
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={deleteTheme}
-                                            >
-                                                <Trash2Icon data-icon="inline-start" />
-                                                {t(
-                                                    'view.community_themes.action.delete_theme'
-                                                )}
-                                            </Button>
-                                        </div>
-                                        {accentControlled ? (
-                                            <p className="text-muted-foreground text-xs">
-                                                {t(
-                                                    'view.community_themes.installed.accent_controlled'
-                                                )}
-                                            </p>
-                                        ) : null}
-                                    </>
+                                {installedThemes.length ? (
+                                    <div className="grid gap-2">
+                                        {installedThemes.map(
+                                            (
+                                                theme: CommunityThemeInstallMetadata
+                                            ) => {
+                                                const active =
+                                                    enabled &&
+                                                    installedTheme?.themeId ===
+                                                        theme.themeId;
+                                                return (
+                                                    <div
+                                                        key={theme.themeId}
+                                                        className="border-border/70 bg-muted/20 min-w-0 rounded-md border p-3"
+                                                    >
+                                                        <div className="flex flex-col gap-3 text-sm">
+                                                            <div className="flex min-w-0 items-start justify-between gap-3">
+                                                                <div className="grid min-w-0 gap-1 text-xs">
+                                                                    <div className="font-medium">
+                                                                        {
+                                                                            theme.themeName
+                                                                        }
+                                                                    </div>
+                                                                    <div className="text-muted-foreground">
+                                                                        {t(
+                                                                            'view.community_themes.field.version'
+                                                                        )}
+                                                                        :{' '}
+                                                                        {
+                                                                            theme.version
+                                                                        }
+                                                                    </div>
+                                                                    <div className="text-muted-foreground">
+                                                                        {t(
+                                                                            'view.community_themes.field.accent_mode'
+                                                                        )}
+                                                                        :{' '}
+                                                                        {theme.accentMode
+                                                                            ? t(
+                                                                                  'view.community_themes.value.yes'
+                                                                              )
+                                                                            : t(
+                                                                                  'view.community_themes.value.no'
+                                                                              )}
+                                                                    </div>
+                                                                </div>
+                                                                {active ? (
+                                                                    <Badge className="shrink-0">
+                                                                        <BadgeCheckIcon data-icon="inline-start" />
+                                                                        {t(
+                                                                            'view.community_themes.status.active'
+                                                                        )}
+                                                                    </Badge>
+                                                                ) : null}
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {active ? (
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={
+                                                                            disableTheme
+                                                                        }
+                                                                    >
+                                                                        <BrushIcon data-icon="inline-start" />
+                                                                        {t(
+                                                                            'view.community_themes.action.disable_theme'
+                                                                        )}
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="sm"
+                                                                        onClick={() =>
+                                                                            enableTheme(
+                                                                                theme.themeId
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <BrushIcon data-icon="inline-start" />
+                                                                        {t(
+                                                                            'view.community_themes.action.enable_theme'
+                                                                        )}
+                                                                    </Button>
+                                                                )}
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        deleteTheme(
+                                                                            theme.themeId
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Trash2Icon data-icon="inline-start" />
+                                                                    {t(
+                                                                        'view.community_themes.action.delete_theme'
+                                                                    )}
+                                                                </Button>
+                                                            </div>
+                                                            {active &&
+                                                            accentControlled ? (
+                                                                <p className="text-muted-foreground text-xs">
+                                                                    {t(
+                                                                        'view.community_themes.installed.accent_controlled'
+                                                                    )}
+                                                                </p>
+                                                            ) : null}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                        )}
+                                    </div>
                                 ) : (
                                     <p className="text-muted-foreground text-sm">
                                         {t(

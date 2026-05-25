@@ -11,6 +11,7 @@ interface CommunityThemeStore {
     catalog: CommunityThemeManifest[];
     enabled: boolean;
     installedTheme: CommunityThemeInstallMetadata | null;
+    installedThemes: CommunityThemeInstallMetadata[];
     localPreview: CommunityThemeLocalPreview | null;
     overrideCssLength: number;
     loading: boolean;
@@ -20,12 +21,14 @@ interface CommunityThemeStore {
         catalogUrl: string;
         enabled: boolean;
         installedTheme: CommunityThemeInstallMetadata | null;
+        installedThemes?: CommunityThemeInstallMetadata[];
         overrideCssLength: number;
         localPreview?: CommunityThemeLocalPreview | null;
     }): void;
     setInstalledState(options: {
         enabled: boolean;
         installedTheme: CommunityThemeInstallMetadata | null;
+        installedThemes?: CommunityThemeInstallMetadata[];
     }): void;
     setLocalPreview(localPreview: CommunityThemeLocalPreview | null): void;
     setOverrideCssLength(length: number): void;
@@ -44,12 +47,21 @@ export function communityThemeControlsAccent(
     return Boolean(enabled && installedTheme && !installedTheme.accentMode);
 }
 
+export function communityThemeControlsAppearance(
+    enabled: boolean,
+    installedTheme: CommunityThemeInstallMetadata | null,
+    localPreview: CommunityThemeLocalPreview | null = null
+): boolean {
+    return Boolean(localPreview || (enabled && installedTheme));
+}
+
 export const useCommunityThemeStore = create<CommunityThemeStore>(
     (set: any) => ({
         catalogUrl: '',
         catalog: [],
         enabled: false,
         installedTheme: null,
+        installedThemes: [],
         localPreview: null,
         overrideCssLength: 0,
         loading: false,
@@ -61,6 +73,7 @@ export const useCommunityThemeStore = create<CommunityThemeStore>(
             catalogUrl,
             enabled,
             installedTheme,
+            installedThemes,
             overrideCssLength,
             localPreview
         }) {
@@ -68,14 +81,22 @@ export const useCommunityThemeStore = create<CommunityThemeStore>(
                 catalogUrl,
                 enabled: Boolean(enabled && installedTheme),
                 installedTheme,
+                installedThemes: Array.isArray(installedThemes)
+                    ? installedThemes
+                    : installedTheme
+                      ? [installedTheme]
+                      : [],
                 localPreview: localPreview ?? null,
                 overrideCssLength: Math.max(0, Number(overrideCssLength) || 0)
             });
         },
-        setInstalledState({ enabled, installedTheme }) {
+        setInstalledState({ enabled, installedTheme, installedThemes }) {
             set({
                 enabled: Boolean(enabled && installedTheme),
-                installedTheme
+                installedTheme,
+                ...(installedThemes
+                    ? { installedThemes: installedThemes.filter(Boolean) }
+                    : {})
             });
         },
         setLocalPreview(localPreview) {

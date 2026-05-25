@@ -2514,7 +2514,9 @@
             },
             "status": {
                 "active": "有効",
-                "installed": "インストール済み"
+                "installed": "インストール済み",
+                "compatible": "互換",
+                "maybe_incompatible": "未保証"
             },
             "field": {
                 "name": "名前",
@@ -2531,7 +2533,7 @@
             },
             "action": {
                 "install": "インストールして有効化",
-                "update_enable": "更新して有効化",
+                "update_enable": "更新",
                 "enable_theme": "テーマを有効化",
                 "disable_theme": "テーマを無効化",
                 "delete_theme": "テーマを削除",
@@ -2573,7 +2575,8 @@
                 "override_active": "Override CSS が有効です"
             },
             "menu": {
-                "accent_disabled": "アクセントカラーは現在のコミュニティテーマが制御しています。"
+                "accent_disabled": "アクセントカラーは現在のコミュニティテーマが制御しています。",
+                "appearance_disabled": "コミュニティテーマが有効な間はライト/ダークモードが固定されます。"
             },
             "toast": {
                 "catalog_failed": "コミュニティテーマの読み込みに失敗しました。",

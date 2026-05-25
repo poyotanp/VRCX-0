@@ -2514,7 +2514,9 @@
             },
             "status": {
                 "active": "已啟用",
-                "installed": "已安裝"
+                "installed": "已安裝",
+                "compatible": "相容",
+                "maybe_incompatible": "不一定相容"
             },
             "field": {
                 "name": "名稱",
@@ -2531,7 +2533,7 @@
             },
             "action": {
                 "install": "安裝並啟用",
-                "update_enable": "更新並啟用",
+                "update_enable": "更新",
                 "enable_theme": "啟用主題",
                 "disable_theme": "停用主題",
                 "delete_theme": "刪除主題",
@@ -2573,7 +2575,8 @@
                 "override_active": "Override CSS 已啟用"
             },
             "menu": {
-                "accent_disabled": "強調色由目前社群主題控制。"
+                "accent_disabled": "強調色由目前社群主題控制。",
+                "appearance_disabled": "社群主題啟用時，亮色/暗色模式固定。"
             },
             "toast": {
                 "catalog_failed": "載入社群主題失敗。",

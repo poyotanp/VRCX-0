@@ -20,8 +20,11 @@ export const DEFAULT_ZOOM_LEVEL = 100;
 export const MIN_ZOOM_LEVEL = 30;
 export const MAX_ZOOM_LEVEL = 300;
 export const ZOOM_STEP = 5;
+export const COMMUNITY_THEME_FIXED_THEME_MODE: ThemeMode = 'dark';
 const APP_FONT_STYLE_ATTR = 'data-vrcx-app-font';
 const APP_CJK_FONT_STYLE_ATTR = 'data-vrcx-cjk-font';
+const COMMUNITY_THEME_APPEARANCE_ATTR =
+    'data-vrcx-0-community-theme-appearance';
 
 export const APP_FONT_DEFAULT_KEY = 'geist';
 export const APP_CJK_FONT_PACK_DEFAULT_KEY = 'noto';
@@ -148,8 +151,27 @@ export function resolveThemeMode(value: unknown): ThemeMode {
     return 'system';
 }
 
+export function isCommunityThemeAppearanceControlled(): boolean {
+    if (typeof document === 'undefined') {
+        return false;
+    }
+
+    return (
+        document.documentElement.getAttribute(COMMUNITY_THEME_APPEARANCE_ATTR) ===
+        'theme'
+    );
+}
+
+function resolveEffectiveThemeMode(themeMode: unknown): ThemeMode {
+    if (isCommunityThemeAppearanceControlled()) {
+        return COMMUNITY_THEME_FIXED_THEME_MODE;
+    }
+
+    return resolveThemeMode(themeMode);
+}
+
 export function getResolvedThemeMode(themeMode: unknown): ResolvedThemeMode {
-    const normalized = resolveThemeMode(themeMode);
+    const normalized = resolveEffectiveThemeMode(themeMode);
     if (normalized === 'system') {
         return window.matchMedia?.('(prefers-color-scheme: dark)').matches
             ? 'dark'
@@ -324,14 +346,34 @@ export async function syncNativeTheme(themeMode: unknown): Promise<void> {
 
 export async function applyThemeMode(themeMode: unknown): Promise<void> {
     const normalized = resolveThemeMode(themeMode);
-    const resolvedTheme = getResolvedThemeMode(normalized);
+    const effectiveThemeMode = resolveEffectiveThemeMode(normalized);
+    const resolvedTheme = getResolvedThemeMode(effectiveThemeMode);
     const shouldUseDarkClass = resolvedTheme === 'dark';
 
     document.documentElement.classList.toggle('dark', shouldUseDarkClass);
     document.documentElement.setAttribute('data-theme', resolvedTheme);
 
-    useShellStore.getState().setThemeMode(normalized);
-    await syncNativeTheme(normalized);
+    useShellStore.getState().setThemeMode(effectiveThemeMode);
+    await syncNativeTheme(effectiveThemeMode);
+}
+
+export async function setCommunityThemeAppearanceControl(
+    enabled: boolean,
+    restoredThemeMode: unknown = useShellStore.getState().themeMode
+): Promise<void> {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const root = document.documentElement;
+    if (enabled) {
+        root.setAttribute(COMMUNITY_THEME_APPEARANCE_ATTR, 'theme');
+        await applyThemeMode(COMMUNITY_THEME_FIXED_THEME_MODE);
+        return;
+    }
+
+    root.removeAttribute(COMMUNITY_THEME_APPEARANCE_ATTR);
+    await applyThemeMode(restoredThemeMode);
 }
 
 export async function applyZoomLevel(savedZoom: unknown): Promise<void> {

@@ -131,6 +131,7 @@ function AppNavMenuContent({
 function AppNavFooter({
     sidebarOpen,
     themeMode,
+    themeToggleDisabled = false,
     onNavigateSettings,
     onToggleSidebar,
     onToggleTheme
@@ -143,7 +144,11 @@ function AppNavFooter({
                 <SidebarMenuItem>
                     <SidebarMenuButton
                         tooltip={t('nav_tooltip.toggle_theme')}
+                        disabled={themeToggleDisabled}
                         onClick={() => {
+                            if (themeToggleDisabled) {
+                                return;
+                            }
                             onToggleTheme();
                         }}
                     >
