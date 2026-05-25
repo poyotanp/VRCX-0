@@ -379,9 +379,27 @@ describe('tauri command mapping', () => {
                 'src-tauri/src/commands/integrations/external_api/service.rs'
             )
         ).toContain('ExternalApiPolicy');
-        expect(
-            readRepoFile('crates/integrations/src/external_api.rs')
-        ).toContain('is_public_host');
+        const externalApiSource = readRepoFile(
+            'crates/integrations/src/external_api.rs'
+        );
+        expect(externalApiSource).toContain('parse_http_url');
+        expect(externalApiSource).toContain('unsupported API URL scheme');
+        expect(externalApiSource).toContain(
+            'ExternalApiScope::AvatarSearch'
+        );
+        expect(externalApiSource).toContain(
+            'ExternalApiScope::Translation'
+        );
+        expect(externalApiSource).toContain('ExternalApiScope::Image');
+        expect(externalApiSource).toContain(
+            'url.path().starts_with("/api/v2/")'
+        );
+        expect(externalApiSource).toContain(
+            'url.path().starts_with("/youtube/v3/videos")'
+        );
+        expect(externalApiSource).toContain(
+            'url.path().ends_with("/releases")'
+        );
         expect(readRepoFile('crates/vrchat-client/src/http_api.rs')).toContain(
             'validated_vrchat_api_endpoint'
         );

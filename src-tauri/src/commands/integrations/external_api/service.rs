@@ -10,7 +10,6 @@ use crate::state::AppState;
 use vrcx_0_integrations::external_api::{
     self, ExternalApiExecuteResponse, ExternalApiPolicy, ExternalApiScope, ExternalHttpRequestInput,
 };
-use vrcx_0_persistence::config as config_store;
 
 use super::types::{
     ExternalApiAvatarSearchInput, ExternalApiImageInput, ExternalApiTranslationInput,
@@ -127,53 +126,8 @@ fn image_data_url_input(
     Ok(external_get_input(url, HashMap::new()))
 }
 
-fn configured_avatar_provider_origins(state: &AppState) -> Vec<String> {
-    let mut origins = Vec::new();
-    let provider_list =
-        config_store::get_string(&state.db, "VRCX_avatarRemoteDatabaseProviderList", "[]")
-            .unwrap_or_else(|_| "[]".into());
-    if let Ok(values) = serde_json::from_str::<Vec<String>>(&provider_list) {
-        origins.extend(
-            values
-                .into_iter()
-                .filter_map(|value| external_api::request_origin(&value)),
-        );
-    }
-    if let Ok(selected) =
-        config_store::get_string(&state.db, "VRCX_avatarRemoteDatabaseProvider", "")
-    {
-        if let Some(origin) = external_api::request_origin(&selected) {
-            origins.push(origin);
-        }
-    }
-    origins
-}
-
-fn configured_translation_origins(state: &AppState) -> Vec<String> {
-    let endpoint =
-        config_store::get_string(&state.db, "translationAPIEndpoint", "").unwrap_or_default();
-    external_api::request_origin(&endpoint)
-        .into_iter()
-        .collect()
-}
-
-fn external_api_policy(state: &AppState, scope: ExternalApiScope) -> ExternalApiPolicy {
-    match scope {
-        ExternalApiScope::AvatarSearch => {
-            ExternalApiPolicy::with_allowed_origins(configured_avatar_provider_origins(state))
-        }
-        ExternalApiScope::Translation => {
-            ExternalApiPolicy::with_allowed_origins(configured_translation_origins(state))
-        }
-        ExternalApiScope::Image => {
-            let mut origins = configured_avatar_provider_origins(state);
-            origins.extend(configured_translation_origins(state));
-            ExternalApiPolicy::with_allowed_origins(origins)
-        }
-        ExternalApiScope::Youtube
-        | ExternalApiScope::VrcStatus
-        | ExternalApiScope::UpdateRelease => ExternalApiPolicy::default(),
-    }
+fn external_api_policy(_state: &AppState, _scope: ExternalApiScope) -> ExternalApiPolicy {
+    ExternalApiPolicy
 }
 
 macro_rules! external_command {

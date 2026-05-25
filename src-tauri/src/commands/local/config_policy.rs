@@ -16,11 +16,11 @@ fn validate_config_write(key: &str, value: &str) -> Result<(), AppError> {
         "config:vrcx_usergeneratedcontentpath" => validate_ugc_path(value),
         "config:vrcx_translationapiendpoint" => validate_optional_provider_url(
             value,
-            "translationAPIEndpoint must be a public HTTPS endpoint.",
+            "translationAPIEndpoint must be an HTTP or HTTPS endpoint.",
         ),
         "config:vrcx_avatarremotedatabaseprovider" => validate_optional_provider_url(
             value,
-            "VRCX_avatarRemoteDatabaseProvider must be a public HTTPS endpoint.",
+            "VRCX_avatarRemoteDatabaseProvider must be an HTTP or HTTPS endpoint.",
         ),
         "config:vrcx_avatarremotedatabaseproviderlist" => validate_provider_list(value),
         _ => Ok(()),
@@ -79,7 +79,7 @@ fn validate_provider_list(value: &str) -> Result<(), AppError> {
     for provider in providers {
         validate_optional_provider_url(
             &provider,
-            "VRCX_avatarRemoteDatabaseProviderList contains a non-public or non-HTTPS endpoint.",
+            "VRCX_avatarRemoteDatabaseProviderList contains a non-HTTP(S) endpoint.",
         )?;
     }
     Ok(())
@@ -97,31 +97,31 @@ mod tests {
     }
 
     #[test]
-    fn accepts_regular_config_and_public_https_providers() {
+    fn accepts_regular_config_and_http_providers() {
         validate_config_writes(&[
             entry("SomeRegularSetting", "anything"),
             entry(
                 "translationAPIEndpoint",
-                "https://api.openai.com/v1/chat/completions",
+                "http://localhost:8123/v1/chat/completions",
             ),
             entry(
                 "VRCX_avatarRemoteDatabaseProviderList",
-                r#"["https://avatars.example.com/api"]"#,
+                r#"["http://127.0.0.1:8123/api","https://10.0.0.5/api"]"#,
             ),
         ])
         .unwrap();
     }
 
     #[test]
-    fn rejects_private_or_http_provider_config() {
+    fn rejects_non_http_provider_config() {
         assert!(validate_config_writes(&[entry(
             "translationAPIEndpoint",
-            "http://example.com/api"
+            "ftp://example.com/api"
         )])
         .is_err());
         assert!(validate_config_writes(&[entry(
             "VRCX_avatarRemoteDatabaseProvider",
-            "https://127.0.0.1/api"
+            "file:///tmp/provider.json"
         )])
         .is_err());
     }

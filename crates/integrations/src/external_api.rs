@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::net::IpAddr;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -50,9 +49,7 @@ pub struct ExternalHttpRequestInput {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct ExternalApiPolicy {
-    allowed_origins: Vec<String>,
-}
+pub struct ExternalApiPolicy;
 
 impl ExternalApiPolicy {
     pub fn with_allowed_origins<I, S>(origins: I) -> Self
@@ -60,17 +57,10 @@ impl ExternalApiPolicy {
         I: IntoIterator<Item = S>,
         S: AsRef<str>,
     {
-        let mut allowed_origins = origins
-            .into_iter()
-            .filter_map(|origin| normalize_origin(origin.as_ref()))
-            .collect::<Vec<_>>();
-        allowed_origins.sort();
-        allowed_origins.dedup();
-        Self { allowed_origins }
-    }
-
-    fn allows_origin(&self, origin: &str) -> bool {
-        self.allowed_origins.iter().any(|allowed| allowed == origin)
+        for origin in origins {
+            let _ = normalize_origin(origin.as_ref());
+        }
+        Self
     }
 }
 
@@ -124,7 +114,7 @@ pub fn build_web_execute_request(
     input: ExternalHttpRequestInput,
     scope: ExternalApiScope,
 ) -> Result<ExternalWebExecuteRequest, ExternalApiError> {
-    build_web_execute_request_with_policy(input, scope, &ExternalApiPolicy::default())
+    build_web_execute_request_with_policy(input, scope, &ExternalApiPolicy)
 }
 
 pub fn build_web_execute_request_with_policy(
@@ -238,20 +228,18 @@ fn parse_http_url(url: &str) -> Result<Url, ExternalApiError> {
 }
 
 fn external_url_allowed(url: &Url, scope: ExternalApiScope, policy: &ExternalApiPolicy) -> bool {
+    let _ = policy;
     let origin = url_origin(url);
     match scope {
-        ExternalApiScope::AvatarSearch => url.scheme() == "https" && policy.allows_origin(&origin),
-        ExternalApiScope::Translation => {
-            origin == "https://translation.googleapis.com" || policy.allows_origin(&origin)
-        }
-        ExternalApiScope::Image => {
-            url.scheme() == "https"
-                && (is_vrchat_media_origin(url) || policy.allows_origin(&origin))
-        }
+        ExternalApiScope::AvatarSearch
+        | ExternalApiScope::Translation
+        | ExternalApiScope::Image => true,
         ExternalApiScope::Youtube => {
             origin == YOUTUBE_API_ORIGIN && url.path().starts_with("/youtube/v3/videos")
         }
-        ExternalApiScope::VrcStatus => origin == STATUS_API_ORIGIN,
+        ExternalApiScope::VrcStatus => {
+            origin == STATUS_API_ORIGIN && url.path().starts_with("/api/v2/")
+        }
         ExternalApiScope::UpdateRelease => {
             origin == GITHUB_API_ORIGIN
                 && url.path().starts_with("/repos/")
@@ -273,73 +261,14 @@ fn normalize_origin(value: &str) -> Option<String> {
 }
 
 fn normalize_url_origin(url: &Url) -> Option<String> {
-    if url.scheme() != "https" || !is_public_host(url) {
+    if url.scheme() != "https" && url.scheme() != "http" {
         return None;
     }
     Some(url_origin(url))
 }
 
 fn url_origin(url: &Url) -> String {
-    match url.port() {
-        Some(port) => format!(
-            "{}://{}:{}",
-            url.scheme(),
-            url.host_str().unwrap_or(""),
-            port
-        ),
-        None => format!("{}://{}", url.scheme(), url.host_str().unwrap_or("")),
-    }
-}
-
-fn is_public_host(url: &Url) -> bool {
-    let Some(host) = url.host_str().map(|host| host.trim().to_ascii_lowercase()) else {
-        return false;
-    };
-    if host.is_empty() || host == "localhost" || host.ends_with(".localhost") {
-        return false;
-    }
-    let ip_host = host
-        .strip_prefix('[')
-        .and_then(|value| value.strip_suffix(']'))
-        .unwrap_or(&host);
-    if let Ok(ip) = ip_host.parse::<IpAddr>() {
-        return is_public_ip(ip);
-    }
-    true
-}
-
-fn is_public_ip(ip: IpAddr) -> bool {
-    match ip {
-        IpAddr::V4(ip) => {
-            !(ip.is_private()
-                || ip.is_loopback()
-                || ip.is_link_local()
-                || ip.is_unspecified()
-                || ip.is_multicast()
-                || ip.octets()[0] == 0
-                || ip.octets()[0] >= 224)
-        }
-        IpAddr::V6(ip) => {
-            !(ip.is_loopback()
-                || ip.is_unspecified()
-                || ip.is_multicast()
-                || ip.is_unique_local()
-                || ip.is_unicast_link_local())
-        }
-    }
-}
-
-fn is_vrchat_media_origin(url: &Url) -> bool {
-    if url.scheme() != "https" {
-        return false;
-    }
-    let Some(host) = url.host_str().map(|host| host.to_ascii_lowercase()) else {
-        return false;
-    };
-    host == "vrchat.com"
-        || host.ends_with(".vrchat.com")
-        || host == "vrchat.cloud"
-        || host.ends_with(".vrchat.cloud")
+    url.origin().unicode_serialization()
 }
 
 fn sanitize_headers(
@@ -465,27 +394,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn configured_provider_origins_require_public_https() {
+    fn configured_request_origins_allow_http_and_https() {
         assert_eq!(
             request_origin("https://example.com/api"),
             Some("https://example.com".into())
         );
-        assert_eq!(request_origin("http://example.com/api"), None);
-        assert_eq!(request_origin("https://localhost/api"), None);
-        assert_eq!(request_origin("https://127.0.0.1/api"), None);
-        assert_eq!(request_origin("https://10.0.0.5/api"), None);
-        assert_eq!(request_origin("https://[::1]/api"), None);
+        assert_eq!(
+            request_origin("http://example.com/api"),
+            Some("http://example.com".into())
+        );
+        assert_eq!(
+            request_origin("http://localhost:8123/api"),
+            Some("http://localhost:8123".into())
+        );
+        assert_eq!(
+            request_origin("https://10.0.0.5/api"),
+            Some("https://10.0.0.5".into())
+        );
+        assert_eq!(request_origin("ftp://example.com/api"), None);
     }
 
     #[test]
-    fn external_policy_rejects_non_https_configured_origins() {
-        let policy = ExternalApiPolicy::with_allowed_origins([
-            "http://example.com",
-            "https://127.0.0.1",
-            "https://example.com",
-        ]);
+    fn external_scopes_allow_any_http_and_https_url() {
+        let policy = ExternalApiPolicy::default();
         let request = ExternalHttpRequestInput {
-            url: Some("https://example.com/search".into()),
+            url: Some("http://localhost:8123/search".into()),
             ..Default::default()
         };
         assert!(build_web_execute_request_with_policy(
@@ -496,13 +429,104 @@ mod tests {
         .is_ok());
 
         let request = ExternalHttpRequestInput {
-            url: Some("http://example.com/search".into()),
+            url: Some("http://example.com/v1/chat/completions".into()),
+            ..Default::default()
+        };
+        assert!(build_web_execute_request_with_policy(
+            request,
+            ExternalApiScope::Translation,
+            &policy
+        )
+        .is_ok());
+
+        let request = ExternalHttpRequestInput {
+            url: Some("http://10.0.0.5/image.png".into()),
+            ..Default::default()
+        };
+        assert!(
+            build_web_execute_request_with_policy(request, ExternalApiScope::Image, &policy)
+                .is_ok()
+        );
+
+        let request = ExternalHttpRequestInput {
+            url: Some("ftp://example.com/search".into()),
             ..Default::default()
         };
         assert!(build_web_execute_request_with_policy(
             request,
             ExternalApiScope::AvatarSearch,
             &policy
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn fixed_external_scopes_keep_origin_and_path_restrictions() {
+        let policy = ExternalApiPolicy::default();
+
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("https://www.googleapis.com/youtube/v3/videos?id=video".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::Youtube,
+            &policy,
+        )
+        .is_ok());
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("https://www.googleapis.com/custom/v3/videos?id=video".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::Youtube,
+            &policy,
+        )
+        .is_err());
+
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("https://status.vrchat.com/api/v2/status.json".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::VrcStatus,
+            &policy,
+        )
+        .is_ok());
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("https://status.vrchat.com/api/v2/../status.json".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::VrcStatus,
+            &policy,
+        )
+        .is_err());
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("http://status.vrchat.com/api/v2/status.json".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::VrcStatus,
+            &policy,
+        )
+        .is_err());
+
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("https://api.github.com/repos/vrcx-team/VRCX/releases".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::UpdateRelease,
+            &policy,
+        )
+        .is_ok());
+        assert!(build_web_execute_request_with_policy(
+            ExternalHttpRequestInput {
+                url: Some("https://github.com/repos/vrcx-team/VRCX/releases".into()),
+                ..Default::default()
+            },
+            ExternalApiScope::UpdateRelease,
+            &policy,
         )
         .is_err());
     }
