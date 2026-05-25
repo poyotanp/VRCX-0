@@ -475,8 +475,7 @@ export function CommunityThemesPage() {
                                                     'view.community_themes.field.accent_mode'
                                                 )}
                                                 :{' '}
-                                                {installedTheme.accentMode ===
-                                                'app'
+                                                {installedTheme.accentMode
                                                     ? t(
                                                           'view.community_themes.value.yes'
                                                       )
@@ -700,8 +699,7 @@ export function CommunityThemesPage() {
                                                     'view.community_themes.field.accent_mode'
                                                 )}
                                                 :{' '}
-                                                {localPreview.accentMode ===
-                                                'app'
+                                                {localPreview.accentMode
                                                     ? t(
                                                           'view.community_themes.value.yes'
                                                       )

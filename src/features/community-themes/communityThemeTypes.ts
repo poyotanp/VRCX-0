@@ -1,4 +1,4 @@
-export type CommunityThemeAccentMode = 'theme' | 'app';
+export type CommunityThemeAccentMode = boolean;
 
 export interface CommunityThemeAuthor {
     name: string;

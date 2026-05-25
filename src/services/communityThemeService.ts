@@ -191,7 +191,7 @@ function normalizeInstallMetadata(
         sha256: String(entry.sha256 || ''),
         installedAt: String(entry.installedAt || ''),
         updatedAt: String(entry.updatedAt || ''),
-        accentMode: entry.accentMode === 'app' ? 'app' : 'theme'
+        accentMode: entry.accentMode === true || entry.accentMode === 'app'
     };
 }
 
@@ -303,7 +303,7 @@ export async function installCommunityTheme(
                     ? previous.installedAt
                     : now,
             updatedAt: now,
-            accentMode: theme.accentMode === 'app' ? 'app' : 'theme'
+            accentMode: theme.accentMode === true
         };
 
         installedThemeCssSnapshot = cssText;
@@ -424,7 +424,7 @@ export async function loadLocalCommunityThemePreview(
         manifestPath: output.manifestPath,
         themeName: output.themeName,
         version: output.version,
-        accentMode: output.accentMode === 'app' ? 'app' : 'theme',
+        accentMode: output.accentMode === true,
         cssLength: cssText.length,
         loadedAt
     };

@@ -39,9 +39,9 @@ export function communityThemeControlsAccent(
     localPreview: CommunityThemeLocalPreview | null = null
 ): boolean {
     if (localPreview) {
-        return localPreview.accentMode !== 'app';
+        return !localPreview.accentMode;
     }
-    return Boolean(enabled && installedTheme?.accentMode !== 'app');
+    return Boolean(enabled && installedTheme && !installedTheme.accentMode);
 }
 
 export const useCommunityThemeStore = create<CommunityThemeStore>(

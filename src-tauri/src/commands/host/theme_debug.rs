@@ -13,7 +13,7 @@ pub struct CommunityThemeDebugLocalThemeOutput {
     manifest_path: Option<String>,
     theme_name: String,
     version: String,
-    accent_mode: String,
+    accent_mode: bool,
     css: String,
 }
 
@@ -93,17 +93,11 @@ pub fn app__community_theme_debug_load_local_theme(
             .and_then(serde_json::Value::as_str)
             .unwrap_or("")
             .to_string();
-        let accent_mode = if manifest
+        let accent_mode = manifest
             .as_ref()
             .and_then(|value| value.get("accentMode"))
-            .and_then(serde_json::Value::as_str)
-            == Some("app")
-        {
-            "app"
-        } else {
-            "theme"
-        }
-        .to_string();
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false);
 
         Ok(CommunityThemeDebugLocalThemeOutput {
             folder_path,

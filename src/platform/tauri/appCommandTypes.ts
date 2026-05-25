@@ -705,7 +705,7 @@ export interface CommunityThemeDebugLocalThemeOutput {
     manifestPath?: string | null;
     themeName: string;
     version: string;
-    accentMode: 'theme' | 'app';
+    accentMode: boolean;
     css: string;
 }
 
