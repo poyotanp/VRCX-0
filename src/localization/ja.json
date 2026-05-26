@@ -2514,9 +2514,7 @@
             },
             "status": {
                 "active": "有効",
-                "installed": "インストール済み",
-                "compatible": "互換",
-                "maybe_incompatible": "未保証"
+                "installed": "インストール済み"
             },
             "field": {
                 "name": "名前",

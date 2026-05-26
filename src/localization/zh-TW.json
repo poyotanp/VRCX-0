@@ -2514,9 +2514,7 @@
             },
             "status": {
                 "active": "已啟用",
-                "installed": "已安裝",
-                "compatible": "相容",
-                "maybe_incompatible": "不一定相容"
+                "installed": "已安裝"
             },
             "field": {
                 "name": "名稱",

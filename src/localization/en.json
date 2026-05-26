@@ -2514,9 +2514,7 @@
             },
             "status": {
                 "active": "Active",
-                "installed": "Installed",
-                "compatible": "Compatible",
-                "maybe_incompatible": "Not guaranteed"
+                "installed": "Installed"
             },
             "field": {
                 "name": "Name",

@@ -66,6 +66,11 @@ import {
 } from '@/ui/shadcn/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 import { Textarea } from '@/ui/shadcn/textarea';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
+} from '@/ui/shadcn/tooltip';
 
 import { BackgroundImageSection } from './components/BackgroundImageSection';
 
@@ -141,13 +146,6 @@ function normalizeVersionForThemeCompatibility(version: string): string {
         .replace(/^v/i, '');
 }
 
-function isThemeTestedWithCurrentVersion(theme: CommunityThemeManifest): boolean {
-    return (
-        normalizeVersionForThemeCompatibility(theme.testedWith) ===
-        normalizeVersionForThemeCompatibility(VERSION)
-    );
-}
-
 function isSameThemeVersion(left: string, right: string): boolean {
     return (
         normalizeVersionForThemeCompatibility(left) ===
@@ -181,8 +179,6 @@ function ThemeCatalogCard({
     t: (key: string, options?: any) => string;
 }) {
     const authorUrl = resolveThemeAuthorUrl(theme);
-    const compatibleWithCurrentVersion =
-        isThemeTestedWithCurrentVersion(theme);
 
     return (
         <Card
@@ -195,9 +191,16 @@ function ThemeCatalogCard({
                         <CardTitle className="truncate text-sm">
                             {theme.name}
                         </CardTitle>
-                        <p className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-snug">
-                            {theme.description}
-                        </p>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <p className="text-muted-foreground mt-1 line-clamp-2 h-8 text-xs leading-4">
+                                    {theme.description}
+                                </p>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-72">
+                                {theme.description}
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
                     {active ? (
                         <Badge className="shrink-0">
@@ -242,22 +245,9 @@ function ThemeCatalogCard({
                         {t('view.community_themes.field.version')}:{' '}
                         {theme.version}
                     </div>
-                    <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-1.5">
+                    <div className="text-muted-foreground">
                         {t('view.community_themes.field.tested_with')}:{' '}
                         {theme.testedWith}
-                        <Badge
-                            variant={
-                                compatibleWithCurrentVersion
-                                    ? 'default'
-                                    : 'outline'
-                            }
-                        >
-                            {t(
-                                compatibleWithCurrentVersion
-                                    ? 'view.community_themes.status.compatible'
-                                    : 'view.community_themes.status.maybe_incompatible'
-                            )}
-                        </Badge>
                     </div>
                 </div>
                 <Button
