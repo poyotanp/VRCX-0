@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { KeyboardShortcut } from '@/components/keyboard/KeyboardShortcut';
 import { OpenSourceNoticeDialog } from '@/features/settings/components/OpenSourceNoticeDialog';
 import { cn } from '@/lib/utils';
 import { tauriClient } from '@/platform/tauri/client';
@@ -126,8 +125,6 @@ function ToolMenuItem({ tool }: any) {
 
 export function AppMenuBar({
     rightSidebarOpen,
-    onOpenQuickSearch,
-    onOpenDirectAccess,
     onOpenNotificationCenter,
     onToggleRightSidebar
 }: any) {
@@ -145,17 +142,10 @@ export function AppMenuBar({
     const setSystemHostOpen = useRuntimeStore(
         (state: any) => state.setSystemHostOpen
     );
-    const hostPlatform = useRuntimeStore(
-        (state: any) => state.hostCapabilities.platform
-    );
     const hostCapabilities = useRuntimeStore(
         (state: any) => state.hostCapabilities
     );
     const currentZoom = normalizeZoomLevel(zoomLevel);
-    const quickSearchShortcutKeys =
-        hostPlatform === 'macos' ? ['Meta', 'K'] : ['Ctrl', 'K'];
-    const directAccessShortcutKeys =
-        hostPlatform === 'macos' ? ['Meta', 'D'] : ['Ctrl', 'D'];
     // oxlint-disable-next-line no-undef
     const appVersion = formatReleaseDisplayVersion(VERSION || '') || '-';
     const buildBadgeLabel = getBuildBadgeLabel(t);
@@ -351,26 +341,6 @@ export function AppMenuBar({
                     </MenubarTrigger>
                     <MenubarContent align="start">
                         <MenubarGroup>
-                            <MenuItem onSelect={() => onOpenQuickSearch?.()}>
-                                {t('app_menu.quick_search')}
-                                <MenubarShortcut className="tracking-normal">
-                                    <KeyboardShortcut
-                                        keys={quickSearchShortcutKeys}
-                                        className="gap-0.5"
-                                        kbdClassName="h-4 min-w-4 px-1 text-[10px] leading-4"
-                                    />
-                                </MenubarShortcut>
-                            </MenuItem>
-                            <MenuItem onSelect={() => onOpenDirectAccess?.()}>
-                                {t('prompt.direct_access_omni.header')}
-                                <MenubarShortcut className="tracking-normal">
-                                    <KeyboardShortcut
-                                        keys={directAccessShortcutKeys}
-                                        className="gap-0.5"
-                                        kbdClassName="h-4 min-w-4 px-1 text-[10px] leading-4"
-                                    />
-                                </MenubarShortcut>
-                            </MenuItem>
                             <MenuItem
                                 onSelect={() => openNotificationSurface()}
                             >
