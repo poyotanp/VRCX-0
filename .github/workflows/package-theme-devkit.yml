@@ -254,25 +254,3 @@ jobs:
                   name: theme-devkit-${{ matrix.platform }}-${{ steps.version.outputs.version }}
                   path: theme-devkit-assets/*
                   if-no-files-found: error
-
-    publish-release-assets:
-        name: Upload Theme Dev Kit release assets
-        if: github.event_name == 'release'
-        needs: package
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        steps:
-            - uses: actions/download-artifact@v7
-              with:
-                  pattern: theme-devkit-*
-                  path: theme-devkit-release-assets
-                  merge-multiple: true
-
-            - name: Upload assets to GitHub Release
-              env:
-                  GH_TOKEN: ${{ github.token }}
-                  RELEASE_TAG: ${{ github.event.release.tag_name }}
-              run: |
-                  find theme-devkit-release-assets -maxdepth 1 -type f | sort
-                  gh release upload "$RELEASE_TAG" theme-devkit-release-assets/* --clobber
