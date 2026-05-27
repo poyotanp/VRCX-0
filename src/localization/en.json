@@ -2538,7 +2538,9 @@
                 "apply_override": "Apply override",
                 "disable_override": "Disable custom CSS",
                 "clear_override": "Clear override",
-                "open_marketplace": "Open Community Themes"
+                "open_marketplace": "Open Community Themes",
+                "contribute": "Create and submit theme",
+                "contribute_tooltip": "View theme authoring and submission instructions on GitHub."
             },
             "browse": {
                 "empty": "No community themes are listed in the catalog yet."

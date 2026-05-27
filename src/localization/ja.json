@@ -2538,7 +2538,9 @@
                 "apply_override": "override を適用",
                 "disable_override": "カスタム CSS を無効化",
                 "clear_override": "override をクリア",
-                "open_marketplace": "コミュニティテーマを開く"
+                "open_marketplace": "コミュニティテーマを開く",
+                "contribute": "テーマを作成して投稿",
+                "contribute_tooltip": "GitHub でテーマ作成と投稿の手順を表示します。"
             },
             "browse": {
                 "empty": "Catalog にはまだコミュニティテーマがありません。"

@@ -2538,7 +2538,9 @@
                 "apply_override": "套用 override",
                 "disable_override": "停用自訂 CSS",
                 "clear_override": "清除 override",
-                "open_marketplace": "開啟社群主題"
+                "open_marketplace": "開啟社群主題",
+                "contribute": "製作並提交主題",
+                "contribute_tooltip": "在 GitHub 查看主題製作和提交說明。"
             },
             "browse": {
                 "empty": "Catalog 裡還沒有社群主題。"

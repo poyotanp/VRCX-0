@@ -2538,7 +2538,9 @@
                 "apply_override": "应用 override",
                 "disable_override": "禁用自定义 CSS",
                 "clear_override": "清空 override",
-                "open_marketplace": "打开社区主题"
+                "open_marketplace": "打开社区主题",
+                "contribute": "制作并提交主题",
+                "contribute_tooltip": "在 GitHub 查看主题制作和提交说明。"
             },
             "browse": {
                 "empty": "Catalog 里还没有社区主题。"

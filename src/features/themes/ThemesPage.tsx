@@ -82,6 +82,8 @@ import type {
 type ThemeSource = 'built-in' | 'background' | 'community';
 
 const THEME_MODE_OPTIONS = ['system', 'light', 'dark'];
+const COMMUNITY_THEMES_REPOSITORY_URL =
+    'https://github.com/Map1en/VRCX-0-Community-Themes';
 
 function themeModeLabel(themeMode: string, t: (key: string) => string) {
     return t(`view.settings.appearance.appearance.theme_mode_${themeMode}`);
@@ -763,19 +765,46 @@ export function ThemesPage() {
                                 defaultValue="browse"
                                 className="flex min-h-0 flex-col gap-3"
                             >
-                                <div className="shrink-0 overflow-x-auto overflow-y-hidden">
-                                    <TabsList>
-                                        <TabsTrigger value="browse">
+                                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="shrink-0 overflow-x-auto overflow-y-hidden">
+                                        <TabsList>
+                                            <TabsTrigger value="browse">
+                                                {t(
+                                                    'view.community_themes.tabs.browse'
+                                                )}
+                                            </TabsTrigger>
+                                            <TabsTrigger value="installed">
+                                                {t(
+                                                    'view.community_themes.tabs.installed'
+                                                )}
+                                            </TabsTrigger>
+                                        </TabsList>
+                                    </div>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-8 w-fit shrink-0"
+                                                onClick={() => {
+                                                    void openExternalLink(
+                                                        COMMUNITY_THEMES_REPOSITORY_URL
+                                                    );
+                                                }}
+                                            >
+                                                <ExternalLinkIcon data-icon="inline-start" />
+                                                {t(
+                                                    'view.community_themes.action.contribute'
+                                                )}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
                                             {t(
-                                                'view.community_themes.tabs.browse'
+                                                'view.community_themes.action.contribute_tooltip'
                                             )}
-                                        </TabsTrigger>
-                                        <TabsTrigger value="installed">
-                                            {t(
-                                                'view.community_themes.tabs.installed'
-                                            )}
-                                        </TabsTrigger>
-                                    </TabsList>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                                 <TabsContent value="browse" className="m-0">
                                     {error ? (
