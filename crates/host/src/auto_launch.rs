@@ -1281,9 +1281,19 @@ mod app_launcher_tests {
         ));
 
         let mut steam_entry = local_entry("steam-local");
-        steam_entry.target = "C:\\Program Files (x86)\\Steam\\steam.exe".to_string();
+        steam_entry.target = if cfg!(windows) {
+            "C:\\Program Files (x86)\\Steam\\steam.exe"
+        } else {
+            "/home/user/.local/share/Steam/steam"
+        }
+        .to_string();
         let steam_run = new_run("run-steam", &steam_entry, false);
 
+        assert_eq!(
+            process_name_from_target_for_platform("C:\\Program Files (x86)\\Steam\\steam.exe", true)
+                .as_deref(),
+            Some("steam")
+        );
         assert_eq!(process_name_for_run(&steam_run).as_deref(), Some("steam"));
         assert!(!should_close_untracked_matching_processes(
             process_name_for_run(&steam_run).as_deref(),
