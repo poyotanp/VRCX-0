@@ -1038,11 +1038,6 @@ fn process_exe_matches_run_target(process_exe: &str, run: &AppLauncherRun) -> bo
     normalized_process_path(process_exe) == normalized_process_path(&run.target)
 }
 
-fn process_path_matches_target_for_platform(process_exe: &str, target: &str, windows: bool) -> bool {
-    normalized_process_path_for_platform(process_exe, windows)
-        == normalized_process_path_for_platform(target, windows)
-}
-
 fn should_close_untracked_process_name(process_name: &str) -> bool {
     let normalized = normalize_process_name(process_name);
     !normalized.is_empty() && !UNTRACKED_CLOSE_PROCESS_DENYLIST.contains(&normalized.as_str())
@@ -1315,31 +1310,39 @@ mod app_launcher_tests {
 
     #[test]
     fn app_launcher_untracked_close_fallback_requires_matching_exe_path() {
-        assert!(process_path_matches_target_for_platform(
-            r"\\?\D:/SteamLibrary/steamapps/common/VRCVideoCacher/VRCVideoCacher.exe",
-            r"D:\SteamLibrary\steamapps\common\VRCVideoCacher\VRCVideoCacher.exe",
-            true
-        ));
-        assert!(process_path_matches_target_for_platform(
-            r"d:\steamlibrary\STEAMAPPS\common\VRCVideoCacher\VRCVideoCacher.exe",
-            r"D:\SteamLibrary\steamapps\common\VRCVideoCacher\VRCVideoCacher.exe",
-            true
-        ));
-        assert!(!process_path_matches_target_for_platform(
-            r"C:\Other\VRCVideoCacher.exe",
-            r"D:\SteamLibrary\steamapps\common\VRCVideoCacher\VRCVideoCacher.exe",
-            true
-        ));
-        assert!(process_path_matches_target_for_platform(
-            "/home/User/.local/share/Steam/steamapps/common/Tool/Tool.AppImage",
-            "/home/User/.local/share/Steam/steamapps/common/Tool/Tool.AppImage",
-            false
-        ));
-        assert!(!process_path_matches_target_for_platform(
-            "/home/user/.local/share/Steam/steamapps/common/Tool/Tool.AppImage",
-            "/home/User/.local/share/Steam/steamapps/common/Tool/Tool.AppImage",
-            false
-        ));
+        let windows_target = r"D:\SteamLibrary\steamapps\common\VRCVideoCacher\VRCVideoCacher.exe";
+        assert_eq!(
+            normalized_process_path_for_platform(
+                r"\\?\D:/SteamLibrary/steamapps/common/VRCVideoCacher/VRCVideoCacher.exe",
+                true
+            ),
+            normalized_process_path_for_platform(windows_target, true)
+        );
+        assert_eq!(
+            normalized_process_path_for_platform(
+                r"d:\steamlibrary\STEAMAPPS\common\VRCVideoCacher\VRCVideoCacher.exe",
+                true
+            ),
+            normalized_process_path_for_platform(windows_target, true)
+        );
+        assert_ne!(
+            normalized_process_path_for_platform(r"C:\Other\VRCVideoCacher.exe", true),
+            normalized_process_path_for_platform(windows_target, true)
+        );
+
+        let linux_target =
+            "/home/User/.local/share/Steam/steamapps/common/Tool/Tool.AppImage";
+        assert_eq!(
+            normalized_process_path_for_platform(linux_target, false),
+            normalized_process_path_for_platform(linux_target, false)
+        );
+        assert_ne!(
+            normalized_process_path_for_platform(
+                "/home/user/.local/share/Steam/steamapps/common/Tool/Tool.AppImage",
+                false
+            ),
+            normalized_process_path_for_platform(linux_target, false)
+        );
     }
 
     #[test]
