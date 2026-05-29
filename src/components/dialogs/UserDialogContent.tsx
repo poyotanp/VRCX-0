@@ -268,7 +268,7 @@ export function UserDialogContent({
         : '';
     const presenceLocation = resolvePresenceLocation(profile);
 
-    const { memo, editMemo } = useUserDialogMemoState({
+    const { memo, editMemo, memoDialog } = useUserDialogMemoState({
         activeUserTargetRef,
         applyFriendPatch,
         currentEndpoint,
@@ -276,7 +276,6 @@ export function UserDialogContent({
         isCurrentUser,
         normalizedUserId,
         profile,
-        prompt,
         setBaseProfile,
         t
     });
@@ -465,6 +464,7 @@ export function UserDialogContent({
             />
             <UserDialogContentDialogs
                 actionStatus={actionStatus}
+                noteMemoDialog={memoDialog}
                 socialStatusDialog={socialStatusDialog}
                 profileDetailsDialog={profileDetailsDialog}
                 boopDialog={{

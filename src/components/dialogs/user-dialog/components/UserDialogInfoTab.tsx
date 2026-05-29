@@ -317,47 +317,39 @@ function UserDialogNotesPanel({
 
     return (
         <InfoPanel title={t('dialog.user.info.notes_memo')}>
-            {showNote ? (
-                <div
-                    role="button"
-                    tabIndex={0}
-                    className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 rounded-md p-2 text-left transition-colors outline-none focus-visible:ring-3"
-                    onClick={onEditMemo}
-                    onKeyDown={(event: any) =>
-                        handlePanelKeyDown(event, onEditMemo)
-                    }
-                >
-                    <div className="min-w-0 flex-1">
-                        <span className="text-muted-foreground block truncate text-xs">
-                            {t('dialog.user.info.note')}
-                        </span>
-                        <AdaptiveTextBlock className="mt-1">
-                            {profile.note}
-                        </AdaptiveTextBlock>
-                    </div>
+            <div
+                role="button"
+                tabIndex={0}
+                className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 rounded-md p-2 text-left transition-colors outline-none focus-visible:ring-3"
+                onClick={onEditMemo}
+                onKeyDown={(event: any) =>
+                    handlePanelKeyDown(event, onEditMemo)
+                }
+            >
+                <div className="flex min-w-0 flex-col gap-3">
+                    {showNote ? (
+                        <div className="min-w-0">
+                            <span className="text-muted-foreground block truncate text-xs">
+                                {t('dialog.user.info.note')}
+                            </span>
+                            <AdaptiveTextBlock className="mt-1">
+                                {profile.note}
+                            </AdaptiveTextBlock>
+                        </div>
+                    ) : null}
+                    {showNote && showMemo ? <Separator /> : null}
+                    {showMemo ? (
+                        <div className="min-w-0">
+                            <span className="text-muted-foreground block truncate text-xs">
+                                {t('dialog.user.info.memo')}
+                            </span>
+                            <AdaptiveTextBlock className="mt-1">
+                                {memo}
+                            </AdaptiveTextBlock>
+                        </div>
+                    ) : null}
                 </div>
-            ) : null}
-            {showNote && showMemo ? <Separator /> : null}
-            {showMemo ? (
-                <div
-                    role="button"
-                    tabIndex={0}
-                    className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 rounded-md p-2 text-left transition-colors outline-none focus-visible:ring-3"
-                    onClick={onEditMemo}
-                    onKeyDown={(event: any) =>
-                        handlePanelKeyDown(event, onEditMemo)
-                    }
-                >
-                    <div className="min-w-0 flex-1">
-                        <span className="text-muted-foreground block truncate text-xs">
-                            {t('dialog.user.info.memo')}
-                        </span>
-                        <AdaptiveTextBlock className="mt-1">
-                            {memo}
-                        </AdaptiveTextBlock>
-                    </div>
-                </div>
-            ) : null}
+            </div>
         </InfoPanel>
     );
 }

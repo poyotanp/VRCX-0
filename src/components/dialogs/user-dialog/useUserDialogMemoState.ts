@@ -6,6 +6,20 @@ import vrchatToolsRepository from '@/repositories/vrchatToolsRepository';
 
 import { normalizeUserId } from './userProfileFields';
 
+function createMemoDialogState() {
+    return {
+        open: false,
+        targetUserId: '',
+        targetEndpoint: '',
+        targetLabel: '',
+        editingCurrentUser: false,
+        originalNote: '',
+        note: '',
+        memo: '',
+        saving: false
+    };
+}
+
 export function useUserDialogMemoState({
     activeUserTargetRef,
     applyFriendPatch,
@@ -14,11 +28,11 @@ export function useUserDialogMemoState({
     isCurrentUser,
     normalizedUserId,
     profile,
-    prompt,
     setBaseProfile,
     t
 }: any) {
     const [memo, setMemo] = useState('');
+    const [memoDialog, setMemoDialog] = useState(createMemoDialogState);
     const memoRevisionRef = useRef(0);
 
     useEffect(() => {
@@ -54,46 +68,47 @@ export function useUserDialogMemoState({
     async function editMemo() {
         const targetProfile = profile;
         const targetUserId = normalizeUserId(targetProfile?.id);
-        const targetEndpoint = currentEndpoint;
-        const editingCurrentUser = isCurrentUser;
         if (!targetUserId) {
             return;
         }
 
-        let nextNote = targetProfile.note || '';
-        if (!editingCurrentUser) {
-            const noteResult = await prompt({
-                title: t('dialog.user.modal.edit_vrchat_note'),
-                description: targetProfile.displayName || targetProfile.id,
-                inputValue: nextNote,
-                multiline: true,
-                confirmText: t('dialog.user.modal.next'),
-                cancelText: t('common.actions.cancel')
-            });
-            if (!noteResult.ok) {
-                return;
-            }
-            nextNote = String(noteResult.value || '').slice(0, 256);
-        }
-
-        const result = await prompt({
-            title: t('dialog.user.modal.edit_local_memo'),
-            description: targetProfile.displayName || targetProfile.id,
-            inputValue: memo,
-            multiline: true,
-            confirmText: t('common.actions.save'),
-            cancelText: t('common.actions.cancel')
+        const originalNote = String(targetProfile.note || '').slice(0, 256);
+        setMemoDialog({
+            ...createMemoDialogState(),
+            open: true,
+            targetUserId,
+            targetEndpoint: currentEndpoint,
+            targetLabel: targetProfile.displayName || targetProfile.id || '',
+            editingCurrentUser: Boolean(isCurrentUser),
+            originalNote,
+            note: originalNote,
+            memo
         });
+    }
 
-        if (!result.ok) {
+    async function saveMemoDialog() {
+        const dialog = memoDialog;
+        const targetUserId = normalizeUserId(dialog.targetUserId);
+        const targetEndpoint = dialog.targetEndpoint;
+        if (!targetUserId || dialog.saving) {
             return;
         }
 
+        const nextNote = String(dialog.note || '').slice(0, 256);
+        const nextMemoInput = String(dialog.memo || '');
+        const nextProfileNote = dialog.editingCurrentUser
+            ? dialog.originalNote
+            : nextNote;
+
         memoRevisionRef.current += 1;
+        setMemoDialog((current: any) => ({
+            ...current,
+            saving: true
+        }));
         try {
             if (
-                !editingCurrentUser &&
-                nextNote !== (targetProfile.note || '')
+                !dialog.editingCurrentUser &&
+                nextNote !== dialog.originalNote
             ) {
                 await vrchatToolsRepository.saveUserNote(
                     {
@@ -105,8 +120,9 @@ export function useUserDialogMemoState({
             }
             const nextEntry = await memoPersistenceRepository.saveUserMemo({
                 userId: targetUserId,
-                memo: result.value
+                memo: nextMemoInput
             });
+            setMemoDialog(createMemoDialogState());
             if (
                 activeUserTargetRef.current.userId !== targetUserId ||
                 activeUserTargetRef.current.endpoint !== targetEndpoint
@@ -120,7 +136,7 @@ export function useUserDialogMemoState({
                 normalizeUserId(currentProfile?.id) === targetUserId
                     ? {
                           ...currentProfile,
-                          note: nextNote,
+                          note: nextProfileNote,
                           memo: nextMemo,
                           $nickName: nextMemo
                       }
@@ -130,7 +146,7 @@ export function useUserDialogMemoState({
                 applyFriendPatch({
                     userId: rosterUserId,
                     patch: {
-                        note: nextNote,
+                        note: nextProfileNote,
                         memo: nextMemo,
                         $nickName: nextMemo
                     },
@@ -150,11 +166,41 @@ export function useUserDialogMemoState({
                     ? error.message
                     : t('dialog.user.toast.failed_to_save_memo')
             );
+            setMemoDialog((current: any) => ({
+                ...current,
+                saving: false
+            }));
         }
     }
 
     return {
         editMemo,
-        memo
+        memo,
+        memoDialog: {
+            ...memoDialog,
+            onOpenChange(open: boolean) {
+                if (!open && !memoDialog.saving) {
+                    setMemoDialog(createMemoDialogState());
+                }
+            },
+            onCancel() {
+                if (!memoDialog.saving) {
+                    setMemoDialog(createMemoDialogState());
+                }
+            },
+            onMemoChange(nextMemo: string) {
+                setMemoDialog((current: any) => ({
+                    ...current,
+                    memo: nextMemo
+                }));
+            },
+            onNoteChange(nextNote: string) {
+                setMemoDialog((current: any) => ({
+                    ...current,
+                    note: nextNote.slice(0, 256)
+                }));
+            },
+            onSave: saveMemoDialog
+        }
     };
 }

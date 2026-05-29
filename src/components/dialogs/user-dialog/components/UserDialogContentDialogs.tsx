@@ -4,16 +4,31 @@ import {
     UserProfileDetailsDialog,
     UserSocialStatusDialog
 } from '../UserSelfEditDialogs';
+import { UserNoteMemoDialog } from './UserNoteMemoDialog';
 
 export function UserDialogContentDialogs({
     actionStatus,
     boopDialog,
+    noteMemoDialog,
     socialStatusDialog,
     profileDetailsDialog,
     inviteMessageDialog
 }: any) {
     return (
         <>
+            <UserNoteMemoDialog
+                open={noteMemoDialog.open}
+                targetLabel={noteMemoDialog.targetLabel}
+                editingCurrentUser={noteMemoDialog.editingCurrentUser}
+                note={noteMemoDialog.note}
+                memo={noteMemoDialog.memo}
+                saving={noteMemoDialog.saving}
+                onOpenChange={noteMemoDialog.onOpenChange}
+                onNoteChange={noteMemoDialog.onNoteChange}
+                onMemoChange={noteMemoDialog.onMemoChange}
+                onCancel={noteMemoDialog.onCancel}
+                onSave={noteMemoDialog.onSave}
+            />
             <UserSocialStatusDialog
                 open={socialStatusDialog.open}
                 onOpenChange={socialStatusDialog.onOpenChange}
