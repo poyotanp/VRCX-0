@@ -238,6 +238,7 @@ export function buildFavoriteRemoteItemsByGroup({
     remoteFavoritesById,
     remoteEntityDetailsData,
     remoteEntityDetailsStatus,
+    localWorldDetailsById = {},
     remoteGroupLabelByKey,
     t
 }: any) {
@@ -286,20 +287,23 @@ export function buildFavoriteRemoteItemsByGroup({
         }
 
         const detail = remoteEntityDetailsData[favoriteId];
+        const cachedWorldDetail =
+            kind === 'world' ? localWorldDetailsById[favoriteId] : null;
+        const displayDetail = detail || cachedWorldDetail;
         const isUnavailable = remoteEntityDetailsStatus === 'ready' && !detail;
-        const playerCount = Number(detail?.occupants) || 0;
+        const playerCount = Number(displayDetail?.occupants) || 0;
         const subtitle =
             kind === 'world'
-                ? detail?.authorName
+                ? displayDetail?.authorName
                     ? playerCount
-                        ? `${detail.authorName} (${playerCount})`
-                        : detail.authorName
+                        ? `${displayDetail.authorName} (${playerCount})`
+                        : displayDetail.authorName
                     : defaultFavoriteDetailSubtitle(
                           kind,
                           isUnavailable,
                           translate
                       )
-                : detail?.authorName ||
+                : displayDetail?.authorName ||
                   defaultFavoriteDetailSubtitle(kind, isUnavailable, translate);
 
         itemsByGroup[groupKey].push({
@@ -311,16 +315,18 @@ export function buildFavoriteRemoteItemsByGroup({
                 remoteGroupLabelByKey[groupKey] ||
                 translate('view.favorites.empty.favorites_fallback'),
             id: favoriteId,
-            title: detail?.name || defaultFavoriteEntityTitle(kind, translate),
+            title:
+                displayDetail?.name ||
+                defaultFavoriteEntityTitle(kind, translate),
             subtitle,
-            description: detail?.description || '',
-            seedData: detail || null,
+            description: displayDetail?.description || '',
+            seedData: detail || cachedWorldDetail || null,
             imageUrl: shrinkImage(
-                detail?.thumbnailImageUrl || detail?.imageUrl || ''
+                displayDetail?.thumbnailImageUrl || displayDetail?.imageUrl || ''
             ),
-            isPrivate: detail?.releaseStatus === 'private',
+            isPrivate: displayDetail?.releaseStatus === 'private',
             isUnavailable,
-            tags: detail?.tags || [],
+            tags: displayDetail?.tags || [],
             playerCount,
             orderIndex:
                 favoritesSortIndex[favoriteId] ?? Number.MAX_SAFE_INTEGER

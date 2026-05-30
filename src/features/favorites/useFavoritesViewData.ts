@@ -110,6 +110,7 @@ export function useFavoritesViewData({
             remoteFavoritesById,
             remoteEntityDetailsData: remoteEntityDetails.data,
             remoteEntityDetailsStatus: remoteEntityDetails.status,
+            localWorldDetailsById,
             remoteGroupLabelByKey,
             t
         });
@@ -119,6 +120,7 @@ export function useFavoritesViewData({
         groupedFavoriteFriendIdsByGroupKey,
         knownUsersById,
         kind,
+        localWorldDetailsById,
         remoteEntityDetails.data,
         remoteEntityDetails.status,
         remoteFavoritesById,
