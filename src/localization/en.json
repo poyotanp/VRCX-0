@@ -5091,6 +5091,9 @@
         "vrcx_updater": {
             "failed": "Failed to check for update, {message}",
             "failed_install": "Failed to install update",
+            "current_version": "Current Version",
+            "latest_version": "Latest Version",
+            "released": "Released",
             "checking_hash": "Checking hash...",
             "checking_update_state": "Checking update state.",
             "no_downloadable_releases_found": "No downloadable releases found.",

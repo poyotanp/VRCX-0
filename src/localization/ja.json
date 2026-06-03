@@ -5091,6 +5091,9 @@
         "vrcx_updater": {
             "failed": "アップデートの確認に失敗しました、{message}",
             "failed_install": "更新のインストールに失敗しました",
+            "current_version": "現在のバージョン",
+            "latest_version": "最新バージョン",
+            "released": "公開日",
             "checking_hash": "ハッシュ値の検証中...",
             "checking_update_state": "更新状態を確認中です。",
             "no_downloadable_releases_found": "ダウンロード可能なリリースが見つかりません。",

@@ -5091,6 +5091,9 @@
         "vrcx_updater": {
             "failed": "檢查更新失敗，{message}",
             "failed_install": "安裝更新失敗",
+            "current_version": "目前版本",
+            "latest_version": "最新版本",
+            "released": "發布日期",
             "checking_hash": "檢查 hash...",
             "checking_update_state": "正在檢查更新狀態。",
             "no_downloadable_releases_found": "未找到可下載的版本。",

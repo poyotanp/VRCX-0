@@ -5091,6 +5091,9 @@
         "vrcx_updater": {
             "failed": "无法检查更新，{message}",
             "failed_install": "无法安装更新",
+            "current_version": "当前版本",
+            "latest_version": "最新版本",
+            "released": "发布日期",
             "checking_hash": "正在校验文件...",
             "checking_update_state": "正在检查更新状态。",
             "no_downloadable_releases_found": "未找到可下载的版本。",

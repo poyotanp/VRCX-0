@@ -309,7 +309,8 @@ const initialState = {
         lastGameLogSyncDetail: '',
         hasAvailableUpdate: false,
         lastUpdaterCheckAt: null,
-        lastUpdaterCheckDetail: ''
+        lastUpdaterCheckDetail: '',
+        latestUpdaterRelease: null
     },
     activity: createActivityState(),
     mutualGraph: createMutualGraphState(),
