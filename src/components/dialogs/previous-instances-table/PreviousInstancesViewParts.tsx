@@ -14,7 +14,7 @@ import {
     useKnownUserFacts
 } from '@/domain/users/useKnownUser';
 import { openGameLogUser } from '@/features/game-log/gameLogUserLookup';
-import { timeToText } from '@/lib/dateTime';
+import { formatDateFilter, timeToText } from '@/lib/dateTime';
 import gameLogRepository from '@/repositories/gameLogRepository';
 import userProfileRepository from '@/repositories/userProfileRepository';
 import { openUserDialog, openWorldDialog } from '@/services/dialogService';
@@ -51,17 +51,7 @@ import {
 } from './previousInstancesRows';
 
 export function formatDate(value: any) {
-    if (!value) {
-        return '-';
-    }
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return String(value);
-    }
-    return new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-    }).format(date);
+    return formatDateFilter(value, 'long');
 }
 
 export function DialogEmptyState({ title, description, className = '' }: any) {
