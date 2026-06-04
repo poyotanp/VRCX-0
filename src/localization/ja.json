@@ -2844,6 +2844,8 @@
             "badges": {
                 "assigned": "授与済",
                 "hidden": "非表示にする",
+                "visible": "表示",
+                "visibility": "表示状態",
                 "showcased": "プロフィールにバッジを表示"
             },
             "actions": {

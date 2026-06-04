@@ -2844,6 +2844,8 @@
             "badges": {
                 "assigned": "給予",
                 "hidden": "隱藏",
+                "visible": "顯示",
+                "visibility": "顯示狀態",
                 "showcased": "展示"
             },
             "actions": {

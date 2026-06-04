@@ -2844,6 +2844,8 @@
             "badges": {
                 "assigned": "获得于",
                 "hidden": "隐藏",
+                "visible": "显示",
+                "visibility": "显示状态",
                 "showcased": "显示在个人资料上"
             },
             "actions": {
