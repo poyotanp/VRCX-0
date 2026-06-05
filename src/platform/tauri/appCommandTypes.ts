@@ -804,6 +804,7 @@ export interface AppTauriCommandNamespace extends TauriCommandNamespace {
     EnsureMainWindow(): Promise<void>;
     RefreshTrayMenu(): Promise<void>;
     OpenDevtools(): Promise<void>;
+    AuthFailureNotificationShow(reason?: string | null): Promise<void>;
     CommunityThemeDebugLoadLocalTheme(
         folderPath: string
     ): Promise<CommunityThemeDebugLocalThemeOutput>;

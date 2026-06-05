@@ -317,6 +317,7 @@ const commandArgs: Record<string, string[]> = {
     app__read_vrc_reg_json_file: ['filepath'],
     app__save_vrc_reg_json_file: ['defaultPath', 'defaultName', 'json'],
     app__desktop_notification: ['boldText', 'text', 'image', 'playSound'],
+    app__auth_failure_notification_show: ['reason'],
     app__get_vrchat_moderations: ['currentUserId'],
     app__get_vrchat_user_moderation: ['currentUserId', 'userId'],
     app__set_vrchat_user_moderation: [

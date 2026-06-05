@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 use crate::adapters::ipc::{IpcEventSink, IpcServer};
 use crate::adapters::log_watcher::LogWatcherCompatBridge;
@@ -15,6 +16,11 @@ pub struct AppState {
     pub log_watcher_compat_bridge: LogWatcherCompatBridge,
     pub ipc: IpcServer,
     background_resume_route: Mutex<Option<String>>,
+    auth_failure_notification: Mutex<Option<AuthFailureNotificationRecord>>,
+}
+
+struct AuthFailureNotificationRecord {
+    sent_at: Instant,
 }
 
 impl AppState {
@@ -34,6 +40,7 @@ impl AppState {
             log_watcher_compat_bridge,
             ipc,
             background_resume_route: Mutex::new(None),
+            auth_failure_notification: Mutex::new(None),
         })
     }
 
@@ -45,6 +52,20 @@ impl AppState {
 
     pub fn take_background_resume_route(&self) -> Option<String> {
         self.background_resume_route.lock().ok()?.take()
+    }
+
+    pub fn should_emit_auth_failure_notification(&self, _key: &str, cooldown: Duration) -> bool {
+        let now = Instant::now();
+        let Ok(mut slot) = self.auth_failure_notification.lock() else {
+            return true;
+        };
+        if let Some(record) = slot.as_ref() {
+            if now.duration_since(record.sent_at) < cooldown {
+                return false;
+            }
+        }
+        *slot = Some(AuthFailureNotificationRecord { sent_at: now });
+        true
     }
 }
 
