@@ -661,7 +661,6 @@ pub fn setup_app_with_data_dir(
     sync_autostart_from_db(app, &state);
     apply_autostart_window_state_if_needed(app, &state);
     start_host_services(app.handle(), &state);
-    open_devtools_if_enabled(app);
     state
         .runtime_context
         .sync
@@ -1037,14 +1036,4 @@ fn start_host_services(app: &tauri::AppHandle, state: &AppState) {
             .log_watcher_compat_bridge
             .start(app.clone(), state.log_watcher.clone());
     }
-}
-
-fn open_devtools_if_enabled(app: &tauri::App) {
-    #[cfg(all(debug_assertions, feature = "devtools"))]
-    if let Some(window) = app.get_webview_window("main") {
-        window.open_devtools();
-    }
-
-    #[cfg(not(all(debug_assertions, feature = "devtools")))]
-    let _ = app;
 }
