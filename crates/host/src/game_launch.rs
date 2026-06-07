@@ -11,6 +11,14 @@ struct SteamLaunchCommand {
     args: Vec<String>,
 }
 
+#[cfg(target_os = "windows")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct DirectLaunchCommand {
+    program: PathBuf,
+    current_dir: Option<PathBuf>,
+    args: Vec<String>,
+}
+
 impl SteamLaunchCommand {
     fn spawn(self) -> Result<(), Error> {
         std::process::Command::new(self.program)
@@ -22,13 +30,47 @@ impl SteamLaunchCommand {
     }
 }
 
+#[cfg(target_os = "windows")]
+impl DirectLaunchCommand {
+    fn spawn(self) -> Result<(), Error> {
+        let mut command = std::process::Command::new(self.program);
+        if let Some(current_dir) = self.current_dir {
+            command.current_dir(current_dir);
+        }
+        command.args(&self.args);
+        command
+            .spawn()
+            .map_err(|e| Error::Custom(format!("start game: {e}")))?;
+
+        Ok(())
+    }
+}
+
+fn split_launch_arguments(arguments: &str) -> Vec<String> {
+    if arguments.is_empty() {
+        Vec::new()
+    } else {
+        arguments
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect()
+    }
+}
+
 fn steam_launch_command(program: PathBuf, arguments: &str) -> SteamLaunchCommand {
     let mut args = vec!["-applaunch".to_string(), "438100".to_string()];
-    if !arguments.is_empty() {
-        args.extend(arguments.split_whitespace().map(|s| s.to_string()));
-    }
+    args.extend(split_launch_arguments(arguments));
 
     SteamLaunchCommand { program, args }
+}
+
+#[cfg(target_os = "windows")]
+fn direct_launch_command(program: PathBuf, arguments: &str) -> DirectLaunchCommand {
+    DirectLaunchCommand {
+        current_dir: program.parent().map(Path::to_path_buf),
+        program,
+        args: split_launch_arguments(arguments),
+    }
 }
 
 pub fn quit_game() -> i32 {
@@ -91,18 +133,10 @@ pub fn start_game_from_path(path: &str, arguments: &str) -> Result<bool, Error> 
 
     #[cfg(target_os = "windows")]
     {
-        let launch_exe = PathBuf::from(path).join("launch.exe");
-        if !launch_exe.exists() {
+        let Some(command) = windows_vrchat_launch_command(Path::new(path), arguments) else {
             return Ok(false);
-        }
-
-        let mut cmd = std::process::Command::new(launch_exe);
-        if !arguments.is_empty() {
-            cmd.args(arguments.split_whitespace());
-        }
-        cmd.spawn()
-            .map_err(|e| Error::Custom(format!("start game: {e}")))?;
-
+        };
+        command.spawn()?;
         Ok(true)
     }
 
@@ -124,13 +158,38 @@ pub fn start_game_from_path(path: &str, arguments: &str) -> Result<bool, Error> 
 
 #[cfg(target_os = "windows")]
 fn start_game_windows(arguments: &str) -> Result<bool, Error> {
-    let steam_path = vrchat_paths::steam_path();
-    let Some(command) = windows_steam_launch_command(Path::new(&steam_path), arguments) else {
-        return Ok(false);
-    };
-    command.spawn()?;
+    let mut last_error = None;
 
-    Ok(true)
+    let steam_path = vrchat_paths::steam_path();
+    if let Some(command) = windows_steam_launch_command(Path::new(&steam_path), arguments) {
+        match command.spawn() {
+            Ok(()) => return Ok(true),
+            Err(error) => last_error = Some(error),
+        }
+    }
+
+    if let Some(command_value) = windows_registry_command_value("steam\\shell\\open\\command") {
+        if let Some(command) = windows_steam_registry_launch_command(&command_value, arguments) {
+            match command.spawn() {
+                Ok(()) => return Ok(true),
+                Err(error) => last_error = Some(error),
+            }
+        }
+    }
+
+    if let Some(command_value) = windows_registry_command_value("VRChat\\shell\\open\\command") {
+        if let Some(command) = windows_vrchat_registry_launch_command(&command_value, arguments) {
+            match command.spawn() {
+                Ok(()) => return Ok(true),
+                Err(error) => last_error = Some(error),
+            }
+        }
+    }
+
+    if let Some(error) = last_error {
+        return Err(error);
+    }
+    Ok(false)
 }
 
 #[cfg(target_os = "windows")]
@@ -145,6 +204,86 @@ fn windows_steam_launch_command(steam_path: &Path, arguments: &str) -> Option<St
     }
 
     Some(steam_launch_command(steam_exe, arguments))
+}
+
+#[cfg(target_os = "windows")]
+fn windows_registry_command_value(subkey: &str) -> Option<String> {
+    use winreg::enums::*;
+    use winreg::RegKey;
+
+    let hkcr = RegKey::predef(HKEY_CLASSES_ROOT);
+    let key = hkcr.open_subkey(subkey).ok()?;
+    key.get_value::<String, _>("").ok()
+}
+
+#[cfg(target_os = "windows")]
+fn windows_steam_registry_launch_command(
+    command_value: &str,
+    arguments: &str,
+) -> Option<SteamLaunchCommand> {
+    let steam_exe = registry_command_executable_path(command_value, "steam.exe")?;
+    if !steam_exe.is_file() {
+        return None;
+    }
+    Some(steam_launch_command(steam_exe, arguments))
+}
+
+#[cfg(target_os = "windows")]
+fn windows_vrchat_registry_launch_command(
+    command_value: &str,
+    arguments: &str,
+) -> Option<DirectLaunchCommand> {
+    let launch_exe = registry_command_executable_path(command_value, "launch.exe")?;
+    if !launch_exe.is_file() {
+        return None;
+    }
+    Some(direct_launch_command(launch_exe, arguments))
+}
+
+#[cfg(target_os = "windows")]
+fn windows_vrchat_launch_command(path: &Path, arguments: &str) -> Option<DirectLaunchCommand> {
+    let launch_exe = if path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.eq_ignore_ascii_case("launch.exe"))
+    {
+        path.to_path_buf()
+    } else {
+        path.join("launch.exe")
+    };
+    if !launch_exe.exists() {
+        return None;
+    }
+
+    Some(direct_launch_command(launch_exe, arguments))
+}
+
+#[cfg(target_os = "windows")]
+fn registry_command_executable_path(command_value: &str, executable_name: &str) -> Option<PathBuf> {
+    let trimmed = command_value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let path = if let Some(rest) = trimmed.strip_prefix('"') {
+        let end = rest.find('"')?;
+        &rest[..end]
+    } else {
+        let lower = trimmed.to_ascii_lowercase();
+        let needle = executable_name.to_ascii_lowercase();
+        let end = lower.find(&needle)? + executable_name.len();
+        trimmed[..end].trim()
+    };
+    let path = PathBuf::from(path);
+    if path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.eq_ignore_ascii_case(executable_name))
+    {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -231,6 +370,92 @@ mod tests {
 
         assert_eq!(command.program, dir.path.join("steam.exe"));
         assert_eq!(command.args, ["-applaunch", "438100"]);
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn windows_steam_registry_command_uses_steam_exe_for_vrchat_launch() {
+        let dir = TestDir::new("game-launch-windows-steam-registry");
+        let steam_exe = dir.path.join("steam.exe");
+        std::fs::write(&steam_exe, b"").unwrap();
+
+        let command = windows_steam_registry_launch_command(
+            &format!(r#""{}" -- "%1""#, steam_exe.display()),
+            "vrchat://launch?ref=vrcx.app&id=wrld_1:123",
+        )
+        .unwrap();
+
+        assert_eq!(command.program, steam_exe);
+        assert_eq!(
+            command.args,
+            [
+                "-applaunch",
+                "438100",
+                "vrchat://launch?ref=vrcx.app&id=wrld_1:123"
+            ]
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn windows_steam_registry_command_ignores_missing_steam_exe() {
+        let dir = TestDir::new("game-launch-windows-missing-steam-registry");
+        let steam_exe = dir.path.join("steam.exe");
+
+        let command = windows_steam_registry_launch_command(
+            &format!(r#""{}" -- "%1""#, steam_exe.display()),
+            "vrchat://launch?ref=vrcx.app&id=wrld_1:123",
+        );
+
+        assert_eq!(command, None);
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn windows_vrchat_registry_command_uses_launch_exe_for_direct_launch() {
+        let dir = TestDir::new("game-launch-windows-vrchat-registry");
+        let launch_exe = dir.path.join("launch.exe");
+        std::fs::write(&launch_exe, b"").unwrap();
+
+        let command = windows_vrchat_registry_launch_command(
+            &format!(r#""{}" "%1" %*"#, launch_exe.display()),
+            "vrchat://launch?ref=vrcx.app&id=wrld_1:123 --no-vr",
+        )
+        .unwrap();
+
+        assert_eq!(command.program, launch_exe);
+        assert_eq!(command.current_dir, Some(dir.path.clone()));
+        assert_eq!(
+            command.args,
+            ["vrchat://launch?ref=vrcx.app&id=wrld_1:123", "--no-vr"]
+        );
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn windows_vrchat_registry_command_ignores_missing_launch_exe() {
+        let dir = TestDir::new("game-launch-windows-missing-vrchat-registry");
+        let launch_exe = dir.path.join("launch.exe");
+
+        let command = windows_vrchat_registry_launch_command(
+            &format!(r#""{}" "%1" %*"#, launch_exe.display()),
+            "vrchat://launch?ref=vrcx.app&id=wrld_1:123",
+        );
+
+        assert_eq!(command, None);
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn windows_launch_path_command_accepts_directory_root() {
+        let dir = TestDir::new("game-launch-windows-vrchat-root");
+        std::fs::write(dir.path.join("launch.exe"), b"").unwrap();
+
+        let command = windows_vrchat_launch_command(&dir.path, "--no-vr").unwrap();
+
+        assert_eq!(command.program, dir.path.join("launch.exe"));
+        assert_eq!(command.current_dir, Some(dir.path.clone()));
+        assert_eq!(command.args, ["--no-vr"]);
     }
 
     #[test]

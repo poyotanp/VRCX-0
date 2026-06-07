@@ -83,8 +83,8 @@ impl HostFileAccess {
 }
 
 pub fn ensure_vrchat_launch_path_allowed(
-    file_access: &HostFileAccess,
-    app_paths: &AppPaths,
+    _file_access: &HostFileAccess,
+    _app_paths: &AppPaths,
     path: &str,
 ) -> Result<String> {
     let root = normalize_vrchat_launch_root(path)?;
@@ -99,7 +99,6 @@ pub fn ensure_vrchat_launch_path_allowed(
         ));
     }
 
-    file_access.ensure_read_allowed(&launch_file, app_paths)?;
     Ok(root.to_string_lossy().into_owned())
 }
 
@@ -196,4 +195,52 @@ fn normalize_existing_or_creatable(path: &Path) -> std::io::Result<PathBuf> {
         normalized.push(component);
     }
     Ok(normalized)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct TestDir {
+        path: PathBuf,
+    }
+
+    impl TestDir {
+        fn new(name: &str) -> Self {
+            let nonce = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos();
+            let path =
+                std::env::temp_dir().join(format!("vrcx-0-{name}-{}-{nonce}", std::process::id()));
+            std::fs::create_dir_all(&path).unwrap();
+            Self { path }
+        }
+    }
+
+    impl Drop for TestDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.path);
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn persisted_launch_exe_path_does_not_require_registered_file_access() {
+        let dir = TestDir::new("host-file-access-launch-path");
+        let app_data = dir.path.join("app-data");
+        let vrchat_root = dir.path.join("steamapps").join("common").join("VRChat");
+        std::fs::create_dir_all(&app_data).unwrap();
+        std::fs::create_dir_all(&vrchat_root).unwrap();
+        std::fs::write(vrchat_root.join("launch.exe"), b"").unwrap();
+
+        let path = ensure_vrchat_launch_path_allowed(
+            &HostFileAccess::new(),
+            &AppPaths::from_app_data(app_data),
+            &vrchat_root.join("launch.exe").to_string_lossy(),
+        )
+        .unwrap();
+
+        assert_eq!(PathBuf::from(path), vrchat_root.canonicalize().unwrap());
+    }
 }
