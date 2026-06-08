@@ -1,5 +1,6 @@
 use super::event_patch::{
-    apply_friend_event, apply_patch_to_state, is_friend_event_type, record_to_value,
+    apply_friend_event, apply_patch_to_state, apply_refetched_friend_profile_event,
+    is_friend_event_type, record_to_value,
 };
 use super::persistence::{duration_ms, is_online_state, online_offline_feed_entry};
 use super::projection::state_bucket_from_patch;
@@ -218,7 +219,7 @@ impl RealtimeFriendsRuntime {
             "user": profile
         });
         let now = EventTime::from_received_at(received_at);
-        apply_friend_event(&mut state, "friend-update", &content, &now)
+        apply_refetched_friend_profile_event(&mut state, &content, &now)
             .map(Box::new)
             .map(RealtimeFriendApplyResult::Output)
             .unwrap_or(RealtimeFriendApplyResult::Ignored)
@@ -231,17 +232,22 @@ impl RealtimeFriendsRuntime {
         now_iso: String,
     ) -> Option<RealtimeFriendOutput> {
         let mut state = self.lock_state();
-        let owner_user_id = state.baseline.as_ref()?.current_user_id.clone();
-        let generation = state.baseline.as_ref()?.generation;
-        let baseline_revision = state.baseline.as_ref()?.baseline_revision;
+        let baseline = state.baseline.as_ref()?;
+        let owner_user_id = baseline.current_user_id.clone();
+        let generation = baseline.generation;
+        let baseline_revision = baseline.baseline_revision;
         let pending = state.pending_offline.get(user_id)?;
         if pending.token != token {
             return None;
         }
         let pending = state.pending_offline.remove(user_id)?;
         state.recent_gps.remove(user_id);
-        let current = state.baseline.as_ref()?.friends_by_id.get(user_id)?;
-        if is_online_state(current) && !bool_field(record_to_value(current).get("pendingOffline")) {
+        let current = state
+            .baseline
+            .as_ref()
+            .and_then(|baseline| baseline.friends_by_id.get(user_id))?;
+        let current_value = record_to_value(current);
+        if is_online_state(current) && !bool_field(current_value.get("pendingOffline")) {
             return None;
         }
 

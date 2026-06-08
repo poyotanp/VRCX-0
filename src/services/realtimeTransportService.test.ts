@@ -399,18 +399,8 @@ describe('realtime transport runtime routing', () => {
         ).toHaveBeenCalledTimes(1);
     });
 
-    it('refreshes the Rust-owned baseline after reconnect without frontend snapshot sync or dropping drained projections', async () => {
+    it('lets Rust own reconnect baseline recovery without frontend refresh or snapshot sync', async () => {
         await prepareReadySession();
-        backgroundState.refreshFriendAndFavoriteSnapshots.mockImplementationOnce(
-            async () => {
-                const { useSessionStore } =
-                    await import('@/state/sessionStore');
-                useSessionStore
-                    .getState()
-                    .setSessionState({ isFriendsLoaded: false });
-                throw new Error('refresh failed');
-            }
-        );
         const { startRealtimeTransport } =
             await import('./realtimeTransportService');
 
@@ -433,7 +423,7 @@ describe('realtime transport runtime routing', () => {
         await vi.waitFor(() => {
             expect(
                 backgroundState.refreshFriendAndFavoriteSnapshots
-            ).toHaveBeenCalledTimes(1);
+            ).not.toHaveBeenCalled();
             expect(
                 runtimeState.app.SyncRealtimeFriendSnapshot
             ).not.toHaveBeenCalled();

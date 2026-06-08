@@ -77,11 +77,46 @@ pub async fn app__vrchat_user_get(
                     .trim()
                     .to_string();
                 if profile_user_id == user_id {
-                    if let Err(error) =
-                        realtime_runtime.apply_friend_profile_refresh(endpoint, user_id, profile)
-                    {
-                        tracing::warn!("User profile realtime cache merge failed: {error}");
+                    let state = profile
+                        .get("state")
+                        .and_then(serde_json::Value::as_str)
+                        .unwrap_or("")
+                        .trim()
+                        .to_string();
+                    let location = profile
+                        .get("location")
+                        .and_then(serde_json::Value::as_str)
+                        .unwrap_or("")
+                        .trim()
+                        .to_string();
+                    let display_name = profile
+                        .get("displayName")
+                        .and_then(serde_json::Value::as_str)
+                        .unwrap_or("")
+                        .trim()
+                        .to_string();
+                    match realtime_runtime.apply_friend_profile_refresh(
+                        endpoint,
+                        user_id.clone(),
+                        profile,
+                    ) {
+                        Ok(_merged) => {}
+                        Err(error) => {
+                            tracing::warn!(
+                                user_id = %user_id,
+                                display_name = %display_name,
+                                state = %state,
+                                location = %location,
+                                "User profile realtime cache merge failed: {error}"
+                            );
+                        }
                     }
+                } else {
+                    tracing::warn!(
+                        requested_user_id = %user_id,
+                        profile_user_id = %profile_user_id,
+                        "[Realtime] UserDialog getUser profile merge skipped: response user mismatch"
+                    );
                 }
             }
             Err(error) => {

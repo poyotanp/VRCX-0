@@ -6,7 +6,6 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
 
 import { handleRuntimeAuthFailure } from './authSessionRecoveryService';
-import { refreshFriendAndFavoriteSnapshots } from './backgroundMaintenanceService';
 import { isHostCapabilityAvailable } from './hostCapabilityService';
 import {
     handleRealtimeCurrentUserProjection,
@@ -26,7 +25,6 @@ let ipcAnnouncedForActiveSession = false;
 let runtimeTransportStarting = false;
 let runtimeTransportActive = false;
 let runtimeTransportCleanup: (() => void) | null = null;
-let runtimeConnectedForActiveSession = false;
 let runtimeTransportRunId = 0;
 let runtimeTransportContext: Record<string, any> | null = null;
 let runtimeTransportClientRunId: number | null = null;
@@ -155,7 +153,6 @@ function cleanupRuntimeRealtimeSubscriptionForRun(
 function markRuntimeTransportStopped() {
     runtimeTransportStarting = false;
     runtimeTransportActive = false;
-    runtimeConnectedForActiveSession = false;
     runtimeTransportContext = null;
     runtimeTransportClientRunId = null;
     runtimeTransportGeneration = null;
@@ -212,18 +209,6 @@ function stopRuntimeRealtimeTransport() {
     }
 }
 
-function refreshBaselineAfterReconnect() {
-    refreshFriendAndFavoriteSnapshots({ syncRealtime: false })
-        .catch((error: any) => {
-            useNotificationStore.getState().pushNotification({
-                level: 'warning',
-                title: 'Realtime baseline refresh failed',
-                message:
-                    error instanceof Error ? error.message : String(error)
-            });
-        });
-}
-
 function handleRealtimeMessageFailure(error: unknown) {
     showSQLiteErrorDialog(error).catch((dialogError: any) => {
         console.warn('Realtime SQLite error dialog failed:', dialogError);
@@ -276,8 +261,7 @@ function handleRealtimeAuthFailure(payload: Record<string, any>) {
 
 function handleRealtimeStatus(
     payload: unknown,
-    context: Record<string, any>,
-    refreshBaselineOnReconnect: boolean
+    context: Record<string, any>
 ) {
     useRuntimeStore.getState().recordRuntimeEvent('realtimeWsStatus', payload);
     const statusPayload = isRecord(payload) ? payload : {};
@@ -323,10 +307,6 @@ function handleRealtimeStatus(
         updateTransportStartupDetail(
             'Backend realtime transport, IPC announce, and websocket transport are active.'
         );
-        if (runtimeConnectedForActiveSession || refreshBaselineOnReconnect) {
-            refreshBaselineAfterReconnect();
-        }
-        runtimeConnectedForActiveSession = true;
         return;
     }
 
@@ -374,12 +354,11 @@ function handleRealtimeStatus(
 }
 
 async function subscribeRuntimeRealtimeEvents(
-    context: Record<string, any>,
-    refreshBaselineOnReconnect: boolean
+    context: Record<string, any>
 ) {
     const unsubscribers = await Promise.all([
         tauriClient.events.subscribe('realtimeWsStatus', (payload: any) => {
-            handleRealtimeStatus(payload, context, refreshBaselineOnReconnect);
+            handleRealtimeStatus(payload, context);
         }),
         tauriClient.events.subscribe(
             'realtimeFriendProjection',
@@ -465,14 +444,12 @@ async function subscribeRuntimeRealtimeEvents(
 }
 
 async function startRuntimeRealtimeTransport(
-    context: Record<string, any>,
-    { refreshBaselineOnReconnect = false }: any = {}
+    context: Record<string, any>
 ) {
     const runId = ++runtimeTransportRunId;
     cleanupRuntimeRealtimeSubscription();
     runtimeTransportStarting = true;
     runtimeTransportActive = false;
-    runtimeConnectedForActiveSession = false;
     runtimeTransportContext = context;
     runtimeTransportClientRunId = runId;
     runtimeTransportGeneration = null;
@@ -480,10 +457,7 @@ async function startRuntimeRealtimeTransport(
 
     let cleanup: () => void;
     try {
-        cleanup = await subscribeRuntimeRealtimeEvents(
-            context,
-            Boolean(refreshBaselineOnReconnect)
-        );
+        cleanup = await subscribeRuntimeRealtimeEvents(context);
     } catch (error) {
         if (runId === runtimeTransportRunId) {
             markRuntimeTransportStopped();
@@ -624,9 +598,7 @@ async function connectRealtimeTransport({
         throw new Error('Backend realtime transport is unavailable.');
     }
 
-    await startRuntimeRealtimeTransport(context, {
-        refreshBaselineOnReconnect: Boolean(preserveMetrics)
-    });
+    await startRuntimeRealtimeTransport(context);
 }
 
 export async function startRealtimeTransport({

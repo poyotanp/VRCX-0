@@ -23,24 +23,38 @@ impl RealtimeMessageSink for RealtimeHostRuntimeMessageSink {
         session: &RealtimeSessionContext,
         status: &str,
     ) {
-        if status != "reconnecting" {
-            return;
-        }
-        let mut state = match self.runtime.state.lock() {
-            Ok(state) => state,
-            Err(error) => {
-                tracing::warn!("realtime state lock failed: {error}");
-                return;
+        match status {
+            "reconnecting" => {
+                let mut state = match self.runtime.state.lock() {
+                    Ok(state) => state,
+                    Err(error) => {
+                        tracing::warn!("realtime state lock failed: {error}");
+                        return;
+                    }
+                };
+                if !self.runtime.is_message_current_locked(
+                    &state,
+                    generation,
+                    session_generation,
+                    session,
+                ) {
+                    return;
+                }
+                state.friend_messages_paused = true;
+                state.queued_friend_messages.clear();
+                state.friend_reconnect_refresh_token =
+                    state.friend_reconnect_refresh_token.saturating_add(1);
+                state.friend_reconnect_baseline_refresh_in_flight = false;
             }
-        };
-        if !self
-            .runtime
-            .is_message_current_locked(&state, generation, session_generation, session)
-        {
-            return;
+            "connected" => {
+                self.runtime.schedule_reconnect_friend_baseline_refresh(
+                    generation,
+                    session_generation,
+                    session,
+                );
+            }
+            _ => {}
         }
-        state.friend_messages_paused = true;
-        state.queued_friend_messages.clear();
     }
 
     fn handle_realtime_ws_message(

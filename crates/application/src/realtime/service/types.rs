@@ -25,6 +25,8 @@ pub(super) struct RealtimeHostRuntimeState {
     pub(super) friend_messages_paused: bool,
     pub(super) queued_friend_messages: Vec<RealtimeWsMessagePayload>,
     pub(super) friend_profile_refetches: HashMap<String, i64>,
+    pub(super) friend_reconnect_refresh_token: u64,
+    pub(super) friend_reconnect_baseline_refresh_in_flight: bool,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -75,6 +77,7 @@ pub struct RealtimeHostRuntimeDeps {
     pub sync: RuntimeSyncEngine,
     pub tasks: TaskSupervisor,
     pub session: HostSessionRuntime,
+    pub auth_scope: RuntimeAuthScope,
     pub game_log_snapshot: Arc<Mutex<RuntimeSnapshot>>,
     pub overlay_activity: OverlayActivityRuntime,
 }

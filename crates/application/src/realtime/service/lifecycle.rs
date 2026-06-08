@@ -258,6 +258,7 @@ impl RealtimeHostRuntime {
             } else {
                 None
             };
+            state.friend_reconnect_baseline_refresh_in_flight = false;
             (result, active, baseline_projection)
         };
 
@@ -285,6 +286,203 @@ impl RealtimeHostRuntime {
         );
 
         Ok(result)
+    }
+
+    pub(super) fn schedule_reconnect_friend_baseline_refresh(
+        self: &Arc<Self>,
+        generation: u64,
+        session_generation: u64,
+        session: &RealtimeSessionContext,
+    ) {
+        let (active, refresh_token, current_user_snapshot) = {
+            let mut state = match self.state.lock() {
+                Ok(state) => state,
+                Err(error) => {
+                    tracing::warn!("realtime state lock failed: {error}");
+                    return;
+                }
+            };
+            if !self.is_message_current_locked(&state, generation, session_generation, session) {
+                return;
+            }
+            if !state.friend_messages_paused {
+                return;
+            }
+            if state.friend_reconnect_baseline_refresh_in_flight {
+                return;
+            }
+            let Some(active) = state.active_context.clone() else {
+                return;
+            };
+            let Some(current_user_snapshot) = self.current_user.snapshot_value() else {
+                drop(state);
+                self.drain_queued_friend_messages(active);
+                return;
+            };
+            state.friend_reconnect_baseline_refresh_in_flight = true;
+            (
+                active,
+                state.friend_reconnect_refresh_token,
+                current_user_snapshot,
+            )
+        };
+
+        let runtime = Arc::clone(self);
+        self.deps.tasks.spawn(async move {
+            runtime
+                .refresh_friend_baseline_after_reconnect(active, refresh_token, current_user_snapshot)
+                .await;
+        });
+    }
+
+    async fn refresh_friend_baseline_after_reconnect(
+        self: Arc<Self>,
+        active: ActiveRealtimeContext,
+        refresh_token: u64,
+        current_user_snapshot: Value,
+    ) {
+        let baseline_started_ms = chrono::Utc::now().timestamp_millis();
+        let result = build_friend_roster_baseline(
+            SocialBaselineDeps {
+                db: Arc::clone(&self.deps.db),
+                web: Arc::clone(&self.deps.web),
+                auth_scope: self.deps.auth_scope.clone(),
+                session: self.deps.session.clone(),
+            },
+            SocialFriendRosterBaselineInput {
+                user_id: active.session.user_id.clone(),
+                endpoint: active.session.endpoint.clone(),
+                websocket: active.session.websocket.clone(),
+                current_user_snapshot: RawJson::from(current_user_snapshot),
+            },
+        )
+        .await;
+        let output = match result {
+            Ok(output) => output,
+            Err(error) => {
+                tracing::warn!(
+                    generation = active.generation,
+                    session_generation = active.session_generation,
+                    refresh_token,
+                    "[Realtime] reconnect friend baseline recovery failed: {error}"
+                );
+                self.finish_reconnect_friend_baseline_refresh(active, refresh_token, true);
+                return;
+            }
+        };
+        let Some(snapshot) = output.snapshot.as_ref().filter(|_| !output.stale) else {
+            self.finish_reconnect_friend_baseline_refresh(active, refresh_token, true);
+            return;
+        };
+        let friends_value = snapshot
+            .as_value()
+            .get("friendsById")
+            .cloned()
+            .unwrap_or_else(|| serde_json::json!({}));
+        let friends_by_id = match serde_json::from_value::<HashMap<String, FriendRecord>>(
+            friends_value,
+        ) {
+            Ok(friends_by_id) => friends_by_id,
+            Err(error) => {
+                tracing::warn!(
+                    generation = active.generation,
+                    session_generation = active.session_generation,
+                    refresh_token,
+                    "[Realtime] reconnect friend baseline recovery decode failed: {error}"
+                );
+                self.finish_reconnect_friend_baseline_refresh(active, refresh_token, true);
+                return;
+            }
+        };
+        let sync_result = self.sync_reconnect_friend_baseline_if_current(
+            active.clone(),
+            refresh_token,
+            baseline_started_ms,
+            friends_by_id,
+        );
+        match sync_result {
+            Ok(Some(result)) if result.accepted => {
+                self.finish_reconnect_friend_baseline_refresh(active, refresh_token, false);
+            }
+            Ok(Some(_result)) => {
+                self.finish_reconnect_friend_baseline_refresh(active, refresh_token, true);
+            }
+            Ok(None) => {}
+            Err(error) => {
+                tracing::warn!(
+                    generation = active.generation,
+                    session_generation = active.session_generation,
+                    refresh_token,
+                    "[Realtime] reconnect friend baseline recovery sync failed: {error}"
+                );
+                self.finish_reconnect_friend_baseline_refresh(active, refresh_token, true);
+            }
+        }
+    }
+
+    fn sync_reconnect_friend_baseline_if_current(
+        self: &Arc<Self>,
+        active: ActiveRealtimeContext,
+        refresh_token: u64,
+        baseline_started_ms: i64,
+        friends_by_id: HashMap<String, FriendRecord>,
+    ) -> Result<Option<FriendBaselineResult>> {
+        {
+            let state = self
+                .state
+                .lock()
+                .map_err(|error| Error::Custom(format!("realtime state lock: {error}")))?;
+            if !self.is_message_current_locked(
+                &state,
+                active.generation,
+                active.session_generation,
+                &active.session,
+            ) || state.friend_reconnect_refresh_token != refresh_token
+                || !state.friend_reconnect_baseline_refresh_in_flight
+            {
+                return Ok(None);
+            }
+        }
+        self.sync_friend_snapshot_with_started_at(
+            active.session.user_id.clone(),
+            active.session.endpoint.clone(),
+            active.session.websocket.clone(),
+            Some(active.generation),
+            baseline_started_ms,
+            friends_by_id,
+        )
+        .map(Some)
+    }
+
+    fn finish_reconnect_friend_baseline_refresh(
+        self: &Arc<Self>,
+        active: ActiveRealtimeContext,
+        refresh_token: u64,
+        drain_queued_messages: bool,
+    ) {
+        let should_drain = {
+            let mut state = match self.state.lock() {
+                Ok(state) => state,
+                Err(error) => {
+                    tracing::warn!("realtime state lock failed: {error}");
+                    return;
+                }
+            };
+            if !self.is_message_current_locked(
+                &state,
+                active.generation,
+                active.session_generation,
+                &active.session,
+            ) || state.friend_reconnect_refresh_token != refresh_token
+            {
+                return;
+            }
+            state.friend_reconnect_baseline_refresh_in_flight = false;
+            drain_queued_messages && state.friend_messages_paused
+        };
+        if should_drain {
+            self.drain_queued_friend_messages(active);
+        }
     }
 
     pub fn apply_friend_profile_refresh(
@@ -338,9 +536,7 @@ impl RealtimeHostRuntime {
                 self.apply_friend_output(*output);
                 Ok(true)
             }
-            RealtimeFriendApplyResult::MissingBaseline | RealtimeFriendApplyResult::Ignored => {
-                Ok(false)
-            }
+            RealtimeFriendApplyResult::MissingBaseline | RealtimeFriendApplyResult::Ignored => Ok(false),
         }
     }
 
@@ -791,7 +987,9 @@ impl RealtimeHostRuntime {
             profile,
             &chrono::Utc::now().to_rfc3339(),
         ) {
-            RealtimeFriendApplyResult::Output(output) => self.apply_friend_output(*output),
+            RealtimeFriendApplyResult::Output(output) => {
+                self.apply_friend_output(*output)
+            }
             RealtimeFriendApplyResult::MissingBaseline | RealtimeFriendApplyResult::Ignored => {}
         }
     }
@@ -1170,10 +1368,10 @@ fn friend_snapshot_diff_projection(
         let Some(record) = next.friends_by_id.get(&user_id) else {
             continue;
         };
-        if previous
-            .and_then(|snapshot| snapshot.friends_by_id.get(&user_id))
-            .is_some_and(|previous_record| previous_record == record)
-        {
+        let previous_record = previous.and_then(|snapshot| snapshot.friends_by_id.get(&user_id));
+        let state_bucket = friend_record_state_bucket(record);
+        let changed = !previous_record.is_some_and(|previous_record| previous_record == record);
+        if !changed {
             continue;
         }
         let patch = match serde_json::to_value(record) {
@@ -1192,7 +1390,7 @@ fn friend_snapshot_diff_projection(
             .push(crate::realtime::FriendProjectionPatch {
                 user_id,
                 patch,
-                state_bucket: friend_record_state_bucket(record),
+                state_bucket,
                 state_bucket_authority: Some("explicit".to_string()),
             });
     }
@@ -1332,6 +1530,7 @@ mod tests {
             sync: RuntimeSyncEngine::new(),
             tasks: TaskSupervisor::new(),
             session,
+            auth_scope: RuntimeAuthScope::new(),
             game_log_snapshot: Arc::new(Mutex::new(RuntimeSnapshot::default())),
             overlay_activity: OverlayActivityRuntime::default(),
         }));
@@ -1392,6 +1591,7 @@ mod tests {
             sync: RuntimeSyncEngine::new(),
             tasks: TaskSupervisor::new(),
             session,
+            auth_scope: RuntimeAuthScope::new(),
             game_log_snapshot: Arc::new(Mutex::new(RuntimeSnapshot::default())),
             overlay_activity: overlay_activity.clone(),
         }));
@@ -1603,6 +1803,136 @@ mod tests {
         assert_eq!(friend.display_name, "Fresh Friend");
         assert_eq!(friend.location, "wrld_fresh:456");
         assert!(snapshot.friends_by_id.get("usr_stranger").is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn connected_after_reconnect_without_snapshot_resumes_queued_friend_events() -> Result<()> {
+        let (_dir, runtime, active_session) = runtime_with_active_session("reconnect-drain")?;
+        let active = runtime.state.lock().unwrap().active_context.clone().unwrap();
+        let mut friends_by_id = HashMap::new();
+        friends_by_id.insert(
+            "usr_friend".to_string(),
+            FriendRecord {
+                id: "usr_friend".to_string(),
+                display_name: "Friend".to_string(),
+                state: "online".to_string(),
+                state_bucket: "online".to_string(),
+                location: "wrld_old:123".to_string(),
+                ..FriendRecord::default()
+            },
+        );
+        runtime.sync_friend_snapshot(
+            active_session.user_id.clone(),
+            active_session.endpoint.clone(),
+            active_session.websocket.clone(),
+            Some(active.generation),
+            friends_by_id,
+        )?;
+        runtime.deps.event_bus.take_events_for_test();
+
+        let sink = RealtimeHostRuntimeMessageSink {
+            runtime: Arc::clone(&runtime),
+        };
+        sink.handle_realtime_transport_status(
+            active.generation,
+            active.session_generation,
+            &active_session,
+            "reconnecting",
+        );
+        sink.handle_realtime_ws_message(
+            active.generation,
+            active.session_generation,
+            &active_session,
+            &RealtimeWsMessagePayload {
+                json: json!({
+                    "type": "friend-location",
+                    "content": {
+                        "userId": "usr_friend",
+                        "location": "wrld_new:456"
+                    }
+                }),
+                raw: "{}".into(),
+                received_at: "2026-06-08T10:05:00Z".into(),
+            },
+        );
+        assert!(runtime.state.lock().unwrap().friend_messages_paused);
+
+        sink.handle_realtime_transport_status(
+            active.generation,
+            active.session_generation,
+            &active_session,
+            "connected",
+        );
+
+        let events = runtime.deps.event_bus.take_events_for_test();
+        let projection = events
+            .iter()
+            .find(|event| event.name == "realtimeFriendProjection")
+            .expect("queued friend event should be drained after reconnect");
+        assert!(!runtime.state.lock().unwrap().friend_messages_paused);
+        assert_eq!(projection.payload["patches"][0]["userId"], "usr_friend");
+        assert_eq!(
+            projection.payload["patches"][0]["patch"]["location"],
+            "wrld_new:456"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn stale_reconnect_baseline_refresh_cannot_replace_active_friend_cache() -> Result<()> {
+        let (_dir, runtime, active_session) = runtime_with_active_session("stale-reconnect")?;
+        let active = runtime.state.lock().unwrap().active_context.clone().unwrap();
+        let mut initial_friends = HashMap::new();
+        initial_friends.insert(
+            "usr_friend".to_string(),
+            FriendRecord {
+                id: "usr_friend".to_string(),
+                display_name: "Friend".to_string(),
+                state: "online".to_string(),
+                state_bucket: "online".to_string(),
+                location: "wrld_old:123".to_string(),
+                ..FriendRecord::default()
+            },
+        );
+        runtime.sync_friend_snapshot(
+            active_session.user_id.clone(),
+            active_session.endpoint.clone(),
+            active_session.websocket.clone(),
+            Some(active.generation),
+            initial_friends,
+        )?;
+        {
+            let mut state = runtime.state.lock().unwrap();
+            state.friend_messages_paused = true;
+            state.friend_reconnect_refresh_token = 2;
+            state.friend_reconnect_baseline_refresh_in_flight = true;
+        }
+
+        let mut stale_refresh_friends = HashMap::new();
+        stale_refresh_friends.insert(
+            "usr_friend".to_string(),
+            FriendRecord {
+                id: "usr_friend".to_string(),
+                display_name: "Friend".to_string(),
+                state: "offline".to_string(),
+                state_bucket: "offline".to_string(),
+                location: "offline".to_string(),
+                ..FriendRecord::default()
+            },
+        );
+        let result = runtime.sync_reconnect_friend_baseline_if_current(
+            active.clone(),
+            1,
+            123,
+            stale_refresh_friends,
+        )?;
+
+        let snapshot = runtime.friend_snapshot().unwrap();
+        let friend = snapshot.friends_by_id.get("usr_friend").unwrap();
+        assert!(result.is_none());
+        assert_eq!(friend.state_bucket, "online");
+        assert!(runtime.state.lock().unwrap().friend_messages_paused);
         Ok(())
     }
 

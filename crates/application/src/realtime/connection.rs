@@ -207,6 +207,14 @@ async fn run_realtime_transport_inner(
         } else {
             "reconnecting"
         };
+        if reconnect_attempt > 0 {
+            tracing::warn!(
+                generation,
+                session_generation,
+                reconnect_attempt,
+                "[Realtime] websocket reconnect attempt starting"
+            );
+        }
         message_sink.handle_realtime_transport_status(
             generation,
             session_generation,

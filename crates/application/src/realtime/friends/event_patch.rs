@@ -28,6 +28,45 @@ pub(super) fn apply_friend_event(
     content: &Value,
     now: &EventTime,
 ) -> Option<RealtimeFriendOutput> {
+    apply_friend_event_with_options(
+        state,
+        message_type,
+        content,
+        now,
+        FriendEventOptions {
+            emit_profile_diff_feed: true,
+        },
+    )
+}
+
+pub(super) fn apply_refetched_friend_profile_event(
+    state: &mut RealtimeFriendState,
+    content: &Value,
+    now: &EventTime,
+) -> Option<RealtimeFriendOutput> {
+    apply_friend_event_with_options(
+        state,
+        "friend-update",
+        content,
+        now,
+        FriendEventOptions {
+            emit_profile_diff_feed: false,
+        },
+    )
+}
+
+#[derive(Clone, Copy)]
+struct FriendEventOptions {
+    emit_profile_diff_feed: bool,
+}
+
+fn apply_friend_event_with_options(
+    state: &mut RealtimeFriendState,
+    message_type: &str,
+    content: &Value,
+    now: &EventTime,
+    options: FriendEventOptions,
+) -> Option<RealtimeFriendOutput> {
     let baseline = state.baseline.as_ref()?;
     let owner_user_id = baseline.current_user_id.clone();
     let generation = baseline.generation;
@@ -101,7 +140,7 @@ pub(super) fn apply_friend_event(
         }
         "friend-update" => {
             let user_id = event_user_id(content)?;
-            let patch =
+            let mut patch =
                 event_user_patch(content, &user_id).unwrap_or_else(|| json!({ "id": user_id }));
             if patch.as_object().map(|object| object.len()).unwrap_or(0) <= 1
                 && !has_event_state_bucket(content)
@@ -110,13 +149,21 @@ pub(super) fn apply_friend_event(
             }
             let previous = get_friend_value(state, &user_id);
             let state_bucket = resolve_state_bucket(content, &patch, previous.as_ref(), "offline");
-            add_profile_diff_feed_entries(
-                &mut output,
-                &user_id,
-                &patch,
-                previous.as_ref(),
-                &now.iso,
-            );
+            let has_state_bucket = has_event_state_bucket(content);
+            if has_state_bucket && state.pending_offline.remove(&user_id).is_some() {
+                if let Some(patch_object) = patch.as_object_mut() {
+                    patch_object.insert("pendingOffline".into(), Value::Bool(false));
+                }
+            }
+            if options.emit_profile_diff_feed {
+                add_profile_diff_feed_entries(
+                    &mut output,
+                    &user_id,
+                    &patch,
+                    previous.as_ref(),
+                    &now.iso,
+                );
+            }
             request_profile_refetch_for_impossible_location(
                 &mut output,
                 &user_id,
@@ -262,12 +309,19 @@ pub(super) fn apply_friend_event(
             let user_patch =
                 event_user_patch(content, &user_id).unwrap_or_else(|| json!({ "id": user_id }));
             let has_online_location = location_event_has_online_proof(content, &user_patch);
+            let has_offline_location = location_event_has_offline_proof(content, &user_patch);
             let preserve_pending_offline =
                 !has_online_location && state.pending_offline.contains_key(&user_id);
             if has_embedded_user && has_online_location {
                 state.pending_offline.remove(&user_id);
             }
-            let previous = get_friend_value(state, &user_id);
+            let previous_record = state
+                .baseline
+                .as_ref()?
+                .friends_by_id
+                .get(&user_id)
+                .cloned();
+            let previous = previous_record.as_ref().map(record_to_value);
             let state_bucket = resolve_location_event_state_bucket(
                 content,
                 previous.as_ref(),
@@ -280,7 +334,33 @@ pub(super) fn apply_friend_event(
             };
             let mut patch =
                 online_patch(content, user_patch, previous.as_ref(), now, &state_bucket);
-            if preserve_pending_offline {
+            let start_pending_offline = !preserve_pending_offline
+                && !has_online_location
+                && has_offline_location
+                && previous_record
+                    .as_ref()
+                    .map(is_online_state)
+                    .unwrap_or(false);
+            if start_pending_offline {
+                state.timer_token = state.timer_token.saturating_add(1);
+                let token = state.timer_token;
+                state.pending_offline.insert(
+                    user_id.clone(),
+                    PendingOffline {
+                        token,
+                        patch: offline_like_patch(content, &user_id, "offline"),
+                        previous: previous_record.expect("checked previous record"),
+                    },
+                );
+                if let Some(patch_object) = patch.as_object_mut() {
+                    patch_object.insert("pendingOffline".into(), Value::Bool(true));
+                }
+                output.timer_action = PendingOfflineTimerAction::Schedule {
+                    user_id: user_id.clone(),
+                    token,
+                    delay_ms: PENDING_OFFLINE_DELAY_MS,
+                };
+            } else if preserve_pending_offline {
                 if let Some(patch_object) = patch.as_object_mut() {
                     patch_object.insert("pendingOffline".into(), Value::Bool(true));
                 }
@@ -461,10 +541,13 @@ pub(super) fn apply_patch_to_state_with_authority(
     state_bucket: &str,
     state_bucket_authority: &str,
 ) {
-    let mut merged = state
+    let previous_record = state
         .baseline
         .as_ref()
         .and_then(|baseline| baseline.friends_by_id.get(user_id))
+        .cloned();
+    let mut merged = previous_record
+        .as_ref()
         .map(record_to_map)
         .unwrap_or_default();
     if let Some(patch_object) = patch.as_object() {
@@ -575,9 +658,38 @@ fn location_event_has_online_proof(content: &Value, user_patch: &Value) -> bool 
         .any(|value| is_online_location_proof(value))
 }
 
+fn location_event_has_offline_proof(content: &Value, user_patch: &Value) -> bool {
+    let content_locations = [
+        content.get("location").and_then(Value::as_str),
+        content.get("travelingToLocation").and_then(Value::as_str),
+    ];
+    if content_locations.iter().flatten().any(|value| !value.trim().is_empty()) {
+        return content_locations
+            .iter()
+            .flatten()
+            .any(|value| is_offline_location_proof(value));
+    }
+
+    let user_locations = [
+        user_patch.get("location").and_then(Value::as_str),
+        user_patch.get("travelingToLocation").and_then(Value::as_str),
+    ];
+    user_locations
+        .iter()
+        .flatten()
+        .any(|value| is_offline_location_proof(value))
+}
+
 fn is_online_location_proof(value: &str) -> bool {
     let normalized = value.trim().to_ascii_lowercase();
     !normalized.is_empty() && normalized != "offline" && normalized != "offline:offline"
+}
+
+fn is_offline_location_proof(value: &str) -> bool {
+    matches!(
+        value.trim().to_ascii_lowercase().as_str(),
+        "offline" | "offline:offline"
+    )
 }
 
 pub(super) fn online_patch(
