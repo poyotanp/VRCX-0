@@ -174,7 +174,7 @@ impl RealtimeHostRuntime {
         let requested_session = RealtimeSessionContext::new(user_id, endpoint, websocket);
         let friend_count = friends_by_id.len();
         let friend_user_ids = friends_by_id.keys().cloned().collect::<Vec<_>>();
-        let (result, active) = {
+        let (result, active, baseline_projection) = {
             let mut state = self
                 .state
                 .lock()
@@ -229,10 +229,12 @@ impl RealtimeHostRuntime {
                 });
             }
 
-            let baseline_revision = self
+            let previous_snapshot = self
                 .friends
                 .snapshot()
-                .filter(|snapshot| snapshot.generation == active.generation)
+                .filter(|snapshot| snapshot.generation == active.generation);
+            let baseline_revision = previous_snapshot
+                .as_ref()
                 .map(|snapshot| snapshot.baseline_revision.saturating_add(1))
                 .unwrap_or(0);
             let result = self.friends.set_baseline_with_started_at(
@@ -246,13 +248,31 @@ impl RealtimeHostRuntime {
                 baseline_revision,
                 baseline_started_ms,
             );
-            (result, active)
+            let baseline_projection = if result.accepted {
+                self
+                    .friends
+                    .snapshot()
+                    .filter(|snapshot| snapshot.generation == active.generation)
+                    .and_then(|snapshot| {
+                        friend_snapshot_diff_projection(previous_snapshot.as_ref(), &snapshot)
+                    })
+            } else {
+                None
+            };
+            (result, active, baseline_projection)
         };
 
         if result.accepted {
             self.deps
                 .overlay_activity
                 .set_friend_user_ids(friend_user_ids);
+        }
+        if let Some(projection) = baseline_projection {
+            self.apply_friend_output(RealtimeFriendOutput {
+                owner_user_id: active.session.user_id.clone(),
+                projection,
+                ..RealtimeFriendOutput::default()
+            });
         }
         self.drain_queued_friend_messages(active);
         self.deps.sync.record(
@@ -1124,6 +1144,69 @@ impl RealtimeHostRuntime {
     }
 }
 
+fn friend_snapshot_diff_projection(
+    previous: Option<&crate::realtime::RealtimeFriendSnapshot>,
+    next: &crate::realtime::RealtimeFriendSnapshot,
+) -> Option<FriendProjection> {
+    let mut projection = FriendProjection {
+        generation: next.generation,
+        baseline_revision: next.baseline_revision,
+        ..FriendProjection::default()
+    };
+
+    if let Some(previous) = previous {
+        let mut removals = previous
+            .friends_by_id
+            .keys()
+            .filter(|user_id| !next.friends_by_id.contains_key(*user_id))
+            .cloned()
+            .collect::<Vec<_>>();
+        removals.sort();
+        projection.removals = removals;
+    }
+
+    let mut user_ids = next.friends_by_id.keys().cloned().collect::<Vec<_>>();
+    user_ids.sort();
+    for user_id in user_ids {
+        let Some(record) = next.friends_by_id.get(&user_id) else {
+            continue;
+        };
+        if previous
+            .and_then(|snapshot| snapshot.friends_by_id.get(&user_id))
+            .is_some_and(|previous_record| previous_record == record)
+        {
+            continue;
+        }
+        let patch = match serde_json::to_value(record) {
+            Ok(value) => value,
+            Err(error) => {
+                tracing::warn!(
+                    user_id,
+                    error = %error,
+                    "[Realtime] failed to serialize friend baseline projection patch"
+                );
+                continue;
+            }
+        };
+        projection
+            .patches
+            .push(crate::realtime::FriendProjectionPatch {
+                user_id,
+                patch,
+                state_bucket: friend_record_state_bucket(record),
+                state_bucket_authority: Some("explicit".to_string()),
+            });
+    }
+
+    (!projection.patches.is_empty() || !projection.removals.is_empty()).then_some(projection)
+}
+
+fn friend_record_state_bucket(record: &FriendRecord) -> String {
+    vrcx_0_core::friends::normalize_state_bucket(&record.state_bucket)
+        .or_else(|| vrcx_0_core::friends::normalize_state_bucket(&record.state))
+        .unwrap_or_else(|| "offline".to_string())
+}
+
 fn object_string(object: &serde_json::Map<String, Value>, key: &str) -> String {
     object
         .get(key)
@@ -1355,6 +1438,116 @@ mod tests {
         assert!(overlay_activity
             .ingest_candidate(invite_candidate("usr_new"))
             .is_some());
+        Ok(())
+    }
+
+    #[test]
+    fn sync_friend_snapshot_emits_projection_for_active_state_changes() -> Result<()> {
+        let (_dir, runtime, active_session) = runtime_with_active_session("baseline-projection")?;
+        let mut initial_friends = HashMap::new();
+        initial_friends.insert(
+            "usr_friend".to_string(),
+            FriendRecord {
+                id: "usr_friend".to_string(),
+                display_name: "Friend".to_string(),
+                state: "online".to_string(),
+                state_bucket: "online".to_string(),
+                location: "wrld_old:123".to_string(),
+                ..FriendRecord::default()
+            },
+        );
+        runtime.sync_friend_snapshot(
+            active_session.user_id.clone(),
+            active_session.endpoint.clone(),
+            active_session.websocket.clone(),
+            Some(7),
+            initial_friends,
+        )?;
+        runtime.deps.event_bus.take_events_for_test();
+
+        let mut refreshed_friends = HashMap::new();
+        refreshed_friends.insert(
+            "usr_friend".to_string(),
+            FriendRecord {
+                id: "usr_friend".to_string(),
+                display_name: "Friend".to_string(),
+                state: "offline".to_string(),
+                state_bucket: "offline".to_string(),
+                location: "offline".to_string(),
+                ..FriendRecord::default()
+            },
+        );
+        let result = runtime.sync_friend_snapshot(
+            active_session.user_id.clone(),
+            active_session.endpoint.clone(),
+            active_session.websocket.clone(),
+            Some(7),
+            refreshed_friends,
+        )?;
+
+        let events = runtime.deps.event_bus.take_events_for_test();
+        let projection = events
+            .iter()
+            .find(|event| event.name == "realtimeFriendProjection")
+            .expect("baseline refresh should emit a friend projection");
+        assert!(result.accepted);
+        assert_eq!(result.baseline_revision, 1);
+        assert_eq!(projection.payload["generation"], 7);
+        assert_eq!(projection.payload["baselineRevision"], 1);
+        assert_eq!(projection.payload["patches"].as_array().unwrap().len(), 1);
+        assert_eq!(projection.payload["patches"][0]["userId"], "usr_friend");
+        assert_eq!(projection.payload["patches"][0]["stateBucket"], "offline");
+        assert_eq!(
+            projection.payload["patches"][0]["patch"]["stateBucket"],
+            "offline"
+        );
+        assert_eq!(projection.payload["patches"][0]["patch"]["location"], "offline");
+        Ok(())
+    }
+
+    #[test]
+    fn sync_friend_snapshot_emits_projection_for_active_removals() -> Result<()> {
+        let (_dir, runtime, active_session) = runtime_with_active_session("baseline-removal")?;
+        let mut initial_friends = HashMap::new();
+        initial_friends.insert(
+            "usr_removed".to_string(),
+            FriendRecord {
+                id: "usr_removed".to_string(),
+                display_name: "Removed Friend".to_string(),
+                state: "offline".to_string(),
+                state_bucket: "offline".to_string(),
+                ..FriendRecord::default()
+            },
+        );
+        runtime.sync_friend_snapshot(
+            active_session.user_id.clone(),
+            active_session.endpoint.clone(),
+            active_session.websocket.clone(),
+            Some(7),
+            initial_friends,
+        )?;
+        runtime.deps.event_bus.take_events_for_test();
+
+        let result = runtime.sync_friend_snapshot(
+            active_session.user_id.clone(),
+            active_session.endpoint.clone(),
+            active_session.websocket.clone(),
+            Some(7),
+            HashMap::new(),
+        )?;
+
+        let events = runtime.deps.event_bus.take_events_for_test();
+        let projection = events
+            .iter()
+            .find(|event| event.name == "realtimeFriendProjection")
+            .expect("baseline removal should emit a friend projection");
+        assert!(result.accepted);
+        assert_eq!(result.baseline_revision, 1);
+        assert!(projection.payload["patches"].as_array().unwrap().is_empty());
+        assert_eq!(
+            projection.payload["removals"].as_array().unwrap(),
+            &vec![json!("usr_removed")]
+        );
         Ok(())
     }
 

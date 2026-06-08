@@ -41,8 +41,8 @@ export function readFriendStatusSource(friend: any) {
         return friend;
     }
     return {
-        ...friend,
         ...ref,
+        ...friend,
         ref,
         pendingOffline: Boolean(friend?.pendingOffline || ref?.pendingOffline)
     };
@@ -315,7 +315,7 @@ export function toLegacyFriendSortRow(friend: any) {
             friend?.username ||
             friend?.id ||
             '',
-        ref: ref && ref !== friend ? { ...friend, ...ref } : friend
+        ref: ref && ref !== friend ? { ...ref, ...friend } : friend
     };
 }
 
