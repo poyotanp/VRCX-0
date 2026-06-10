@@ -17,9 +17,7 @@ pub struct TinySkiaRenderer {
 impl TinySkiaRenderer {
     pub fn new() -> Self {
         let mut font_system = FontSystem::new();
-        if let Some(family) = preferred_cjk_family(&font_system) {
-            font_system.db_mut().set_sans_serif_family(family);
-        }
+        crate::font::configure_font_system(&mut font_system);
         Self {
             font_system,
             cache: SwashCache::new(),
@@ -195,31 +193,4 @@ fn alpha_over(src: u8, dst: u8, src_a: u16) -> u8 {
 
 fn to_skia_color(color: Color) -> tiny_skia::Color {
     tiny_skia::Color::from_rgba8(color.r, color.g, color.b, color.a)
-}
-
-fn preferred_cjk_family(font_system: &FontSystem) -> Option<String> {
-    const FAMILIES: &[&str] = &[
-        "Microsoft YaHei UI",
-        "Microsoft YaHei",
-        "Microsoft JhengHei UI",
-        "Microsoft JhengHei",
-        "Yu Gothic UI",
-        "Noto Sans CJK SC",
-        "Noto Sans CJK JP",
-        "Noto Sans CJK TC",
-        "Source Han Sans SC",
-        "Source Han Sans JP",
-        "Source Han Sans TC",
-        "WenQuanYi Micro Hei",
-    ];
-    FAMILIES
-        .iter()
-        .find(|family| {
-            font_system.db().faces().any(|face| {
-                face.families
-                    .iter()
-                    .any(|(name, _)| name.eq_ignore_ascii_case(family))
-            })
-        })
-        .map(|family| (*family).to_string())
 }

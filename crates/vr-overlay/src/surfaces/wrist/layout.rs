@@ -1,5 +1,5 @@
 use crate::{
-    layout::ellipsize_to_width,
+    layout::{ellipsize_to_width, text_width},
     model::{
         Color, DeviceChip, DeviceRole, DeviceStatus, FeedLine, FeedRelation, OverlaySurfaceId, Rect,
     },
@@ -217,12 +217,11 @@ fn tracker_index(label: &str) -> u32 {
 }
 
 fn device_label_width(label: &str) -> f32 {
-    let padding = if label == "HMD" { 12.0 } else { 4.0 };
-    (estimated_text_width(label, 14.0) + padding).clamp(12.0, 48.0)
+    (text_width(label, 14.0) + 6.0).clamp(12.0, 48.0)
 }
 
 fn device_percent_width(text: &str) -> f32 {
-    (estimated_text_width(text, 13.0) + 1.0).clamp(22.0, 34.0)
+    (text_width(text, 13.0) + 1.0).clamp(22.0, 34.0)
 }
 
 fn device_token_width(token: &DeviceToken, show_percent: bool) -> f32 {
@@ -317,7 +316,7 @@ fn push_feed_detail(scene: &mut OverlayScene, row: &FeedLine, x: f32, y: f32, ma
 
     let actor_max_width = max_width.min(actor_display_width_limit(max_width));
     let actor_text = ellipsize_to_width(actor, actor_max_width, 17.0);
-    let actor_width = estimated_text_width(&actor_text, 17.0).min(actor_max_width);
+    let actor_width = text_width(&actor_text, 17.0).min(actor_max_width);
     scene.push(DrawCommand::Text {
         origin_x: x,
         origin_y: y,
@@ -436,13 +435,4 @@ fn detail_color(row: &FeedLine) -> Color {
         crate::model::FeedKind::Media => style::MUTED_TEXT,
         _ => style::TEXT,
     }
-}
-
-fn estimated_text_width(text: &str, font_size: f32) -> f32 {
-    text.chars()
-        .map(|ch| {
-            let factor = if ch.is_ascii() { 0.55 } else { 1.0 };
-            (font_size * factor).max(1.0)
-        })
-        .sum()
 }
