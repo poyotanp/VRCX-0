@@ -628,6 +628,7 @@ pub(super) fn event_user_patch(content: &Value, user_id: &str) -> Option<Value> 
     let mut patch = user.clone();
     patch.insert("id".into(), Value::String(user_id.to_string()));
     patch.remove("state");
+    vrcx_0_core::friends::strip_default_avatar_image(&mut patch);
     Some(Value::Object(patch))
 }
 

@@ -1,4 +1,8 @@
 import {
+    getKnownUserFact,
+    recordUserProfile
+} from '@/domain/users/userFactAccess';
+import {
     entityQueryPolicies,
     fetchCachedData,
     getCachedQueryData,
@@ -6,11 +10,8 @@ import {
     setCachedQueryData,
     userProfileQueryPolicy
 } from '@/lib/entityQueryCache';
-import {
-    getKnownUserFact,
-    recordUserProfile
-} from '@/domain/users/userFactAccess';
 import { tauriClient } from '@/platform/tauri/client';
+import { stripDefaultAvatarImage } from '@/shared/utils/avatar';
 import {
     computeTrustLevel,
     computeUserPlatform,
@@ -91,7 +92,7 @@ interface CurrentUserTagsInput extends UserEndpointInput {
 
 function normalizeUserProfile(user: unknown): UserProfileRecord {
     const source = isRecord(user) ? user : {};
-    const base = createDefaultUserRef(source);
+    const base = stripDefaultAvatarImage(createDefaultUserRef(source));
     const trust = computeTrustLevel(
         Array.isArray(base.tags) ? base.tags : [],
         typeof base.developerType === 'string' ? base.developerType : ''
@@ -330,10 +331,11 @@ async function getRepresentedGroup({
         policy: entityQueryPolicies.representedGroup,
         force,
         queryFn: async () => {
-            const response = await tauriClient.app.VrchatUserRepresentedGroupGet({
-                userId: normalizedUserId,
-                endpoint
-            });
+            const response =
+                await tauriClient.app.VrchatUserRepresentedGroupGet({
+                    userId: normalizedUserId,
+                    endpoint
+                });
             const json = unwrapVrchatUserResponse(
                 response,
                 `users/${encodeURIComponent(normalizedUserId)}/groups/represented`
@@ -372,7 +374,10 @@ async function getMutualFriends({
     return Array.isArray(json) ? json : [];
 }
 
-async function getAllMutualFriends({ userId, endpoint = '' }: UserEndpointInput) {
+async function getAllMutualFriends({
+    userId,
+    endpoint = ''
+}: UserEndpointInput) {
     return collectPages(({ n, offset }) =>
         getMutualFriends({ userId, endpoint, n, offset })
     );
@@ -404,11 +409,7 @@ async function updateCurrentUser({
         response,
         `users/${encodeURIComponent(normalizedUserId)}`
     ).json;
-    const mergedJson = mergeCurrentUserUpdateResponse(
-        json,
-        cachedUser,
-        params
-    );
+    const mergedJson = mergeCurrentUserUpdateResponse(json, cachedUser, params);
     const nextUser = normalize(mergedJson);
     setCachedQueryData(queryKey, mergedJson);
     recordUserProfile(nextUser, {
@@ -480,10 +481,7 @@ async function addCurrentUserTags({
         `users/${encodeURIComponent(normalizedUserId)}/addTags`
     ).json;
     const nextUser = normalize(json);
-    setCachedQueryData(
-        queryKeys.user(normalizedUserId, endpoint),
-        json
-    );
+    setCachedQueryData(queryKeys.user(normalizedUserId, endpoint), json);
     recordUserProfile(nextUser, {
         endpoint,
         source: 'currentUser',
@@ -517,10 +515,7 @@ async function removeCurrentUserTags({
         `users/${encodeURIComponent(normalizedUserId)}/removeTags`
     ).json;
     const nextUser = normalize(json);
-    setCachedQueryData(
-        queryKeys.user(normalizedUserId, endpoint),
-        json
-    );
+    setCachedQueryData(queryKeys.user(normalizedUserId, endpoint), json);
     recordUserProfile(nextUser, {
         endpoint,
         source: 'currentUser',

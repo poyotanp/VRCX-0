@@ -413,6 +413,7 @@ fn normalize_friend_entry(
         "$platform".into(),
         Value::String(compute_user_platform(&platform, &last_platform)),
     );
+    vrcx_0_core::friends::strip_default_avatar_image(&mut object);
     Value::Object(object)
 }
 

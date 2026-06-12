@@ -99,6 +99,20 @@ impl FriendRosterBaseline {
     }
 }
 
+/// domain or version suffix. A `currentAvatarImageUrl` pointing at it means "no real avatar".
+pub const DEFAULT_AVATAR_FILE_ID: &str = "file_0e8c4e32-7444-44ea-ade4-313c010d4bae";
+
+pub fn strip_default_avatar_image(object: &mut Map<String, Value>) {
+    let is_default = object
+        .get("currentAvatarImageUrl")
+        .and_then(Value::as_str)
+        .is_some_and(|url| url.contains(DEFAULT_AVATAR_FILE_ID));
+    if is_default {
+        object.remove("currentAvatarImageUrl");
+        object.remove("currentAvatarThumbnailImageUrl");
+    }
+}
+
 pub fn normalize_user_id(value: &str) -> String {
     value.trim().to_string()
 }
@@ -122,7 +136,47 @@ fn first_non_empty<'a>(values: impl IntoIterator<Item = &'a str>) -> &'a str {
 
 #[cfg(test)]
 mod tests {
-    use super::{FriendRecord, FriendRosterBaseline};
+    use super::{
+        strip_default_avatar_image, FriendRecord, FriendRosterBaseline, DEFAULT_AVATAR_FILE_ID,
+    };
+    use serde_json::{json, Value};
+
+    #[test]
+    fn strips_default_avatar_image_and_thumbnail() {
+        let mut object = json!({
+            "currentAvatarImageUrl": format!("https://api.vrchat.cloud/api/1/file/{DEFAULT_AVATAR_FILE_ID}/1/file"),
+            "currentAvatarThumbnailImageUrl": format!("https://api.vrchat.cloud/api/1/file/{DEFAULT_AVATAR_FILE_ID}/1/256"),
+            "displayName": "Friend"
+        })
+        .as_object()
+        .cloned()
+        .unwrap();
+
+        strip_default_avatar_image(&mut object);
+
+        assert!(!object.contains_key("currentAvatarImageUrl"));
+        assert!(!object.contains_key("currentAvatarThumbnailImageUrl"));
+        assert_eq!(
+            object.get("displayName"),
+            Some(&Value::String("Friend".into()))
+        );
+    }
+
+    #[test]
+    fn keeps_real_avatar_image() {
+        let mut object = json!({
+            "currentAvatarImageUrl": "https://api.vrchat.cloud/api/1/file/file_real/1/file",
+            "currentAvatarThumbnailImageUrl": "https://api.vrchat.cloud/api/1/file/file_real/1/256"
+        })
+        .as_object()
+        .cloned()
+        .unwrap();
+
+        strip_default_avatar_image(&mut object);
+
+        assert!(object.contains_key("currentAvatarImageUrl"));
+        assert!(object.contains_key("currentAvatarThumbnailImageUrl"));
+    }
 
     #[test]
     fn normalizes_baseline_friend_records() {

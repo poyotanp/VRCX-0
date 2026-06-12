@@ -44,6 +44,34 @@ describe('UserProfileRepository', () => {
         });
     });
 
+    it('strips the default robot avatar image so it resolves as unknown, not "Robot"', () => {
+        const robotImage =
+            'https://api.vrchat.cloud/api/1/file/file_0e8c4e32-7444-44ea-ade4-313c010d4bae/1/file';
+        expect(
+            userProfileRepository.normalize({
+                id: 'usr_robot',
+                currentAvatarImageUrl: robotImage,
+                currentAvatarThumbnailImageUrl: robotImage
+            })
+        ).toMatchObject({
+            currentAvatarImageUrl: '',
+            currentAvatarThumbnailImageUrl: ''
+        });
+
+        const realImage =
+            'https://api.vrchat.cloud/api/1/file/file_real-avatar/1/file';
+        expect(
+            userProfileRepository.normalize({
+                id: 'usr_real',
+                currentAvatarImageUrl: realImage,
+                currentAvatarThumbnailImageUrl: realImage
+            })
+        ).toMatchObject({
+            currentAvatarImageUrl: realImage,
+            currentAvatarThumbnailImageUrl: realImage
+        });
+    });
+
     it('treats troll and probable-troll tags as trust sorting modifiers', () => {
         expect(
             userProfileRepository.normalize({
@@ -94,29 +122,23 @@ describe('UserProfileRepository', () => {
 
         expect(
             tauriMock.app.VrchatUserMutualFriendsGet
-        ).toHaveBeenNthCalledWith(
-            1,
-            {
-                userId: 'usr_target',
-                endpoint: 'https://api.example.test',
-                n: 100,
-                offset: 0
-            }
-        );
+        ).toHaveBeenNthCalledWith(1, {
+            userId: 'usr_target',
+            endpoint: 'https://api.example.test',
+            n: 100,
+            offset: 0
+        });
         expect(
             tauriMock.app.VrchatUserMutualFriendsGet
-        ).toHaveBeenNthCalledWith(
-            2,
-            {
-                userId: 'usr_target',
-                endpoint: 'https://api.example.test',
-                n: 100,
-                offset: 100
-            }
+        ).toHaveBeenNthCalledWith(2, {
+            userId: 'usr_target',
+            endpoint: 'https://api.example.test',
+            n: 100,
+            offset: 100
+        });
+        expect(tauriMock.app.VrchatUserMutualFriendsGet).toHaveBeenCalledTimes(
+            2
         );
-        expect(
-            tauriMock.app.VrchatUserMutualFriendsGet
-        ).toHaveBeenCalledTimes(2);
         expect(rows).toHaveLength(101);
         expect(rows.at(-1)).toEqual({ id: 'usr_last' });
     });

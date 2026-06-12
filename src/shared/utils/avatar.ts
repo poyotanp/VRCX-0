@@ -47,6 +47,25 @@ function storeAvatarImage(
     return avatarInfo;
 }
 
+const DEFAULT_AVATAR_FILE_ID = 'file_0e8c4e32-7444-44ea-ade4-313c010d4bae';
+
+/**
+ * @param {object} record - User/profile record (mutated in place)
+ * @returns {object} The same record
+ */
+function stripDefaultAvatarImage<T extends Record<string, any>>(record: T): T {
+    const imageUrl = record['currentAvatarImageUrl'];
+    if (
+        typeof imageUrl === 'string' &&
+        imageUrl.includes(DEFAULT_AVATAR_FILE_ID)
+    ) {
+        const target = record as Record<string, unknown>;
+        target['currentAvatarImageUrl'] = '';
+        target['currentAvatarThumbnailImageUrl'] = '';
+    }
+    return record;
+}
+
 /**
  *
  * @param {string} avatar
@@ -117,6 +136,8 @@ function compareUnityVersion(
 
 export {
     storeAvatarImage,
+    stripDefaultAvatarImage,
+    DEFAULT_AVATAR_FILE_ID,
     parseAvatarUrl,
     getPlatformInfo,
     compareUnityVersion

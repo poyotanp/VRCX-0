@@ -492,7 +492,7 @@ impl RealtimeHostRuntime {
         self: &Arc<Self>,
         endpoint: String,
         user_id: String,
-        profile: serde_json::Value,
+        mut profile: serde_json::Value,
     ) -> Result<bool> {
         let normalized_user_id = user_id.trim().to_string();
         if normalized_user_id.is_empty() {
@@ -501,6 +501,9 @@ impl RealtimeHostRuntime {
         let profile_user_id = json_string_field(profile.get("id"));
         if profile_user_id != normalized_user_id {
             return Ok(false);
+        }
+        if let Some(profile_object) = profile.as_object_mut() {
+            vrcx_0_core::friends::strip_default_avatar_image(profile_object);
         }
         let requested_endpoint = endpoint.trim().to_string();
         let active = {
