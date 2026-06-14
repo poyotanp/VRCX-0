@@ -380,6 +380,13 @@
         "notification_center": {
             "title": "通知センター",
             "view_more": "さらに表示",
+            "mark_all_read": "すべて既読にする",
+            "mark_as_read": "既読にする",
+            "more_actions": "その他の操作",
+            "join_now": "今すぐ参加",
+            "group_action": "要対応",
+            "group_activity": "アクティビティ",
+            "group_system": "システム",
             "tab_friend": "フレンド",
             "tab_group": "グループ",
             "tab_other": "その他",

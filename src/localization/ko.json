@@ -378,6 +378,13 @@
         "notification_center": {
             "title": "알림 센터",
             "view_more": "더 많이 보기",
+            "mark_all_read": "모두 읽음으로 표시",
+            "mark_as_read": "읽음으로 표시",
+            "more_actions": "추가 작업",
+            "join_now": "지금 참가",
+            "group_action": "처리 필요",
+            "group_activity": "활동",
+            "group_system": "시스템",
             "tab_friend": "친구",
             "tab_group": "그룹",
             "tab_other": "기타",

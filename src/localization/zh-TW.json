@@ -380,6 +380,13 @@
         "notification_center": {
             "title": "通知中心",
             "view_more": "查看更多",
+            "mark_all_read": "全部標記已讀",
+            "mark_as_read": "標記已讀",
+            "more_actions": "更多操作",
+            "join_now": "立即加入",
+            "group_action": "待處理",
+            "group_activity": "活動",
+            "group_system": "系統",
             "tab_friend": "好友",
             "tab_group": "群組",
             "tab_other": "其他",

@@ -380,6 +380,13 @@
         "notification_center": {
             "title": "Notification Center",
             "view_more": "View More",
+            "mark_all_read": "Mark all read",
+            "mark_as_read": "Mark as read",
+            "more_actions": "More actions",
+            "join_now": "Join now",
+            "group_action": "Needs Action",
+            "group_activity": "Activity",
+            "group_system": "System",
             "tab_friend": "Friend",
             "tab_group": "Group",
             "tab_other": "Other",

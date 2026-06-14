@@ -1,11 +1,13 @@
-import { BellIcon, RefreshCcwIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { BellIcon, CheckCheckIcon, RefreshCcwIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import { InviteMessageDialog } from '@/components/dialogs/InviteMessageDialog';
+import { NotificationDrawerList } from '@/features/notifications/drawer/NotificationDrawerList';
 import { userFacingErrorMessage } from '@/lib/errorDisplay';
 import notificationPersistenceRepository from '@/repositories/notificationPersistenceRepository';
+import { openWorldDialog } from '@/services/dialogService';
 import {
     acceptFriendRequestNotification,
     acceptRequestInviteNotification,
@@ -28,16 +30,13 @@ import {
     SheetTitle
 } from '@/ui/shadcn/sheet';
 import { Spinner } from '@/ui/shadcn/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
     buildCachedInstanceMap,
-    categoryOrder,
     openNotificationLink,
     resolveCurrentInviteLocation
 } from './vrc-notification-center/notificationCenterUtils';
-import { NotificationList } from './vrc-notification-center/NotificationList';
 
 export function VrcNotificationCenterHost() {
     const { t } = useTranslation();
@@ -94,7 +93,6 @@ export function VrcNotificationCenterHost() {
     const markAllSeen = useVrcNotificationStore(
         (state: any) => state.markAllSeen
     );
-    const [activeTab, setActiveTab] = useState('friend');
     const [inviteResponseRequest, setInviteResponseRequest] = useState(null);
     const groupInstanceRows =
         groupInstancesUserId === currentUserId &&
@@ -133,20 +131,7 @@ export function VrcNotificationCenterHost() {
         [cachedInstances, currentInviteLocation, currentUserId]
     );
 
-    useEffect(() => {
-        if (!isCenterOpen) {
-            return;
-        }
-        for (const category of categoryOrder) {
-            if (categories[category]?.unseen?.length) {
-                setActiveTab(category);
-                return;
-            }
-        }
-        setActiveTab('friend');
-    }, [categories, isCenterOpen]);
-
-    function markAllSeenOnClose() {
+    function markAllRead() {
         if (unseenCount <= 0) {
             return;
         }
@@ -162,13 +147,24 @@ export function VrcNotificationCenterHost() {
     }
 
     function handleOpenChange(open: any) {
-        if (!open && unseenCount > 0) {
-            markAllSeenOnClose();
-        }
         if (!open) {
             setInviteResponseRequest(null);
         }
         setCenterOpen(open);
+    }
+
+    function joinQueueReady(notification: any) {
+        const location = String(notification?.location || '').trim();
+        if (!location) {
+            return;
+        }
+        openWorldDialog({
+            worldId: location,
+            title:
+                notification?.worldName ||
+                notification?.details?.worldName ||
+                ''
+        });
     }
 
     function navigateToTable() {
@@ -443,6 +439,27 @@ export function VrcNotificationCenterHost() {
                                             variant="ghost"
                                             size="icon-sm"
                                             aria-label={t(
+                                                'side_panel.notification_center.mark_all_read'
+                                            )}
+                                            disabled={unseenCount <= 0}
+                                            onClick={markAllRead}
+                                        >
+                                            <CheckCheckIcon data-icon="inline-start" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {t(
+                                            'side_panel.notification_center.mark_all_read'
+                                        )}
+                                    </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            aria-label={t(
                                                 'view.notification.refresh_tooltip'
                                             )}
                                             disabled={loadStatus === 'running'}
@@ -483,56 +500,26 @@ export function VrcNotificationCenterHost() {
                             </div>
                         ) : null}
                     </SheetHeader>
-                    <Tabs
-                        value={activeTab}
-                        onValueChange={setActiveTab}
-                        className="flex min-h-0 flex-1 flex-col"
-                    >
-                        <TabsList className="mx-2 mt-2 grid grid-cols-3">
-                            {categoryOrder.map((category: any) => (
-                                <TabsTrigger key={category} value={category}>
-                                    {t(
-                                        `side_panel.notification_center.tab_${category}`
-                                    )}
-                                    {categories[category]?.unseen?.length ? (
-                                        <span className="text-muted-foreground ml-1 text-xs">
-                                            (
-                                            {categories[category].unseen.length}
-                                            )
-                                        </span>
-                                    ) : null}
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-                        {categoryOrder.map((category: any) => (
-                            <TabsContent
-                                key={category}
-                                value={category}
-                                className="mt-0 min-h-0 flex-1 overflow-hidden"
-                            >
-                                <NotificationList
-                                    unseen={categories[category]?.unseen || []}
-                                    recent={categories[category]?.recent || []}
-                                    currentUserId={currentUserId}
-                                    canInviteFromCurrentLocation={
-                                        canInviteFromCurrentLocation
-                                    }
-                                    onAcceptFriendRequest={acceptFriendRequest}
-                                    onAcceptRequestInvite={acceptRequestInvite}
-                                    onSendInviteResponseWithMessage={
-                                        sendInviteResponseWithMessage
-                                    }
-                                    onSendNotificationResponse={
-                                        sendNotificationResponse
-                                    }
-                                    onHideNotification={hideNotification}
-                                    onDeleteNotification={deleteNotification}
-                                    onMarkSeen={markNotificationSeen}
-                                    onNavigateToTable={navigateToTable}
-                                />
-                            </TabsContent>
-                        ))}
-                    </Tabs>
+                    <NotificationDrawerList
+                        categories={categories}
+                        currentUserId={currentUserId}
+                        canInviteFromCurrentLocation={
+                            canInviteFromCurrentLocation
+                        }
+                        handlers={{
+                            onAcceptFriendRequest: acceptFriendRequest,
+                            onAcceptRequestInvite: acceptRequestInvite,
+                            onSendInviteResponseWithMessage:
+                                sendInviteResponseWithMessage,
+                            onSendNotificationResponse:
+                                sendNotificationResponse,
+                            onHideNotification: hideNotification,
+                            onDeleteNotification: deleteNotification,
+                            onMarkSeen: markNotificationSeen,
+                            onJoinQueueReady: joinQueueReady
+                        }}
+                        onNavigateToTable={navigateToTable}
+                    />
                 </SheetContent>
             </Sheet>
             <InviteMessageDialog
