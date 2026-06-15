@@ -207,7 +207,7 @@
             "compact_game_log_widget_configuration": "紧凑游戏日志小组件配置。",
             "instance_widget": "房间小组件",
             "compact_in_game_status_widget_configuration": "紧凑游戏状态小组件配置。",
-            "icon": "头像",
+            "icon": "图标",
             "display_name": "昵称",
             "rank": "信誉等级",
             "timer": "时长",
@@ -303,7 +303,7 @@
         "search_no_results": "未找到结果",
         "search_min_chars": "请输入至少 2 个字符",
         "search_categories": "搜点什么...",
-        "search_scope_all": "以及你给他们的备注",
+        "search_scope_all": "名称、本地备注和线上备注",
         "search_scope_avatars": "看看有什么好玩的模型",
         "search_scope_worlds": "找个好玩的地方玩玩",
         "search_scope_joined": "找不到组织了吗？",
@@ -1404,7 +1404,7 @@
                 "screenshot": "截图",
                 "screenshot_description": "查看和管理截图",
                 "gallery": "相册",
-                "gallery_description": "管理个人资料图片和拍立得",
+                "gallery_description": "管理相册、个人资料图标和 VRChat 拍立得",
                 "inventory": "库存",
                 "inventory_description": "管理表情、贴纸、物品和装饰"
             },
@@ -1547,16 +1547,16 @@
             },
             "other": {
                 "header": "其它",
-                "edit_invite_message": "编辑邀请消息",
+                "edit_invite_message": "消息模板",
                 "edit_invite_message_description": "编辑邀请或申请加入时使用的消息"
             },
             "success": {
                 "media_item_deleted": "媒体项目已删除",
-                "print_deleted": "Print已删除"
+                "print_deleted": "「拍立得」已删除"
             },
             "empty": {
                 "no_current_user_is_available": "当前没有可用的用户",
-                "no_prints_loaded": "未加载 Print",
+                "no_prints_loaded": "未加载「拍立得」",
                 "no_inventory_items_loaded": "未加载物品库物品",
                 "no_player_metadata": "没有玩家元数据",
                 "no_screenshot_selected": "未选择截图"
@@ -1570,7 +1570,7 @@
             },
             "action": {
                 "preview": "预览",
-                "refresh_this_tab_to_load_your_vrchat_prints": "刷新此标签页以加载你的 VRChat Print",
+                "refresh_this_tab_to_load_your_vrchat_prints": "刷新此标签页以加载你的 VRChat「拍立得」",
                 "refresh_this_tab_to_load_inventory_items": "刷新此标签页以加载物品库项目",
                 "load_a_screenshot_to_inspect_embedded_world_player_and_file_metadata": "加载截图以查看嵌入的世界、玩家和文件元数据"
             },
@@ -1591,10 +1591,10 @@
             },
             "toast": {
                 "failed_to_load_value": "加载{value}失败",
-                "failed_to_load_prints": "加载 Print失败",
+                "failed_to_load_prints": "加载「拍立得」失败",
                 "failed_to_load_inventory": "加载物品库失败",
                 "failed_to_delete_media_item": "删除媒体项目失败",
-                "failed_to_delete_print": "删除 Print失败",
+                "failed_to_delete_print": "删除「拍立得」失败",
                 "failed_to_update_profile_media": "更新个人资料媒体失败",
                 "failed_to_consume_inventory_bundle": "使用物品库礼包失败",
                 "failed_to_redeem_reward": "兑换奖励失败",
@@ -1606,7 +1606,7 @@
             },
             "modal": {
                 "delete_value_item": "删除 {value} 项目",
-                "delete_print": "删除 Print"
+                "delete_print": "删除「拍立得」"
             },
             "dynamic": {
                 "no_value_loaded": "未加载{value}",
@@ -1759,7 +1759,7 @@
                     "minimized": "以最小化的形式启动",
                     "tray": "最小化到系统托盘",
                     "background_mode": "最小化到托盘时切换到后台模式",
-                    "background_mode_description": "关闭到系统托盘时切换到后台模式，内存占用降至约十分之一；恢复后部分页面状态可能重置。",
+                    "background_mode_description": "最小化到系统托盘时切换到后台模式，内存占用降至约十分之一；恢复后部分页面状态可能重置。",
                     "disable_vr_overlay_gpu_acceleration": "禁用 VR 叠加界面的GPU加速",
                     "proxy": "代理服务器设置",
                     "proxy_description": "设置 VRCX-0 使用的代理服务器。更改代理后需要重启才能生效。",
@@ -2626,7 +2626,7 @@
                 "contribute_tooltip": "在 GitHub 查看主题制作和提交说明。"
             },
             "browse": {
-                "empty": "Catalog 里还没有社区主题。"
+                "empty": "目录中还没有社区主题。"
             },
             "installed": {
                 "header": "已安装主题",
@@ -2678,7 +2678,7 @@
             "header": "主题",
             "settings": {
                 "header": "主题",
-                "description": "管理主题来源、背景图案、社区主题、强调色和自定义 CSS。",
+                "description": "管理主题来源、背景图片、社区主题、强调色和自定义 CSS。",
                 "current_source": "当前来源"
             },
             "summary": {
@@ -2689,7 +2689,7 @@
                 "header": "主题来源",
                 "built_in": "默认主题",
                 "built_in_description": "使用 VRCX-0 默认亮色/暗色主题。",
-                "background": "背景图案",
+                "background": "背景图片",
                 "background_description": "使用每日图片或本地图片，并套用固定 surface 预设。",
                 "community": "社区主题",
                 "community_description": "安装并启用社区 CSS 快照。"
@@ -2728,7 +2728,7 @@
         },
         "background_image": {
             "settings": {
-                "header": "背景图案",
+                "header": "背景图片",
                 "mode": "模式",
                 "description": "使用每日图片来源，或选择你自己的本地图片来源。",
                 "provider": "来源",
@@ -2772,14 +2772,14 @@
                 "open_settings": "打开背景设置"
             },
             "menu": {
-                "header": "背景图案",
-                "appearance_disabled": "背景图案启用时，亮色/暗色模式固定。"
+                "header": "背景图片",
+                "appearance_disabled": "背景图片启用时，亮色/暗色模式固定。"
             },
             "toast": {
-                "enabled": "背景图案已启用。",
-                "disabled": "背景图案已关闭。",
-                "refreshed": "背景图案已刷新。",
-                "failed": "更新背景图案失败。",
+                "enabled": "背景图片已启用。",
+                "disabled": "背景图片已关闭。",
+                "refreshed": "背景图片已刷新。",
+                "failed": "更新背景图片失败。",
                 "custom_source_required": "请先在设置里选择本地图片。",
                 "no_images": "没有找到支持的图片。"
             }
@@ -2979,7 +2979,7 @@
                 "copy_id": "复制 ID",
                 "copy_url": "复制URL",
                 "copy_display_name": "复制昵称",
-                "vrcplus_hides_avatar": "当设置了 VRC+ 专属的个人资料图标后，模型信息将会被隐藏。同时这也会导致动态中的“模型变动”事件被隐藏",
+                "vrcplus_hides_avatar": "当设置了 VRChat+ 横幅后，模型信息将会被隐藏。同时这也会导致动态中的“模型变动”事件被隐藏",
                 "instance_full": "房间已满",
                 "instance_closed": "房间已关闭",
                 "instance_age_restricted": "年龄限制",
@@ -3143,7 +3143,7 @@
             "label": {
                 "please_choose_a_valid_social_status": "请选择有效的社交状态",
                 "status_preset_already_exists": "状态预设已存在",
-                "status_history": "签名历史",
+                "status_history": "状态历史",
                 "social_status": "社交状态",
                 "languages": "语言",
                 "pronouns": "人称代词",
@@ -3176,7 +3176,7 @@
             },
             "empty": {
                 "friend_request_is_no_longer_active": "好友请求已失效",
-                "no_status_history": "暂无签名历史",
+                "no_status_history": "暂无状态历史",
                 "no_languages_selected": "未选择语言",
                 "no_groups_to_export": "没有可导出的群组",
                 "no_users": "没有用户",
@@ -3317,7 +3317,7 @@
                 "change_allowed_video_player_domains": "更改允许在视频播放器使用的域名",
                 "download_package": "下载 Unity Package",
                 "publish": "发布",
-                "publish_to_labs": "发布到社区实验室",
+                "publish_to_labs": "发布到社区实验室。每周（7 天）只能发布一次",
                 "unpublish": "取消公开",
                 "local_records": "本地数据",
                 "open_cache": "打开缓存",
@@ -3946,7 +3946,7 @@
             "group_access_type": "房间类型",
             "group_access_type_members": "仅限群组成员",
             "group_access_type_plus": "群组+",
-            "group_access_type_public": "公开",
+            "group_access_type_public": "群组公开",
             "region": "服务器位置",
             "region_usw": "美国西部",
             "region_use": "美国东部",
@@ -4088,7 +4088,7 @@
             "refresh": "刷新"
         },
         "edit_invite_messages": {
-            "header": "编辑消息",
+            "header": "消息模板",
             "invite_message_tab": "邀请",
             "invite_request_tab": "申请加入",
             "invite_request_response_tab": "回绝加入申请",
@@ -4104,7 +4104,7 @@
             }
         },
         "edit_invite_message": {
-            "header": "编辑消息",
+            "header": "编辑消息模板",
             "description": "编辑冷却时间：一小时",
             "cancel": "取消",
             "save": "保存"
@@ -4579,14 +4579,14 @@
         },
         "previous_instances": {
             "header": "曾加入的房间",
-            "info": "曾加入的房间",
+            "info": "房间详情",
             "search_placeholder": "搜索",
             "table_view": "玩家",
-            "chart_view": "图表视图",
+            "chart_view": "时间线",
             "empty": {
                 "no_player_detail_rows": "没有玩家详情行",
                 "there_are_no_timeline_rows_for_this_instance": "这个房间没有时间线记录",
-                "no_instance_selected": "没有房间所选",
+                "no_instance_selected": "未选择房间",
                 "no_player_detail_rows_for_this_instance": "此房间没有玩家详情行",
                 "no_instance_records": "没有房间记录"
             },
@@ -6034,7 +6034,7 @@
             "screenshot_metadata": "截图",
             "screenshot_metadata_browser_and_file_actions": "截图浏览器和文件操作。",
             "vrchat_log": "VRChat 日志查看器",
-            "vrchat_log_viewer_for_local_output_logs": "本地 VRChat output log 查看器。",
+            "vrchat_log_viewer_for_local_output_logs": "本地 VRChat 输出日志查看器。",
             "settings": "设置",
             "settings_and_diagnostics": "设置和诊断。",
             "current_instance_player_roster_rebuilt_from_local_activity_data": "已根据本地活动数据重建当前房间玩家列表。",

@@ -602,7 +602,7 @@
                 "switch_to_sessions": "세션 보기",
                 "date_range": "기간",
                 "joined": "가입됨",
-                "left": "왼쪽",
+                "left": "퇴장",
                 "videos": "비디오",
                 "friend": "친구",
                 "favorite": "즐겨찾기",
@@ -612,9 +612,9 @@
                 "collapse_session": "세션 축소",
                 "no_data": "게임 로그 데이터 없음",
                 "players_joined": "{count} 플레이어가 합류했습니다.",
-                "players_left": "{count} 플레이어 남음",
+                "players_left": "플레이어 {count}명 퇴장",
                 "play_count": "×{count}",
-                "played_by": "{name}님이 연주함"
+                "played_by": "{name}님이 재생함"
             },
             "label": {
                 "time_spent_in_this_instance": "이 인스턴스에 소요된 시간",
@@ -739,11 +739,11 @@
                 "failed_to_update_avatar_tags": "아바타 태그를 업데이트하지 못했습니다.",
                 "failed_to_update_avatar": "아바타를 업데이트하지 못했습니다.",
                 "failed_to_select_avatar": "아바타를 선택하지 못했습니다.",
-                "failed_to_create_impostor": "사기꾼을 생성하지 못했습니다.",
+                "failed_to_create_impostor": "임포스터를 생성하지 못했습니다.",
                 "failed_to_upload_avatar_image": "아바타 이미지를 업로드하지 못했습니다."
             },
             "modal": {
-                "create_impostor": "사기꾼을 만드시겠습니까?",
+                "create_impostor": "임포스터를 생성하시겠습니까?",
                 "create": "만들기",
                 "make_avatar_public": "아바타를 공개하시겠습니까?",
                 "make_avatar_private": "아바타를 비공개로 설정하시겠습니까?",
@@ -1058,7 +1058,7 @@
             },
             "action": {
                 "open_notification_link": "알림 링크 열기",
-                "mark_seen": "마크가 보임",
+                "mark_seen": "읽음 표시",
                 "send_boop": "삑삑 보내기",
                 "search_emoji": "이모티콘 검색",
                 "clear_selection": "선택 취소",
@@ -1397,7 +1397,7 @@
                 "latest": "최신",
                 "file_placeholder": "로그 파일 선택",
                 "search_placeholder": "메시지, 카테고리 또는 스택 추적 검색",
-                "follow_latest": "최신 소식을 팔로우하세요",
+                "follow_latest": "최신 항목 따라가기",
                 "all_categories": "모든 카테고리",
                 "clear_categories": "카테고리 지우기",
                 "copy_selected": "선택 항목 복사",
@@ -1476,7 +1476,7 @@
                 "minimum_friends": "최소 친구",
                 "minimum_players": "최소 플레이어",
                 "room_types": "객실 유형",
-                "room_types_hint": "어떤 객실 유형이든 비워두세요. 귀하가 참여할 수 있는 것처럼 보이게 만드는 규칙은 제한되어야 합니다.",
+                "room_types_hint": "모든 방 유형에 적용하려면 비워 두세요. 참여 가능한 것처럼 보이게 만드는 규칙은 제한된 상태로 두는 것이 좋습니다.",
                 "no_custom_room_rules": "구성된 맞춤 객실 규칙이 없습니다.",
                 "preset_alone": "혼자",
                 "preset_with_anyone": "누구와도",
@@ -1490,7 +1490,7 @@
                 "auto_send_invites_for_request_invite": "가입 요청에 자동 응답",
                 "auto_send_invites_description": "허용된 즐겨찾기 친구만 자동으로 처리됩니다.",
                 "allowlist_mode": "허용 목록 모드",
-                "allowlist_mode_description": "자동 응답을 받으려면 초대를 허용하려면 현재 방이 필요합니다.",
+                "allowlist_mode_description": "자동 응답을 하려면 현재 방이 초대를 허용해야 합니다.",
                 "all_favorite_friends": "좋아하는 친구들 모두",
                 "selected_favorite_groups": "선택한 즐겨찾는 그룹",
                 "selected_favorite_groups_label": "선택한 즐겨찾는 그룹",
@@ -1729,7 +1729,7 @@
                 "automation": {
                     "auto_change_status": "객실 상태 규칙",
                     "auto_change_status_switch": "회의실 상태 규칙 활성화",
-                    "auto_state_change_tooltip": "인스턴스에 다른 사람이 있을 때 상태를 자동으로 바꿉니다",
+                    "auto_state_change_tooltip": "현재 방과 함께 있는 사람에 따라 상태를 자동으로 변경하도록 설정합니다",
                     "auto_state_change_switch_tooltip": "인스턴스에 다른 사람이 있을 때 자동으로 상태 변경(혼자/회사)",
                     "alone_condition": "이럴 때는 혼자 생각해 보세요",
                     "alone": "다른 사용자 없음",
@@ -2373,7 +2373,7 @@
                 "starts_in": "{seconds}s 후에 자동 로그인이 시작됩니다.",
                 "authenticating": "{name} 인증 중",
                 "restoring_session_for": "{name}에 대한 기존 브라우저 세션 복원 중",
-                "logged_in_as": "{name}(으)로 자동 로그인됩니다.",
+                "logged_in_as": "{name}(으)로 자동 로그인되었습니다.",
                 "restored_session_for": "{name}에 대한 이전 브라우저 세션을 자동으로 복원했습니다."
             },
             "toast": {
@@ -2487,9 +2487,9 @@
                 "optional_emoji_id_leave_blank_to_send_the_default": "선택적 이모티콘 ID입니다. 기본 부프를 보내려면 비워 두세요."
             },
             "dynamic": {
-                "unfriended_value": "친구가 없습니다 {value}",
+                "unfriended_value": "{value} 친구를 삭제했습니다.",
                 "unfriend_value_friends": "{value} 친구를 친구 해제하시겠습니까?",
-                "unfriended_value_friends": "친구가 없는 {value} 친구",
+                "unfriended_value_friends": "친구 {value}명을 삭제했습니다.",
                 "loaded_value_friend_profiles": "{value} 친구 프로필을 로드했습니다."
             }
         },
@@ -2516,7 +2516,7 @@
             "dynamic": {
                 "accept_the_friend_request_from_value": "{value}의 친구 요청을 수락하시겠습니까?",
                 "decline_the_value_notification": "{value} 알림을 거부하시겠습니까?",
-                "send_an_invite_to_value": "{value}에 초대를 보내시겠습니까?"
+                "send_an_invite_to_value": "{value}에게 초대를 보내시겠습니까?"
             }
         },
         "community_themes": {
@@ -2573,8 +2573,8 @@
                 "no_folder": "선택한 폴더가 없습니다.",
                 "select_folder": "폴더 선택",
                 "reload": "새로고침",
-                "start_watch": "시계 시작",
-                "stop_watch": "시계 중지",
+                "start_watch": "감시 시작",
+                "stop_watch": "감시 중지",
                 "stop_preview": "미리보기 중지",
                 "loaded": "로컬 테마 미리보기가 로드되었습니다.",
                 "stopped": "로컬 테마 미리보기가 중지되었습니다.",
@@ -2750,12 +2750,12 @@
             "scope_vr": "VR",
             "run_policy_skipIfRunning": "실행 중인 경우 건너뛰기",
             "run_policy_short_always": "모든 시작",
-            "run_policy_short_skipIfRunning": "달리기 건너뛰기",
-            "stop_policy_keepRunning": "계속 달려",
+            "run_policy_short_skipIfRunning": "실행 중 건너뛰기",
+            "stop_policy_keepRunning": "계속 실행",
             "stop_policy_short_keepRunning": "유지하다",
             "stop_policy_short_closeByVrcx": "닫기",
             "delete": "삭제",
-            "delay_seconds": "발사 지연 시간(초)",
+            "delay_seconds": "실행 지연 시간(초)",
             "args": "인수",
             "close": "닫기",
             "save": "저장",
@@ -2766,7 +2766,7 @@
                 "name_target_required": "이름과 대상은 필수 항목입니다."
             },
             "run_policy_always": "VRChat 시작마다",
-            "stop_policy_closeByVrcx": "VRCX-0까지 닫음",
+            "stop_policy_closeByVrcx": "VRCX-0이 종료",
             "steam_app_id": "Steam 앱 ID"
         },
         "user": {
@@ -3087,7 +3087,7 @@
                 "moderator": "중재자",
                 "friend": "친구 #",
                 "muted": "음소거됨",
-                "order_by": "주문 기준",
+                "order_by": "정렬 기준",
                 "group_by": "그룹화 기준",
                 "vrchat_language_list_unavailable_using_local_language_codes": "VRChat 언어 목록을 사용할 수 없습니다. 현지 언어 코드를 사용합니다."
             },
@@ -3097,12 +3097,12 @@
                 "avatar_cloning_setting_updated": "아바타 복제 설정이 업데이트되었습니다.",
                 "booping_setting_updated": "부핑 설정이 업데이트되었습니다.",
                 "shared_connections_setting_updated": "공유 연결 설정이 업데이트되었습니다.",
-                "report_sent": "보고서가 전송되었습니다.",
+                "report_sent": "신고가 전송되었습니다.",
                 "boop_sent": "삑삑 보냈어",
                 "profile_details_updated": "프로필 세부정보가 업데이트되었습니다.",
                 "group_invite_sent": "그룹 초대가 전송되었습니다.",
-                "left_group": "왼쪽 그룹",
-                "group_order_updated": "그룹 주문이 업데이트되었습니다.",
+                "left_group": "그룹에서 나감",
+                "group_order_updated": "그룹 순서가 업데이트되었습니다.",
                 "discord_connections_setting_updated": "Discord 연결 설정이 업데이트되었습니다."
             },
             "empty": {
@@ -3124,7 +3124,7 @@
                 "blocked": "차단됨",
                 "cannot_load_message_templates_no_current_user_session_is_available": "메시지 템플릿을 로드할 수 없습니다. 현재 사용자 세션을 사용할 수 없습니다.",
                 "cannot_invite_no_current_vrchat_location_is_available": "초대할 수 없습니다. 현재 VRChat 위치를 사용할 수 없습니다.",
-                "group_id_is_required": "ID 그룹은 필수 항목입니다."
+                "group_id_is_required": "그룹 ID는 필수 항목입니다."
             },
             "description": {
                 "update_your_social_status_and_status_description": "소셜 상태 및 상태 메시지 업데이트",
@@ -3164,7 +3164,7 @@
                 "failed_to_send_group_invite": "그룹 초대를 보내지 못했습니다.",
                 "failed_to_update_group_visibility": "그룹 공개 상태를 업데이트하지 못했습니다.",
                 "failed_to_leave_group": "그룹에서 탈퇴하지 못했습니다.",
-                "failed_to_update_group_order": "그룹 주문을 업데이트하지 못했습니다.",
+                "failed_to_update_group_order": "그룹 순서를 업데이트하지 못했습니다.",
                 "failed_to_update_discord_connections_setting": "Discord 연결 설정을 업데이트하지 못했습니다.",
                 "value_failed": "{value} 실패",
                 "failed_to_value_user": "{value} 사용자 실패",
@@ -3182,7 +3182,7 @@
                 "send": "보내기",
                 "group_moderation": "그룹 중재",
                 "leave_group": "그룹 탈퇴",
-                "leave": "휴가",
+                "leave": "나가기",
                 "leave_selected_groups": "선택한 그룹 탈퇴",
                 "unfriend_user": "사용자를 친구 해제하시겠습니까?",
                 "optional_emoji_id_leave_blank_to_send_the_default": "선택적 이모티콘 ID입니다. 기본 부프를 보내려면 비워 두세요.",
@@ -3191,7 +3191,7 @@
             },
             "dynamic": {
                 "status_presets_are_limited_to_value": "상태 사전 설정은 {value}로 제한됩니다.",
-                "unfriended_value": "친구가 없습니다 {value}",
+                "unfriended_value": "{value} 친구 삭제됨",
                 "value": "{value}?",
                 "value_user": "{value} 사용자?",
                 "value_request_sent": "{value} 요청이 전송되었습니다.",
@@ -3204,7 +3204,7 @@
                 "updated_value_groups": "{value} 그룹이 업데이트되었습니다.",
                 "leave_value_selected_groups": "{value} 선택한 그룹을 탈퇴하시겠습니까?",
                 "failed_to_leave_value_groups": "{value} 그룹을 탈퇴하지 못했습니다.",
-                "left_value_groups": "왼쪽 {value} 그룹",
+                "left_value_groups": "{value}개 그룹에서 나감",
                 "enable_value": "{value} 활성화",
                 "disable_value": "{value} 비활성화"
             }
@@ -3357,7 +3357,7 @@
                 "selected_image_is_too_large": "선택한 이미지가 너무 큽니다.",
                 "selected_file_is_not_an_image": "선택한 파일은 이미지가 아닙니다",
                 "unable_to_open_this_instance_in_vrchat": "VRChat에서 이 인스턴스를 열 수 없습니다.",
-                "group_id_is_required_for_group_instances": "그룹 인스턴스에는 ID 그룹이 필요합니다.",
+                "group_id_is_required_for_group_instances": "그룹 인스턴스에는 그룹 ID가 필요합니다.",
                 "cannot_open_in_vrchat_location_is_not_a_concrete_instance": "VRChat에서 열 수 없습니다. 위치가 구체적인 인스턴스가 아닙니다.",
                 "failed_open_instance_in_vrchat_falling_back_to_self_invite": "VRChat에서 인스턴스 열기에 실패했습니다. 자체 초대로 돌아갑니다.",
                 "world_not_found_description": "세계 {worldId}을(를) 찾을 수 없습니다"
@@ -3423,7 +3423,7 @@
                 "change_youtube_preview": "YouTube 미리보기 변경",
                 "reset_home_world": "홈 월드를 재설정하시겠습니까?",
                 "make_home_world": "홈월드를 만들까?",
-                "publish_world": "출판세계?",
+                "publish_world": "월드를 게시하시겠습니까?",
                 "unpublish_world": "세계를 게시 취소하시겠습니까?",
                 "delete_persistent_data": "영구 데이터를 삭제하시겠습니까?",
                 "delete_world": "세계를 삭제하시겠습니까?"
@@ -3573,9 +3573,9 @@
                 "failed_to_upload_avatar_image": "아바타 이미지를 업로드하지 못했습니다.",
                 "failed_to_upload_avatar_gallery_image": "아바타 갤러리 이미지를 업로드하지 못했습니다.",
                 "impostor_queued_for_creation": "임포스터가 생성 대기 중입니다.",
-                "failed_to_create_impostor": "사기꾼을 생성하지 못했습니다.",
-                "impostor_deleted": "사기꾼이 삭제되었습니다.",
-                "failed_to_delete_impostor": "사기꾼을 삭제하지 못했습니다.",
+                "failed_to_create_impostor": "임포스터를 생성하지 못했습니다.",
+                "impostor_deleted": "임포스터가 삭제되었습니다.",
+                "failed_to_delete_impostor": "임포스터를 삭제하지 못했습니다.",
                 "impostor_queued_for_regeneration": "재생성 대기 중인 임포스터",
                 "failed_to_regenerate_impostor": "임포스터를 재생성하지 못했습니다.",
                 "avatar_deleted_but_current_user_snapshot_refresh": "아바타가 삭제되었지만 현재 사용자 스냅샷 새로 고침에 실패했습니다.",
@@ -3586,10 +3586,10 @@
                 "select_fallback": "대체 선택",
                 "delete_avatar": "아바타를 삭제하시겠습니까?",
                 "edit_local_memo": "지역 메모 수정",
-                "create_impostor_title": "사기꾼을 만드시겠습니까?",
+                "create_impostor_title": "임포스터를 만드시겠습니까?",
                 "create": "만들기",
-                "delete_impostor_title": "사기꾼을 삭제하시겠습니까?",
-                "regenerate_impostor_title": "사기꾼을 재생성 하시겠습니까?",
+                "delete_impostor_title": "임포스터를 삭제하시겠습니까?",
+                "regenerate_impostor_title": "임포스터를 재생성하시겠습니까?",
                 "regenerate": "재생성",
                 "block_avatar_title": "아바타를 차단하시겠습니까?",
                 "unblock_avatar_title": "아바타를 차단 해제하시겠습니까?",
@@ -3761,7 +3761,7 @@
                 "no_gallery_images": "갤러리 이미지 없음"
             },
             "label": {
-                "group_left": "왼쪽 그룹",
+                "group_left": "그룹 탈퇴함",
                 "user": "사용자",
                 "status": "상태",
                 "date": "날짜",
@@ -3814,9 +3814,9 @@
             },
             "modal": {
                 "leave_group": "그룹을 탈퇴하시겠습니까?",
-                "leave": "휴가",
+                "leave": "탈퇴",
                 "delete_group_post": "그룹 게시물을 삭제하시겠습니까?",
-                "block_group": "블록그룹?",
+                "block_group": "그룹을 차단하시겠습니까?",
                 "unblock_group": "그룹을 차단 해제하시겠습니까?",
                 "invite_to_group": "그룹에 초대",
                 "enter_the_vrchat_user_id_to_invite": "초대하려면 VRChat 사용자 ID를 입력하세요."
@@ -3829,7 +3829,7 @@
                 "value_group_user": "{value} 그룹 사용자?",
                 "value_completed": "{value} 완료됨",
                 "search_value": "{value} 검색",
-                "no_value": "아니요 {value}",
+                "no_value": "{value} 없음",
                 "value_copied": "{value} 복사됨"
             }
         },
@@ -4105,7 +4105,7 @@
             "header": "친구 목록 내보내기",
             "csv": "CSV",
             "json": "JSON",
-            "description": "현재 친구 목록을 CSV 또는 JSON로 내보냅니다."
+            "description": "현재 친구 목록을 CSV 또는 JSON으로 내보냅니다."
         },
         "export_own_avatars": {
             "header": "내 아바타 목록 내보내기",
@@ -4524,13 +4524,13 @@
             "description": {
                 "select_an_instance_row_to_view_its_details": "세부정보를 보려면 인스턴스 행을 선택하세요.",
                 "instance_details": "인스턴스 세부정보",
-                "leave_details": "휴가 세부 정보(",
+                "leave_details": "퇴장 세부정보(",
                 "open_instance_details": "인스턴스 세부정보 열기",
                 "details": "세부정보"
             },
             "action": {
                 "back": "뒤로",
-                "leave_details_count": "휴가 세부정보({count})"
+                "leave_details_count": "퇴장 세부정보({count})"
             },
             "loading": {
                 "loading_instance_details": "인스턴스 세부정보 로드 중..."
@@ -4679,7 +4679,7 @@
         },
         "open_source": {
             "header": "오픈 소스 소프트웨어 안내",
-            "description": "VRCX-0는 오픈 소스 소프트웨어에 기반하고 있습니다. 그들의 기여에 감사드립니다",
+            "description": "VRCX-0에 포함된 서드파티 종속성의 라이선스 및 고지 사항을 확인하세요.",
             "loading": "생성된 제3자 알림 로드 중...",
             "unavailable": "이 빌드에서는 생성된 타사 알림 매니페스트를 사용할 수 없습니다. 프로덕션 빌드를 실행하여 다시 생성하세요.",
             "search_placeholder": "패키지, 버전 또는 라이선스 검색",
@@ -4720,7 +4720,7 @@
             },
             "label": {
                 "process_list": "프로세스 목록",
-                "local_group": "지역단체",
+                "local_group": "로컬 그룹",
                 "image": "이미지",
                 "name": "이름",
                 "detail": "세부정보",
@@ -4732,7 +4732,7 @@
                 "no_parsed": "파싱되지 않음"
             },
             "description": {
-                "paste_exported_ids_process_the_list_then_import_to_a_vrchat_or_local_favorite_group": "내보낸 ID을 붙여넣고 목록을 처리한 다음 VRChat 즐겨찾는 그룹 또는 로컬 즐겨찾기 그룹으로 가져옵니다."
+                "paste_exported_ids_process_the_list_then_import_to_a_vrchat_or_local_favorite_group": "내보낸 ID를 붙여넣고 목록을 처리한 다음 VRChat 즐겨찾기 그룹 또는 로컬 즐겨찾기 그룹으로 가져옵니다."
             }
         },
         "tools": {
@@ -4779,7 +4779,7 @@
         },
         "instance": {
             "label": {
-                "closed_at": "휴무일:",
+                "closed_at": "종료 시각:",
                 "android": "안드로이드:",
                 "game_version": "게임 버전",
                 "instance_queuing_enabled": "인스턴스 대기열 활성화",
@@ -4905,10 +4905,10 @@
                 "error": "잘못된 URL/ID",
                 "failed": "직접 액세스 실패",
                 "opening": "여는 중...",
-                "opened": "직접 액세스 대상이 공개되었습니다.",
+                "opened": "직접 액세스 대상을 열었습니다.",
                 "opened_from_clipboard": "클립보드에서 열림"
             },
-            "description_failed": "직접 액세스에 실패했습니다. URL 또는 ID을 확인하고 다시 시도하세요."
+            "description_failed": "직접 액세스에 실패했습니다. URL 또는 ID를 확인하고 다시 시도하세요."
         },
         "notification_timeout": {
             "header": "알림 시간 제한",
@@ -5029,7 +5029,7 @@
             "header": "프록시 설정",
             "close": "닫기",
             "restart": "저장 및 다시 시작",
-            "description": "프록시 서버 주소와 포트를 입력하세요. 127.0.0.1:7890, http://127.0.0.1:7890, 및 양말5://127.0.0.1:7890을 지원합니다."
+            "description": "프록시 서버 주소와 포트를 입력하세요. 127.0.0.1:7890, http://127.0.0.1:7890, socks5://127.0.0.1:7890 형식을 지원합니다."
         },
         "redeem": {
             "header": "코드 사용",
@@ -5765,7 +5765,7 @@
             "modal": {
                 "launch": "발사",
                 "launch_vrchat": "VRChat 실행",
-                "vrchat_is_already_running_continue_launching_this_instance": "VRChat이(가) 이미 실행 중입니다. VRCX-0은 실행 중인 클라이언트에 또 다른 시작 요청을 보냅니다. 여러 클라이언트가 열려 있는 경우 GameLog, 현재 위치, 플레이어 목록 및 일부 백그라운드 서비스가 불안정할 수 있습니다. 계속하다?"
+                "vrchat_is_already_running_continue_launching_this_instance": "VRChat이 이미 실행 중입니다. VRCX-0이 실행 중인 클라이언트에 또 다른 실행 요청을 보냅니다. 여러 클라이언트가 열려 있는 경우 GameLog, 현재 위치, 플레이어 목록 및 일부 백그라운드 서비스가 불안정할 수 있습니다. 계속하시겠습니까?"
             },
             "dynamic": {
                 "value_copied": "{value} 복사됨"
@@ -5807,7 +5807,7 @@
             "dynamic": {
                 "accept_the_friend_request_from_value": "{value}의 친구 요청을 수락하시겠습니까?",
                 "decline_the_value_notification": "{value} 알림을 거부하시겠습니까?",
-                "send_an_invite_to_value": "{value}에 초대를 보내시겠습니까?"
+                "send_an_invite_to_value": "{value}에게 초대를 보내시겠습니까?"
             }
         },
         "tools_dialogs": {
@@ -5931,13 +5931,13 @@
             "friends": "친구",
             "friend_management_table_and_roster_details": "친구 관리 테이블 및 명단 세부정보입니다.",
             "charts": "차트",
-            "charts_landing_route": "차트 착륙 경로.",
+            "charts_landing_route": "차트 랜딩 경로.",
             "charts_instance": "차트 인스턴스",
             "instance_activity_timeline_chart": "인스턴스 활동 타임라인 차트",
             "charts_mutual": "차트 상호",
             "mutual_friends_graph_over_cached_data": "캐시된 데이터에 대한 상호 친구 그래프.",
             "tools": "도구",
-            "tools_landing_route_and_folder_shortcuts": "도구 착륙 경로 및 폴더 바로 가기.",
+            "tools_landing_route_and_folder_shortcuts": "도구 랜딩 경로 및 폴더 바로 가기.",
             "gallery": "갤러리",
             "gallery_browser_and_media_actions": "갤러리 브라우저 및 미디어 작업.",
             "inventory": "인벤토리",

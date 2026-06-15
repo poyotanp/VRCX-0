@@ -65,7 +65,7 @@
             "retry": "Retry"
         },
         "error": {
-            "failed_open_instance_in_vrchat_falling_back_to_self_invite": "Failed open instance in VRChat, falling back to self invite"
+            "failed_open_instance_in_vrchat_falling_back_to_self_invite": "Failed to open instance in VRChat, falling back to self invite"
         }
     },
     "overlay": {
@@ -1759,11 +1759,11 @@
                     "minimized": "Start Minimized at System Startup",
                     "tray": "Minimize to Tray When Closing",
                     "background_mode": "Switch to Background Mode When Minimized to Tray",
-                    "background_mode_description": "Automatically switch to background mode when minimized to tray. Reduces memory usage to 10% as before. Some page states may reset upon restoration. ",
+                    "background_mode_description": "Automatically switch to background mode when minimized to tray. Reduces memory usage to 10% as before. Some page states may reset when restored.",
                     "disable_vr_overlay_gpu_acceleration": "Disable VR Overlay GPU Acceleration",
                     "proxy": "Proxy Settings",
                     "proxy_description": "Set the proxy server used by VRCX-0. Restart is required to apply a changed proxy.",
-                    "startup_linux": "Add \"--autostart\" arg to startup VRCX-0.desktop file to start VRCX-0 minimized at system startup"
+                    "startup_linux": "Add the \"--autostart\" arg to the VRCX-0.desktop file to start VRCX-0 minimized at system startup"
                 },
                 "favorites": {
                     "header": "Favorite Groups Filter",
@@ -2392,7 +2392,7 @@
                 "created": "Created"
             },
             "empty": {
-                "no_user_id_was_found_for_this_player_row": "No user id was found for this player row",
+                "no_user_id_was_found_for_this_player_row": "No user ID was found for this player row",
                 "currently_traveling_between_instances": "Currently traveling between instances",
                 "no_current_instance_detected": "No current instance detected",
                 "no_players_reconstructed_for_this_instance_yet": "No players reconstructed for this instance yet",
@@ -3251,7 +3251,7 @@
                 "send_boop": "Send boop",
                 "send": "Send",
                 "group_moderation": "Group moderation",
-                "enter_the_vrchat_group_id_to_invite_this_user_to": "Enter the VRChat group id to invite this user to",
+                "enter_the_vrchat_group_id_to_invite_this_user_to": "Enter the VRChat group ID to invite this user to",
                 "leave_group": "Leave group",
                 "leave": "Leave",
                 "leave_selected_groups": "Leave selected groups",
@@ -3265,7 +3265,7 @@
                 "value_user": "{value} user?",
                 "value_request_sent": "{value} request sent",
                 "value_updated": "{value} updated",
-                "enter_a_group_id_to_open_moderation_for_value": "Enter a group id to open moderation for {value}",
+                "enter_a_group_id_to_open_moderation_for_value": "Enter a group ID to open moderation for {value}",
                 "value_copied": "{value} copied",
                 "leave_value": "Leave {value}?",
                 "exported_value_groups": "Exported {value} groups",
@@ -3424,7 +3424,7 @@
                 "group_id_is_required_for_group_instances": "Group ID is required for group instances",
                 "cannot_self_invite_location_is_not_a_concrete_instance": "Cannot self invite: location is not a concrete instance",
                 "cannot_open_in_vrchat_location_is_not_a_concrete_instance": "Cannot open in VRChat: location is not a concrete instance",
-                "failed_open_instance_in_vrchat_falling_back_to_self_invite": "Failed open instance in VRChat, falling back to self invite",
+                "failed_open_instance_in_vrchat_falling_back_to_self_invite": "Failed to open instance in VRChat, falling back to self invite",
                 "failed_to_refresh_the_remote_world_snapshot": "Failed to refresh the remote world snapshot",
                 "failed_to_load_the_world_profile": "Failed to load the world profile",
                 "world_not_found_description": "World {worldId} was not found",
@@ -3452,7 +3452,7 @@
                 "world_snapshot_unavailable_description": "VRCX-0 could not resolve a world snapshot for this dialog"
             },
             "empty": {
-                "no_world_id_was_provided_for_this_dialog": "No world id was provided for this dialog",
+                "no_world_id_was_provided_for_this_dialog": "No world ID was provided for this dialog",
                 "no_active_instances": "No active instances",
                 "no_public_or_group_instances_are_currently_listed": "No public or group instances are currently listed"
             },
@@ -4732,7 +4732,7 @@
         "vrcx_updater": {
             "header": "VRCX-0 Updater",
             "latest_version": "VRCX-0 is up to date",
-            "ready_for_update": "Ready for install, restart VRCX-0 to apply",
+            "ready_for_update": "Ready to install. Restart VRCX-0 to apply",
             "branch_stable": "Stable",
             "release": "Release",
             "download": "Download",
