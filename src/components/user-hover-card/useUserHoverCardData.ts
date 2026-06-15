@@ -1,10 +1,13 @@
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
 import { normalizeId } from '@/components/sidebar/friends-sidebar/friendsSidebarModel';
+import { entityQueryPolicies, queryKeys } from '@/lib/entityQueryCache';
 import memoPersistenceRepository from '@/repositories/memoPersistenceRepository';
 import userProfileRepository from '@/repositories/userProfileRepository';
 import vrchatInstanceRepository from '@/repositories/vrchatInstanceRepository';
 import worldProfileRepository from '@/repositories/worldProfileRepository';
+import { convertFileUrlToImageUrl } from '@/services/entityMediaService';
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
@@ -26,7 +29,6 @@ export function useUserHoverCardData({ userId, seed }: any) {
 
     const [profile, setProfile] = useState<any>(null);
     const [memo, setMemo] = useState('');
-    const [worldThumb, setWorldThumb] = useState('');
     const [population, setPopulation] = useState<any>(null);
     const [profileLoading, setProfileLoading] = useState(true);
 
@@ -78,35 +80,39 @@ export function useUserHoverCardData({ userId, seed }: any) {
     const instanceId = model.location.instanceId;
     const isRealInstance = model.location.isRealInstance;
 
+    const worldQuery = useQuery({
+        queryKey: queryKeys.world(worldId, endpoint),
+        queryFn: () =>
+            worldProfileRepository.fetchWorldProfile({ worldId, endpoint }),
+        enabled: Boolean(worldId),
+        staleTime: entityQueryPolicies.worldBasic.staleTime,
+        gcTime: entityQueryPolicies.worldBasic.gcTime,
+        retry: entityQueryPolicies.worldBasic.retry,
+        refetchOnWindowFocus:
+            entityQueryPolicies.worldBasic.refetchOnWindowFocus
+    });
+    const worldThumb = useMemo(() => {
+        const raw =
+            worldQuery.data?.thumbnailImageUrl || worldQuery.data?.imageUrl;
+        return raw ? convertFileUrlToImageUrl(raw, 512) : '';
+    }, [worldQuery.data]);
+
     useEffect(() => {
         let active = true;
-        setWorldThumb('');
         setPopulation(null);
-        if (!worldId) {
+        if (!isRealInstance || !worldId || !instanceId) {
             return undefined;
         }
-        worldProfileRepository
-            .fetchWorldProfile({ worldId, endpoint })
-            .then((world: any) => {
+        vrchatInstanceRepository
+            .getInstance({ worldId, instanceId, endpoint })
+            .then((response: any) => {
                 if (active) {
-                    setWorldThumb(
-                        world?.thumbnailImageUrl || world?.imageUrl || ''
+                    setPopulation(
+                        normalizeInstanceCounts(response?.json ?? response)
                     );
                 }
             })
             .catch(() => {});
-        if (isRealInstance && instanceId) {
-            vrchatInstanceRepository
-                .getInstance({ worldId, instanceId, endpoint })
-                .then((response: any) => {
-                    if (active) {
-                        setPopulation(
-                            normalizeInstanceCounts(response?.json ?? response)
-                        );
-                    }
-                })
-                .catch(() => {});
-        }
         return () => {
             active = false;
         };
