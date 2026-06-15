@@ -74,6 +74,13 @@ export function SettingsAdvancedSection({ advanced }: any) {
         onLogResourceLoadChange: (checked: any) => {
             saveBoolPreference('logResourceLoad', 'logResourceLoad', checked);
         },
+        onAnonymousUsageTelemetryChange: (checked: any) => {
+            saveBoolPreference(
+                'anonymousUsageTelemetry',
+                'anonymousUsageTelemetry',
+                checked
+            );
+        },
         onDefaultLaunchModeChange: (value: any) => {
             saveStringPreference(
                 'defaultLaunchMode',
