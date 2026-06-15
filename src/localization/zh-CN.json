@@ -1,4 +1,10 @@
 {
+    "user_hover_card": {
+        "note_local": "本地备注",
+        "note_synced": "线上备注",
+        "last_online": "最后在线 {duration}前",
+        "in_private_world": "在私人世界"
+    },
     "language": "中文（简体） (zh-CN)",
     "translator": "flower_elf, Yingxue, Map1en, Stabrinai, xxKawa, Anteness",
     "common": {

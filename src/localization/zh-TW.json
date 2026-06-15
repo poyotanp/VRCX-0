@@ -1,4 +1,10 @@
 {
+    "user_hover_card": {
+        "note_local": "本地備註",
+        "note_synced": "線上備註",
+        "last_online": "最後在線 {duration}前",
+        "in_private_world": "在私人世界"
+    },
     "language": "中文（繁體） (zh-TW)",
     "translator": "Kamiya,XoF_eLtTiL,blufish1234",
     "common": {

@@ -1,4 +1,10 @@
 {
+    "user_hover_card": {
+        "note_local": "로컬 메모",
+        "note_synced": "VRChat 노트",
+        "last_online": "마지막 접속 {duration} 전",
+        "in_private_world": "비공개 월드"
+    },
     "language": "한국어 (ko)",
     "translator": "pypy",
     "common": {

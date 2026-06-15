@@ -1,4 +1,10 @@
 {
+    "user_hover_card": {
+        "note_local": "Local note",
+        "note_synced": "VRChat note",
+        "last_online": "Last online {duration} ago",
+        "in_private_world": "In a private world"
+    },
     "language": "English (en)",
     "translator": "-",
     "common": {

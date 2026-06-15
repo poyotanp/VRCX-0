@@ -1,4 +1,10 @@
 {
+    "user_hover_card": {
+        "note_local": "ローカルメモ",
+        "note_synced": "VRChatノート",
+        "last_online": "最終オンライン {duration}前",
+        "in_private_world": "プライベートワールド"
+    },
     "language": "日本語 (ja)",
     "translator": "Assault1892, Yuu198, paralleltree, kazu3jp, Cayahuanca, ecto0310, Map1en, neco222",
     "common": {

@@ -1,9 +1,10 @@
 import { UserIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { UserHoverCard } from '@/components/user-hover-card/UserHoverCard';
+import { cn } from '@/lib/utils';
 import { getNameColour, userImage } from '@/services/entityMediaService';
 import { TRUST_COLOR_DEFAULTS } from '@/shared/utils/trustColors';
-import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/ui/shadcn/button';
 import {
     ContextMenu,
@@ -30,12 +31,7 @@ import {
     resolveTrustNameColour
 } from './friendsSidebarModel';
 
-export function FriendRow({
-    friend,
-    rowModel,
-    rowCommands,
-    appearance
-}: any) {
+export function FriendRow({ friend, rowModel, rowCommands, appearance }: any) {
     const { t } = useTranslation();
     const {
         isCurrentUser,
@@ -121,88 +117,94 @@ export function FriendRow({
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger asChild>
-                <button
-                    type="button"
-                    data-slot="button"
-                    data-variant="ghost"
-                    data-size="default"
-                    className={buttonVariants({
-                        variant: 'ghost',
-                        className:
-                            'h-auto w-full min-w-0 justify-start gap-2 p-1.5 text-left font-normal'
-                    })}
-                    onClick={onOpen}
-                >
-                    <span className="relative flex size-9 shrink-0 items-center justify-center overflow-visible">
-                        <span className="bg-muted relative z-0 flex size-full items-center justify-center overflow-hidden rounded-full border">
-                            {imageUrl ? (
-                                <img
-                                    src={imageUrl}
-                                    alt=""
-                                    className="size-full object-cover"
-                                />
-                            ) : (
-                                <UserIcon
-                                    data-icon="inline-start"
-                                    className="text-muted-foreground"
-                                />
-                            )}
-                        </span>
-                        {statusDotClassName ? (
-                            isActiveStatusDot ? (
-                                <span className="border-background bg-background absolute -right-0.5 -bottom-0.5 z-10 size-3.75 rounded-full border-3">
+            <UserHoverCard
+                userId={friend?.id}
+                seed={friend}
+                disabled={isCurrentUser}
+            >
+                <ContextMenuTrigger asChild>
+                    <button
+                        type="button"
+                        data-slot="button"
+                        data-variant="ghost"
+                        data-size="default"
+                        className={buttonVariants({
+                            variant: 'ghost',
+                            className:
+                                'h-auto w-full min-w-0 justify-start gap-2 p-1.5 text-left font-normal'
+                        })}
+                        onClick={onOpen}
+                    >
+                        <span className="relative flex size-9 shrink-0 items-center justify-center overflow-visible">
+                            <span className="bg-muted relative z-0 flex size-full items-center justify-center overflow-hidden rounded-full border">
+                                {imageUrl ? (
+                                    <img
+                                        src={imageUrl}
+                                        alt=""
+                                        className="size-full object-cover"
+                                    />
+                                ) : (
+                                    <UserIcon
+                                        data-icon="inline-start"
+                                        className="text-muted-foreground"
+                                    />
+                                )}
+                            </span>
+                            {statusDotClassName ? (
+                                isActiveStatusDot ? (
+                                    <span className="border-background bg-background absolute -right-0.5 -bottom-0.5 z-10 size-3.75 rounded-full border-3">
+                                        <span
+                                            className={cn(
+                                                'absolute inset-0 rounded-full border-2',
+                                                statusDotClassName
+                                            )}
+                                        />
+                                    </span>
+                                ) : (
                                     <span
                                         className={cn(
-                                            'absolute inset-0 rounded-full border-2',
+                                            'border-background absolute -right-0.5 -bottom-0.5 z-10 size-3.75 rounded-full border-3',
                                             statusDotClassName
                                         )}
                                     />
-                                </span>
-                            ) : (
-                                <span
-                                    className={cn(
-                                        'border-background absolute -right-0.5 -bottom-0.5 z-10 size-3.75 rounded-full border-3',
-                                        statusDotClassName
-                                    )}
-                                />
-                            )
-                        ) : null}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                        <span
-                            className="block truncate leading-5 font-medium"
-                            style={nameStyle}
-                        >
-                            {displayName}
+                                )
+                            ) : null}
                         </span>
-                        <span className="text-muted-foreground block truncate text-xs">
-                            {groupByInstanceTimerVisible ? (
-                                <FriendInstanceTimer
-                                    epoch={groupByInstanceEpoch}
-                                    traveling={isTraveling}
-                                />
-                            ) : showLocationSubline ? (
-                                <StaticSidebarLocation
-                                    location={displayLocation}
-                                    traveling={displayTraveling}
-                                    hint={metadataHint}
-                                    metadata={locationMetadata}
-                                    tooltips={false}
-                                    showInstanceIdInLocation={
-                                        showInstanceIdInLocation
-                                    }
-                                    ageGatedInstancesVisible={
-                                        ageGatedInstancesVisible
-                                    }
-                                />
-                            ) : (
-                                subline
-                            )}
+                        <span className="min-w-0 flex-1">
+                            <span
+                                className="block truncate leading-5 font-medium"
+                                style={nameStyle}
+                            >
+                                {displayName}
+                            </span>
+                            <span className="text-muted-foreground block truncate text-xs">
+                                {groupByInstanceTimerVisible ? (
+                                    <FriendInstanceTimer
+                                        epoch={groupByInstanceEpoch}
+                                        traveling={isTraveling}
+                                    />
+                                ) : showLocationSubline ? (
+                                    <StaticSidebarLocation
+                                        location={displayLocation}
+                                        traveling={displayTraveling}
+                                        hint={metadataHint}
+                                        metadata={locationMetadata}
+                                        tooltips={false}
+                                        showInstanceIdInLocation={
+                                            showInstanceIdInLocation
+                                        }
+                                        ageGatedInstancesVisible={
+                                            ageGatedInstancesVisible
+                                        }
+                                    />
+                                ) : (
+                                    subline
+                                )}
+                            </span>
                         </span>
-                    </span>
-                </button>
-            </ContextMenuTrigger>
+                    </button>
+                </ContextMenuTrigger>
+            </UserHoverCard>
             <ContextMenuContent className="w-56">
                 {isCurrentUser ? (
                     <CurrentUserActionItems

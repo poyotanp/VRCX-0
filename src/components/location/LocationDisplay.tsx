@@ -38,8 +38,13 @@ export function LocationDisplay({
     showGroupLink = true,
     strict = false,
     text = '',
-    tooltipContent = ''
+    tooltipContent = '',
+    worldName = '',
+    worldNameClassName = ''
 }: any) {
+    const canHighlightWorldName = Boolean(
+        worldNameClassName && worldName && text.startsWith(worldName)
+    );
     const { t } = useTranslation();
     const LocationTrigger = asButton ? 'button' : 'span';
 
@@ -104,7 +109,18 @@ export function LocationDisplay({
                                 />
                             ) : null}
                             <span className="min-w-0 flex-1 truncate">
-                                <span>{text}</span>
+                                {canHighlightWorldName ? (
+                                    <>
+                                        <span className={worldNameClassName}>
+                                            {worldName}
+                                        </span>
+                                        <span>
+                                            {text.slice(worldName.length)}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span>{text}</span>
+                                )}
                                 {shouldShowInstanceId && instanceName ? (
                                     <span className="ml-1">{`· #${instanceName}`}</span>
                                 ) : null}
@@ -115,7 +131,7 @@ export function LocationDisplay({
                         <Button
                             type="button"
                             variant="ghost"
-                            className="hover:text-primary ml-0.5 h-auto min-w-0 p-0 text-left font-normal text-inherit [font-size:inherit] [line-height:inherit]"
+                            className="hover:text-primary ml-0.5 h-auto min-w-0 p-0 text-left [font-size:inherit] [line-height:inherit] font-normal text-inherit"
                             onClick={onOpenGroup}
                             onKeyDown={(event: any) => event.stopPropagation()}
                         >

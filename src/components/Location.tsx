@@ -10,9 +10,9 @@ import {
     useLocationMetadata
 } from '@/components/location/useLocationMetadata';
 import { useLocationPreviousInstancesDialog } from '@/components/location/useLocationPreviousInstancesDialog';
-import { copyTextToClipboard } from '@/services/entityMediaService';
 import { openGroupDialog, openWorldDialog } from '@/services/dialogService';
 import { directAccessParse } from '@/services/directAccessService';
+import { copyTextToClipboard } from '@/services/entityMediaService';
 import { selfInviteToInstance } from '@/services/launchService';
 import { accessTypeLocaleKeyMap } from '@/shared/constants/accessType';
 import {
@@ -42,7 +42,8 @@ export function Location({
     stopPropagation = false,
     asButton = true,
     showGroupLink = true,
-    className = ''
+    className = '',
+    worldNameClassName = ''
 }: any) {
     const { t } = useTranslation();
     const showLaunchDialog = useLaunchStore(
@@ -271,6 +272,8 @@ export function Location({
             strict={parsedLocation.strict}
             text={text}
             tooltipContent={tooltipContent}
+            worldName={worldNameHint || worldName}
+            worldNameClassName={worldNameClassName}
         />
     );
     if (!showContextMenu) {
