@@ -265,3 +265,110 @@ pub(crate) fn add_legacy_indexes(db: &DatabaseService) -> Result<(), Error> {
     }
     Ok(())
 }
+
+pub(crate) const VRCX0_SCHEMA_VERSION: i64 = 17;
+
+const VRCX0_SCHEMA_VERSION_KEY: &str = "VRCX_0_databaseVersion";
+const UPSTREAM_DATABASE_VERSION_KEY: &str = "databaseVersion";
+
+fn parse_version(value: &str) -> i64 {
+    value.trim().parse::<i64>().unwrap_or(0)
+}
+
+pub(crate) fn read_vrcx0_schema_version(db: &DatabaseService) -> Result<i64, Error> {
+    Ok(parse_version(&crate::config::get_string(
+        db,
+        VRCX0_SCHEMA_VERSION_KEY,
+        "0",
+    )?))
+}
+
+pub(crate) fn set_vrcx0_schema_version(db: &DatabaseService, version: i64) -> Result<(), Error> {
+    crate::config::set_string(db, VRCX0_SCHEMA_VERSION_KEY, &version.to_string())
+}
+
+// Databases predating the private marker key only carry the shared
+// `config:vrcx_databaseversion` row. Adopt that value as our generation so the
+// upgrade flow sees the true starting point: an earlier VRCX-0 database reports
+// 17 (already current), while a freshly imported legacy database reports its
+// real version (e.g. 16) instead of 0 — preserving the lighter upgrade path and
+// its progress dialog. A value above our own generation is never ours (upstream
+// never wrote it), so leave the marker unset.
+pub(crate) fn backfill_vrcx0_schema_version(db: &DatabaseService) -> Result<(), Error> {
+    if read_vrcx0_schema_version(db)? > 0 {
+        return Ok(());
+    }
+    let shared = parse_version(&crate::config::get_string(
+        db,
+        UPSTREAM_DATABASE_VERSION_KEY,
+        "0",
+    )?);
+    if (1..=VRCX0_SCHEMA_VERSION).contains(&shared) {
+        set_vrcx0_schema_version(db, shared)?;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod schema_version_tests {
+    use super::*;
+    use crate::database::DatabaseService;
+
+    fn test_db(name: &str) -> DatabaseService {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let dir =
+            std::env::temp_dir().join(format!("vrcx-0-{name}-{}-{nonce}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        DatabaseService::new(&dir.join("VRCX-0.sqlite3")).unwrap()
+    }
+
+    #[test]
+    fn backfills_marker_from_existing_vrcx0_database() {
+        let db = test_db("schema-version-backfill");
+        crate::config::set_string(&db, UPSTREAM_DATABASE_VERSION_KEY, "17").unwrap();
+
+        backfill_vrcx0_schema_version(&db).unwrap();
+
+        assert_eq!(
+            read_vrcx0_schema_version(&db).unwrap(),
+            VRCX0_SCHEMA_VERSION
+        );
+    }
+
+    #[test]
+    fn adopts_legacy_version_for_imported_database() {
+        let db = test_db("schema-version-legacy");
+        crate::config::set_string(&db, UPSTREAM_DATABASE_VERSION_KEY, "16").unwrap();
+
+        backfill_vrcx0_schema_version(&db).unwrap();
+
+        assert_eq!(read_vrcx0_schema_version(&db).unwrap(), 16);
+    }
+
+    #[test]
+    fn does_not_adopt_version_above_generation() {
+        let db = test_db("schema-version-above");
+        crate::config::set_string(&db, UPSTREAM_DATABASE_VERSION_KEY, "99").unwrap();
+
+        backfill_vrcx0_schema_version(&db).unwrap();
+
+        assert_eq!(read_vrcx0_schema_version(&db).unwrap(), 0);
+    }
+
+    #[test]
+    fn backfill_is_noop_when_marker_already_set() {
+        let db = test_db("schema-version-existing-marker");
+        set_vrcx0_schema_version(&db, 17).unwrap();
+        crate::config::set_string(&db, UPSTREAM_DATABASE_VERSION_KEY, "99").unwrap();
+
+        backfill_vrcx0_schema_version(&db).unwrap();
+
+        assert_eq!(
+            read_vrcx0_schema_version(&db).unwrap(),
+            VRCX0_SCHEMA_VERSION
+        );
+    }
+}

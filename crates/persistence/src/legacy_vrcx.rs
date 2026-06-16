@@ -4,7 +4,10 @@ use std::path::{Path, PathBuf};
 use rusqlite::{Connection, OpenFlags, OptionalExtension};
 use serde::Serialize;
 
-pub const SUPPORTED_LEGACY_DATABASE_VERSION: i64 = 16;
+// Highest upstream VRCX schema generation VRCX-0 knows how to import directly.
+// This is intentionally separate from VRCX-0's own schema generation (see
+// `VRCX0_SCHEMA_VERSION`): the two version spaces must never be compared.
+pub const MAX_IMPORTABLE_UPSTREAM_VERSION: i64 = 16;
 
 #[derive(Clone, Debug)]
 pub struct LegacyVrcxSource {
@@ -105,13 +108,22 @@ pub fn validate_legacy_source(source: &LegacyVrcxSource) -> Result<(), String> {
         ));
     }
 
-    if version > SUPPORTED_LEGACY_DATABASE_VERSION {
-        return Err(format!(
-            "Legacy VRCX database version {version} is newer than supported version {SUPPORTED_LEGACY_DATABASE_VERSION}."
-        ));
+    if version > MAX_IMPORTABLE_UPSTREAM_VERSION {
+        return import_from_upstream_version(version);
     }
 
     Ok(())
+}
+
+// Single extension point for upstream VRCX databases newer than
+// `MAX_IMPORTABLE_UPSTREAM_VERSION`. Today every such version is rejected (the
+// migration status carries `version` so the frontend can surface it). When a
+// concrete future upstream schema is reverse-engineered, its transform into the
+// VRCX-0 layout belongs here instead of a blanket reject.
+fn import_from_upstream_version(version: i64) -> Result<(), String> {
+    Err(format!(
+        "Legacy VRCX database version {version} is newer than the highest importable version {MAX_IMPORTABLE_UPSTREAM_VERSION}; importing it is not supported yet."
+    ))
 }
 
 fn discover_legacy_source() -> Result<Option<LegacyVrcxSource>, String> {
@@ -273,4 +285,73 @@ fn read_legacy_database_version(db_path: &Path) -> Result<i64, String> {
         .trim()
         .parse::<i64>()
         .map_err(|_| format!("Legacy VRCX database version value is invalid: {value}."))
+}
+
+#[cfg(test)]
+mod validate_tests {
+    use super::*;
+
+    struct TestDir {
+        path: PathBuf,
+    }
+
+    impl TestDir {
+        fn new(name: &str) -> Self {
+            let nonce = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos();
+            let path =
+                std::env::temp_dir().join(format!("vrcx-0-{name}-{}-{nonce}", std::process::id()));
+            std::fs::create_dir_all(&path).unwrap();
+            Self { path }
+        }
+    }
+
+    impl Drop for TestDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.path);
+        }
+    }
+
+    fn write_legacy_db(dir: &TestDir, version: i64) -> PathBuf {
+        let db_path = dir.path.join("VRCX.sqlite3");
+        let conn = Connection::open(&db_path).unwrap();
+        conn.execute_batch("CREATE TABLE configs (key TEXT PRIMARY KEY, value TEXT);")
+            .unwrap();
+        conn.execute(
+            "INSERT INTO configs (key, value) VALUES ('config:vrcx_databaseversion', ?1)",
+            [version.to_string()],
+        )
+        .unwrap();
+        db_path
+    }
+
+    fn source(db_path: PathBuf, version: i64) -> LegacyVrcxSource {
+        LegacyVrcxSource {
+            db_path,
+            config_path: None,
+            version,
+        }
+    }
+
+    #[test]
+    fn rejects_upstream_version_above_import_ceiling() {
+        let dir = TestDir::new("legacy-reject");
+        let version = MAX_IMPORTABLE_UPSTREAM_VERSION + 1;
+        let db_path = write_legacy_db(&dir, version);
+
+        let error = validate_legacy_source(&source(db_path, version)).unwrap_err();
+
+        assert!(error.contains("not supported yet"), "unexpected: {error}");
+        assert!(error.contains(&version.to_string()), "unexpected: {error}");
+    }
+
+    #[test]
+    fn accepts_version_at_import_ceiling() {
+        let dir = TestDir::new("legacy-accept");
+        let db_path = write_legacy_db(&dir, MAX_IMPORTABLE_UPSTREAM_VERSION);
+
+        assert!(validate_legacy_source(&source(db_path, MAX_IMPORTABLE_UPSTREAM_VERSION)).is_ok());
+    }
 }

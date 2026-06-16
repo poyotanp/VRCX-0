@@ -12,6 +12,7 @@ import { showSQLiteErrorDialog } from './sqliteErrorDialogService';
 
 const LEGACY_SCHEMA_VERSION = 16;
 const DATABASE_VERSION = 17;
+const VRCX0_SCHEMA_VERSION_KEY = 'VRCX_0_databaseVersion';
 
 type DatabaseUpgradePatch = Record<string, unknown>;
 type FailedUpgrade = Record<string, unknown> & {
@@ -77,7 +78,14 @@ async function blockOnFailedUpgrade(
 }
 
 async function writeUpgradeDatabaseVersion(): Promise<void> {
-    await configRepository.setString('databaseVersion', String(DATABASE_VERSION));
+    await configRepository.setString(
+        VRCX0_SCHEMA_VERSION_KEY,
+        String(DATABASE_VERSION)
+    );
+    await configRepository.setString(
+        'databaseVersion',
+        String(DATABASE_VERSION)
+    );
 }
 
 async function runLegacyDatabaseMaintenance(): Promise<void> {
@@ -105,7 +113,7 @@ async function runFullDatabaseUpgrade(): Promise<boolean> {
         }
 
         const currentVersion = (await configRepository.getInt(
-            'databaseVersion',
+            VRCX0_SCHEMA_VERSION_KEY,
             0
         )) as number;
 
@@ -169,9 +177,8 @@ async function runFullDatabaseUpgrade(): Promise<boolean> {
         if (upgradeStarted && !upgradeCommitted) {
             try {
                 await tauriClient.sqlite.FailUpgrade(reason);
-                failedUpgrade = (await tauriClient.sqlite.GetFailedUpgrade()) as
-                    | FailedUpgrade
-                    | null;
+                failedUpgrade =
+                    (await tauriClient.sqlite.GetFailedUpgrade()) as FailedUpgrade | null;
             } catch (failError) {
                 console.error(
                     'Failed to preserve database upgrade work copy:',
@@ -215,7 +222,9 @@ async function getLegacyMigrationStatus(): Promise<LegacyMigrationStatus> {
     }
 
     try {
-        const available = Boolean(await tauriClient.app.CheckLegacyVrcxAvailable());
+        const available = Boolean(
+            await tauriClient.app.CheckLegacyVrcxAvailable()
+        );
         return {
             detected: available,
             available

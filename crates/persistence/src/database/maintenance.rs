@@ -5,13 +5,12 @@ use std::collections::HashMap;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::common::{
-    normalize_text, row_i64, row_json, row_string, value_as_i64, value_as_string, ParamsBuilder,
-};
+use crate::common::{normalize_text, row_i64, row_json, row_string, value_as_i64, ParamsBuilder};
 use crate::database::schema::{
     add_column_if_missing, add_legacy_indexes, add_notification_indexes, add_v17_global_indexes,
-    drop_column_if_exists, ensure_global_store_tables, ensure_user_store_tables, safe_identifier,
-    select_table_names, table_column_names,
+    backfill_vrcx0_schema_version, drop_column_if_exists, ensure_global_store_tables,
+    ensure_user_store_tables, read_vrcx0_schema_version, safe_identifier, select_table_names,
+    set_vrcx0_schema_version, table_column_names, VRCX0_SCHEMA_VERSION,
 };
 use crate::game_log::ensure_game_log_tables;
 use crate::realtime::normalize_user_table_prefix;
@@ -167,17 +166,8 @@ fn run_database_maintenance_task(
             ensure_game_log_tables(db)?;
             ensure_global_store_tables(db)?;
             add_legacy_indexes(db)?;
-            if db
-                .execute(
-                    "SELECT value FROM configs WHERE key = 'config:vrcx_databaseversion' LIMIT 1",
-                    &Default::default(),
-                )
-                .ok()
-                .and_then(|rows| rows.first().and_then(|row| row.first()).cloned())
-                .and_then(|value| value_as_string(&value).parse::<i64>().ok())
-                .unwrap_or(0)
-                >= 17
-            {
+            backfill_vrcx0_schema_version(db)?;
+            if read_vrcx0_schema_version(db)? >= VRCX0_SCHEMA_VERSION {
                 add_v17_global_indexes(db)?;
             }
         }
@@ -242,6 +232,7 @@ fn run_database_maintenance_task(
                 DatabaseMaintenanceTask::UpdateTableForAvatarHistory,
             )?;
             add_legacy_indexes(db)?;
+            set_vrcx0_schema_version(db, VRCX0_SCHEMA_VERSION)?;
         }
         DatabaseMaintenanceTask::CleanLegendFromFriendLog => {
             for table_name in select_table_names(db, "name LIKE '%_friend_log_history'")? {

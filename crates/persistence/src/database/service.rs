@@ -606,7 +606,7 @@ where
 fn ensure_upgrade_version_written(conn: &Connection, to_version: i64) -> Result<(), Error> {
     let value: Option<String> = conn
         .query_row(
-            "SELECT value FROM configs WHERE key = 'config:vrcx_databaseversion' LIMIT 1",
+            "SELECT value FROM configs WHERE key = 'config:vrcx_0_databaseversion' LIMIT 1",
             [],
             |row| row.get(0),
         )
@@ -616,7 +616,7 @@ fn ensure_upgrade_version_written(conn: &Connection, to_version: i64) -> Result<
     let expected = to_version.to_string();
     if value.as_deref() != Some(expected.as_str()) {
         return Err(Error::Database(format!(
-            "Database upgrade copy does not contain databaseVersion {to_version}."
+            "Database upgrade copy does not contain VRCX-0 schema version {to_version}."
         )));
     }
 
