@@ -57,8 +57,7 @@ export function UserHoverCard({
             <HoverCardContent
                 className={cn(
                     'w-72 overflow-hidden p-0',
-                    scrollClosed &&
-                        'data-[state=closed]:!animate-none data-[state=closed]:!duration-0'
+                    scrollClosed && 'data-[state=closed]:!animate-none'
                 )}
                 side={side}
                 align={align}

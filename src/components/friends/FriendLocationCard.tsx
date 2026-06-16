@@ -7,12 +7,10 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { Location } from '@/components/Location';
-import { userImage } from '@/services/entityMediaService';
+import { UserHoverCard } from '@/components/user-hover-card/UserHoverCard';
 import { cn } from '@/lib/utils';
-import {
-    normalizeLocationValue,
-    parseLocation
-} from '@/shared/utils/location';
+import { userImage } from '@/services/entityMediaService';
+import { normalizeLocationValue, parseLocation } from '@/shared/utils/location';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import {
     Card,
@@ -338,56 +336,61 @@ export function FriendLocationCard({
         (Boolean(locationValue) ||
             (Boolean(locationLabel) &&
                 normalizeStatusText(locationLabel) !== 'offline'));
+    const hoverUserId = source?.id || friend?.id;
     const avatarNode = (
-        <div className="relative shrink-0">
-            {avatarUrl ? (
-                <img
-                    src={avatarUrl}
-                    alt={
-                        friend?.displayName ||
-                        friend?.id ||
-                        t('component.friend_location_card.label.friend_avatar')
-                    }
-                    loading="lazy"
-                    className="rounded-full object-cover"
-                    style={{
-                        width: `${resolvedDensityConfig.avatarSize}px`,
-                        height: `${resolvedDensityConfig.avatarSize}px`
-                    }}
-                />
-            ) : (
-                <div
-                    className="bg-muted text-muted-foreground flex items-center justify-center rounded-full"
-                    style={{
-                        width: `${resolvedDensityConfig.avatarSize}px`,
-                        height: `${resolvedDensityConfig.avatarSize}px`
-                    }}
-                >
-                    <span className="text-sm font-semibold">
-                        {getInitials(friend?.displayName || friend?.id)}
+        <UserHoverCard userId={hoverUserId} seed={source}>
+            <div className="relative shrink-0">
+                {avatarUrl ? (
+                    <img
+                        src={avatarUrl}
+                        alt={
+                            friend?.displayName ||
+                            friend?.id ||
+                            t(
+                                'component.friend_location_card.label.friend_avatar'
+                            )
+                        }
+                        loading="lazy"
+                        className="rounded-full object-cover"
+                        style={{
+                            width: `${resolvedDensityConfig.avatarSize}px`,
+                            height: `${resolvedDensityConfig.avatarSize}px`
+                        }}
+                    />
+                ) : (
+                    <div
+                        className="bg-muted text-muted-foreground flex items-center justify-center rounded-full"
+                        style={{
+                            width: `${resolvedDensityConfig.avatarSize}px`,
+                            height: `${resolvedDensityConfig.avatarSize}px`
+                        }}
+                    >
+                        <span className="text-sm font-semibold">
+                            {getInitials(friend?.displayName || friend?.id)}
+                        </span>
+                    </div>
+                )}
+                {showStatusDot ? (
+                    <span className="border-background bg-background absolute -right-0.5 -bottom-0.5 z-10 block size-3.75 rounded-full border-3">
+                        {tone.activeDot ? (
+                            <span
+                                className={cn(
+                                    'absolute inset-0 rounded-full border-2',
+                                    tone.dotClassName
+                                )}
+                            />
+                        ) : (
+                            <span
+                                className={cn(
+                                    'absolute inset-0 rounded-full',
+                                    tone.dotClassName
+                                )}
+                            />
+                        )}
                     </span>
-                </div>
-            )}
-            {showStatusDot ? (
-                <span className="border-background bg-background absolute -right-0.5 -bottom-0.5 z-10 block size-3.75 rounded-full border-3">
-                    {tone.activeDot ? (
-                        <span
-                            className={cn(
-                                'absolute inset-0 rounded-full border-2',
-                                tone.dotClassName
-                            )}
-                        />
-                    ) : (
-                        <span
-                            className={cn(
-                                'absolute inset-0 rounded-full',
-                                tone.dotClassName
-                            )}
-                        />
-                    )}
-                </span>
-            ) : null}
-        </div>
+                ) : null}
+            </div>
+        </UserHoverCard>
     );
     const locationNode = locationValue ? (
         <Location
@@ -402,6 +405,21 @@ export function FriendLocationCard({
         />
     ) : (
         locationLabel
+    );
+    const titleNode = (
+        <UserHoverCard userId={hoverUserId} seed={source}>
+            <CardTitle
+                className={cn(
+                    'w-fit max-w-full truncate',
+                    isDense && 'leading-5'
+                )}
+                style={{
+                    fontSize: `${resolvedDensityConfig.titleFontSize}px`
+                }}
+            >
+                {friend?.displayName || ''}
+            </CardTitle>
+        </UserHoverCard>
     );
 
     return (
@@ -428,14 +446,7 @@ export function FriendLocationCard({
                                 {avatarNode}
                             </CardHeader>
                             <CardContent className="flex min-w-0 flex-1 flex-col gap-0.5 px-0">
-                                <CardTitle
-                                    className="truncate leading-5"
-                                    style={{
-                                        fontSize: `${resolvedDensityConfig.titleFontSize}px`
-                                    }}
-                                >
-                                    {friend?.displayName || ''}
-                                </CardTitle>
+                                {titleNode}
                                 {showLocationInfo ? (
                                     <div
                                         className="text-muted-foreground min-w-0 text-left text-xs leading-4"
@@ -460,14 +471,7 @@ export function FriendLocationCard({
                             <CardHeader className="flex flex-row gap-[var(--friend-card-gap)] px-[var(--friend-card-padding)]">
                                 {avatarNode}
                                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                                    <CardTitle
-                                        className="truncate"
-                                        style={{
-                                            fontSize: `${resolvedDensityConfig.titleFontSize}px`
-                                        }}
-                                    >
-                                        {friend?.displayName || ''}
-                                    </CardTitle>
+                                    {titleNode}
                                 </div>
                             </CardHeader>
 
