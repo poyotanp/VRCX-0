@@ -1,0 +1,46 @@
+name: Downloads Badge
+
+on:
+    schedule:
+        - cron: '17 */12 * * *'
+    workflow_dispatch:
+
+concurrency:
+    group: badge-downloads
+    cancel-in-progress: true
+
+permissions:
+    contents: write
+
+jobs:
+    update:
+        name: Update installer download count
+        runs-on: ubuntu-latest
+        steps:
+            - name: Compute installer download count
+              id: count
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              # Count only user-facing installers; excludes the updater manifest
+              # (latest_linux_and_macos.json) and the macOS in-place update archives.
+              run: |
+                  count="$(gh api --paginate "repos/${{ github.repository }}/releases" \
+                      --jq '[.[].assets[] | select(.name | test("\\.(exe|msi|rpm|deb|dmg|AppImage)$"; "i")) | .download_count] | add // 0')"
+                  echo "count=$count" >> "$GITHUB_OUTPUT"
+
+            - name: Publish badge endpoint to badge-data branch
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  COUNT: ${{ steps.count.outputs.count }}
+              run: |
+                  set -euo pipefail
+                  work="$(mktemp -d)"
+                  printf '{"schemaVersion":1,"label":"downloads","message":"%s","color":"blue"}\n' "$COUNT" > "$work/downloads.json"
+                  cd "$work"
+                  git init -q
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git checkout -q -b badge-data
+                  git add downloads.json
+                  git commit -q -m "chore(badge): downloads = ${COUNT}"
+                  git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" badge-data
