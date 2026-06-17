@@ -259,7 +259,7 @@
         "help": "도움말",
         "test_build_badge": "테스트 빌드",
         "preview_build_badge": "미리보기 빌드",
-        "theme_devkit_build_badge": "테마 개발 키트",
+        "devkit_build_badge": "개발 키트",
         "settings": "설정...",
         "check_updates": "업데이트 확인",
         "start_background_mode": "배경 모드로 전환",

@@ -1,8 +1,8 @@
-import { commands } from '@/platform/tauri/bindings';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import { commands } from '@/platform/tauri/bindings';
 import type { CommunityThemeStatsById } from '@/repositories/communityThemeRepository';
 import {
     loadCommunityThemeStats,
@@ -32,7 +32,7 @@ import {
     setThemeColorPreference,
     setThemeModePreference
 } from '@/services/preferencesService';
-import { isThemeDeveloperBuild } from '@/shared/buildLabel';
+import { isDevToolsBuild } from '@/shared/buildLabel';
 import { communityThemeControlsAccent } from '@/state/communityThemeStore';
 
 import type {
@@ -73,7 +73,7 @@ export function useThemesController() {
         useState<CommunityThemeStatsById>({});
     const devWatchEnabled = Boolean(localPreviewWatch.enabled);
     const devError = localPreviewWatch.error;
-    const developerToolsAvailable = isThemeDeveloperBuild();
+    const developerToolsAvailable = isDevToolsBuild();
     const activeSource = resolveActiveThemeSource(
         backgroundImageEnabled,
         enabled,

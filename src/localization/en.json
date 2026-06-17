@@ -261,7 +261,7 @@
         "help": "Help",
         "test_build_badge": "Test Build",
         "preview_build_badge": "Preview Build",
-        "theme_devkit_build_badge": "Theme Dev Kit",
+        "devkit_build_badge": "Dev Kit",
         "settings": "Settings...",
         "check_updates": "Check for Updates",
         "restart": "Restart VRCX-0",

@@ -1118,6 +1118,9 @@ async appSaveVrcRegJsonFile(defaultPath: string | null, defaultName: string, jso
 async appCommunityThemeDebugLoadLocalTheme(folderPath: string) : Promise<CommunityThemeDebugLocalThemeOutput> {
     return await TAURI_INVOKE("app__community_theme_debug_load_local_theme", { folderPath });
 },
+async appDevkitReadFile(filePath: string) : Promise<string> {
+    return await TAURI_INVOKE("app__devkit_read_file", { filePath });
+},
 async appFocusWindow() : Promise<null> {
     return await TAURI_INVOKE("app__focus_window");
 },

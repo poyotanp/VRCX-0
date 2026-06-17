@@ -1,6 +1,7 @@
 pub mod app_launcher;
 pub mod calendar;
 pub mod clipboard;
+pub mod devkit;
 pub mod error_log;
 pub mod game;
 pub mod host_capabilities;

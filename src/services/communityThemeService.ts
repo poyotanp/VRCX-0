@@ -1,4 +1,3 @@
-import { commands } from '@/platform/tauri/bindings';
 import type {
     CommunityThemeCatalog,
     CommunityThemeInstallMetadata,
@@ -6,6 +5,7 @@ import type {
     CommunityThemeManifest
 } from '@/features/themes/communityThemeTypes';
 import { convertFileSrc } from '@/platform/tauri/assets';
+import { commands } from '@/platform/tauri/bindings';
 import {
     COMMUNITY_THEME_CATALOG_URL,
     COMMUNITY_THEME_CSS_FILE_NAME,
@@ -14,14 +14,19 @@ import {
     resolveCommunityThemeAssetUrl
 } from '@/repositories/communityThemeRepository';
 import configRepository from '@/repositories/configRepository';
+import { isDevToolsBuild } from '@/shared/buildLabel';
 import {
     communityThemeControlsAccent,
     communityThemeControlsAppearance,
     resolveCommunityThemeBaseMode,
     useCommunityThemeStore
 } from '@/state/communityThemeStore';
-import { isThemeDeveloperBuild } from '@/shared/buildLabel';
 
+import {
+    disableBackgroundImage,
+    isBackgroundImageActive,
+    migrateLegacyNasaApodCommunityTheme
+} from './background-image/backgroundImageService';
 import {
     applyThemeColor,
     resolveThemeMode,
@@ -29,11 +34,6 @@ import {
     resolveThemeColor,
     setCommunityThemeAppearanceControl
 } from './themeService';
-import {
-    disableBackgroundImage,
-    isBackgroundImageActive,
-    migrateLegacyNasaApodCommunityTheme
-} from './background-image/backgroundImageService';
 import { setVrcxCssLayers } from './vrcxCssLayerService';
 
 const INSTALLED_THEME_LAYER = 'installed-theme';
@@ -97,8 +97,14 @@ async function applySavedThemeColor(): Promise<void> {
 }
 
 async function applySavedThemeMode(): Promise<void> {
-    const savedThemeMode = await configRepository.getString('ThemeMode', 'system');
-    await setCommunityThemeAppearanceControl(false, resolveThemeMode(savedThemeMode));
+    const savedThemeMode = await configRepository.getString(
+        'ThemeMode',
+        'system'
+    );
+    await setCommunityThemeAppearanceControl(
+        false,
+        resolveThemeMode(savedThemeMode)
+    );
 }
 
 async function syncCommunityThemeAppearanceControl(): Promise<void> {
@@ -171,10 +177,7 @@ function rewriteLocalThemeAssetUrls(
             try {
                 const resolvedUrl = new URL(url, baseCssUrl);
                 if (cacheKey) {
-                    resolvedUrl.searchParams.set(
-                        'vrcx0ThemePreview',
-                        cacheKey
-                    );
+                    resolvedUrl.searchParams.set('vrcx0ThemePreview', cacheKey);
                 }
                 const nextQuote = quote || '"';
                 return `url(${nextQuote}${resolvedUrl.toString()}${nextQuote})`;
@@ -286,7 +289,9 @@ function resolveCurrentCatalogThemeCssUrl(themeId: string): string {
 function isInstallRecordFromCurrentCatalog(
     record: CommunityThemeInstalledSnapshot
 ): boolean {
-    return record.sourceUrl === resolveCurrentCatalogThemeCssUrl(record.themeId);
+    return (
+        record.sourceUrl === resolveCurrentCatalogThemeCssUrl(record.themeId)
+    );
 }
 
 async function clearStoredCommunityThemeInstallState(): Promise<void> {
@@ -400,16 +405,18 @@ export async function initializeCommunityThemes(): Promise<void> {
     ]);
     const legacyApodWasActive = Boolean(
         enabled &&
-            (activeThemeId === LEGACY_NASA_APOD_WALLPAPER_THEME_ID ||
-                legacyInstallMetadata?.themeId ===
-                    LEGACY_NASA_APOD_WALLPAPER_THEME_ID)
+        (activeThemeId === LEGACY_NASA_APOD_WALLPAPER_THEME_ID ||
+            legacyInstallMetadata?.themeId ===
+                LEGACY_NASA_APOD_WALLPAPER_THEME_ID)
     );
     const records = rawRecords
         .filter(isInstallRecordFromCurrentCatalog)
         .filter(isInstallRecordCssSnapshotAllowed);
     const activeRecord =
         records.find((record) => record.themeId === activeThemeId) ??
-        records.find((record) => record.themeId === legacyInstallMetadata?.themeId) ??
+        records.find(
+            (record) => record.themeId === legacyInstallMetadata?.themeId
+        ) ??
         null;
 
     if (
@@ -491,13 +498,17 @@ export async function installCommunityTheme(
                     ({
                         ...installedTheme,
                         cssSnapshot:
-                            installedTheme.themeId === store.installedTheme?.themeId
+                            installedTheme.themeId ===
+                            store.installedTheme?.themeId
                                 ? installedThemeCssSnapshot
                                 : ''
                     }) as CommunityThemeInstalledSnapshot
             ),
             ...normalizeInstallRecords(
-                await configRepository.getObject(CONFIG_KEYS.installedThemes, null)
+                await configRepository.getObject(
+                    CONFIG_KEYS.installedThemes,
+                    null
+                )
             ),
             record
         ])
@@ -532,7 +543,9 @@ export async function installCommunityTheme(
     }
 }
 
-export async function enableInstalledCommunityTheme(themeId?: string): Promise<void> {
+export async function enableInstalledCommunityTheme(
+    themeId?: string
+): Promise<void> {
     const store = useCommunityThemeStore.getState();
     const records = normalizeInstallRecords(
         await configRepository.getObject(CONFIG_KEYS.installedThemes, null)
@@ -594,7 +607,9 @@ export async function disableInstalledCommunityTheme(): Promise<void> {
     await refreshCommunityThemeTrayMenu();
 }
 
-export async function deleteInstalledCommunityTheme(themeId?: string): Promise<void> {
+export async function deleteInstalledCommunityTheme(
+    themeId?: string
+): Promise<void> {
     const store = useCommunityThemeStore.getState();
     const targetThemeId = themeId || store.installedTheme?.themeId || '';
     if (!targetThemeId) {
@@ -608,9 +623,9 @@ export async function deleteInstalledCommunityTheme(themeId?: string): Promise<v
         .filter((record) => record.themeId !== targetThemeId);
     const activeRecord =
         store.enabled && store.installedTheme?.themeId !== targetThemeId
-            ? records.find(
+            ? (records.find(
                   (record) => record.themeId === store.installedTheme?.themeId
-              ) ?? null
+              ) ?? null)
             : null;
     installedThemeCssSnapshot = activeRecord ? activeRecord.cssSnapshot : '';
     await persistCommunityThemeInstallState({
@@ -635,7 +650,10 @@ export async function saveCommunityThemeOverrideCss(
     overrideCssSnapshot = String(cssText || '');
     overrideCssEnabled = Boolean(overrideCssSnapshot.trim());
     await Promise.all([
-        configRepository.setString(CONFIG_KEYS.overrideCss, overrideCssSnapshot),
+        configRepository.setString(
+            CONFIG_KEYS.overrideCss,
+            overrideCssSnapshot
+        ),
         configRepository.setBool(
             CONFIG_KEYS.overrideCssEnabled,
             overrideCssEnabled
@@ -643,7 +661,9 @@ export async function saveCommunityThemeOverrideCss(
     ]);
     useCommunityThemeStore
         .getState()
-        .setOverrideCssLength(overrideCssEnabled ? overrideCssSnapshot.length : 0);
+        .setOverrideCssLength(
+            overrideCssEnabled ? overrideCssSnapshot.length : 0
+        );
     syncCommunityStyleLayers();
 }
 
@@ -666,7 +686,7 @@ export async function loadLocalCommunityThemePreview(
     folderPath: string,
     shouldApply?: () => boolean
 ): Promise<CommunityThemeLocalPreview> {
-    if (!isThemeDeveloperBuild()) {
+    if (!isDevToolsBuild()) {
         throw new Error(
             'Local theme preview is only available in dev or Theme Dev Kit builds.'
         );

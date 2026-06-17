@@ -1,9 +1,7 @@
-export type VrcxBuildLabel = 'preview' | 'theme-devkit' | 'test' | string;
-
 const PREVIEW_LABELS = new Set(['preview', 'test']);
-const THEME_DEVKIT_LABEL = 'theme-devkit';
+const DEVKIT_LABEL = 'devkit';
 
-export function getVrcxBuildLabel(): VrcxBuildLabel {
+export function getVrcxBuildLabel(): string {
     // oxlint-disable-next-line no-undef
     return typeof VRCX_0_BUILD_LABEL === 'string'
         ? VRCX_0_BUILD_LABEL.trim().toLowerCase()
@@ -25,29 +23,25 @@ export function isPreviewBuildLabel(label = getVrcxBuildLabel()): boolean {
     return PREVIEW_LABELS.has(label);
 }
 
-export function isThemeDevKitBuildLabel(
-    label = getVrcxBuildLabel()
-): boolean {
-    return label === THEME_DEVKIT_LABEL;
+export function isDevKitBuild(label = getVrcxBuildLabel()): boolean {
+    return label === DEVKIT_LABEL;
 }
 
 export function isDeveloperToolsBuild(): boolean {
     const label = getVrcxBuildLabel();
     return (
-        isLocalDevBuild() ||
-        isPreviewBuildLabel(label) ||
-        isThemeDevKitBuildLabel(label)
+        isLocalDevBuild() || isPreviewBuildLabel(label) || isDevKitBuild(label)
     );
 }
 
-export function isThemeDeveloperBuild(): boolean {
-    return isLocalDevBuild() || isThemeDevKitBuildLabel();
+export function isDevToolsBuild(): boolean {
+    return isLocalDevBuild() || isDevKitBuild();
 }
 
 export function getBuildBadgeI18nKey(): string | null {
     const label = getVrcxBuildLabel();
-    if (isThemeDevKitBuildLabel(label)) {
-        return 'app_menu.theme_devkit_build_badge';
+    if (isDevKitBuild(label)) {
+        return 'app_menu.devkit_build_badge';
     }
     if (isPreviewBuildLabel(label)) {
         return 'app_menu.preview_build_badge';

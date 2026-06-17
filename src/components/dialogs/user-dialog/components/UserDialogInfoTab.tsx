@@ -3,6 +3,7 @@ import {
     ExternalLinkIcon,
     LanguagesIcon
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { InstanceActionBar } from '@/components/instances/InstanceActionBar';
@@ -26,7 +27,7 @@ import { EntityList } from '../UserDialogViewParts';
 import { useUserBioTranslation } from '../useUserBioTranslation';
 
 type DialogRecord = Record<string, any>;
-type DialogAction = (...args: any[]) => any;
+type DialogAction = (...args: unknown[]) => void;
 
 export type UserDialogPresenceSectionProps = {
     presence: DialogRecord;
@@ -40,9 +41,9 @@ export type UserDialogPresenceSectionProps = {
 export type UserDialogNotesSectionProps = {
     profile: DialogRecord;
     hideUserNotes: boolean;
-    memo: any;
+    memo: string | undefined;
     hideUserMemos: boolean;
-    onEditMemo?: DialogAction;
+    onEditMemo?: () => void;
 };
 
 export type UserDialogBioSectionProps = {
@@ -51,8 +52,8 @@ export type UserDialogBioSectionProps = {
 };
 
 export type UserDialogProfileLinksSectionProps = {
-    currentAvatarTarget: any;
-    currentAvatarDialogArgs: any;
+    currentAvatarTarget: string;
+    currentAvatarDialogArgs: unknown;
     currentAvatarDisplayName: string;
     isCurrentUser: boolean;
     openAvatarDialog: DialogAction;
@@ -64,15 +65,15 @@ export type UserDialogProfileLinksSectionProps = {
 };
 
 export type UserDialogActivitySummarySectionProps = {
-    friendedAt: any;
+    friendedAt: string | null | undefined;
     isCurrentUser: boolean;
-    lastSeen: any;
-    onOpenInstanceHistory?: DialogAction;
-    presenceActivityAt: any;
+    lastSeen: string | null | undefined;
+    onOpenInstanceHistory?: () => void;
+    presenceActivityAt: string | null | undefined;
     profile: DialogRecord;
-    userTimeSpent: any;
-    userJoinCount: any;
-    previousInstances: any[];
+    userTimeSpent: number | null | undefined;
+    userJoinCount: number | null | undefined;
+    previousInstances: unknown[];
 };
 
 export type UserDialogInfoTabProps = {
@@ -83,7 +84,17 @@ export type UserDialogInfoTabProps = {
     activitySummarySection: UserDialogActivitySummarySectionProps;
 };
 
-function InfoPanel({ title, children, className, contentClassName }: any) {
+function InfoPanel({
+    title,
+    children,
+    className,
+    contentClassName
+}: {
+    title: ReactNode;
+    children?: ReactNode;
+    className?: string;
+    contentClassName?: string;
+}) {
     return (
         <Card
             size="sm"
@@ -108,7 +119,14 @@ function InfoStat({
     mono = false,
     onClick,
     subtle = false
-}: any) {
+}: {
+    label?: ReactNode;
+    value?: string;
+    children?: ReactNode;
+    mono?: boolean;
+    onClick?: () => void;
+    subtle?: boolean;
+}) {
     const body = (
         <>
             <div className="min-w-0 flex-1">
@@ -154,7 +172,13 @@ function InfoStat({
     return <div className="flex min-w-0 items-start px-2 py-1.5">{body}</div>;
 }
 
-function InfoStatGrid({ children, className }: any) {
+function InfoStatGrid({
+    children,
+    className
+}: {
+    children?: ReactNode;
+    className?: string;
+}) {
     return (
         <div
             className={cn(
@@ -168,14 +192,14 @@ function InfoStatGrid({ children, className }: any) {
 }
 
 function formatLocalizedActivityDate(
-    value: any,
-    locale: any,
+    value: unknown,
+    locale: string | null | undefined,
     dateOnly = false
 ) {
     if (!value) {
         return '\u2014';
     }
-    const date = new Date(value);
+    const date = new Date(value as string | number | Date);
     if (Number.isNaN(date.getTime())) {
         return '\u2014';
     }
@@ -185,7 +209,13 @@ function formatLocalizedActivityDate(
     }).format(date);
 }
 
-function TextScroll({ children, className = 'h-52' }: any) {
+function TextScroll({
+    children,
+    className = 'h-52'
+}: {
+    children?: ReactNode;
+    className?: string;
+}) {
     return (
         <div className={cn('overflow-auto', className)}>
             <pre className="text-muted-foreground m-0 min-w-0 font-sans text-xs whitespace-pre-wrap">
@@ -195,7 +225,13 @@ function TextScroll({ children, className = 'h-52' }: any) {
     );
 }
 
-function AdaptiveTextBlock({ children, className }: any) {
+function AdaptiveTextBlock({
+    children,
+    className
+}: {
+    children?: ReactNode;
+    className?: string;
+}) {
     return (
         <div
             className={cn(
@@ -210,7 +246,10 @@ function AdaptiveTextBlock({ children, className }: any) {
     );
 }
 
-function handlePanelKeyDown(event: any, onClick: any) {
+function handlePanelKeyDown(
+    event: { key: string; preventDefault(): void },
+    onClick: (() => void) | undefined
+) {
     if (event.key !== 'Enter' && event.key !== ' ') {
         return;
     }
@@ -337,9 +376,7 @@ function UserDialogNotesPanel({
                 tabIndex={0}
                 className="hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 rounded-md p-2 text-left transition-colors outline-none focus-visible:ring-3"
                 onClick={onEditMemo}
-                onKeyDown={(event: any) =>
-                    handlePanelKeyDown(event, onEditMemo)
-                }
+                onKeyDown={(event) => handlePanelKeyDown(event, onEditMemo)}
             >
                 <div className="flex min-w-0 flex-col gap-3">
                     {showNote ? (
@@ -369,7 +406,7 @@ function UserDialogNotesPanel({
     );
 }
 
-function buildRepresentedGroupSeedData(representedGroup: any) {
+function buildRepresentedGroupSeedData(representedGroup: DialogRecord) {
     return {
         ...representedGroup,
         $memberId: representedGroup.id,
@@ -503,7 +540,12 @@ function UserDialogBioPanel({
     bioTranslationLoading,
     translatedBioActive,
     toggleBioTranslation
-}: any) {
+}: UserDialogBioSectionProps & {
+    visibleBio: string;
+    bioTranslationLoading: boolean;
+    translatedBioActive: boolean;
+    toggleBioTranslation: () => void;
+}) {
     const { t } = useTranslation();
     const translateBioLabel = t('dialog.user.info.translate_bio');
     const showOriginalBioLabel = t('dialog.user.info.show_original_bio');
@@ -540,7 +582,7 @@ function UserDialogBioPanel({
             </div>
             {bioLinks.length ? (
                 <div className="flex flex-wrap gap-1.5">
-                    {bioLinks.map((link: any) => (
+                    {bioLinks.map((link) => (
                         <Button
                             key={link}
                             type="button"

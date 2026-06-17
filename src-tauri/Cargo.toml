@@ -57,6 +57,7 @@ webkit2gtk-nvidia-quirk = "1"
 [features]
 default = ["steamvr-overlay", "openxr-overlay"]
 devtools = ["tauri/devtools"]
+devkit = ["devtools"]
 steamvr-overlay = [
     "vrcx-0-host/steamvr-overlay",
     "vrcx-0-runtime-host/steamvr-overlay",

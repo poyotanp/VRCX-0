@@ -261,7 +261,7 @@
         "help": "說明",
         "test_build_badge": "測試版",
         "preview_build_badge": "預覽版本",
-        "theme_devkit_build_badge": "主題開發套件",
+        "devkit_build_badge": "開發套件",
         "settings": "設定...",
         "check_updates": "檢查更新",
         "restart": "重新啟動 VRCX-0",

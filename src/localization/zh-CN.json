@@ -261,7 +261,7 @@
         "help": "帮助",
         "test_build_badge": "测试版",
         "preview_build_badge": "Preview Build",
-        "theme_devkit_build_badge": "Theme Dev Kit",
+        "devkit_build_badge": "Dev Kit",
         "settings": "设置...",
         "check_updates": "检查更新",
         "restart": "重启 VRCX-0",

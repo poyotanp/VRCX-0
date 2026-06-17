@@ -1,13 +1,14 @@
-name: Package Theme Dev Kit
+name: Package Dev Kit
 
 on:
-    release:
+    workflow_run:
+        workflows: ["Package"]
         types:
-            - published
+            - completed
     workflow_dispatch:
 
 concurrency:
-    group: ${{ github.ref }}-package-theme-devkit
+    group: ${{ github.ref }}-package-devkit
     cancel-in-progress: true
 
 permissions:
@@ -15,13 +16,14 @@ permissions:
 
 jobs:
     prepare:
-        name: Prepare Theme Dev Kit metadata
+        name: Prepare Dev Kit metadata
         runs-on: ubuntu-24.04
+        if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
         outputs:
             timestamp: ${{ steps.timestamp.outputs.timestamp }}
         steps:
             - id: timestamp
-              name: Generate Theme Dev Kit timestamp
+              name: Generate Dev Kit timestamp
               run: |
                   node <<'NODE'
                   const fs = require('node:fs');
@@ -40,13 +42,13 @@ jobs:
                           parts[part.type] = part.value;
                           return parts;
                       }, {});
-                  const themeDevKitTimestamp = `${timestampParts.year}${timestampParts.month}${timestampParts.day}-${timestampParts.hour}${timestampParts.minute}`;
+                  const devKitTimestamp = `${timestampParts.year}${timestampParts.month}${timestampParts.day}-${timestampParts.hour}${timestampParts.minute}`;
 
-                  fs.appendFileSync(process.env.GITHUB_OUTPUT, `timestamp=${themeDevKitTimestamp}\n`);
+                  fs.appendFileSync(process.env.GITHUB_OUTPUT, `timestamp=${devKitTimestamp}\n`);
                   NODE
 
     package:
-        name: Theme Dev Kit ${{ matrix.platform }}
+        name: Dev Kit ${{ matrix.platform }}
         needs: prepare
         runs-on: ${{ matrix.os }}
         defaults:
@@ -59,38 +61,24 @@ jobs:
                     - platform: windows_x86_64
                       os: windows-latest
                       rust_target: ''
-                      output: VRCX-0_${version}_theme-devkit_windows_x86_64.exe
+                      output: VRCX-0_${version}_devkit_windows_x86_64.exe
                     - platform: linux_x86_64
                       os: ubuntu-24.04
                       rust_target: ''
-                      output: VRCX-0_${version}_theme-devkit_linux_x86_64.AppImage
+                      output: VRCX-0_${version}_devkit_linux_x86_64.AppImage
                     - platform: macos_aarch64
                       os: macos-latest
                       rust_target: aarch64-apple-darwin
-                      output: VRCX-0_${version}_theme-devkit_macos_aarch64.dmg
+                      output: VRCX-0_${version}_devkit_macos_aarch64.dmg
                     - platform: macos_x86_64
                       os: macos-latest
                       rust_target: x86_64-apple-darwin
-                      output: VRCX-0_${version}_theme-devkit_macos_x86_64.dmg
+                      output: VRCX-0_${version}_devkit_macos_x86_64.dmg
         steps:
             - uses: actions/checkout@v6
               with:
                   fetch-depth: 0
-
-            - name: Checkout release tag
-              if: github.event_name == 'release'
-              env:
-                  RELEASE_TAG: ${{ github.event.release.tag_name }}
-              run: |
-                  tag="${RELEASE_TAG#refs/tags/}"
-
-                  if [[ -z "$tag" ]]; then
-                      echo "Missing release tag." >&2
-                      exit 1
-                  fi
-
-                  git fetch --force --tags origin "refs/tags/$tag:refs/tags/$tag"
-                  git checkout --force "$tag"
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
             - uses: dtolnay/rust-toolchain@stable
 
@@ -150,7 +138,7 @@ jobs:
                       --dry-run
 
             - id: config
-              name: Prepare Theme Dev Kit config
+              name: Prepare Dev Kit config
               run: |
                   node <<'NODE'
                   const fs = require('node:fs');
@@ -159,7 +147,7 @@ jobs:
                   const runnerOs = process.env.RUNNER_OS;
                   const tauriConfigPath = 'src-tauri/tauri.conf.json';
                   const linuxConfigPath = 'src-tauri/tauri.linux.conf.json';
-                  const outputConfigPath = `src-tauri/tauri.theme-devkit.${platform}.conf.json`;
+                  const outputConfigPath = `src-tauri/tauri.devkit.${platform}.conf.json`;
 
                   const tauriConfig = JSON.parse(fs.readFileSync(tauriConfigPath, 'utf8'));
                   let config = structuredClone(tauriConfig);
@@ -192,54 +180,54 @@ jobs:
               env:
                   MATRIX_PLATFORM: ${{ matrix.platform }}
 
-            - name: Build Windows Theme Dev Kit exe
+            - name: Build Windows Dev Kit exe
               if: runner.os == 'Windows'
               env:
-                  VRCX_0_BUILD_LABEL: theme-devkit
-                  VRCX_0_BUILD_BADGE: Theme Dev Kit ${{ needs.prepare.outputs.timestamp }}
+                  VRCX_0_BUILD_LABEL: devkit
+                  VRCX_0_BUILD_BADGE: Dev Kit ${{ needs.prepare.outputs.timestamp }}
               run: |
-                  npm run tauri:build:devtools -- \
+                  npm run tauri:build:devkit -- \
                       --config "${{ steps.config.outputs.config }}" \
                       --no-sign \
                       --no-bundle
 
-            - name: Build Linux Theme Dev Kit AppImage
+            - name: Build Linux Dev Kit AppImage
               if: runner.os == 'Linux'
               env:
-                  VRCX_0_BUILD_LABEL: theme-devkit
-                  VRCX_0_BUILD_BADGE: Theme Dev Kit ${{ needs.prepare.outputs.timestamp }}
+                  VRCX_0_BUILD_LABEL: devkit
+                  VRCX_0_BUILD_BADGE: Dev Kit ${{ needs.prepare.outputs.timestamp }}
               run: |
-                  npm run tauri:build:devtools -- \
+                  npm run tauri:build:devkit -- \
                       --config "${{ steps.config.outputs.config }}" \
                       --bundles appimage
 
-            - name: Build macOS Theme Dev Kit DMG
+            - name: Build macOS Dev Kit DMG
               if: runner.os == 'macOS'
               env:
-                  VRCX_0_BUILD_LABEL: theme-devkit
-                  VRCX_0_BUILD_BADGE: Theme Dev Kit ${{ needs.prepare.outputs.timestamp }}
+                  VRCX_0_BUILD_LABEL: devkit
+                  VRCX_0_BUILD_BADGE: Dev Kit ${{ needs.prepare.outputs.timestamp }}
               run: |
-                  npm run tauri:build:devtools -- \
+                  npm run tauri:build:devkit -- \
                       --target "${{ matrix.rust_target }}" \
                       --config "${{ steps.config.outputs.config }}" \
                       --bundles dmg
 
-            - name: Collect Theme Dev Kit artifact
+            - name: Collect Dev Kit artifact
               run: |
-                  mkdir -p theme-devkit-assets
+                  mkdir -p devkit-assets
                   version="${{ steps.version.outputs.version }}"
                   output="${{ matrix.output }}"
                   output="${output//\$\{version\}/$version}"
 
                   case "${{ matrix.platform }}" in
                       windows_x86_64)
-                          cp target/release/vrcx-0.exe "theme-devkit-assets/$output"
+                          cp target/release/vrcx-0.exe "devkit-assets/$output"
                           ;;
                       linux_x86_64)
-                          cp target/release/bundle/appimage/*.AppImage "theme-devkit-assets/$output"
+                          cp target/release/bundle/appimage/*.AppImage "devkit-assets/$output"
                           ;;
                       macos_aarch64|macos_x86_64)
-                          cp "target/${{ matrix.rust_target }}/release/bundle/dmg/"*.dmg "theme-devkit-assets/$output"
+                          cp "target/${{ matrix.rust_target }}/release/bundle/dmg/"*.dmg "devkit-assets/$output"
                           ;;
                       *)
                           echo "Unknown platform: ${{ matrix.platform }}" >&2
@@ -247,10 +235,10 @@ jobs:
                           ;;
                   esac
 
-                  ls -la theme-devkit-assets
+                  ls -la devkit-assets
 
             - uses: actions/upload-artifact@v7
               with:
-                  name: theme-devkit-${{ matrix.platform }}-${{ steps.version.outputs.version }}
-                  path: theme-devkit-assets/*
+                  name: devkit-${{ matrix.platform }}-${{ steps.version.outputs.version }}
+                  path: devkit-assets/*
                   if-no-files-found: error

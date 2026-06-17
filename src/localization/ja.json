@@ -261,7 +261,7 @@
         "help": "ヘルプ",
         "test_build_badge": "テストビルド",
         "preview_build_badge": "Preview Build",
-        "theme_devkit_build_badge": "Theme Dev Kit",
+        "devkit_build_badge": "Dev Kit",
         "settings": "設定...",
         "check_updates": "アップデートを確認",
         "restart": "VRCX-0 を再起動",
