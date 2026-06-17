@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
+import { nextHoverCardToken, useHoverCardStore } from '@/state/hoverCardStore';
 import {
     HoverCard,
     HoverCardContent,
@@ -21,6 +22,8 @@ export function UserHoverCard({
 }: any) {
     const [open, setOpen] = useState(false);
     const [scrollClosed, setScrollClosed] = useState(false);
+    const [token] = useState(nextHoverCardToken);
+    const suppressUntilRef = useRef(0);
 
     useEffect(() => {
         if (!open) {
@@ -38,6 +41,22 @@ export function UserHoverCard({
         return () => window.removeEventListener('scroll', handleScroll, true);
     }, [open]);
 
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+        useHoverCardStore.getState().claim(token);
+        const unsubscribe = useHoverCardStore.subscribe((state) => {
+            if (state.activeToken !== token) {
+                setOpen(false);
+            }
+        });
+        return () => {
+            unsubscribe();
+            useHoverCardStore.getState().release(token);
+        };
+    }, [open, token]);
+
     if (disabled || !userId) {
         return children;
     }
@@ -45,6 +64,9 @@ export function UserHoverCard({
         <HoverCard
             open={open}
             onOpenChange={(next) => {
+                if (next && Date.now() < suppressUntilRef.current) {
+                    return;
+                }
                 if (next) {
                     setScrollClosed(false);
                 }
@@ -53,7 +75,15 @@ export function UserHoverCard({
             openDelay={openDelay}
             closeDelay={closeDelay}
         >
-            <HoverCardTrigger asChild>{children}</HoverCardTrigger>
+            <HoverCardTrigger
+                asChild
+                onPointerDownCapture={() => {
+                    suppressUntilRef.current = Date.now() + 400;
+                    setOpen(false);
+                }}
+            >
+                {children}
+            </HoverCardTrigger>
             <HoverCardContent
                 className={cn(
                     'w-72 overflow-hidden p-0',
