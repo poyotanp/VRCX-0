@@ -21,7 +21,7 @@ VRCX-0 is designed for everyday use: dramatically lower resource usage, a smalle
 ## Highlights
 
 - **50%–70% lower memory usage** than VRCX
-- Installer is just over 10 MB — a fraction of VRCX's footprint
+- Just over 10 MB to download, just over 30 MB on disk — over 10× smaller than VRCX
 - **Background mode** — a step beyond minimizing to tray: opt in to drop memory
   to just tens of MB while all core features keep running normally
 - **Social Automation** — auto-switch your status and bio based on time of day,
