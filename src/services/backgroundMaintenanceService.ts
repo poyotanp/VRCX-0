@@ -134,6 +134,26 @@ function setUpdaterCheckResult(
     });
 }
 
+function notifyAvailableUpdate(
+    branch: string,
+    release: UpdaterReleaseSnapshotSource,
+    version: string
+) {
+    const displayVersion = formatReleaseDisplayVersion(version);
+    const message = i18n.t(
+        'service.background_maintenance_service.dynamic.version_value_is_available_on_the_value_branch',
+        { value: displayVersion, value2: branch }
+    );
+    useNotificationStore.getState().pushNotification({
+        level: 'info',
+        title: i18n.t(
+            'service.background_maintenance.label.vrcx_update_available'
+        ),
+        message
+    });
+    setUpdaterCheckResult(true, message, release);
+}
+
 function getRuntimeAuth(): RuntimeAuthSnapshot {
     const runtimeState = useRuntimeStore.getState();
     return {
@@ -565,104 +585,63 @@ async function checkForAppUpdate({
     const hostArch = hostCapabilities.arch;
     const linuxPackageKind = hostCapabilities.linuxPackageKind;
     const canInstallUpdates = canInstallUpdatesOnPlatform(hostPlatform);
-    let autoUpdateMode = await configRepository.getString(
-        'autoUpdateVRCX',
-        'Auto Download'
-    );
-    if (
-        autoUpdateMode === 'Auto Install' ||
-        autoUpdateMode === 'Auto Download'
-    ) {
-        autoUpdateMode = 'Notify';
-        await configRepository.setString('autoUpdateVRCX', autoUpdateMode);
-    }
 
-    if (autoUpdateMode === 'Off') {
-        useRuntimeStore.getState().setUpdateLoopState({
-            hasAvailableUpdate: false
-        });
-    } else {
-        try {
-            const savedBranch = await configRepository.getString('branch', '');
-            const defaultBranch = defaultBranchForVersion(VERSION || '');
-            const sanitizedSavedBranch = sanitizeBranch(savedBranch);
-            const branch =
-                defaultBranch !== 'Stable'
-                    ? defaultBranch
-                    : savedBranch
-                      ? sanitizedSavedBranch
-                      : defaultBranch;
-            if (branch !== savedBranch) {
-                await configRepository.setString('branch', branch);
-            }
-
-            if (canInstallUpdates) {
-                const update = await checkInstallableUpdate(branch, {
-                    hostArch,
-                    linuxPackageKind,
-                    hostPlatform
-                });
-                if (update) {
-                    const displayVersion = formatReleaseDisplayVersion(
-                        update.version
-                    );
-                    const message = i18n.t(
-                        'service.background_maintenance_service.dynamic.version_value_is_available_on_the_value_branch',
-                        { value: displayVersion, value2: branch }
-                    );
-                    useNotificationStore.getState().pushNotification({
-                        level: 'info',
-                        title: i18n.t(
-                            'service.background_maintenance.label.vrcx_update_available'
-                        ),
-                        message
-                    });
-                    setUpdaterCheckResult(true, message, update);
-                } else {
-                    setUpdaterCheckResult(false);
-                }
-            } else {
-                const latestRelease = await fetchLatestBranchRelease(branch, {
-                    hostArch,
-                    linuxPackageKind,
-                    hostPlatform,
-                    requireInstallerAsset: false
-                });
-                const hasUpdate =
-                    latestRelease &&
-                    hasUpdateForBranch(
-                        branch,
-                        VERSION || '',
-                        latestRelease.canonicalVersion
-                    );
-                if (hasUpdate) {
-                    const displayVersion = formatReleaseDisplayVersion(
-                        latestRelease.canonicalVersion
-                    );
-                    const message = i18n.t(
-                        'service.background_maintenance_service.dynamic.version_value_is_available_on_the_value_branch',
-                        { value: displayVersion, value2: branch }
-                    );
-                    useNotificationStore.getState().pushNotification({
-                        level: 'info',
-                        title: i18n.t(
-                            'service.background_maintenance.label.vrcx_update_available'
-                        ),
-                        message
-                    });
-                    setUpdaterCheckResult(true, message, latestRelease);
-                } else {
-                    setUpdaterCheckResult(false);
-                }
-            }
-        } catch (error) {
-            console.warn('Failed to check for VRCX-0 updates:', error);
-            useRuntimeStore.getState().setUpdateLoopState({
-                lastUpdaterCheckAt: new Date().toISOString(),
-                lastUpdaterCheckDetail:
-                    error instanceof Error ? error.message : String(error)
-            });
+    try {
+        const savedBranch = await configRepository.getString('branch', '');
+        const defaultBranch = defaultBranchForVersion(VERSION || '');
+        const sanitizedSavedBranch = sanitizeBranch(savedBranch);
+        const branch =
+            defaultBranch !== 'Stable'
+                ? defaultBranch
+                : savedBranch
+                  ? sanitizedSavedBranch
+                  : defaultBranch;
+        if (branch !== savedBranch) {
+            await configRepository.setString('branch', branch);
         }
+
+        if (canInstallUpdates) {
+            const update = await checkInstallableUpdate(branch, {
+                hostArch,
+                linuxPackageKind,
+                hostPlatform
+            });
+            if (update) {
+                notifyAvailableUpdate(branch, update, update.version);
+            } else {
+                setUpdaterCheckResult(false);
+            }
+        } else {
+            const latestRelease = await fetchLatestBranchRelease(branch, {
+                hostArch,
+                linuxPackageKind,
+                hostPlatform,
+                requireInstallerAsset: false
+            });
+            const hasUpdate =
+                latestRelease &&
+                hasUpdateForBranch(
+                    branch,
+                    VERSION || '',
+                    latestRelease.canonicalVersion
+                );
+            if (hasUpdate) {
+                notifyAvailableUpdate(
+                    branch,
+                    latestRelease,
+                    latestRelease.canonicalVersion
+                );
+            } else {
+                setUpdaterCheckResult(false);
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to check for VRCX-0 updates:', error);
+        useRuntimeStore.getState().setUpdateLoopState({
+            lastUpdaterCheckAt: new Date().toISOString(),
+            lastUpdaterCheckDetail:
+                error instanceof Error ? error.message : String(error)
+        });
     }
 
     if (includeRegistryBackup) {
