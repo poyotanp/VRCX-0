@@ -9,6 +9,7 @@ import {
 } from '@/ui/shadcn/hover-card';
 
 import { UserHoverCardContent } from './UserHoverCardContent';
+import { getHoverOpenSuppressionDeadline } from './userHoverCardSuppression';
 
 const MODAL_OVERLAY_SELECTOR =
     '[data-slot="dialog-overlay"][data-state="open"],[data-slot="alert-dialog-overlay"][data-state="open"],[data-slot="sheet-overlay"][data-state="open"]';
@@ -88,11 +89,18 @@ export function UserHoverCard({
                         document.querySelector(MODAL_OVERLAY_SELECTOR)
                     ) {
                         suppressUntilRef.current =
-                            Date.now() + openDelay + 100;
+                            getHoverOpenSuppressionDeadline(
+                                Date.now(),
+                                openDelay
+                            );
                     }
                 }}
                 onPointerDownCapture={() => {
-                    suppressUntilRef.current = Date.now() + 400;
+                    suppressUntilRef.current =
+                        getHoverOpenSuppressionDeadline(
+                            Date.now(),
+                            openDelay
+                        );
                     setOpen(false);
                 }}
             >
