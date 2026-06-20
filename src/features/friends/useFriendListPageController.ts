@@ -85,6 +85,7 @@ export function useFriendListPageController() {
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        autoResetPageIndex: false,
         enableColumnResizing: true,
         columnResizeMode: 'onChange',
         meta: {
