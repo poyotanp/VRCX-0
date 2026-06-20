@@ -4,7 +4,6 @@ const serviceMocks = vi.hoisted(() => ({
     configRepository: {
         getString: vi.fn()
     },
-    handleInviteAutomationNotification: vi.fn(),
     pushSharedFeedNotification: vi.fn(),
     recordCurrentUserSnapshot: vi.fn(),
     recordFriendPatch: vi.fn()
@@ -19,11 +18,6 @@ vi.mock('./domainIngestionService', () => ({
     recordFriendPatch: serviceMocks.recordFriendPatch
 }));
 
-vi.mock('./inviteAutomationService', () => ({
-    handleInviteAutomationNotification:
-        serviceMocks.handleInviteAutomationNotification
-}));
-
 vi.mock('./sharedFeedFilterService', () => ({
     pushSharedFeedNotification: serviceMocks.pushSharedFeedNotification
 }));
@@ -36,9 +30,6 @@ describe('realtimePresenceService projection boundary', () => {
     beforeEach(async () => {
         vi.clearAllMocks();
         serviceMocks.configRepository.getString.mockResolvedValue('[]');
-        serviceMocks.handleInviteAutomationNotification.mockResolvedValue({
-            handled: false
-        });
         serviceMocks.pushSharedFeedNotification.mockResolvedValue(undefined);
 
         const { useFriendRosterStore } =
@@ -266,9 +257,6 @@ describe('realtimePresenceService projection boundary', () => {
         expect(useShellStore.getState().notifiedMenus).toContain(
             'notification'
         );
-        expect(
-            serviceMocks.handleInviteAutomationNotification
-        ).toHaveBeenCalled();
     });
 
     it('uses the merged notification row for v2 update menu decisions', async () => {

@@ -1,4 +1,5 @@
 use super::*;
+use crate::realtime::invite_automation::runtime::InviteAutomationState;
 
 pub(super) const MAX_QUEUED_FRIEND_MESSAGES: usize = 512;
 
@@ -24,6 +25,7 @@ pub(super) struct RealtimeHostRuntimeState {
     pub(super) friend_messages_paused: bool,
     pub(super) queued_friend_messages: Vec<RealtimeWsMessagePayload>,
     pub(super) friend_profile_refetches: HashMap<String, i64>,
+    pub(super) invite_automation: InviteAutomationState,
 }
 
 #[derive(Clone, Debug, Default)]

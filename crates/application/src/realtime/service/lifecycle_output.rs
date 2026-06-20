@@ -73,7 +73,10 @@ impl RealtimeHostRuntime {
         self.schedule_friend_profile_refetches(projection_generation, profile_refetch_user_ids);
     }
 
-    pub(super) fn apply_notification_output(&self, mut output: RealtimeNotificationOutput) {
+    pub(super) fn apply_notification_output(
+        self: &Arc<Self>,
+        mut output: RealtimeNotificationOutput,
+    ) {
         let mut projection = output.projection;
         self.enrich_notification_world_names(&mut projection);
         self.enrich_notification_sender_names(&mut projection);
@@ -101,7 +104,8 @@ impl RealtimeHostRuntime {
             .ingest_notification_projection(&projection);
         self.deps
             .event_bus
-            .emit_realtime_notification_projection(projection);
+            .emit_realtime_notification_projection(projection.clone());
+        self.schedule_invite_automation(&projection);
     }
 
     pub(super) fn apply_current_user_output(&self, mut output: RealtimeCurrentUserOutput) {
@@ -136,6 +140,15 @@ impl RealtimeHostRuntime {
         output: RealtimeInstanceClosedOutput,
     ) {
         let projection = output.projection;
+        if let Some(location) = projection
+            .notification
+            .get("location")
+            .and_then(Value::as_str)
+        {
+            if let Ok(mut state) = self.state.lock() {
+                state.invite_automation.record_closed_location(location);
+            }
+        }
         let persistence_attempted = !output.persistence.is_empty();
         match write_realtime_batch(&self.deps.db, owner_user_id, &output.persistence) {
             Ok(counts) => {

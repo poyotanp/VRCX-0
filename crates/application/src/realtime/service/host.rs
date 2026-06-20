@@ -28,6 +28,12 @@ use crate::realtime::connection::{
 use crate::realtime::current_user::RealtimeCurrentUserRuntime;
 use crate::realtime::friends::{is_friend_event_type, RealtimeFriendsRuntime};
 use crate::realtime::instance_queue::apply_instance_queue_ws_message;
+use crate::realtime::invite_automation::decision::{
+    evaluate_invite_automation, normalize_invite_automation_mode, InviteAutomationConfig,
+    InviteAutomationInput, InviteAutomationMode, InviteAutomationSkipReason, InviteDecision,
+    InviteLocationFacts, InviteNotificationFacts, SenderAllowlist,
+};
+use crate::realtime::invite_automation::runtime::{sender_scope_key, InviteOutcome};
 use crate::realtime::notifications::{
     apply_instance_closed_ws_message, apply_notification_ws_message,
 };
@@ -57,6 +63,8 @@ mod lifecycle_friend_baseline;
 mod lifecycle_friend_messages;
 #[path = "lifecycle_friend_profile.rs"]
 mod lifecycle_friend_profile;
+#[path = "lifecycle_invite_automation.rs"]
+mod lifecycle_invite_automation;
 #[path = "lifecycle_output.rs"]
 mod lifecycle_output;
 #[path = "lifecycle_session.rs"]

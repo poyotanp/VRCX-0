@@ -26,7 +26,6 @@ import { recordCurrentUserSnapshot } from './domainIngestionService';
 import { bootstrapFavorites } from './favoriteBootstrapService';
 import { bootstrapFriendRoster } from './friendBootstrapService';
 import { refreshModerationSync } from './moderationSyncService';
-import { resetPresenceAutomationExecutor } from './presence-automation/index';
 import {
     recordRuntimeJobTelemetry,
     runRuntimeTelemetryJob
@@ -750,5 +749,4 @@ export async function runBackgroundMaintenanceTick() {
 
 export function resetBackgroundMaintenance() {
     resetTimers();
-    resetPresenceAutomationExecutor();
 }

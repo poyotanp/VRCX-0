@@ -14,7 +14,6 @@ import { useUserFactsStore } from '@/state/userFactsStore';
 import { useVrcNotificationStore } from '@/state/vrcNotificationStore';
 
 import { recordCurrentUserSnapshot } from './domainIngestionService';
-import { handleInviteAutomationNotification } from './inviteAutomationService';
 import { handleRealtimeInstanceQueueProjection } from './realtimeInstanceQueueService';
 import { pushSharedFeedNotification } from './sharedFeedFilterService';
 
@@ -169,18 +168,6 @@ function notifyNotificationMenu(notification: ProjectionRecord) {
     useShellStore.getState().notifyMenu('notification');
 }
 
-async function runInviteAutomation(notification: ProjectionRecord) {
-    return handleInviteAutomationNotification(notification).catch(
-        (error: unknown) => {
-            console.warn(
-                'Failed to handle invite automation notification:',
-                error
-            );
-            return { handled: false, reason: 'error' };
-        }
-    );
-}
-
 function parseStringArray(value: unknown): string[] {
     if (Array.isArray(value)) {
         return value
@@ -296,13 +283,6 @@ async function handleRealtimeNotificationProjection(
                 .getState()
                 .rows.find((row) => row.id === notification.id) ||
             notification;
-        const automationResult = item.runAutomation
-            ? await runInviteAutomation(mergedNotification)
-            : { handled: false };
-        if (automationResult.handled) {
-            clearNotificationMenuIfNoUnseen();
-            continue;
-        }
         if (item.notifyMenu) {
             notifyNotificationMenu(mergedNotification);
         }

@@ -68,6 +68,7 @@ impl RealtimeHostRuntime {
             state.friend_messages_paused = false;
             state.queued_friend_messages.clear();
             state.friend_profile_refetches.clear();
+            state.invite_automation.clear_all();
             self.friends.clear();
             self.current_user.clear();
             let friend_user_ids = friends_by_id.keys().cloned().collect::<Vec<_>>();
