@@ -1706,5 +1706,23 @@
                 "403_404_bailing_request": "Bailing request due to recent 404/403"
             }
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Otevřít VRCX-0",
+            "backgroundMode": "Režim na pozadí",
+            "disableTheme": "Zakázat motiv",
+            "exit": "Ukončit"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Režim na pozadí spuštěn",
+                "body": "VRCX-0 běží v režimu na pozadí."
+            },
+            "authFailure": {
+                "title": "Přihlášení do VRChat vypršelo",
+                "body": "Přihlaste se znovu, abyste mohli pokračovat."
+            }
+        }
     }
 }

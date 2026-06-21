@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use crate::error::Error;
+use vrcx_0_core::vrchat_registry_policy::{is_allowed_registry_key, ALLOWED_REGISTRY_TYPES};
 
 pub fn get_registry_key(key: &str) -> Result<serde_json::Value, Error> {
     let _ = key;
@@ -348,6 +349,76 @@ pub fn read_reg_json_file(filepath: &str) -> Result<String, Error> {
     Ok(std::fs::read_to_string(filepath)?)
 }
 
+pub fn validate_registry_json(json: &str) -> Result<(), Error> {
+    let data: HashMap<String, HashMap<String, serde_json::Value>> = serde_json::from_str(json)?;
+    for (key, props) in data {
+        let type_int = props
+            .get("type")
+            .and_then(|value| value.as_i64())
+            .ok_or_else(|| Error::Custom(format!("Invalid registry type for {key}")))?;
+        let type_int = i32::try_from(type_int)
+            .map_err(|_| Error::Custom(format!("Invalid registry type for {key}")))?;
+        let value = props
+            .get("data")
+            .ok_or_else(|| Error::Custom(format!("Missing registry data for {key}")))?;
+        validate_registry_entry(&key, value, type_int)?;
+    }
+    Ok(())
+}
+
+pub fn validate_registry_entry(
+    key: &str,
+    value: &serde_json::Value,
+    type_int: i32,
+) -> Result<(), Error> {
+    validate_registry_key(key)?;
+    if !ALLOWED_REGISTRY_TYPES.contains(&type_int) {
+        return Err(Error::Custom(format!(
+            "Registry type {type_int} is not allowed for {key}."
+        )));
+    }
+
+    match type_int {
+        3 if value.is_string() => Ok(()),
+        4 if value
+            .as_i64()
+            .and_then(|raw| i32::try_from(raw).ok())
+            .is_some() =>
+        {
+            Ok(())
+        }
+        100 if value.as_f64().is_some() => Ok(()),
+        3 | 4 | 100 => Err(Error::Custom(format!(
+            "Invalid registry value shape for {key}."
+        ))),
+        _ => unreachable!("registry type allow-list is checked before value validation"),
+    }
+}
+
+pub fn validate_registry_key(key: &str) -> Result<(), Error> {
+    let key = key.trim();
+    if key.is_empty() || key.len() > 128 {
+        return Err(Error::Custom("Invalid VRChat registry key.".into()));
+    }
+
+    let allowed = key.bytes().all(|byte| {
+        (byte == b' ' || byte.is_ascii_graphic()) && !matches!(byte, b'\\' | b'/' | b'"' | b'\'')
+    });
+    if !allowed {
+        return Err(Error::Custom(format!(
+            "VRChat registry key '{key}' contains unsupported characters."
+        )));
+    }
+
+    if !is_allowed_registry_key(key) {
+        return Err(Error::Custom(format!(
+            "VRChat registry key '{key}' is not in the allowed PlayerPrefs set."
+        )));
+    }
+
+    Ok(())
+}
+
 #[cfg(target_os = "windows")]
 fn add_hash_to_key_name(key: &str) -> String {
     let mut hash: u32 = 5381;
@@ -388,6 +459,66 @@ fn strip_hash_from_key_name(key: &str) -> Option<&str> {
         Some(prefix)
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod validation_tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn validates_allowed_registry_keys() {
+        assert!(validate_registry_key("LOGGING_ENABLED").is_ok());
+        assert!(validate_registry_key("VRC_DEBUG_LOGGING").is_ok());
+        assert!(validate_registry_key("VRC_TEST").is_ok());
+        assert!(validate_registry_key("UnityGraphicsQuality").is_ok());
+        assert!(validate_registry_key("playerHeight_h56066313").is_ok());
+        assert!(validate_registry_key("playerHeight").is_ok());
+    }
+
+    #[test]
+    fn rejects_unsupported_registry_keys() {
+        assert!(validate_registry_key("").is_err());
+        assert!(validate_registry_key("Bad/Key").is_err());
+        assert!(validate_registry_key("Bad\\Key").is_err());
+        assert!(validate_registry_key("Bad\"Key").is_err());
+        assert!(validate_registry_key("Bad Key!").is_err());
+    }
+
+    #[test]
+    fn validates_registry_entry_type_and_shape() {
+        assert!(validate_registry_entry("VRC_TEST", &json!("enabled"), 3).is_ok());
+        assert!(validate_registry_entry("VRC_TEST", &json!(1), 4).is_ok());
+        assert!(validate_registry_entry("VRC_TEST", &json!(1.5), 100).is_ok());
+
+        assert!(validate_registry_entry("VRC_TEST", &json!(1), 3).is_err());
+        assert!(validate_registry_entry("VRC_TEST", &json!("1"), 4).is_err());
+        assert!(validate_registry_entry("VRC_TEST", &json!("1.5"), 100).is_err());
+        assert!(validate_registry_entry("VRC_TEST", &json!(1), 5).is_err());
+    }
+
+    #[test]
+    fn validates_registry_json_entries() {
+        let valid = json!({
+            "VRC_TEST": {
+                "type": 3,
+                "data": "enabled"
+            },
+            "playerHeight_h56066313": {
+                "type": 4,
+                "data": 42
+            }
+        });
+        assert!(validate_registry_json(&valid.to_string()).is_ok());
+
+        let invalid = json!({
+            "Bad/Key": {
+                "type": 3,
+                "data": "enabled"
+            }
+        });
+        assert!(validate_registry_json(&invalid.to_string()).is_err());
     }
 }
 

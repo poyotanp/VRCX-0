@@ -14,6 +14,9 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::Layer;
 
+use crate::localization::shell_locale::{
+    self, AuthFailureNotificationLabels, BackgroundModeNotificationLabels, TrayLabels,
+};
 use crate::state::{AppState, BACKGROUND_MODE_RESUME_ROUTE_STORAGE_KEY};
 use vrcx_0_application::RuntimeEventSink;
 use vrcx_0_application::{format_runtime_output_event, RuntimeOutputLevel, RuntimeOutputMode};
@@ -839,23 +842,6 @@ pub fn refresh_tray_menu(app: &tauri::AppHandle, state: &AppState) -> Result<(),
     Ok(())
 }
 
-struct TrayLabels {
-    open: &'static str,
-    background_mode: &'static str,
-    disable_theme: &'static str,
-    exit: &'static str,
-}
-
-struct BackgroundModeNotificationLabels {
-    title: &'static str,
-    body: &'static str,
-}
-
-struct AuthFailureNotificationLabels {
-    title: &'static str,
-    body: &'static str,
-}
-
 pub(crate) fn show_background_mode_started_notification(app: &tauri::AppHandle, state: &AppState) {
     let labels = background_mode_notification_labels(state);
     if let Err(error) = app
@@ -889,29 +875,7 @@ fn app_language(state: &AppState) -> String {
 }
 
 fn background_mode_notification_labels(state: &AppState) -> BackgroundModeNotificationLabels {
-    let language = app_language(state);
-    if language.starts_with("zh-tw") || language.starts_with("zh-hant") {
-        return BackgroundModeNotificationLabels {
-            title: "背景模式已啟動",
-            body: "VRCX-0 正在背景模式中執行。",
-        };
-    }
-    if language.starts_with("zh") {
-        return BackgroundModeNotificationLabels {
-            title: "后台模式已启动",
-            body: "VRCX-0 正在后台模式中运行。",
-        };
-    }
-    if language.starts_with("ja") {
-        return BackgroundModeNotificationLabels {
-            title: "バックグラウンドモードで起動しました",
-            body: "VRCX-0 はバックグラウンドモードで実行中です。",
-        };
-    }
-    BackgroundModeNotificationLabels {
-        title: "Background Mode started",
-        body: "VRCX-0 is running in Background Mode.",
-    }
+    shell_locale::background_mode_notification_labels_for_language(&app_language(state))
 }
 
 fn auth_failure_notification_labels(state: &AppState) -> AuthFailureNotificationLabels {
@@ -919,63 +883,11 @@ fn auth_failure_notification_labels(state: &AppState) -> AuthFailureNotification
 }
 
 fn auth_failure_notification_labels_for_language(language: &str) -> AuthFailureNotificationLabels {
-    let language = language.to_ascii_lowercase();
-    if language.starts_with("zh-tw") || language.starts_with("zh-hant") {
-        return AuthFailureNotificationLabels {
-            title: "VRChat 登入已失效",
-            body: "需要重新登入",
-        };
-    }
-    if language.starts_with("zh") {
-        return AuthFailureNotificationLabels {
-            title: "VRChat 登录已失效",
-            body: "需要重新登录",
-        };
-    }
-    if language.starts_with("ja") {
-        return AuthFailureNotificationLabels {
-            title: "VRChat ログインの有効期限が切れました",
-            body: "再ログインが必要です",
-        };
-    }
-    AuthFailureNotificationLabels {
-        title: "VRChat login expired",
-        body: "Sign in again to continue.",
-    }
+    shell_locale::auth_failure_notification_labels_for_language(language)
 }
 
 fn tray_labels(state: &AppState) -> TrayLabels {
-    let language = app_language(state);
-    if language.starts_with("zh-tw") || language.starts_with("zh-hant") {
-        return TrayLabels {
-            open: "開啟 VRCX-0",
-            background_mode: "背景模式",
-            disable_theme: "停用主題",
-            exit: "結束",
-        };
-    }
-    if language.starts_with("zh") {
-        return TrayLabels {
-            open: "打开 VRCX-0",
-            background_mode: "后台模式",
-            disable_theme: "禁用主题",
-            exit: "退出",
-        };
-    }
-    if language.starts_with("ja") {
-        return TrayLabels {
-            open: "VRCX-0 を開く",
-            background_mode: "バックグラウンドモード",
-            disable_theme: "テーマを無効化",
-            exit: "終了",
-        };
-    }
-    TrayLabels {
-        open: "Open VRCX-0",
-        background_mode: "Background Mode",
-        disable_theme: "Disable Theme",
-        exit: "Exit",
-    }
+    shell_locale::tray_labels_for_language(&app_language(state))
 }
 
 fn sync_autostart_from_db(app: &tauri::App, state: &AppState) {

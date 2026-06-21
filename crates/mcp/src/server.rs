@@ -8,7 +8,7 @@ use rmcp::model::{
 };
 use rmcp::service::{MaybeSendFuture, RequestContext, RoleServer};
 use rmcp::{tool_handler, ErrorData as RmcpError, ServerHandler};
-use vrcx_0_persistence::mcp_social;
+use vrcx_0_persistence::social_aggregates;
 
 use crate::runtime::McpRuntime;
 
@@ -59,7 +59,7 @@ impl ServerHandler for VrcxMcpServer {
             )));
         }
         future::ready(Ok(ReadResourceResult::new(vec![ResourceContents::text(
-            mcp_social::data_caveats_resource(),
+            social_aggregates::data_caveats_resource(),
             DATA_CAVEATS_URI,
         )
         .with_mime_type("text/plain")])))

@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 
-use std::collections::HashSet;
 use std::fs;
 use std::io::{BufRead, BufReader, ErrorKind};
 use std::path::{Path, PathBuf};
@@ -9,13 +8,12 @@ use std::time::SystemTime;
 use serde::{Deserialize, Serialize};
 
 use crate::error::AppError;
+use vrcx_0_core::vrchat_log_reader::{parse_log_document, LogEntry, LogEntryFilter};
 use vrcx_0_host::host_capabilities::{require_host_capability, HostCapability};
 use vrcx_0_host::vrchat_paths;
 
-const LOG_TIME_FORMAT: &str = "%Y.%m.%d %H:%M:%S";
 const DEFAULT_ENTRY_LIMIT: usize = 300;
 const MAX_ENTRY_LIMIT: usize = 1000;
-const LOG_LEVELS: [&str; 3] = ["Debug", "Warning", "Error"];
 
 #[derive(Clone, Debug, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -38,6 +36,22 @@ pub struct VrchatLogEntryOutput {
     pub end_line_number: usize,
     pub file_name: String,
     pub continuation_lines: Vec<String>,
+}
+
+impl From<LogEntry> for VrchatLogEntryOutput {
+    fn from(entry: LogEntry) -> Self {
+        Self {
+            timestamp: entry.timestamp,
+            level: entry.level,
+            category: entry.category,
+            message: entry.message,
+            raw: entry.raw,
+            line_number: entry.line_number,
+            end_line_number: entry.end_line_number,
+            file_name: entry.file_name,
+            continuation_lines: entry.continuation_lines,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, specta::Type)]
@@ -83,12 +97,6 @@ struct LogFileCandidate {
     modified: SystemTime,
 }
 
-struct LogEntryFilter {
-    query: Option<String>,
-    levels: Option<HashSet<String>>,
-    categories: Option<HashSet<String>>,
-}
-
 struct LogFileState {
     size: u64,
     modified_at: Option<String>,
@@ -123,6 +131,7 @@ pub fn app__vrchat_log_entries_read(
         .into_iter()
         .skip(offset)
         .take(limit)
+        .map(VrchatLogEntryOutput::from)
         .collect::<Vec<_>>();
     let next_offset = offset + page.len();
 
@@ -206,6 +215,10 @@ pub fn app__vrchat_log_tail_read(
     } else {
         total_lines
     };
+    let tail_entries = tail_entries
+        .into_iter()
+        .map(VrchatLogEntryOutput::from)
+        .collect::<Vec<_>>();
 
     Ok(VrchatLogEntriesReadOutput {
         file_name,
@@ -219,82 +232,6 @@ pub fn app__vrchat_log_tail_read(
         file_modified_at: file_state.modified_at,
         reset_required: false,
     })
-}
-
-impl LogEntryFilter {
-    fn from_parts(
-        query: Option<String>,
-        levels: Option<Vec<String>>,
-        categories: Option<Vec<String>>,
-    ) -> Self {
-        let query = query
-            .map(|value| value.trim().to_ascii_lowercase())
-            .filter(|value| !value.is_empty());
-        let levels = normalize_level_set(levels);
-        let categories = categories
-            .unwrap_or_default()
-            .into_iter()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
-            .collect::<HashSet<_>>();
-
-        Self {
-            query,
-            levels,
-            categories: (!categories.is_empty()).then_some(categories),
-        }
-    }
-
-    fn matches(&self, entry: &VrchatLogEntryOutput) -> bool {
-        if let Some(levels) = &self.levels {
-            if !levels.contains(&entry.level) {
-                return false;
-            }
-        }
-
-        if let Some(categories) = &self.categories {
-            if !entry
-                .category
-                .as_deref()
-                .is_some_and(|category| categories.contains(category))
-            {
-                return false;
-            }
-        }
-
-        if let Some(query) = &self.query {
-            let continuation_text = entry.continuation_lines.join("\n");
-            let haystack = [
-                entry.timestamp.as_str(),
-                entry.level.as_str(),
-                entry.category.as_deref().unwrap_or_default(),
-                entry.message.as_str(),
-                entry.raw.as_str(),
-                continuation_text.as_str(),
-            ]
-            .join("\n")
-            .to_ascii_lowercase();
-            if !haystack.contains(query) {
-                return false;
-            }
-        }
-
-        true
-    }
-}
-
-fn normalize_level_set(levels: Option<Vec<String>>) -> Option<HashSet<String>> {
-    let normalized = levels
-        .unwrap_or_default()
-        .into_iter()
-        .filter_map(|level| match level.trim().to_ascii_lowercase().as_str() {
-            "debug" => Some("Debug".to_string()),
-            "warning" | "warn" => Some("Warning".to_string()),
-            "error" => Some("Error".to_string()),
-            _ => None,
-        })
-        .collect::<HashSet<_>>();
-    (!normalized.is_empty()).then_some(normalized)
 }
 
 fn normalize_limit(limit: Option<usize>) -> usize {
@@ -383,12 +320,11 @@ fn system_time_to_iso(time: SystemTime) -> String {
     timestamp.to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
 }
 
-fn read_log_entries(file_name: &str) -> Result<(Vec<VrchatLogEntryOutput>, usize), AppError> {
+fn read_log_entries(file_name: &str) -> Result<(Vec<LogEntry>, usize), AppError> {
     let path = resolve_log_file_path(file_name)?;
     let bytes = fs::read(path)?;
     let content = String::from_utf8_lossy(&bytes);
-    let total_lines = content.lines().count();
-    Ok((parse_log_entries(file_name, &content), total_lines))
+    Ok(parse_log_document(file_name, &content))
 }
 
 fn log_file_state(file_name: &str) -> Result<LogFileState, AppError> {
@@ -464,71 +400,4 @@ fn validate_log_file_name(file_name: &str) -> Result<&str, AppError> {
         ));
     }
     Ok(file_name)
-}
-
-fn parse_log_entries(file_name: &str, content: &str) -> Vec<VrchatLogEntryOutput> {
-    let mut entries = Vec::new();
-    let mut current: Option<VrchatLogEntryOutput> = None;
-
-    for (index, line) in content.lines().enumerate() {
-        let line_number = index + 1;
-        if let Some((timestamp, level, message)) = parse_log_header(line) {
-            if let Some(entry) = current.take() {
-                entries.push(entry);
-            }
-            current = Some(VrchatLogEntryOutput {
-                timestamp,
-                level,
-                category: extract_category(&message),
-                message,
-                raw: line.to_string(),
-                line_number,
-                end_line_number: line_number,
-                file_name: file_name.to_string(),
-                continuation_lines: Vec::new(),
-            });
-            continue;
-        }
-
-        if let Some(entry) = &mut current {
-            entry.continuation_lines.push(line.to_string());
-            entry.end_line_number = line_number;
-        }
-    }
-
-    if let Some(entry) = current {
-        entries.push(entry);
-    }
-    entries
-}
-
-fn parse_log_header(line: &str) -> Option<(String, String, String)> {
-    let timestamp = line.get(..19)?;
-    chrono::NaiveDateTime::parse_from_str(timestamp, LOG_TIME_FORMAT).ok()?;
-    let rest = line.get(19..)?.trim_start();
-
-    for level in LOG_LEVELS {
-        let Some(after_level) = rest.strip_prefix(level) else {
-            continue;
-        };
-        let message = after_level
-            .trim_start()
-            .strip_prefix('-')?
-            .trim_start()
-            .to_string();
-        return Some((timestamp.to_string(), level.to_string(), message));
-    }
-
-    None
-}
-
-fn extract_category(message: &str) -> Option<String> {
-    let trimmed = message.trim_start();
-    let category = trimmed
-        .strip_prefix('[')?
-        .split_once(']')?
-        .0
-        .trim()
-        .to_string();
-    (!category.is_empty()).then_some(category)
 }

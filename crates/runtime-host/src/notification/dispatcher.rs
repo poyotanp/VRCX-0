@@ -329,7 +329,10 @@ impl RenderedNotification {
     }
 }
 
-fn render_delivery(delivery: &OverlayActivityDelivery, locale: OverlayLocale) -> RenderedNotification {
+fn render_delivery(
+    delivery: &OverlayActivityDelivery,
+    locale: OverlayLocale,
+) -> RenderedNotification {
     let localizer = OverlayLocalizer::new(locale);
     let entry = &delivery.entry;
     let title = localizer.text(&entry.content.title);
@@ -379,7 +382,11 @@ fn load_preferences(config: &ConfigRepository) -> NotificationDeliveryPreference
         notification_opacity_percent: config_int_with_legacy(config, "notificationOpacity", 100),
         webhook_enabled: config_bool(config, "webhookEnabled", false),
         webhook_url: config_string(config, "webhookUrl", ""),
-        webhook_format: normalize_webhook_format(&config_string(config, "webhookFormat", "generic")),
+        webhook_format: normalize_webhook_format(&config_string(
+            config,
+            "webhookFormat",
+            "generic",
+        )),
     }
 }
 

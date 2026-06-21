@@ -1826,5 +1826,23 @@
                 "403_404_bailing_request": "Solicitud cancelada debido a un reciente 404/403"
             }
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Abrir VRCX-0",
+            "backgroundMode": "Modo en segundo plano",
+            "disableTheme": "Desactivar tema",
+            "exit": "Salir"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Modo en segundo plano iniciado",
+                "body": "VRCX-0 se está ejecutando en modo en segundo plano."
+            },
+            "authFailure": {
+                "title": "El inicio de sesión de VRChat caducó",
+                "body": "Vuelve a iniciar sesión para continuar."
+            }
+        }
     }
 }

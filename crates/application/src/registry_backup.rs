@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use chrono::{Duration, SecondsFormat, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use vrcx_0_core::vrchat_registry_policy::{is_allowed_registry_key, ALLOWED_REGISTRY_TYPES};
 use vrcx_0_persistence::config;
 use vrcx_0_persistence::DatabaseService;
 
@@ -18,19 +19,6 @@ const AUTO_BACKUP_NAME: &str = "Auto Backup";
 const MANUAL_BACKUP_NAME: &str = "Manual Backup";
 const AUTO_BACKUP_INTERVAL_DAYS: i64 = 3;
 const AUTO_BACKUP_RETENTION_DAYS: i64 = 14;
-
-const ALLOWED_REGISTRY_TYPES: [i32; 3] = [3, 4, 100];
-const ALLOWED_REGISTRY_KEYS: [&str; 2] = ["LOGGING_ENABLED", "VRC_DEBUG_LOGGING"];
-const ALLOWED_REGISTRY_KEY_PREFIXES: [&str; 8] = [
-    "VRC_",
-    "VRChat_",
-    "vrchat_",
-    "Screenmanager ",
-    "UnityGraphicsQuality",
-    "UnitySelectMonitor",
-    "unity.",
-    "PlayerPrefs_",
-];
 
 pub trait RegistryBackupHostActions: Send + Sync {
     fn has_registry_folder(&self) -> Result<bool>;
@@ -439,33 +427,6 @@ fn validate_registry_key(key: &str) -> Result<()> {
     }
 
     Ok(())
-}
-
-fn is_allowed_registry_key(key: &str) -> bool {
-    ALLOWED_REGISTRY_KEYS.contains(&key)
-        || ALLOWED_REGISTRY_KEY_PREFIXES
-            .iter()
-            .any(|prefix| key.starts_with(prefix))
-        || is_unity_player_prefs_name(key)
-        || is_unity_player_prefs_key(key)
-}
-
-fn is_unity_player_prefs_key(key: &str) -> bool {
-    let Some((name, hash)) = key.rsplit_once("_h") else {
-        return false;
-    };
-    !name.is_empty()
-        && !hash.is_empty()
-        && hash.bytes().all(|byte| byte.is_ascii_digit())
-        && name.bytes().all(is_unity_player_prefs_name_byte)
-}
-
-fn is_unity_player_prefs_name(key: &str) -> bool {
-    !key.is_empty() && key.bytes().all(is_unity_player_prefs_name_byte)
-}
-
-fn is_unity_player_prefs_name_byte(byte: u8) -> bool {
-    byte == b' ' || byte == b'.' || byte == b'_' || byte == b'-' || byte.is_ascii_alphanumeric()
 }
 
 fn normalized_backup_name(name: &str) -> String {

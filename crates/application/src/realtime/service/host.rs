@@ -68,10 +68,10 @@ mod lifecycle_invite_automation;
 mod lifecycle_output;
 #[path = "lifecycle_session.rs"]
 mod lifecycle_session;
-#[path = "lifecycle_world_cache.rs"]
-mod lifecycle_world_cache;
 #[path = "lifecycle_tests.rs"]
 mod lifecycle_tests;
+#[path = "lifecycle_world_cache.rs"]
+mod lifecycle_world_cache;
 #[path = "message_dispatch.rs"]
 mod message_dispatch;
 #[path = "persistence.rs"]

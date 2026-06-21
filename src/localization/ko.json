@@ -80,6 +80,24 @@
             "instance_duration": "체류 {duration}"
         }
     },
+    "nativeShell": {
+        "tray": {
+            "open": "Open VRCX-0",
+            "backgroundMode": "Background Mode",
+            "disableTheme": "Disable Theme",
+            "exit": "Exit"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Background Mode started",
+                "body": "VRCX-0 is running in Background Mode."
+            },
+            "authFailure": {
+                "title": "VRChat login expired",
+                "body": "Sign in again to continue."
+            }
+        }
+    },
     "nav_tooltip": {
         "friends_locations": "친구 위치",
         "feed": "피드",

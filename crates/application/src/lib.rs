@@ -15,6 +15,7 @@ mod log_watcher;
 mod media_upload;
 mod moderation_sync;
 mod mutual_graph_fetch;
+mod noninteractive_auth;
 mod overlay_activity;
 mod process_monitor;
 mod proxy;
@@ -96,6 +97,11 @@ pub use moderation_sync::{
 pub use mutual_graph_fetch::{
     MutualGraphFetchCancelInput, MutualGraphFetchRuntime, MutualGraphFetchStartInput,
     MutualGraphFetchStatus,
+};
+pub use noninteractive_auth::{
+    auth_response_error_message, current_user_from_cookie, parse_current_user_response,
+    probe_current_user_from_cookie, AuthenticatedRuntimeSession, CookieSessionProbe,
+    NonInteractiveAuthError,
 };
 pub use overlay_activity::{
     overlay_activity_type_definitions, OverlayActivityActorRelation, OverlayActivityCandidate,

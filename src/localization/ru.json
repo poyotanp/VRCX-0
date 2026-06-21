@@ -1859,5 +1859,23 @@
                 "403_404_bailing_request": "Отмена запроса из-за недавних ошибок 404/403"
             }
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Открыть VRCX-0",
+            "backgroundMode": "Фоновый режим",
+            "disableTheme": "Отключить тему",
+            "exit": "Выход"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Фоновый режим запущен",
+                "body": "VRCX-0 работает в фоновом режиме."
+            },
+            "authFailure": {
+                "title": "Срок действия входа в VRChat истек",
+                "body": "Войдите снова, чтобы продолжить."
+            }
+        }
     }
 }

@@ -180,6 +180,7 @@ fn activity_entry_with_relation(
             status_description: String::new(),
             avatar_name: String::new(),
             image_url: String::new(),
+            ..OverlayActivityContent::default()
         },
         actor_relation,
         payload: json!({}),

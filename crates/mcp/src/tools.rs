@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use vrcx_0_application::vrchat_api::{self, favorites::favorite_add_input, VrchatScope};
 use vrcx_0_core::location::parse_location;
-use vrcx_0_persistence::mcp_social;
+use vrcx_0_persistence::social_aggregates;
 
 use crate::config::MCP_ALLOW_VRCHAT_WRITES_CONFIG_KEY;
 use crate::runtime::McpRuntime;
@@ -30,9 +30,9 @@ impl VrcxMcpServer {
         Parameters(input): Parameters<CopresenceSummaryParams>,
     ) -> Result<CallToolResult, String> {
         let owner_user_id = self.runtime.current_user_id().unwrap_or_default();
-        mcp_social_result(mcp_social::get_copresence_summary(
+        social_aggregates_result(social_aggregates::get_copresence_summary(
             self.runtime.db.as_ref(),
-            mcp_social::CopresenceSummaryInput {
+            social_aggregates::CopresenceSummaryInput {
                 time_window: input.time_window.into(),
                 group_by: input.group_by.into(),
                 min_minutes: input.min_minutes,
@@ -48,9 +48,9 @@ impl VrcxMcpServer {
         Parameters(input): Parameters<FriendActivityPatternParams>,
     ) -> Result<CallToolResult, String> {
         let owner_user_id = require_current_user_id(&self.runtime)?;
-        mcp_social_result(mcp_social::get_friend_activity_pattern(
+        social_aggregates_result(social_aggregates::get_friend_activity_pattern(
             self.runtime.db.as_ref(),
-            mcp_social::FriendActivityPatternInput {
+            social_aggregates::FriendActivityPatternInput {
                 owner_user_id,
                 user_id: input.user_id,
                 time_window: input.time_window.into(),
@@ -64,9 +64,9 @@ impl VrcxMcpServer {
         &self,
         Parameters(input): Parameters<SearchWorldsVisitedParams>,
     ) -> Result<CallToolResult, String> {
-        mcp_social_result(mcp_social::search_worlds_visited(
+        social_aggregates_result(social_aggregates::search_worlds_visited(
             self.runtime.db.as_ref(),
-            mcp_social::SearchWorldsVisitedInput {
+            social_aggregates::SearchWorldsVisitedInput {
                 time_window: input.time_window.into(),
                 limit: input.limit.unwrap_or(25),
             },
@@ -86,9 +86,9 @@ impl VrcxMcpServer {
         &self,
         Parameters(input): Parameters<FavoriteWorldLocalParams>,
     ) -> Result<CallToolResult, String> {
-        mcp_social_result(mcp_social::favorite_world_local(
+        social_aggregates_result(social_aggregates::favorite_world_local(
             self.runtime.db.as_ref(),
-            mcp_social::FavoriteWorldLocalInput {
+            social_aggregates::FavoriteWorldLocalInput {
                 world_id: input.world_id,
                 group: input.group,
                 dry_run: input.dry_run.unwrap_or(true),
@@ -112,9 +112,9 @@ impl VrcxMcpServer {
         Parameters(input): Parameters<SocialGraphParams>,
     ) -> Result<CallToolResult, String> {
         let owner_user_id = require_current_user_id(&self.runtime)?;
-        mcp_social_result(mcp_social::get_social_graph(
+        social_aggregates_result(social_aggregates::get_social_graph(
             self.runtime.db.as_ref(),
-            mcp_social::SocialGraphInput {
+            social_aggregates::SocialGraphInput {
                 owner_user_id,
                 user_id: input.user_id,
                 depth: input.depth.unwrap_or(1),
@@ -128,9 +128,9 @@ impl VrcxMcpServer {
         Parameters(input): Parameters<CompanionsOfParams>,
     ) -> Result<CallToolResult, String> {
         let owner_user_id = require_current_user_id(&self.runtime)?;
-        mcp_social_result(mcp_social::get_companions_of(
+        social_aggregates_result(social_aggregates::get_companions_of(
             self.runtime.db.as_ref(),
-            mcp_social::CompanionsOfInput {
+            social_aggregates::CompanionsOfInput {
                 owner_user_id,
                 user_id: input.user_id,
                 time_window: input.time_window.into(),
@@ -145,9 +145,9 @@ impl VrcxMcpServer {
         Parameters(input): Parameters<InviteHistoryParams>,
     ) -> Result<CallToolResult, String> {
         let owner_user_id = require_current_user_id(&self.runtime)?;
-        mcp_social_result(mcp_social::get_invite_history(
+        social_aggregates_result(social_aggregates::get_invite_history(
             self.runtime.db.as_ref(),
-            mcp_social::InviteHistoryInput {
+            social_aggregates::InviteHistoryInput {
                 owner_user_id,
                 time_window: input.time_window.into(),
                 direction: input.direction.into(),
@@ -162,9 +162,9 @@ impl VrcxMcpServer {
         Parameters(input): Parameters<FriendChangesParams>,
     ) -> Result<CallToolResult, String> {
         let owner_user_id = require_current_user_id(&self.runtime)?;
-        mcp_social_result(mcp_social::get_friend_changes(
+        social_aggregates_result(social_aggregates::get_friend_changes(
             self.runtime.db.as_ref(),
-            mcp_social::FriendChangesInput {
+            social_aggregates::FriendChangesInput {
                 owner_user_id,
                 time_window: input.time_window.into(),
                 kind: input.kind.into(),
@@ -210,8 +210,9 @@ impl VrcxMcpServer {
                     location: include_location.then_some(friend.location),
                     world_id: include_location.then_some(parsed.world_id),
                     world_name: include_location.then_some(world_name),
-                    instance_access_type: include_location
-                        .then_some(mcp_social::normalize_access_bucket(&parsed.access_type)),
+                    instance_access_type: include_location.then_some(
+                        social_aggregates::normalize_access_bucket(&parsed.access_type),
+                    ),
                     status: friend.status,
                     platform: if friend.platform.is_empty() {
                         friend.last_platform
@@ -305,7 +306,7 @@ struct TimeWindowParams {
     to: Option<String>,
 }
 
-impl From<TimeWindowParams> for mcp_social::TimeWindow {
+impl From<TimeWindowParams> for social_aggregates::TimeWindow {
     fn from(value: TimeWindowParams) -> Self {
         Self {
             from: value.from,
@@ -322,7 +323,7 @@ enum CopresenceGroupByParam {
     FriendWorld,
 }
 
-impl From<CopresenceGroupByParam> for mcp_social::CopresenceGroupBy {
+impl From<CopresenceGroupByParam> for social_aggregates::CopresenceGroupBy {
     fn from(value: CopresenceGroupByParam) -> Self {
         match value {
             CopresenceGroupByParam::Friend => Self::Friend,
@@ -339,7 +340,7 @@ enum ActivityBucketParam {
     DayOfWeek,
 }
 
-impl From<ActivityBucketParam> for mcp_social::ActivityBucket {
+impl From<ActivityBucketParam> for social_aggregates::ActivityBucket {
     fn from(value: ActivityBucketParam) -> Self {
         match value {
             ActivityBucketParam::HourOfDay => Self::HourOfDay,
@@ -357,7 +358,7 @@ enum InviteDirectionParam {
     Both,
 }
 
-impl From<InviteDirectionParam> for mcp_social::InviteDirection {
+impl From<InviteDirectionParam> for social_aggregates::InviteDirection {
     fn from(value: InviteDirectionParam) -> Self {
         match value {
             InviteDirectionParam::Received => Self::Received,
@@ -376,7 +377,7 @@ enum FriendChangeKindParam {
     Bio,
 }
 
-impl From<FriendChangeKindParam> for mcp_social::FriendChangeKind {
+impl From<FriendChangeKindParam> for social_aggregates::FriendChangeKind {
     fn from(value: FriendChangeKindParam) -> Self {
         match value {
             FriendChangeKindParam::Status => Self::Status,
@@ -507,7 +508,7 @@ fn structured_result(value: impl Serialize) -> Result<CallToolResult, String> {
         .map_err(|error| format!("serialize MCP tool result: {error}"))
 }
 
-fn mcp_social_result<T: Serialize>(
+fn social_aggregates_result<T: Serialize>(
     result: Result<T, vrcx_0_persistence::Error>,
 ) -> Result<CallToolResult, String> {
     match result {

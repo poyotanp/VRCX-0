@@ -170,11 +170,10 @@ impl RuntimeHostContext {
                 Vec::new()
             }
         };
-        let mut sinks: Vec<Arc<dyn OverlayActivitySink>> = vec![Arc::new(
-            OverlayActivityRuntimeEventSink {
+        let mut sinks: Vec<Arc<dyn OverlayActivitySink>> =
+            vec![Arc::new(OverlayActivityRuntimeEventSink {
                 event_bus: self.event_bus.clone(),
-            },
-        )];
+            })];
         sinks.extend(extra_sinks);
         self.overlay_activity
             .set_sink(OverlayActivityFanoutSink::new(sinks));

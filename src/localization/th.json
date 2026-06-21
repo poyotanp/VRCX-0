@@ -1878,5 +1878,23 @@
                 "403_404_bailing_request": "ยกเลิกคำร้องขอเนื่องจากพบข้อผิดพลาด 404/403 ล่าสุด"
             }
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "เปิด VRCX-0",
+            "backgroundMode": "โหมดพื้นหลัง",
+            "disableTheme": "ปิดใช้งานธีม",
+            "exit": "ออก"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "เริ่มโหมดพื้นหลังแล้ว",
+                "body": "VRCX-0 กำลังทำงานในโหมดพื้นหลัง"
+            },
+            "authFailure": {
+                "title": "การเข้าสู่ระบบ VRChat หมดอายุแล้ว",
+                "body": "ลงชื่อเข้าใช้อีกครั้งเพื่อดำเนินการต่อ"
+            }
+        }
     }
 }

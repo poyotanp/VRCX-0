@@ -2010,5 +2010,23 @@
         "back_to_top": "Retour en haut",
         "toggle_password": "Afficher le mto de passe",
         "clear_input": "Effacer la saisie"
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Ouvrir VRCX-0",
+            "backgroundMode": "Mode arrière-plan",
+            "disableTheme": "Désactiver le thème",
+            "exit": "Quitter"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Mode arrière-plan démarré",
+                "body": "VRCX-0 s'exécute en mode arrière-plan."
+            },
+            "authFailure": {
+                "title": "La connexion VRChat a expiré",
+                "body": "Reconnectez-vous pour continuer."
+            }
+        }
     }
 }

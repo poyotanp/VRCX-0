@@ -1,0 +1,146 @@
+{
+    "version": 1,
+    "fallbackLocale": "en",
+    "locales": {
+        "cs": {
+            "nativeShell.tray.open": "Otevřít VRCX-0",
+            "nativeShell.tray.backgroundMode": "Režim na pozadí",
+            "nativeShell.tray.disableTheme": "Zakázat motiv",
+            "nativeShell.tray.exit": "Ukončit",
+            "nativeShell.notification.backgroundModeStarted.title": "Režim na pozadí spuštěn",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 běží v režimu na pozadí.",
+            "nativeShell.notification.authFailure.title": "Přihlášení do VRChat vypršelo",
+            "nativeShell.notification.authFailure.body": "Přihlaste se znovu, abyste mohli pokračovat."
+        },
+        "en": {
+            "nativeShell.tray.open": "Open VRCX-0",
+            "nativeShell.tray.backgroundMode": "Background Mode",
+            "nativeShell.tray.disableTheme": "Disable Theme",
+            "nativeShell.tray.exit": "Exit",
+            "nativeShell.notification.backgroundModeStarted.title": "Background Mode started",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 is running in Background Mode.",
+            "nativeShell.notification.authFailure.title": "VRChat login expired",
+            "nativeShell.notification.authFailure.body": "Sign in again to continue."
+        },
+        "es": {
+            "nativeShell.tray.open": "Abrir VRCX-0",
+            "nativeShell.tray.backgroundMode": "Modo en segundo plano",
+            "nativeShell.tray.disableTheme": "Desactivar tema",
+            "nativeShell.tray.exit": "Salir",
+            "nativeShell.notification.backgroundModeStarted.title": "Modo en segundo plano iniciado",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 se está ejecutando en modo en segundo plano.",
+            "nativeShell.notification.authFailure.title": "El inicio de sesión de VRChat caducó",
+            "nativeShell.notification.authFailure.body": "Vuelve a iniciar sesión para continuar."
+        },
+        "fr": {
+            "nativeShell.tray.open": "Ouvrir VRCX-0",
+            "nativeShell.tray.backgroundMode": "Mode arrière-plan",
+            "nativeShell.tray.disableTheme": "Désactiver le thème",
+            "nativeShell.tray.exit": "Quitter",
+            "nativeShell.notification.backgroundModeStarted.title": "Mode arrière-plan démarré",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 s'exécute en mode arrière-plan.",
+            "nativeShell.notification.authFailure.title": "La connexion VRChat a expiré",
+            "nativeShell.notification.authFailure.body": "Reconnectez-vous pour continuer."
+        },
+        "hu": {
+            "nativeShell.tray.open": "VRCX-0 megnyitása",
+            "nativeShell.tray.backgroundMode": "Háttér mód",
+            "nativeShell.tray.disableTheme": "Téma letiltása",
+            "nativeShell.tray.exit": "Kilépés",
+            "nativeShell.notification.backgroundModeStarted.title": "A háttér mód elindult",
+            "nativeShell.notification.backgroundModeStarted.body": "A VRCX-0 háttér módban fut.",
+            "nativeShell.notification.authFailure.title": "A VRChat bejelentkezés lejárt",
+            "nativeShell.notification.authFailure.body": "Jelentkezz be újra a folytatáshoz."
+        },
+        "ja": {
+            "nativeShell.tray.open": "VRCX-0 を開く",
+            "nativeShell.tray.backgroundMode": "バックグラウンドモード",
+            "nativeShell.tray.disableTheme": "テーマを無効化",
+            "nativeShell.tray.exit": "終了",
+            "nativeShell.notification.backgroundModeStarted.title": "バックグラウンドモードで起動しました",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 はバックグラウンドモードで実行中です。",
+            "nativeShell.notification.authFailure.title": "VRChat ログインの有効期限が切れました",
+            "nativeShell.notification.authFailure.body": "再ログインが必要です"
+        },
+        "ko": {
+            "nativeShell.tray.open": "Open VRCX-0",
+            "nativeShell.tray.backgroundMode": "Background Mode",
+            "nativeShell.tray.disableTheme": "Disable Theme",
+            "nativeShell.tray.exit": "Exit",
+            "nativeShell.notification.backgroundModeStarted.title": "Background Mode started",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 is running in Background Mode.",
+            "nativeShell.notification.authFailure.title": "VRChat login expired",
+            "nativeShell.notification.authFailure.body": "Sign in again to continue."
+        },
+        "pl": {
+            "nativeShell.tray.open": "Otwórz VRCX-0",
+            "nativeShell.tray.backgroundMode": "Tryb w tle",
+            "nativeShell.tray.disableTheme": "Wyłącz motyw",
+            "nativeShell.tray.exit": "Zakończ",
+            "nativeShell.notification.backgroundModeStarted.title": "Uruchomiono tryb w tle",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 działa w trybie w tle.",
+            "nativeShell.notification.authFailure.title": "Logowanie do VRChat wygasło",
+            "nativeShell.notification.authFailure.body": "Zaloguj się ponownie, aby kontynuować."
+        },
+        "pt": {
+            "nativeShell.tray.open": "Abrir VRCX-0",
+            "nativeShell.tray.backgroundMode": "Modo em segundo plano",
+            "nativeShell.tray.disableTheme": "Desativar tema",
+            "nativeShell.tray.exit": "Sair",
+            "nativeShell.notification.backgroundModeStarted.title": "Modo em segundo plano iniciado",
+            "nativeShell.notification.backgroundModeStarted.body": "O VRCX-0 está em execução no modo em segundo plano.",
+            "nativeShell.notification.authFailure.title": "O login do VRChat expirou",
+            "nativeShell.notification.authFailure.body": "Entre novamente para continuar."
+        },
+        "ru": {
+            "nativeShell.tray.open": "Открыть VRCX-0",
+            "nativeShell.tray.backgroundMode": "Фоновый режим",
+            "nativeShell.tray.disableTheme": "Отключить тему",
+            "nativeShell.tray.exit": "Выход",
+            "nativeShell.notification.backgroundModeStarted.title": "Фоновый режим запущен",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 работает в фоновом режиме.",
+            "nativeShell.notification.authFailure.title": "Срок действия входа в VRChat истек",
+            "nativeShell.notification.authFailure.body": "Войдите снова, чтобы продолжить."
+        },
+        "th": {
+            "nativeShell.tray.open": "เปิด VRCX-0",
+            "nativeShell.tray.backgroundMode": "โหมดพื้นหลัง",
+            "nativeShell.tray.disableTheme": "ปิดใช้งานธีม",
+            "nativeShell.tray.exit": "ออก",
+            "nativeShell.notification.backgroundModeStarted.title": "เริ่มโหมดพื้นหลังแล้ว",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 กำลังทำงานในโหมดพื้นหลัง",
+            "nativeShell.notification.authFailure.title": "การเข้าสู่ระบบ VRChat หมดอายุแล้ว",
+            "nativeShell.notification.authFailure.body": "ลงชื่อเข้าใช้อีกครั้งเพื่อดำเนินการต่อ"
+        },
+        "vi": {
+            "nativeShell.tray.open": "Mở VRCX-0",
+            "nativeShell.tray.backgroundMode": "Chế độ nền",
+            "nativeShell.tray.disableTheme": "Tắt chủ đề",
+            "nativeShell.tray.exit": "Thoát",
+            "nativeShell.notification.backgroundModeStarted.title": "Đã khởi động chế độ nền",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 đang chạy ở chế độ nền.",
+            "nativeShell.notification.authFailure.title": "Đăng nhập VRChat đã hết hạn",
+            "nativeShell.notification.authFailure.body": "Đăng nhập lại để tiếp tục."
+        },
+        "zh-CN": {
+            "nativeShell.tray.open": "打开 VRCX-0",
+            "nativeShell.tray.backgroundMode": "后台模式",
+            "nativeShell.tray.disableTheme": "禁用主题",
+            "nativeShell.tray.exit": "退出",
+            "nativeShell.notification.backgroundModeStarted.title": "后台模式已启动",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 正在后台模式中运行。",
+            "nativeShell.notification.authFailure.title": "VRChat 登录已失效",
+            "nativeShell.notification.authFailure.body": "需要重新登录"
+        },
+        "zh-TW": {
+            "nativeShell.tray.open": "開啟 VRCX-0",
+            "nativeShell.tray.backgroundMode": "背景模式",
+            "nativeShell.tray.disableTheme": "停用主題",
+            "nativeShell.tray.exit": "結束",
+            "nativeShell.notification.backgroundModeStarted.title": "背景模式已啟動",
+            "nativeShell.notification.backgroundModeStarted.body": "VRCX-0 正在背景模式中執行。",
+            "nativeShell.notification.authFailure.title": "VRChat 登入已失效",
+            "nativeShell.notification.authFailure.body": "需要重新登入"
+        }
+    }
+}

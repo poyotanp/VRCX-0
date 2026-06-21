@@ -107,9 +107,7 @@ impl RealtimeHostRuntime {
                 let recent = state
                     .world_name_fetches
                     .get(&world_id)
-                    .map(|last_ms| {
-                        now_ms.saturating_sub(*last_ms) < WORLD_NAME_FETCH_THROTTLE_MS
-                    })
+                    .map(|last_ms| now_ms.saturating_sub(*last_ms) < WORLD_NAME_FETCH_THROTTLE_MS)
                     .unwrap_or(false);
                 if recent {
                     continue;

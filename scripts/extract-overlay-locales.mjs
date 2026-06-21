@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
-const outputPath = path.join(
+const overlayOutputPath = path.join(
     repoRoot,
     'crates',
     'runtime-host',
@@ -13,8 +13,31 @@ const outputPath = path.join(
     'localization',
     'overlay_notifications.json'
 );
+const shellOutputPath = path.join(
+    repoRoot,
+    'src-tauri',
+    'src',
+    'localization',
+    'shell_strings.json'
+);
 
-const locales = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko'];
+const overlayLocales = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko'];
+const shellLocales = [
+    'cs',
+    'en',
+    'es',
+    'fr',
+    'hu',
+    'ja',
+    'ko',
+    'pl',
+    'pt',
+    'ru',
+    'th',
+    'vi',
+    'zh-CN',
+    'zh-TW'
+];
 const keys = [
     'has_joined',
     'has_left',
@@ -52,17 +75,46 @@ const keys = [
 ];
 const pathKeys = [
     ['overlay.footer.players', ['overlay', 'footer', 'players']],
-    ['overlay.footer.instance_duration', ['overlay', 'footer', 'instance_duration']]
+    [
+        'overlay.footer.instance_duration',
+        ['overlay', 'footer', 'instance_duration']
+    ]
+];
+const shellPathKeys = [
+    ['nativeShell.tray.open', ['nativeShell', 'tray', 'open']],
+    [
+        'nativeShell.tray.backgroundMode',
+        ['nativeShell', 'tray', 'backgroundMode']
+    ],
+    ['nativeShell.tray.disableTheme', ['nativeShell', 'tray', 'disableTheme']],
+    ['nativeShell.tray.exit', ['nativeShell', 'tray', 'exit']],
+    [
+        'nativeShell.notification.backgroundModeStarted.title',
+        ['nativeShell', 'notification', 'backgroundModeStarted', 'title']
+    ],
+    [
+        'nativeShell.notification.backgroundModeStarted.body',
+        ['nativeShell', 'notification', 'backgroundModeStarted', 'body']
+    ],
+    [
+        'nativeShell.notification.authFailure.title',
+        ['nativeShell', 'notification', 'authFailure', 'title']
+    ],
+    [
+        'nativeShell.notification.authFailure.body',
+        ['nativeShell', 'notification', 'authFailure', 'body']
+    ]
 ];
 
-const catalog = {
-    version: 1,
-    fallbackLocale: 'en',
-    locales: {}
-};
+const overlayCatalog = createCatalog();
 
-for (const locale of locales) {
-    const inputPath = path.join(repoRoot, 'src', 'localization', `${locale}.json`);
+for (const locale of overlayLocales) {
+    const inputPath = path.join(
+        repoRoot,
+        'src',
+        'localization',
+        `${locale}.json`
+    );
     const source = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
     const notifications = source.notifications || {};
     const entries = {};
@@ -82,12 +134,35 @@ for (const locale of locales) {
         entries[outputKey] = value;
     }
 
-    catalog.locales[locale] = entries;
+    overlayCatalog.locales[locale] = entries;
 }
 
-fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, `${JSON.stringify(catalog, null, 2)}\n`);
-console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
+writeCatalog(overlayOutputPath, overlayCatalog);
+
+const shellCatalog = createCatalog();
+
+for (const locale of shellLocales) {
+    const inputPath = path.join(
+        repoRoot,
+        'src',
+        'localization',
+        `${locale}.json`
+    );
+    const source = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+    const entries = {};
+
+    for (const [outputKey, sourcePath] of shellPathKeys) {
+        const value = readPath(source, sourcePath);
+        if (typeof value !== 'string') {
+            throw new Error(`${inputPath} is missing ${outputKey}`);
+        }
+        entries[outputKey] = value;
+    }
+
+    shellCatalog.locales[locale] = entries;
+}
+
+writeCatalog(shellOutputPath, shellCatalog);
 
 function readPath(source, sourcePath) {
     return sourcePath.reduce((value, key) => {
@@ -96,4 +171,18 @@ function readPath(source, sourcePath) {
         }
         return undefined;
     }, source);
+}
+
+function createCatalog() {
+    return {
+        version: 1,
+        fallbackLocale: 'en',
+        locales: {}
+    };
+}
+
+function writeCatalog(outputPath, catalog) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, `${JSON.stringify(catalog, null, 4)}\n`);
+    console.log(`Wrote ${path.relative(repoRoot, outputPath)}`);
 }

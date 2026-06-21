@@ -1502,5 +1502,23 @@
             "cpu": "CPU:",
             "online": "Online:"
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Mở VRCX-0",
+            "backgroundMode": "Chế độ nền",
+            "disableTheme": "Tắt chủ đề",
+            "exit": "Thoát"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Đã khởi động chế độ nền",
+                "body": "VRCX-0 đang chạy ở chế độ nền."
+            },
+            "authFailure": {
+                "title": "Đăng nhập VRChat đã hết hạn",
+                "body": "Đăng nhập lại để tiếp tục."
+            }
+        }
     }
 }

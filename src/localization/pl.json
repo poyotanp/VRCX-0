@@ -2138,5 +2138,23 @@
                 "unavailable": "Usługa może być niedostępna z powodu problemów wewnętrznych VRChat"
             }
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Otwórz VRCX-0",
+            "backgroundMode": "Tryb w tle",
+            "disableTheme": "Wyłącz motyw",
+            "exit": "Zakończ"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Uruchomiono tryb w tle",
+                "body": "VRCX-0 działa w trybie w tle."
+            },
+            "authFailure": {
+                "title": "Logowanie do VRChat wygasło",
+                "body": "Zaloguj się ponownie, aby kontynuować."
+            }
+        }
     }
 }

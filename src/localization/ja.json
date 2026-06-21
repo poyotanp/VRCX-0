@@ -80,6 +80,24 @@
             "instance_duration": "滞在 {duration}"
         }
     },
+    "nativeShell": {
+        "tray": {
+            "open": "VRCX-0 を開く",
+            "backgroundMode": "バックグラウンドモード",
+            "disableTheme": "テーマを無効化",
+            "exit": "終了"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "バックグラウンドモードで起動しました",
+                "body": "VRCX-0 はバックグラウンドモードで実行中です。"
+            },
+            "authFailure": {
+                "title": "VRChat ログインの有効期限が切れました",
+                "body": "再ログインが必要です"
+            }
+        }
+    },
     "nav_tooltip": {
         "friends_locations": "フレンドの現在地",
         "feed": "フィード",

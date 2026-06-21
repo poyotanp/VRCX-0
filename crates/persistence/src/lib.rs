@@ -13,13 +13,13 @@ pub mod game_log;
 pub mod legacy_migration;
 pub mod legacy_vrcx;
 pub mod local_moderation;
-pub mod mcp_social;
 pub mod memos;
 pub mod mutual_graph;
 pub mod notifications;
 pub mod player_list;
 pub mod realtime;
 pub mod screenshot_cache;
+pub mod social_aggregates;
 pub mod storage;
 pub mod worlds;
 

@@ -80,6 +80,24 @@
             "instance_duration": "停留 {duration}"
         }
     },
+    "nativeShell": {
+        "tray": {
+            "open": "打开 VRCX-0",
+            "backgroundMode": "后台模式",
+            "disableTheme": "禁用主题",
+            "exit": "退出"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "后台模式已启动",
+                "body": "VRCX-0 正在后台模式中运行。"
+            },
+            "authFailure": {
+                "title": "VRChat 登录已失效",
+                "body": "需要重新登录"
+            }
+        }
+    },
     "nav_tooltip": {
         "friends_locations": "好友位置",
         "feed": "好友动态",

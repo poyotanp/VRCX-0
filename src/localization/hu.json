@@ -1502,5 +1502,23 @@
             "cpu": "CPU:",
             "online": "Online:"
         }
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "VRCX-0 megnyitása",
+            "backgroundMode": "Háttér mód",
+            "disableTheme": "Téma letiltása",
+            "exit": "Kilépés"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "A háttér mód elindult",
+                "body": "A VRCX-0 háttér módban fut."
+            },
+            "authFailure": {
+                "title": "A VRChat bejelentkezés lejárt",
+                "body": "Jelentkezz be újra a folytatáshoz."
+            }
+        }
     }
 }

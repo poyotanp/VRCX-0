@@ -2958,5 +2958,23 @@
         "clocks_label": "Relógios",
         "clocks_none": "Nenhum",
         "timezone": "Fuso Horário"
+    },
+    "nativeShell": {
+        "tray": {
+            "open": "Abrir VRCX-0",
+            "backgroundMode": "Modo em segundo plano",
+            "disableTheme": "Desativar tema",
+            "exit": "Sair"
+        },
+        "notification": {
+            "backgroundModeStarted": {
+                "title": "Modo em segundo plano iniciado",
+                "body": "O VRCX-0 está em execução no modo em segundo plano."
+            },
+            "authFailure": {
+                "title": "O login do VRChat expirou",
+                "body": "Entre novamente para continuar."
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@ pub mod path_utils;
 pub mod process_status;
 pub mod proxy;
 pub mod shell_actions;
+pub mod updater_policy;
 pub mod vr_overlay;
 pub mod vrchat_ipc;
 pub mod vrchat_paths;

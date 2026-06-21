@@ -7,6 +7,8 @@ use url::Url;
 const STATUS_API_ORIGIN: &str = "https://status.vrchat.com";
 const YOUTUBE_API_ORIGIN: &str = "https://www.googleapis.com";
 const GITHUB_API_ORIGIN: &str = "https://api.github.com";
+// TODO
+const AVATAR_SEARCH_REFERER: &str = "https://vrcx.app";
 
 #[derive(Debug, thiserror::Error)]
 pub enum ExternalApiError {
@@ -89,6 +91,56 @@ impl ExternalWebExecuteRequest {
     }
 }
 
+fn external_get_input(url: String, headers: HashMap<String, String>) -> ExternalHttpRequestInput {
+    ExternalHttpRequestInput {
+        url: Some(url),
+        method: Some("GET".into()),
+        headers: Some(headers),
+        ..Default::default()
+    }
+}
+
+pub fn avatar_search_get_input(url: &str, vrcx_id: &str) -> ExternalHttpRequestInput {
+    external_get_input(
+        url.to_string(),
+        HashMap::from([
+            ("Referer".to_string(), AVATAR_SEARCH_REFERER.to_string()),
+            ("VRCX-ID".to_string(), vrcx_id.to_string()),
+        ]),
+    )
+}
+
+pub fn normalize_translation_method(value: &str) -> Result<String, ExternalApiError> {
+    let method = value.trim().to_ascii_uppercase();
+    let method = if method.is_empty() {
+        "GET".to_string()
+    } else {
+        method
+    };
+    match method.as_str() {
+        "GET" | "POST" => Ok(method),
+        _ => Err(ExternalApiError::Custom(
+            "ExternalApiTranslationRequest supports only GET or POST.".into(),
+        )),
+    }
+}
+
+pub fn translation_request_input(
+    url: &str,
+    method: &str,
+    headers: HashMap<String, String>,
+    body: Value,
+) -> Result<ExternalHttpRequestInput, ExternalApiError> {
+    Ok(ExternalHttpRequestInput {
+        url: Some(url.to_string()),
+        method: Some(normalize_translation_method(method)?),
+        headers: Some(headers),
+        body: (!body.is_null()).then_some(body),
+        json_body: Some(false),
+        ..Default::default()
+    })
+}
+
 pub fn youtube_video_metadata_get_input(
     youtube_id: &str,
     api_key: &str,
@@ -108,6 +160,27 @@ pub fn youtube_video_metadata_get_input(
     };
     request.params = request.query_params.clone();
     request
+}
+
+pub fn vrc_status_json_get_input(path: &str) -> ExternalHttpRequestInput {
+    external_get_input(
+        format!(
+            "{STATUS_API_ORIGIN}/api/v2/{}",
+            path.trim_start_matches('/')
+        ),
+        HashMap::from([("Referer".to_string(), AVATAR_SEARCH_REFERER.to_string())]),
+    )
+}
+
+pub fn github_releases_get_input(
+    url: &str,
+    headers: HashMap<String, String>,
+) -> ExternalHttpRequestInput {
+    external_get_input(url.to_string(), headers)
+}
+
+pub fn image_data_url_get_input(url: &str) -> ExternalHttpRequestInput {
+    external_get_input(url.to_string(), HashMap::new())
 }
 
 pub fn build_web_execute_request(
@@ -392,6 +465,88 @@ fn value_as_query_strings(value: &Value, skip_empty_string: bool) -> Vec<String>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn avatar_search_contract_sets_expected_headers() {
+        let input = avatar_search_get_input("https://avatars.example.test/search?q=robot", "abc");
+
+        assert_eq!(
+            input.url.as_deref(),
+            Some("https://avatars.example.test/search?q=robot")
+        );
+        assert_eq!(input.method.as_deref(), Some("GET"));
+        let headers = input.headers.unwrap();
+        assert_eq!(
+            headers.get("Referer").map(String::as_str),
+            Some("https://vrcx.app")
+        );
+        assert_eq!(headers.get("VRCX-ID").map(String::as_str), Some("abc"));
+    }
+
+    #[test]
+    fn translation_contract_preserves_raw_body_mode() {
+        let input = translation_request_input(
+            "https://translate.example.test/v1/chat",
+            "POST",
+            HashMap::from([("Content-Type".into(), "application/json".into())]),
+            json!({ "messages": [{ "content": "hello" }] }),
+        )
+        .unwrap();
+
+        assert_eq!(input.method.as_deref(), Some("POST"));
+        assert_eq!(input.json_body, Some(false));
+        assert_eq!(
+            input.body,
+            Some(json!({ "messages": [{ "content": "hello" }] }))
+        );
+    }
+
+    #[test]
+    fn translation_contract_rejects_unexpected_methods() {
+        let result = translation_request_input(
+            "https://translate.example.test/v1/chat",
+            "PUT",
+            HashMap::new(),
+            Value::Null,
+        );
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn youtube_contract_builds_fixed_endpoint_and_query() {
+        let input = youtube_video_metadata_get_input("video id", "key/1");
+        let request =
+            build_web_execute_request(input, ExternalApiScope::Youtube).expect("youtube request");
+        let url = Url::parse(&request.url).unwrap();
+        let query = url.query_pairs().into_owned().collect::<HashMap<_, _>>();
+
+        assert_eq!(
+            url.origin().unicode_serialization(),
+            "https://www.googleapis.com"
+        );
+        assert_eq!(url.path(), "/youtube/v3/videos");
+        assert_eq!(query.get("id").map(String::as_str), Some("video id"));
+        assert_eq!(
+            query.get("part").map(String::as_str),
+            Some("snippet,contentDetails")
+        );
+        assert_eq!(query.get("key").map(String::as_str), Some("key/1"));
+    }
+
+    #[test]
+    fn status_contract_uses_status_origin_and_referer() {
+        let input = vrc_status_json_get_input("/status.json");
+
+        assert_eq!(
+            input.url.as_deref(),
+            Some("https://status.vrchat.com/api/v2/status.json")
+        );
+        assert_eq!(
+            input.headers.unwrap().get("Referer").map(String::as_str),
+            Some("https://vrcx.app")
+        );
+    }
 
     #[test]
     fn configured_request_origins_allow_http_and_https() {

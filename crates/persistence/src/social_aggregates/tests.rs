@@ -19,7 +19,7 @@ impl TestDir {
             .unwrap()
             .as_nanos();
         let path = std::env::temp_dir().join(format!(
-            "vrcx-0-mcp-social-{name}-{}-{nonce}",
+            "vrcx-0-social-aggregates-{name}-{}-{nonce}",
             std::process::id()
         ));
         std::fs::create_dir_all(&path).unwrap();

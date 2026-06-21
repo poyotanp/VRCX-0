@@ -1,8 +1,8 @@
 pub(crate) mod connection;
 pub(crate) mod current_user;
 pub(crate) mod friends;
-pub(crate) mod invite_automation;
 pub(crate) mod instance_queue;
+pub(crate) mod invite_automation;
 pub(crate) mod notifications;
 mod output;
 mod projection;

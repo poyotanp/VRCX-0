@@ -25,11 +25,7 @@ fn webhook_delivery_ignores_game_state_conditions() {
         is_game_no_vr: false,
     };
 
-    let plan = decide_notification_plan(
-        &delivery(true, true, true),
-        &preferences,
-        &game,
-    );
+    let plan = decide_notification_plan(&delivery(true, true, true), &preferences, &game);
 
     assert!(!plan.desktop);
     assert!(!plan.tts);

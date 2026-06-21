@@ -4,6 +4,7 @@ pub mod bindings_export;
 mod bootstrap;
 mod commands;
 mod error;
+mod localization;
 #[cfg(target_os = "macos")]
 mod macos_menu;
 mod state;

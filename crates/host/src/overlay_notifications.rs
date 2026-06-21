@@ -16,7 +16,7 @@ pub struct OvrToolkit {
 type WsSender =
     futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
 
-const VRCX_ICON_BYTES: &[u8] = include_bytes!("../../../src-tauri/icons/icon.png");
+const VRCX_ICON_BYTES: &[u8] = include_bytes!("../assets/icon.png");
 
 impl OvrToolkit {
     pub fn new() -> Self {
