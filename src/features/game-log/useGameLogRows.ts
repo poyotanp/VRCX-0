@@ -2,22 +2,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { userFacingErrorMessage } from '@/lib/errorDisplay';
+import { useThrottledValue } from '@/lib/useThrottledValue';
 import gameLogRepository from '@/repositories/gameLogRepository';
 import { useFavoriteStore } from '@/state/favoriteStore';
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
 
-import {
-    buildGameLogFavoriteIdSet,
-    getGameLogRowKey
-} from './gameLogRows';
+import { buildGameLogFavoriteIdSet, getGameLogRowKey } from './gameLogRows';
 import type {
     GameLogLoadStatus,
     GameLogRow,
     GameLogSession,
     GameLogViewMode
 } from './gameLogTypes';
+
+const GAME_LOG_LIVE_REFRESH_THROTTLE_MS = 1000;
 
 type UseGameLogRowsOptions = {
     deferredSearchQuery: string;
@@ -45,9 +45,15 @@ export function useGameLogRows({
     viewMode
 }: UseGameLogRowsOptions) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore((state: any) => state.auth.currentUserId);
+    const currentUserId = useRuntimeStore(
+        (state: any) => state.auth.currentUserId
+    );
     const addGameLogEventCount = useRuntimeStore(
         (state: any) => state.runtimeEvents.addGameLogEvent.count
+    );
+    const throttledGameLogEventCount = useThrottledValue(
+        addGameLogEventCount,
+        GAME_LOG_LIVE_REFRESH_THROTTLE_MS
     );
     const gameLogDisabled = usePreferencesStore(
         (state: any) => state.gameLogDisabled
@@ -151,7 +157,7 @@ export function useGameLogRows({
                 );
             });
     }, [
-        addGameLogEventCount,
+        throttledGameLogEventCount,
         currentUserId,
         deferredSearchQuery,
         favoriteIdSet,
