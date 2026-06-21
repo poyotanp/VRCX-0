@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { QuickSearchDialog } from '@/components/sidebar/QuickSearchDialog';
 import { cn } from '@/lib/utils';
 import { setSidebarCollapsedPreference } from '@/services/preferencesService';
-import { installLatestAvailableUpdate } from '@/services/updateInstallService';
+import { openOrInstallLatestAvailableUpdate } from '@/services/updateInstallService';
 import { getBuildBadgeLabel } from '@/shared/buildLabel';
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
@@ -235,7 +235,7 @@ export function MacOverlayTitleBar() {
                         {hasAvailableUpdate ? (
                             <TitleBarUpdateButton
                                 onClick={() => {
-                                    void installLatestAvailableUpdate();
+                                    void openOrInstallLatestAvailableUpdate();
                                 }}
                             />
                         ) : null}

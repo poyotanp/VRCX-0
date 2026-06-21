@@ -9,6 +9,10 @@ import type {
 } from '@/platform/tauri/bindings';
 import externalApiRepository from '@/repositories/externalApiRepository';
 import storageRepository from '@/repositories/storageRepository';
+import {
+    getVrcxBuildBadge,
+    isPreviewBuildLabel
+} from '@/shared/buildLabel';
 import { branches } from '@/shared/constants/settings';
 import {
     compareReleaseVersions,
@@ -18,6 +22,9 @@ import {
 
 const INSTALLABLE_PLATFORMS = new Set(['windows', 'linux', 'macos']);
 const LINUX_UPDATER_PACKAGE_KINDS = new Set(['appimage', 'deb', 'rpm']);
+const PREVIEW_BADGE_TIMESTAMP_PATTERN =
+    /^Preview\s+(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-(?<hour>\d{2})(?<minute>\d{2})$/i;
+const TOKYO_UTC_OFFSET_MINUTES = 9 * 60;
 let updateInstallInFlight: Promise<TauriUpdateMetadata> | null = null;
 
 export type UpdateOptions = {
@@ -74,6 +81,16 @@ export type NormalizedRelease = {
 };
 
 export type InstallableUpdateRelease = NormalizedRelease & TauriUpdateMetadata;
+
+type PreviewStableReleaseUpdateCheckResult = {
+    handled: boolean;
+    release: NormalizedRelease | null;
+};
+
+type PreviewStableReleaseUpdateMode = {
+    enabled: boolean;
+    check: (options?: UpdateOptions) => Promise<NormalizedRelease | null>;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object');
@@ -282,6 +299,116 @@ function hasUpdateForBranch(
     return (
         compareReleaseVersions(latestParsed.canonicalVersion, currentParsed) > 0
     );
+}
+
+function parsePreviewBuildTimestampMs() {
+    if (!isPreviewBuildLabel()) {
+        return null;
+    }
+
+    const match = PREVIEW_BADGE_TIMESTAMP_PATTERN.exec(getVrcxBuildBadge());
+    if (!match?.groups) {
+        return null;
+    }
+
+    const year = Number(match.groups.year);
+    const month = Number(match.groups.month);
+    const day = Number(match.groups.day);
+    const hour = Number(match.groups.hour);
+    const minute = Number(match.groups.minute);
+    if (
+        month < 1 ||
+        month > 12 ||
+        day < 1 ||
+        day > 31 ||
+        hour > 23 ||
+        minute > 59
+    ) {
+        return null;
+    }
+
+    const timestamp = Date.UTC(
+        year,
+        month - 1,
+        day,
+        hour,
+        minute - TOKYO_UTC_OFFSET_MINUTES
+    );
+    const tokyoDate = new Date(timestamp + TOKYO_UTC_OFFSET_MINUTES * 60000);
+    if (
+        tokyoDate.getUTCFullYear() !== year ||
+        tokyoDate.getUTCMonth() !== month - 1 ||
+        tokyoDate.getUTCDate() !== day ||
+        tokyoDate.getUTCHours() !== hour ||
+        tokyoDate.getUTCMinutes() !== minute
+    ) {
+        return null;
+    }
+
+    return timestamp;
+}
+
+function isPreviewStableReleaseUpdateCheckEnabled() {
+    return isPreviewBuildLabel();
+}
+
+function isStableReleaseNewerThanPreviewBuild(
+    release: NormalizedRelease,
+    previewBuildTimestampMs: number
+) {
+    const publishedAt = Date.parse(release.publishedAt);
+    return Number.isFinite(publishedAt) && publishedAt > previewBuildTimestampMs;
+}
+
+// Preview builds do not ship auto-updater assets. This rare preview-to-Stable
+// path only compares the bundled preview timestamp to the latest Stable release
+// and lets the UI send users to GitHub when Stable was published later.
+async function checkPreviewStableReleaseUpdate(
+    options: UpdateOptions = {}
+): Promise<NormalizedRelease | null> {
+    const previewBuildTimestampMs = parsePreviewBuildTimestampMs();
+    if (previewBuildTimestampMs === null) {
+        return null;
+    }
+
+    const latestRelease = await fetchLatestBranchRelease('Stable', {
+        ...options,
+        requireInstallerAsset: false
+    });
+    if (
+        !latestRelease ||
+        !isStableReleaseNewerThanPreviewBuild(
+            latestRelease,
+            previewBuildTimestampMs
+        )
+    ) {
+        return null;
+    }
+
+    return latestRelease;
+}
+
+async function handlePreviewStableReleaseUpdateCheck(
+    options: UpdateOptions = {}
+): Promise<PreviewStableReleaseUpdateCheckResult> {
+    if (!isPreviewStableReleaseUpdateCheckEnabled()) {
+        return {
+            handled: false,
+            release: null
+        };
+    }
+
+    return {
+        handled: true,
+        release: await checkPreviewStableReleaseUpdate(options)
+    };
+}
+
+function getPreviewStableReleaseUpdateMode(): PreviewStableReleaseUpdateMode {
+    return {
+        enabled: isPreviewStableReleaseUpdateCheckEnabled(),
+        check: checkPreviewStableReleaseUpdate
+    };
 }
 
 async function fetchBranchReleases(
@@ -523,8 +650,10 @@ export {
     fetchBranchReleases,
     fetchLatestBranchRelease,
     formatReleaseDisplayVersion,
+    getPreviewStableReleaseUpdateMode,
     getUpdaterManifestAssetName,
     getUpdaterTarget,
+    handlePreviewStableReleaseUpdateCheck,
     hasUpdateForBranch,
     normalizeGitHubRelease,
     normalizeReleaseList,

@@ -11,6 +11,7 @@ import {
     defaultBranchForVersion,
     fetchLatestBranchRelease,
     formatReleaseDisplayVersion,
+    handlePreviewStableReleaseUpdateCheck,
     hasUpdateForBranch,
     sanitizeBranch,
     type InstallableUpdateRelease,
@@ -599,7 +600,25 @@ async function checkForAppUpdate({
             await configRepository.setString('branch', branch);
         }
 
-        if (canInstallUpdates) {
+        // Preview builds use a separate preview-to-Stable check so the normal
+        // Tauri updater path stays isolated.
+        const previewStableUpdate =
+            await handlePreviewStableReleaseUpdateCheck({
+                hostArch,
+                linuxPackageKind,
+                hostPlatform
+            });
+        if (previewStableUpdate.handled) {
+            if (previewStableUpdate.release) {
+                notifyAvailableUpdate(
+                    branch,
+                    previewStableUpdate.release,
+                    previewStableUpdate.release.canonicalVersion
+                );
+            } else {
+                setUpdaterCheckResult(false);
+            }
+        } else if (canInstallUpdates) {
             const update = await checkInstallableUpdate(branch, {
                 hostArch,
                 linuxPackageKind,

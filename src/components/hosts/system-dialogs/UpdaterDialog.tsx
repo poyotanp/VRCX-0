@@ -9,6 +9,7 @@ import {
     downloadAndInstallUpdate,
     fetchLatestBranchRelease,
     formatReleaseDisplayVersion,
+    getPreviewStableReleaseUpdateMode,
     hasUpdateForBranch,
     type NormalizedRelease
 } from '@/services/updateService';
@@ -42,6 +43,8 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
         (state) => state.hostCapabilities.linuxPackageKind
     );
     const canInstallUpdates = canInstallUpdatesOnPlatform(hostPlatform);
+    const previewStableUpdateMode = getPreviewStableReleaseUpdateMode();
+    const isPreviewUpdateCheck = previewStableUpdateMode.enabled;
 
     const [latestRelease, setLatestRelease] =
         useState<NormalizedRelease | null>(null);
@@ -59,7 +62,8 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
             : '') ||
         '-';
     const hasNewerRelease = latestRelease
-        ? hasUpdateForBranch(
+        ? isPreviewUpdateCheck ||
+          hasUpdateForBranch(
               STABLE_BRANCH,
               // oxlint-disable-next-line no-undef
               VERSION || '',
@@ -82,12 +86,20 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
         setLatestRelease(null);
         setDetail(t('message.vrcx_updater.checking_update_state'));
 
-        fetchLatestBranchRelease(STABLE_BRANCH, {
-            hostArch,
-            linuxPackageKind,
-            hostPlatform,
-            requireInstallerAsset: canInstallUpdates
-        })
+        const releaseCheck = isPreviewUpdateCheck
+            ? previewStableUpdateMode.check({
+                  hostArch,
+                  linuxPackageKind,
+                  hostPlatform
+              })
+            : fetchLatestBranchRelease(STABLE_BRANCH, {
+                  hostArch,
+                  linuxPackageKind,
+                  hostPlatform,
+                  requireInstallerAsset: canInstallUpdates
+              });
+
+        releaseCheck
             .then((nextRelease) => {
                 if (!active) {
                     return;
@@ -97,7 +109,7 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
                 setDetail(
                     nextRelease
                         ? ''
-                        : canInstallUpdates
+                        : canInstallUpdates && !isPreviewUpdateCheck
                           ? t(
                                 'message.vrcx_updater.no_downloadable_releases_found'
                             )
@@ -125,7 +137,15 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
         return () => {
             active = false;
         };
-    }, [canInstallUpdates, hostArch, hostPlatform, linuxPackageKind, open, t]);
+    }, [
+        canInstallUpdates,
+        hostArch,
+        hostPlatform,
+        isPreviewUpdateCheck,
+        linuxPackageKind,
+        open,
+        t
+    ]);
 
     async function handleInstallUpdate() {
         if (
@@ -219,7 +239,7 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
                     ) : null}
                 </FieldGroup>
                 <DialogFooter>
-                    {canInstallUpdates ? (
+                    {canInstallUpdates && !isPreviewUpdateCheck ? (
                         <Button
                             type="button"
                             disabled={
@@ -237,7 +257,10 @@ export function UpdaterDialog({ open, onOpenChange }: UpdaterDialogProps) {
                     ) : (
                         <Button
                             type="button"
-                            disabled={loading}
+                            disabled={
+                                loading ||
+                                (isPreviewUpdateCheck && !latestRelease)
+                            }
                             onClick={() => {
                                 handleOpenReleasePage();
                             }}

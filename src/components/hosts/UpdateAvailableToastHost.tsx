@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 
 import {
     UPDATE_AVAILABLE_TOAST_ID,
-    installLatestAvailableUpdate
+    openOrInstallLatestAvailableUpdate
 } from '@/services/updateInstallService';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
@@ -27,6 +27,32 @@ function formatUpdateVersionLabel(version: string) {
     return /^v/i.test(version) ? version : `v${version}`;
 }
 
+export function showUpdateAvailableToast({
+    latestUpdaterRelease,
+    t,
+    onUpdate
+}: {
+    latestUpdaterRelease: unknown;
+    t: (key: string) => string;
+    onUpdate: () => void;
+}) {
+    toast.info(t('service.background_maintenance.label.vrcx_update_available'), {
+        id: UPDATE_AVAILABLE_TOAST_ID,
+        icon: null,
+        description: formatUpdateVersionLabel(
+            getLatestUpdaterDisplayVersion(latestUpdaterRelease)
+        ),
+        duration: Infinity,
+        position: 'bottom-right',
+        closeButton: true,
+        dismissible: true,
+        action: {
+            label: t('nav_menu.update'),
+            onClick: onUpdate
+        }
+    });
+}
+
 export function UpdateAvailableToastHost() {
     const { t } = useTranslation();
     const hasAvailableUpdate = useRuntimeStore((state: any) =>
@@ -42,23 +68,13 @@ export function UpdateAvailableToastHost() {
             return undefined;
         }
 
-        toast.info(t('dialog.vrcx_updater.relaunch_to_update'), {
-            id: UPDATE_AVAILABLE_TOAST_ID,
-            icon: null,
-            description: formatUpdateVersionLabel(
-                getLatestUpdaterDisplayVersion(latestUpdaterRelease)
-            ),
-            duration: Infinity,
-            position: 'bottom-right',
-            closeButton: true,
-            dismissible: true,
-            action: {
-                label: t('nav_menu.update'),
-                onClick: () => {
-                    void installLatestAvailableUpdate({
-                        toastId: UPDATE_AVAILABLE_TOAST_ID
-                    });
-                }
+        showUpdateAvailableToast({
+            latestUpdaterRelease,
+            t,
+            onUpdate: () => {
+                void openOrInstallLatestAvailableUpdate({
+                    toastId: UPDATE_AVAILABLE_TOAST_ID
+                });
             }
         });
 

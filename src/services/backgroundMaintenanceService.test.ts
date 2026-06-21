@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     defaultBranchForVersion: vi.fn(),
     fetchLatestBranchRelease: vi.fn(),
     formatReleaseDisplayVersion: vi.fn(),
+    handlePreviewStableReleaseUpdateCheck: vi.fn(),
     hasUpdateForBranch: vi.fn(),
     runRuntimeTelemetryJob: vi.fn(),
     recordRuntimeJobTelemetry: vi.fn()
@@ -36,6 +37,8 @@ vi.mock('./updateService', () => ({
     defaultBranchForVersion: mocks.defaultBranchForVersion,
     fetchLatestBranchRelease: mocks.fetchLatestBranchRelease,
     formatReleaseDisplayVersion: mocks.formatReleaseDisplayVersion,
+    handlePreviewStableReleaseUpdateCheck:
+        mocks.handlePreviewStableReleaseUpdateCheck,
     hasUpdateForBranch: mocks.hasUpdateForBranch,
     sanitizeBranch: (branch: unknown) => String(branch || 'Stable')
 }));
@@ -95,6 +98,10 @@ describe('backgroundMaintenanceService update checks', () => {
         });
         mocks.fetchLatestBranchRelease.mockResolvedValue(null);
         mocks.hasUpdateForBranch.mockReturnValue(false);
+        mocks.handlePreviewStableReleaseUpdateCheck.mockResolvedValue({
+            handled: false,
+            release: null
+        });
         mocks.runRuntimeTelemetryJob.mockImplementation(
             async (_metadata: unknown, task: () => Promise<unknown>) => task()
         );
@@ -118,6 +125,61 @@ describe('backgroundMaintenanceService update checks', () => {
         );
         expect(useRuntimeStore.getState().updateLoop.hasAvailableUpdate).toBe(
             true
+        );
+    });
+
+    it('uses the preview stable release check without invoking the Tauri updater path', async () => {
+        mocks.handlePreviewStableReleaseUpdateCheck.mockResolvedValue({
+            handled: true,
+            release: {
+                canonicalVersion: '2.7.0',
+                displayVersion: '2.7.0',
+                htmlUrl: 'https://example.test/release',
+                tagName: 'v2.7.0',
+                displayName: 'VRCX-0 2.7.0',
+                prerelease: false,
+                publishedAt: '2026-06-21T07:00:00Z',
+                body: '',
+                updaterType: 'manual'
+            }
+        });
+
+        await runStartupMaintenance();
+
+        expect(
+            mocks.handlePreviewStableReleaseUpdateCheck
+        ).toHaveBeenCalledWith({
+            hostArch: 'x86_64',
+            linuxPackageKind: '',
+            hostPlatform: 'windows'
+        });
+        expect(mocks.checkInstallableUpdate).not.toHaveBeenCalled();
+        expect(useRuntimeStore.getState().updateLoop.hasAvailableUpdate).toBe(
+            true
+        );
+        const latestUpdaterRelease =
+            useRuntimeStore.getState().updateLoop.latestUpdaterRelease as any;
+        expect(latestUpdaterRelease?.updaterType).toBe('manual');
+    });
+
+    it('does not fall back to the Tauri updater path when a preview build has no stable release update', async () => {
+        mocks.handlePreviewStableReleaseUpdateCheck.mockResolvedValue({
+            handled: true,
+            release: null
+        });
+
+        await runStartupMaintenance();
+
+        expect(
+            mocks.handlePreviewStableReleaseUpdateCheck
+        ).toHaveBeenCalledWith({
+            hostArch: 'x86_64',
+            linuxPackageKind: '',
+            hostPlatform: 'windows'
+        });
+        expect(mocks.checkInstallableUpdate).not.toHaveBeenCalled();
+        expect(useRuntimeStore.getState().updateLoop.hasAvailableUpdate).toBe(
+            false
         );
     });
 });

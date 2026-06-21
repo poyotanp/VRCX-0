@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 
 import { userFacingErrorMessage } from '@/lib/errorDisplay';
+import { openExternalLink } from '@/services/entityMediaService';
 import i18n from '@/services/i18nService';
 import { restartApplication } from '@/services/shellIntegrationService';
 import {
@@ -9,6 +10,7 @@ import {
     type NormalizedRelease,
     type UpdateDownloadProgress
 } from '@/services/updateService';
+import { links } from '@/shared/constants/link';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
 export const UPDATE_AVAILABLE_TOAST_ID = 'vrcx-update-available';
@@ -76,22 +78,16 @@ function DownloadToastContent({
     );
 }
 
-function readLatestInstallableUpdate(): NormalizedRelease | null {
+function readLatestUpdateRelease(): NormalizedRelease | null {
     const release =
         useRuntimeStore.getState().updateLoop.latestUpdaterRelease;
     if (!isRecord(release)) {
         return null;
     }
 
-    const manifestUrl = getString(release.manifestUrl).trim();
-    const target = getString(release.target).trim();
-    if (!manifestUrl || !target) {
-        return null;
-    }
-
     return {
-        manifestUrl,
-        target,
+        manifestUrl: getString(release.manifestUrl).trim() || undefined,
+        target: getString(release.target).trim() || undefined,
         canonicalVersion: getString(release.canonicalVersion),
         channel: 'Stable',
         displayVersion: getString(release.displayVersion),
@@ -101,8 +97,23 @@ function readLatestInstallableUpdate(): NormalizedRelease | null {
         prerelease: false,
         publishedAt: getString(release.publishedAt),
         body: '',
-        updaterType: 'tauri'
+        updaterType:
+            getString(release.updaterType) === 'tauri' ? 'tauri' : 'manual'
     };
+}
+
+function canInstallUpdateRelease(
+    release: NormalizedRelease | null
+): release is NormalizedRelease & {
+    manifestUrl: string;
+    target: string;
+} {
+    return Boolean(
+        release &&
+            release.updaterType === 'tauri' &&
+            release.manifestUrl &&
+            release.target
+    );
 }
 
 export function installLatestAvailableUpdate({
@@ -112,8 +123,8 @@ export function installLatestAvailableUpdate({
         return directInstallInFlight;
     }
 
-    const release = readLatestInstallableUpdate();
-    if (!release) {
+    const release = readLatestUpdateRelease();
+    if (!canInstallUpdateRelease(release)) {
         toast.error(
             i18n.t('message.vrcx_updater.no_downloadable_releases_found'),
             {
@@ -216,4 +227,15 @@ export function installLatestAvailableUpdate({
     })();
 
     return directInstallInFlight;
+}
+
+export async function openOrInstallLatestAvailableUpdate(
+    options: DirectUpdateInstallOptions = {}
+) {
+    const release = readLatestUpdateRelease();
+    if (canInstallUpdateRelease(release)) {
+        return installLatestAvailableUpdate(options);
+    }
+
+    await openExternalLink(release?.htmlUrl || links.releases);
 }
