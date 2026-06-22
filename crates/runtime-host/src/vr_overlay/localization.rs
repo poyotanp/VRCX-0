@@ -3,6 +3,9 @@ use std::{collections::BTreeMap, sync::OnceLock};
 use serde::Deserialize;
 use serde_json::Value;
 use vrcx_0_application::OverlayActivityText;
+use vrcx_0_core::location::{
+    format_display_location_with_labels, parse_location, DisplayLocationLabels,
+};
 
 const OVERLAY_NOTIFICATIONS_JSON: &str = include_str!("localization/overlay_notifications.json");
 const EN_LOCALE: &str = "en";
@@ -63,6 +66,60 @@ impl OverlayLocalizer {
         collapse_whitespace(&interpolate(template, &text.params))
     }
 
+    pub(crate) fn activity_text(
+        &self,
+        text: &OverlayActivityText,
+        location: &str,
+        world_name: &str,
+        group_name: &str,
+    ) -> String {
+        let mut localized = text.clone();
+        let Some(params) = localized.params.as_object_mut() else {
+            return self.text(text);
+        };
+        let should_replace = params
+            .get("location")
+            .and_then(Value::as_str)
+            .is_some_and(|value| should_localize_location_param(value, location));
+        if !should_replace {
+            return self.text(text);
+        }
+        let display_location = self.display_location(location, world_name, group_name);
+        if !display_location.is_empty() {
+            params.insert("location".to_string(), Value::String(display_location));
+        }
+        self.text(&localized)
+    }
+
+    pub(crate) fn display_location(
+        &self,
+        location: &str,
+        world_name: &str,
+        group_name: &str,
+    ) -> String {
+        let parsed = parse_location(location);
+        let public = self.label("overlay.access.public", "public");
+        let invite = self.label("overlay.access.invite", "invite");
+        let invite_plus = self.label("overlay.access.invite_plus", "invite+");
+        let friends = self.label("overlay.access.friends", "friends");
+        let friends_plus = self.label("overlay.access.friends_plus", "friends+");
+        let group = self.label("overlay.access.group", "group");
+        let group_public =
+            self.group_access_label(&group, "overlay.access.group_public", "groupPublic");
+        let group_plus = self.group_access_label(&group, "overlay.access.group_plus", "groupPlus");
+        let labels = DisplayLocationLabels {
+            public: &public,
+            invite: &invite,
+            invite_plus: &invite_plus,
+            friends: &friends,
+            friends_plus: &friends_plus,
+            group: &group,
+            group_public: &group_public,
+            group_plus: &group_plus,
+        };
+        format_display_location_with_labels(&parsed, world_name, group_name, &labels)
+    }
+
     pub(super) fn generic_instance_location(&self) -> &'static str {
         match self.locale {
             OverlayLocale::En => "an instance",
@@ -71,6 +128,23 @@ impl OverlayLocalizer {
             OverlayLocale::Ja => "インスタンス",
             OverlayLocale::Ko => "인스턴스",
         }
+    }
+
+    fn group_access_label(&self, group: &str, key: &str, fallback: &str) -> String {
+        let label = self.label(key, fallback);
+        if label.starts_with(group) {
+            label
+        } else {
+            collapse_whitespace(&format!("{group} {label}"))
+        }
+    }
+
+    fn label(&self, key: &str, fallback: &str) -> String {
+        let catalog = catalog();
+        let template = localized_template(catalog, self.locale.as_str(), key)
+            .or_else(|| localized_template(catalog, &catalog.fallback_locale, key))
+            .unwrap_or(fallback);
+        collapse_whitespace(template)
     }
 }
 
@@ -146,6 +220,14 @@ fn param_value(value: Option<&Value>) -> String {
 
 fn collapse_whitespace(value: &str) -> String {
     value.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+fn should_localize_location_param(value: &str, location: &str) -> bool {
+    let value = value.trim();
+    if value.is_empty() || value == location.trim() {
+        return false;
+    }
+    !value.starts_with("wrld_")
 }
 
 #[cfg(test)]
@@ -226,6 +308,25 @@ mod tests {
                 "invite"
             )),
             "has invited you to hello"
+        );
+    }
+
+    #[test]
+    fn display_location_uses_overlay_locale_access_labels() {
+        let zh_cn = OverlayLocalizer::new(OverlayLocale::ZhCn);
+
+        assert_eq!(
+            zh_cn.display_location(
+                "wrld_a:1~group(grp_a)~groupAccessType(plus)",
+                "Group World",
+                "Group Name",
+            ),
+            "Group World 群组+(Group Name)"
+        );
+
+        assert_eq!(
+            zh_cn.display_location("wrld_a:1~friends(usr_a)", "Friend World", ""),
+            "Friend World 仅限好友"
         );
     }
 

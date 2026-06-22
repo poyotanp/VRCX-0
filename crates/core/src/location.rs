@@ -161,6 +161,62 @@ pub fn format_display_location(
     world_name: &str,
     group_name: &str,
 ) -> String {
+    format_display_location_parts(
+        parsed,
+        world_name,
+        group_name,
+        parsed.access_type_name.as_str(),
+    )
+}
+
+pub struct DisplayLocationLabels<'a> {
+    pub public: &'a str,
+    pub invite: &'a str,
+    pub invite_plus: &'a str,
+    pub friends: &'a str,
+    pub friends_plus: &'a str,
+    pub group: &'a str,
+    pub group_public: &'a str,
+    pub group_plus: &'a str,
+}
+
+pub fn format_display_location_with_labels(
+    parsed: &ParsedLocation,
+    world_name: &str,
+    group_name: &str,
+    labels: &DisplayLocationLabels<'_>,
+) -> String {
+    format_display_location_parts(
+        parsed,
+        world_name,
+        group_name,
+        access_type_label(parsed, labels),
+    )
+}
+
+fn access_type_label<'a>(
+    parsed: &'a ParsedLocation,
+    labels: &'a DisplayLocationLabels<'a>,
+) -> &'a str {
+    match parsed.access_type_name.as_str() {
+        "public" => labels.public,
+        "invite" => labels.invite,
+        "invite+" => labels.invite_plus,
+        "friends" => labels.friends,
+        "friends+" => labels.friends_plus,
+        "group" => labels.group,
+        "groupPublic" => labels.group_public,
+        "groupPlus" => labels.group_plus,
+        _ => parsed.access_type_name.as_str(),
+    }
+}
+
+fn format_display_location_parts(
+    parsed: &ParsedLocation,
+    world_name: &str,
+    group_name: &str,
+    access_type_name: &str,
+) -> String {
     if parsed.is_offline {
         return "Offline".to_string();
     }
@@ -174,12 +230,12 @@ pub fn format_display_location(
     let group_name = readable_location_part(group_name);
     if !parsed.world_id.is_empty() {
         if !group_name.is_empty() {
-            return format!("{world_name} {}({group_name})", parsed.access_type_name)
+            return format!("{world_name} {access_type_name}({group_name})")
                 .trim()
                 .to_string();
         }
         if !parsed.instance_id.is_empty() {
-            return format!("{world_name} {}", parsed.access_type_name)
+            return format!("{world_name} {access_type_name}")
                 .trim()
                 .to_string();
         }
@@ -356,6 +412,48 @@ mod tests {
         assert_eq!(
             format_display_location(&parse_location("wrld_a:1"), "wrld_a", "grp_a"),
             "public"
+        );
+    }
+
+    #[test]
+    fn display_location_can_format_instance_access_with_labels() {
+        let labels = DisplayLocationLabels {
+            public: "Public",
+            invite: "Invite",
+            invite_plus: "Invite+",
+            friends: "Friends",
+            friends_plus: "Friends+",
+            group: "Group",
+            group_public: "Group Public",
+            group_plus: "Group+",
+        };
+
+        assert_eq!(
+            format_display_location_with_labels(
+                &parse_location("wrld_a:1~group(grp_a)~groupAccessType(plus)"),
+                "Group World",
+                "Group Name",
+                &labels,
+            ),
+            "Group World Group+(Group Name)"
+        );
+        assert_eq!(
+            format_display_location_with_labels(
+                &parse_location("wrld_a:1~friends(usr_a)"),
+                "Friend World",
+                "",
+                &labels,
+            ),
+            "Friend World Friends"
+        );
+        assert_eq!(
+            format_display_location_with_labels(
+                &parse_location("wrld_a:1~hidden(usr_a)"),
+                "Plus World",
+                "",
+                &labels,
+            ),
+            "Plus World Friends+"
         );
     }
 }

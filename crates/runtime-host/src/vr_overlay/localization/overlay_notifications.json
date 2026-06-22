@@ -37,7 +37,15 @@
             "notifications.muted_player_joined": "Muted user has joined",
             "notifications.muted_player_left": "Muted user has left",
             "overlay.footer.players": "{count} players",
-            "overlay.footer.instance_duration": "Instance {duration}"
+            "overlay.footer.instance_duration": "Instance {duration}",
+            "overlay.access.public": "Public",
+            "overlay.access.invite": "Invite",
+            "overlay.access.invite_plus": "Invite+",
+            "overlay.access.friends": "Friends",
+            "overlay.access.friends_plus": "Friends+",
+            "overlay.access.group": "Group",
+            "overlay.access.group_public": "Group Public",
+            "overlay.access.group_plus": "Group+"
         },
         "zh-CN": {
             "notifications.has_joined": "加入了房间",
@@ -74,7 +82,15 @@
             "notifications.muted_player_joined": "被你静音的用户加入了房间",
             "notifications.muted_player_left": "被你静音的用户离开了房间",
             "overlay.footer.players": "{count} 名玩家",
-            "overlay.footer.instance_duration": "停留 {duration}"
+            "overlay.footer.instance_duration": "停留 {duration}",
+            "overlay.access.public": "公开",
+            "overlay.access.invite": "仅限邀请",
+            "overlay.access.invite_plus": "邀请+",
+            "overlay.access.friends": "仅限好友",
+            "overlay.access.friends_plus": "好友+",
+            "overlay.access.group": "群组",
+            "overlay.access.group_public": "群组公开",
+            "overlay.access.group_plus": "群组+"
         },
         "zh-TW": {
             "notifications.has_joined": "已加入",
@@ -111,7 +127,15 @@
             "notifications.muted_player_joined": "被靜音的用戶已加入",
             "notifications.muted_player_left": "被靜音的用戶已離開",
             "overlay.footer.players": "{count} 位玩家",
-            "overlay.footer.instance_duration": "停留 {duration}"
+            "overlay.footer.instance_duration": "停留 {duration}",
+            "overlay.access.public": "公開",
+            "overlay.access.invite": "邀請",
+            "overlay.access.invite_plus": "邀請+",
+            "overlay.access.friends": "好友",
+            "overlay.access.friends_plus": "好友+",
+            "overlay.access.group": "群組",
+            "overlay.access.group_public": "公開",
+            "overlay.access.group_plus": "成員+"
         },
         "ja": {
             "notifications.has_joined": "が参加しました",
@@ -148,7 +172,15 @@
             "notifications.muted_player_joined": "ミュートしたユーザーが参加しました",
             "notifications.muted_player_left": "ミュートしたユーザーが退出しました",
             "overlay.footer.players": "{count}人",
-            "overlay.footer.instance_duration": "滞在 {duration}"
+            "overlay.footer.instance_duration": "滞在 {duration}",
+            "overlay.access.public": "パブリック",
+            "overlay.access.invite": "インバイト",
+            "overlay.access.invite_plus": "インバイト+",
+            "overlay.access.friends": "フレンド",
+            "overlay.access.friends_plus": "フレンド+",
+            "overlay.access.group": "グループ",
+            "overlay.access.group_public": "パブリック",
+            "overlay.access.group_plus": "+"
         },
         "ko": {
             "notifications.has_joined": "가입했습니다",
@@ -185,7 +217,15 @@
             "notifications.muted_player_joined": "음소거된 사용자가 합류했습니다",
             "notifications.muted_player_left": "음소거된 사용자가 나갔습니다.",
             "overlay.footer.players": "{count}명",
-            "overlay.footer.instance_duration": "체류 {duration}"
+            "overlay.footer.instance_duration": "체류 {duration}",
+            "overlay.access.public": "공개",
+            "overlay.access.invite": "초대",
+            "overlay.access.invite_plus": "초대+",
+            "overlay.access.friends": "친구",
+            "overlay.access.friends_plus": "친구+",
+            "overlay.access.group": "그룹",
+            "overlay.access.group_public": "공개",
+            "overlay.access.group_plus": "그룹원+"
         }
     }
 }

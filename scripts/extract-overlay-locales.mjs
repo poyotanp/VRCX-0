@@ -78,6 +78,29 @@ const pathKeys = [
     [
         'overlay.footer.instance_duration',
         ['overlay', 'footer', 'instance_duration']
+    ],
+    ['overlay.access.public', ['dialog', 'new_instance', 'access_type_public']],
+    ['overlay.access.invite', ['dialog', 'new_instance', 'access_type_invite']],
+    [
+        'overlay.access.invite_plus',
+        ['dialog', 'new_instance', 'access_type_invite_plus']
+    ],
+    [
+        'overlay.access.friends',
+        ['dialog', 'new_instance', 'access_type_friend']
+    ],
+    [
+        'overlay.access.friends_plus',
+        ['dialog', 'new_instance', 'access_type_friend_plus']
+    ],
+    ['overlay.access.group', ['dialog', 'new_instance', 'access_type_group']],
+    [
+        'overlay.access.group_public',
+        ['dialog', 'new_instance', 'group_access_type_public']
+    ],
+    [
+        'overlay.access.group_plus',
+        ['dialog', 'new_instance', 'group_access_type_plus']
     ]
 ];
 const shellPathKeys = [

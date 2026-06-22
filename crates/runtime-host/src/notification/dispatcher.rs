@@ -411,8 +411,18 @@ fn render_delivery(
 ) -> RenderedNotification {
     let localizer = OverlayLocalizer::new(locale);
     let entry = &delivery.entry;
-    let title = localizer.text(&entry.content.title);
-    let body = localizer.text(&entry.content.body);
+    let title = localizer.activity_text(
+        &entry.content.title,
+        &entry.content.location,
+        &entry.content.world_name,
+        &entry.content.group_name,
+    );
+    let body = localizer.activity_text(
+        &entry.content.body,
+        &entry.content.location,
+        &entry.content.world_name,
+        &entry.content.group_name,
+    );
     let text = combine_text(&title, &body);
     RenderedNotification {
         title,
@@ -808,7 +818,11 @@ mod tests {
         OverlayActivityDelivery, OverlayActivityEntry,
     };
 
-    use super::{overlay_notification_render, webhook_payload, RenderedNotification};
+    use crate::vr_overlay::OverlayLocale;
+
+    use super::{
+        overlay_notification_render, render_delivery, webhook_payload, RenderedNotification,
+    };
 
     #[test]
     fn generic_webhook_payload_exposes_location_id_and_local_time() {
@@ -847,6 +861,29 @@ mod tests {
         assert_eq!(render.title, "Traveler");
     }
 
+    #[test]
+    fn render_delivery_localizes_location_access_labels() {
+        let mut delivery = delivery();
+        delivery.entry.actor_display_name = "Traveler".into();
+        delivery.entry.content.location =
+            "wrld_named:123~group(grp_a)~groupAccessType(plus)".into();
+        delivery.entry.content.world_name = "Group World".into();
+        delivery.entry.content.group_name = "Group Name".into();
+        delivery.entry.content.title = text("", "Traveler", json!({}));
+        delivery.entry.content.body = text(
+            "notifications.gps",
+            "is in Group World groupPlus(Group Name)",
+            json!({ "location": "Group World groupPlus(Group Name)" }),
+        );
+
+        let render = render_delivery(&delivery, OverlayLocale::ZhCn);
+
+        assert_eq!(
+            render.text,
+            "Traveler 现在位于 Group World 群组+(Group Name)"
+        );
+    }
+
     fn rendered() -> RenderedNotification {
         RenderedNotification {
             title: "Traveler".into(),
@@ -879,6 +916,18 @@ mod tests {
             desktop: false,
             vr: false,
             webhook: true,
+        }
+    }
+
+    fn text(
+        key: &str,
+        fallback: &str,
+        params: serde_json::Value,
+    ) -> vrcx_0_application::OverlayActivityText {
+        vrcx_0_application::OverlayActivityText {
+            key: key.into(),
+            fallback: fallback.into(),
+            params,
         }
     }
 }

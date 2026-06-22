@@ -211,7 +211,7 @@ fn feed_line_from_activity(entry: &OverlayActivityEntry, localizer: &OverlayLoca
 }
 
 fn feed_actor(entry: &OverlayActivityEntry, localizer: &OverlayLocalizer) -> String {
-    let localized_title = localizer.text(&entry.content.title);
+    let localized_title = localized_entry_text(entry, localizer, &entry.content.title);
     first_non_empty([
         localized_title.as_str(),
         entry.content.title.fallback.as_str(),
@@ -229,8 +229,8 @@ fn feed_relation(relation: OverlayActivityActorRelation) -> FeedRelation {
 
 fn feed_detail(entry: &OverlayActivityEntry, localizer: &OverlayLocalizer) -> String {
     let localized_summary = localized_activity_summary(entry, localizer);
-    let localized_body = localizer.text(&entry.content.body);
-    let localized_title = localizer.text(&entry.content.title);
+    let localized_body = localized_entry_text(entry, localizer, &entry.content.body);
+    let localized_title = localized_entry_text(entry, localizer, &entry.content.title);
     let summary = entry.content.summary.trim();
     let detail = entry.content.detail.trim();
     let body = entry.content.body.fallback.trim();
@@ -274,8 +274,8 @@ fn localized_activity_summary(
     entry: &OverlayActivityEntry,
     localizer: &OverlayLocalizer,
 ) -> String {
-    let title = localizer.text(&entry.content.title);
-    let body = localizer.text(&entry.content.body);
+    let title = localized_entry_text(entry, localizer, &entry.content.title);
+    let body = localized_entry_text(entry, localizer, &entry.content.body);
     if !body.trim().is_empty() {
         return join_non_empty([title.as_str(), body.as_str()]);
     }
@@ -283,6 +283,19 @@ fn localized_activity_summary(
         return title;
     }
     String::new()
+}
+
+fn localized_entry_text(
+    entry: &OverlayActivityEntry,
+    localizer: &OverlayLocalizer,
+    text: &OverlayActivityText,
+) -> String {
+    localizer.activity_text(
+        text,
+        &entry.content.location,
+        &entry.content.world_name,
+        &entry.content.group_name,
+    )
 }
 
 fn meaningful_world_name(entry: &OverlayActivityEntry) -> Option<&str> {
@@ -603,6 +616,27 @@ mod tests {
         };
 
         assert_eq!(feed_line(&entry, "zh-CN").detail, "Ada 现在位于 某个房间");
+    }
+
+    #[test]
+    fn feed_detail_localizes_display_location_access_labels() {
+        let mut entry = entry(
+            "GPS",
+            "wrld_1:123~group(grp_a)~groupAccessType(plus)",
+            "Group World",
+        );
+        entry.content.group_name = "Group Name".to_string();
+        entry.content.title.fallback = "Ada".to_string();
+        entry.content.body = OverlayActivityText {
+            key: "notifications.gps".to_string(),
+            fallback: "is in Group World groupPlus(Group Name)".to_string(),
+            params: json!({ "location": "Group World groupPlus(Group Name)" }),
+        };
+
+        assert_eq!(
+            feed_line(&entry, "zh-CN").detail,
+            "Ada 现在位于 Group World 群组+(Group Name)"
+        );
     }
 
     fn entry(activity_type: &str, location: &str, world_name: &str) -> OverlayActivityEntry {
