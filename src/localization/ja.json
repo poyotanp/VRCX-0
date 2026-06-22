@@ -645,8 +645,6 @@
                 "switch_to_table": "テーブル表示",
                 "switch_to_sessions": "セッション表示",
                 "date_range": "期間",
-                "players_joined": "{count} 人が参加",
-                "players_left": "{count} 人が退出",
                 "friends_count": "フレンド {count} 人",
                 "play_count": "×{count}",
                 "joined": "参加済み",

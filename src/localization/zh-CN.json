@@ -645,8 +645,6 @@
                 "switch_to_table": "表格视图",
                 "switch_to_sessions": "会话视图",
                 "date_range": "日期范围",
-                "players_joined": "{count} 名玩家加入",
-                "players_left": "{count} 名玩家离开",
                 "friends_count": "{count} 位好友",
                 "play_count": "×{count}",
                 "joined": "已加入",

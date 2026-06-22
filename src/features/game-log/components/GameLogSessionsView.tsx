@@ -1,21 +1,17 @@
-import {
-    CalendarDaysIcon,
-    ChevronRightIcon,
-    UserMinusIcon,
-    UserPlusIcon,
-    VideoIcon
-} from 'lucide-react';
+import { ChevronRightIcon } from 'lucide-react';
 import {
     Fragment,
     memo,
     useCallback,
     useEffect,
+    useMemo,
     useRef,
     useState
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Location } from '@/components/Location';
+import { UserHoverCard } from '@/components/user-hover-card/UserHoverCard';
 import { formatDateFilter, timeToText } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
 import gameLogRepository from '@/repositories/gameLogRepository';
@@ -28,10 +24,9 @@ import {
 } from '@/ui/shadcn/collapsible';
 import { Separator } from '@/ui/shadcn/separator';
 import { Spinner } from '@/ui/shadcn/spinner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
-    countGameLogSessionEvent,
+    collectGameLogSessionFriends,
     getGameLogSessionKey,
     resolveGameLogSessionDuration as resolveSessionDuration,
     resolveGameLogWorldTarget as resolveWorldTarget
@@ -41,10 +36,84 @@ import {
     createEmptyGameLogSessionDurationDetails,
     type GameLogSessionDurationDetails
 } from '../gameLogSessionDurations';
+import { openGameLogUser } from '../gameLogUserLookup';
 import { SessionEventGroups } from './GameLogSessionEventRow';
 
-const DEFAULT_OPEN_SESSION_COUNT = 3;
 const EMPTY_DURATION_BY_KEY = new Map<string, number>();
+const FACEPILE_CLASSES = [
+    'bg-rose-800 text-rose-100',
+    'bg-orange-800 text-orange-100',
+    'bg-amber-800 text-amber-100',
+    'bg-emerald-800 text-emerald-100',
+    'bg-teal-800 text-teal-100',
+    'bg-cyan-800 text-cyan-100',
+    'bg-sky-800 text-sky-100',
+    'bg-blue-800 text-blue-100',
+    'bg-indigo-800 text-indigo-100',
+    'bg-violet-800 text-violet-100',
+    'bg-fuchsia-800 text-fuchsia-100',
+    'bg-pink-800 text-pink-100'
+];
+
+function facepileClass(key: string) {
+    let hash = 0;
+    for (let index = 0; index < key.length; index += 1) {
+        hash = (hash * 31 + key.charCodeAt(index)) | 0;
+    }
+    return FACEPILE_CLASSES[Math.abs(hash) % FACEPILE_CLASSES.length];
+}
+
+function facepileInitial(name: string) {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) {
+        return '?';
+    }
+    return Array.from(trimmed)[0].toUpperCase();
+}
+
+function SessionFriendFacepile({ friends }: { friends: any[] }) {
+    const { t } = useTranslation();
+    const shown = friends.slice(0, 3);
+    const extra = friends.length - shown.length;
+
+    return (
+        <div
+            className="flex shrink-0 items-center"
+            aria-label={t('view.game_log.sessions.friends_count', {
+                count: friends.length
+            })}
+        >
+            {shown.map((friend: any) => (
+                <UserHoverCard
+                    key={friend.key}
+                    userId={friend.userId}
+                    seed={friend}
+                >
+                    <button
+                        type="button"
+                        title={friend.displayName}
+                        aria-label={friend.displayName}
+                        onClick={(event: any) => {
+                            event.stopPropagation();
+                            openGameLogUser(friend, t);
+                        }}
+                        className={cn(
+                            'border-background relative -ml-1.5 flex size-[18px] cursor-pointer items-center justify-center rounded-full border text-[0.625rem] font-medium first:ml-0 hover:z-10',
+                            facepileClass(friend.key)
+                        )}
+                    >
+                        {facepileInitial(friend.displayName)}
+                    </button>
+                </UserHoverCard>
+            ))}
+            {extra > 0 ? (
+                <span className="text-muted-foreground ml-1 text-xs tabular-nums">
+                    +{extra}
+                </span>
+            ) : null}
+        </div>
+    );
+}
 const sessionDurationDetailsCache = new Map<
     string,
     GameLogSessionDurationDetails
@@ -89,16 +158,11 @@ function SessionDayDivider({ session }: any) {
     const label = formatDateFilter(value, 'date');
 
     return (
-        <div className="bg-background flex items-center gap-2 px-3 py-2">
-            <Separator className="flex-1" />
-            <Badge
-                variant="secondary"
-                className="h-5 shrink-0 gap-1 px-2 text-xs font-medium tabular-nums"
-            >
-                <CalendarDaysIcon data-icon="inline-start" />
+        <div className="bg-background flex items-center gap-3 px-3 pt-2.5 pb-1">
+            <span className="text-muted-foreground shrink-0 text-xs font-medium tracking-wide tabular-nums">
                 {label}
-            </Badge>
-            <Separator className="flex-1" />
+            </span>
+            <Separator className="flex-1 opacity-60" />
         </div>
     );
 }
@@ -142,10 +206,7 @@ function buildSessionSummary(events: any[] = []) {
 
     return {
         firstEventAt,
-        joinedCount: countGameLogSessionEvent(events, 'OnPlayerJoined'),
-        lastEventAt,
-        leftCount: countGameLogSessionEvent(events, 'OnPlayerLeft'),
-        videoCount: countGameLogSessionEvent(events, 'VideoPlay')
+        lastEventAt
     };
 }
 
@@ -163,10 +224,8 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
     const durationMs = resolveSessionDuration(session);
     const sessionStartedAt = Date.parse(session?.created_at);
     const sessionLocation = session.location || '';
-    const shouldLoadDurationDetails = Boolean(sessionLocation) && (
-        isOpen ||
-        durationMs <= 0
-    );
+    const shouldLoadDurationDetails =
+        Boolean(sessionLocation) && (isOpen || durationMs <= 0);
     const [playerDurationDetails, setPlayerDurationDetails] =
         useState<PlayerDurationDetailsState>(() =>
             createPlayerDurationDetailsState({
@@ -193,8 +252,15 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
             : liveDurationMs > 0
               ? timeToText(liveDurationMs)
               : '';
-    const summary = buildSessionSummary(session?.events ?? []);
+    const summary = useMemo(
+        () => buildSessionSummary(session?.events ?? []),
+        [session?.events]
+    );
     const eventRangeText = formatSessionEventRange(summary, session.created_at);
+    const sessionFriends = useMemo(
+        () => collectGameLogSessionFriends(session?.events ?? []),
+        [session?.events]
+    );
     const durationByKey =
         playerDurationDetails.location === sessionLocation
             ? playerDurationDetails.durationByKey
@@ -219,8 +285,7 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
             return undefined;
         }
 
-        const cachedDetails =
-            sessionDurationDetailsCache.get(sessionLocation);
+        const cachedDetails = sessionDurationDetailsCache.get(sessionLocation);
         if (cachedDetails) {
             setPlayerDurationDetails(
                 createPlayerDurationDetailsState({
@@ -318,62 +383,21 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
                     </CollapsibleTrigger>
                     <div className="min-w-0 flex-1">
                         {sessionLocation ? (
-                            <div className="flex min-w-0 items-center gap-1.5">
-                                <Location
-                                    location={sessionLocation}
-                                    hint={session.worldName || worldTarget}
-                                    grouphint={session.groupName || ''}
-                                    enableContextMenu
-                                    stopPropagation
-                                    className="min-w-0 text-sm font-normal"
-                                />
-                                {durationText ? (
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Badge
-                                                variant="outline"
-                                                className="h-4 shrink-0 px-1 text-xs tabular-nums"
-                                            >
-                                                {durationText}
-                                            </Badge>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            {t(
-                                                'view.game_log.label.time_spent_in_this_instance'
-                                            )}
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ) : null}
-                            </div>
+                            <Location
+                                location={sessionLocation}
+                                hint={session.worldName || worldTarget}
+                                grouphint={session.groupName || ''}
+                                enableContextMenu
+                                stopPropagation
+                                className="min-w-0 text-sm font-normal"
+                            />
                         ) : (
                             <span className="truncate text-sm" />
                         )}
                     </div>
-                    <div className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs tabular-nums">
-                        <Badge
-                            variant="outline"
-                            className="h-4 gap-1 px-1 text-xs"
-                        >
-                            <UserPlusIcon data-icon="inline-start" />
-                            {summary.joinedCount}
-                        </Badge>
-                        <Badge
-                            variant="outline"
-                            className="h-4 gap-1 px-1 text-xs"
-                        >
-                            <UserMinusIcon data-icon="inline-start" />
-                            {summary.leftCount}
-                        </Badge>
-                        {summary.videoCount > 0 ? (
-                            <Badge
-                                variant="outline"
-                                className="h-4 gap-1 px-1 text-xs"
-                            >
-                                <VideoIcon data-icon="inline-start" />
-                                {summary.videoCount}
-                            </Badge>
-                        ) : null}
-                    </div>
+                    {sessionFriends.length ? (
+                        <SessionFriendFacepile friends={sessionFriends} />
+                    ) : null}
                     {!durationText && isLatest && isGameRunning ? (
                         <Badge
                             variant="outline"
@@ -382,8 +406,10 @@ const GameLogSessionSegment = memo(function GameLogSessionSegment({
                             {t('common.current_session')}
                         </Badge>
                     ) : null}
-                    <span className="text-muted-foreground ml-auto shrink-0 text-xs">
-                        {eventRangeText}
+                    <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
+                        {durationText
+                            ? `${eventRangeText} · ${durationText}`
+                            : eventRangeText}
                     </span>
                 </div>
             </div>
@@ -414,20 +440,23 @@ export function GameLogSessionsView({
     const [sessionOpenOverrides, setSessionOpenOverrides] = useState(
         () => new Map()
     );
-    const handleSessionOpenChange = useCallback((sessionKey: any, nextOpen: any) => {
-        if (!sessionKey) {
-            return;
-        }
-        setSessionOpenOverrides((current: any) => {
-            if (current.get(sessionKey) === nextOpen) {
-                return current;
+    const handleSessionOpenChange = useCallback(
+        (sessionKey: any, nextOpen: any) => {
+            if (!sessionKey) {
+                return;
             }
+            setSessionOpenOverrides((current: any) => {
+                if (current.get(sessionKey) === nextOpen) {
+                    return current;
+                }
 
-            const next = new Map(current);
-            next.set(sessionKey, nextOpen);
-            return next;
-        });
-    }, []);
+                const next = new Map(current);
+                next.set(sessionKey, nextOpen);
+                return next;
+            });
+        },
+        []
+    );
 
     useEffect(() => {
         setAutoFillAttempts(0);
@@ -515,9 +544,8 @@ export function GameLogSessionsView({
                         Boolean(currentDayKey) &&
                         currentDayKey !== previousDayKey;
                     const isOpen = sessionKey
-                        ? (sessionOpenOverrides.get(sessionKey) ??
-                          index < DEFAULT_OPEN_SESSION_COUNT)
-                        : index < DEFAULT_OPEN_SESSION_COUNT;
+                        ? (sessionOpenOverrides.get(sessionKey) ?? true)
+                        : true;
                     return (
                         <Fragment key={sessionKey || `session:${index}`}>
                             {showDayDivider ? (

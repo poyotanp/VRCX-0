@@ -214,7 +214,11 @@ export function annotateGameLogSessionMember(
     };
 }
 
-export function annotateGameLogSessionEvent(event: any, favoriteIdSet: any, friendIdSet: any) {
+export function annotateGameLogSessionEvent(
+    event: any,
+    favoriteIdSet: any,
+    friendIdSet: any
+) {
     const userId = normalizeGameLogId(event?.userId);
     return {
         ...event,
@@ -232,6 +236,39 @@ export function annotateGameLogSessionEvent(event: any, favoriteIdSet: any, frie
               )
             : []
     };
+}
+
+export function collectGameLogSessionFriends(events: any[] = []) {
+    const seen = new Map<string, any>();
+    for (const event of events) {
+        const candidates =
+            Array.isArray(event?.members) && event.members.length > 0
+                ? event.members
+                : [event];
+        for (const candidate of candidates) {
+            if (!candidate?.isFriend) {
+                continue;
+            }
+            const userId = normalizeGameLogId(candidate.userId);
+            const displayName = String(candidate.displayName || '');
+            const key = userId || displayName;
+            if (!key || seen.has(key)) {
+                continue;
+            }
+            seen.set(key, {
+                key,
+                id: userId,
+                userId,
+                displayName,
+                isFavorite: Boolean(candidate.isFavorite)
+            });
+        }
+    }
+    const friends = Array.from(seen.values());
+    friends.sort(
+        (left, right) => Number(right.isFavorite) - Number(left.isFavorite)
+    );
+    return friends;
 }
 
 export function countGameLogSessionEvent(events: any, type: any) {

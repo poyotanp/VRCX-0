@@ -648,8 +648,6 @@
                 "expand_session": "세션 확장",
                 "collapse_session": "세션 축소",
                 "no_data": "게임 로그 데이터 없음",
-                "players_joined": "{count} 플레이어가 합류했습니다.",
-                "players_left": "플레이어 {count}명 퇴장",
                 "friends_count": "친구 {count}명",
                 "play_count": "×{count}",
                 "played_by": "{name}님이 재생함"

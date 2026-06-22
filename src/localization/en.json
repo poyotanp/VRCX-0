@@ -645,8 +645,6 @@
                 "switch_to_table": "Table view",
                 "switch_to_sessions": "Sessions view",
                 "date_range": "Date range",
-                "players_joined": "{count} players joined",
-                "players_left": "{count} players left",
                 "friends_count": "{count} friends",
                 "play_count": "×{count}",
                 "joined": "Joined",

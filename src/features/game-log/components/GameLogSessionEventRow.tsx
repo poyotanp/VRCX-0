@@ -4,6 +4,7 @@ import {
     ExternalLinkIcon,
     HeartIcon,
     StarIcon,
+    UsersIcon,
     VideoIcon
 } from 'lucide-react';
 import { useState } from 'react';
@@ -123,20 +124,25 @@ function AffinityBadges({ item }: any) {
         return null;
     }
 
+    const isFavorite = Boolean(item.isFavorite);
+    const Icon = isFavorite ? StarIcon : HeartIcon;
+    const labelKey = isFavorite
+        ? 'view.game_log.sessions.favorite'
+        : 'view.game_log.sessions.friend';
+    const colorClass = isFavorite
+        ? 'bg-amber-500/15 text-amber-300'
+        : 'bg-rose-500/15 text-rose-300';
+
     return (
-        <div className="flex shrink-0 items-center gap-1">
-            {item.isFavorite ? (
-                <Badge variant="secondary" className="h-4 px-1 text-[0.7rem]">
-                    <StarIcon data-icon="inline-start" />
-                    {t('view.game_log.sessions.favorite')}
-                </Badge>
-            ) : (
-                <Badge variant="outline" className="h-4 px-1 text-[0.7rem]">
-                    <HeartIcon data-icon="inline-start" />
-                    {t('view.game_log.sessions.friend')}
-                </Badge>
+        <span
+            className={cn(
+                'inline-flex h-[18px] shrink-0 items-center gap-1 rounded-md px-1.5 text-[0.7rem] font-medium',
+                colorClass
             )}
-        </div>
+        >
+            <Icon className="size-3 shrink-0 fill-current" />
+            {t(labelKey)}
+        </span>
     );
 }
 
@@ -216,11 +222,12 @@ function SinglePlayerActivityRow({
     );
 }
 
-function GroupActivityRow({ durationByKey, event, isJoin }: any) {
+function GroupActivityRow({ durationByKey, event }: any) {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const members = getGroupMembers(event);
     const count = getGroupCount(event, members);
+    const friendCount = members.filter((member: any) => member.isFriend).length;
 
     return (
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
@@ -233,13 +240,16 @@ function GroupActivityRow({ durationByKey, event, isJoin }: any) {
                 >
                     <EventTime value={event?.created_at} />
                     <EventBadge event={event} />
-                    <span className="min-w-0 truncate font-normal">
-                        {t(
-                            isJoin
-                                ? 'view.game_log.sessions.players_joined'
-                                : 'view.game_log.sessions.players_left',
-                            { count }
-                        )}
+                    <span className="flex min-w-0 items-center gap-2 font-normal">
+                        <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1 tabular-nums">
+                            <UsersIcon className="size-3.5 shrink-0" />
+                            {count}
+                        </span>
+                        {friendCount > 0 ? (
+                            <span className="text-muted-foreground min-w-0 truncate">
+                                {`· ${t('view.game_log.sessions.friends_count', { count: friendCount })}`}
+                            </span>
+                        ) : null}
                     </span>
                     <ChevronRightIcon
                         data-icon="inline-end"
@@ -368,13 +378,7 @@ function SessionEventRow({
         event?.type === 'OnPlayerLeft' || event?.type === 'LeftGroup';
 
     if (event?.type === 'JoinGroup' || event?.type === 'LeftGroup') {
-        return (
-            <GroupActivityRow
-                durationByKey={durationByKey}
-                event={event}
-                isJoin={isJoin}
-            />
-        );
+        return <GroupActivityRow durationByKey={durationByKey} event={event} />;
     }
 
     if (event?.type === 'VideoPlay') {
@@ -393,10 +397,7 @@ function SessionEventRow({
     return null;
 }
 
-export function SessionEventGroups({
-    durationByKey = new Map(),
-    events
-}: any) {
+export function SessionEventGroups({ durationByKey = new Map(), events }: any) {
     const { t } = useTranslation();
     const visibleEvents = (events ?? []).filter((event: any) =>
         ['JoinGroup', 'LeftGroup', 'OnPlayerJoined', 'OnPlayerLeft'].includes(
