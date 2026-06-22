@@ -11,6 +11,18 @@ import {
 } from './preferencesStore';
 
 describe('preferencesStore normalizers', () => {
+    it('keeps startup auto update enabled by default', () => {
+        expect(DEFAULT_PREFERENCES.autoInstallUpdatesOnStartup).toBe(true);
+        expect(
+            normalizePreferenceSnapshot({}).autoInstallUpdatesOnStartup
+        ).toBe(true);
+        expect(
+            normalizePreferenceSnapshot({
+                autoInstallUpdatesOnStartup: false
+            }).autoInstallUpdatesOnStartup
+        ).toBe(false);
+    });
+
     it('normalizes table page sizes into a positive sorted unique list', () => {
         expect(
             normalizeTablePageSizes(['50', 10, 'bad', 10, 0, 1001, 25])

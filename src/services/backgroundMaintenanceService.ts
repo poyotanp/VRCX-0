@@ -5,6 +5,7 @@ import vrchatAuthRepository from '@/repositories/vrchatAuthRepository';
 import { clearFavoriteRemoteDetailsCache } from '@/services/favoriteRemoteDetailsCacheService';
 import { isHostCapabilityAvailable } from '@/services/hostCapabilityService';
 import i18n from '@/services/i18nService';
+import { installUpdateRelease } from '@/services/updateInstallService';
 import {
     canInstallUpdatesOnPlatform,
     checkInstallableUpdate,
@@ -69,6 +70,7 @@ type RefreshPlayerModerationsOptions = {
 
 type AppUpdateCheckOptions = {
     includeRegistryBackup?: boolean;
+    autoInstallOnStartup?: boolean;
 };
 
 type RuntimeScheduledTask = () => Promise<unknown>;
@@ -578,7 +580,8 @@ async function runRegistryBackupMaintenance(reason: string) {
 }
 
 async function checkForAppUpdate({
-    includeRegistryBackup = true
+    includeRegistryBackup = true,
+    autoInstallOnStartup = false
 }: AppUpdateCheckOptions = {}) {
     const hostCapabilities = useRuntimeStore.getState().hostCapabilities;
     const hostPlatform = hostCapabilities.platform;
@@ -625,6 +628,15 @@ async function checkForAppUpdate({
                 hostPlatform
             });
             if (update) {
+                const shouldAutoInstall =
+                    autoInstallOnStartup &&
+                    (await configRepository.getBool(
+                        'autoInstallUpdatesOnStartup',
+                        true
+                    ));
+                if (shouldAutoInstall && (await installUpdateRelease(update))) {
+                    return;
+                }
                 notifyAvailableUpdate(branch, update, update.version);
             } else {
                 setUpdaterCheckResult(false);
@@ -675,7 +687,10 @@ export async function runStartupMaintenance() {
         },
         () =>
             Promise.all([
-                checkForAppUpdate({ includeRegistryBackup: false }),
+                checkForAppUpdate({
+                    includeRegistryBackup: false,
+                    autoInstallOnStartup: true
+                }),
                 runRegistryBackupMaintenance('foreground-startup')
             ])
     );

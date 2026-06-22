@@ -49,6 +49,7 @@ export function createDefaultSettingsPrefs() {
         randomUserColours: false,
         notificationIconDot: true,
         showPostUpdateChangelogToast: true,
+        autoInstallUpdatesOnStartup: true,
         desktopToast: 'Never',
         afkDesktopToast: false,
         desktopNotificationSound: false,

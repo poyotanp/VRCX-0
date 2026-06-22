@@ -41,7 +41,10 @@ vi.mock('sonner', () => ({
 
 import { useRuntimeStore } from '@/state/runtimeStore';
 
-import { openOrInstallLatestAvailableUpdate } from './updateInstallService';
+import {
+    installUpdateRelease,
+    openOrInstallLatestAvailableUpdate
+} from './updateInstallService';
 
 describe('openOrInstallLatestAvailableUpdate', () => {
     beforeEach(() => {
@@ -95,5 +98,65 @@ describe('openOrInstallLatestAvailableUpdate', () => {
 
         expect(mocks.downloadAndInstallUpdate).toHaveBeenCalled();
         expect(mocks.openExternalLink).not.toHaveBeenCalled();
+    });
+
+    it('installs a passed Tauri update release and restarts', async () => {
+        mocks.downloadAndInstallUpdate.mockImplementation(
+            async (_release: unknown, options: any) => {
+                options.onDownloadProgress({
+                    downloadedBytes: 50,
+                    totalBytes: 100,
+                    percent: 50
+                });
+                return {};
+            }
+        );
+
+        const installed = await installUpdateRelease({
+            updaterType: 'tauri',
+            manifestUrl:
+                'https://github.com/Map1en/VRCX-0/releases/latest/download/latest_windows.json',
+            target: 'windows-x86_64-stable',
+            channel: 'Stable',
+            htmlUrl: 'https://github.com/Map1en/VRCX-0/releases/tag/v2.7.0',
+            canonicalVersion: '2.7.0',
+            displayVersion: '2.7.0',
+            tagName: 'v2.7.0',
+            displayName: 'VRCX-0 2.7.0',
+            prerelease: false,
+            publishedAt: '2026-06-22T00:00:00Z',
+            body: ''
+        });
+
+        expect(installed).toBe(true);
+        expect(mocks.downloadAndInstallUpdate).toHaveBeenCalled();
+        expect(mocks.toastCustom).toHaveBeenCalled();
+        expect(mocks.toastSuccess).toHaveBeenCalled();
+        expect(mocks.restartApplication).toHaveBeenCalled();
+    });
+
+    it('rejects a passed manual update release without installing', async () => {
+        const installed = await installUpdateRelease({
+            updaterType: 'manual',
+            channel: 'Stable',
+            htmlUrl: 'https://github.com/Map1en/VRCX-0/releases/tag/v2.7.0',
+            canonicalVersion: '2.7.0',
+            displayVersion: '2.7.0',
+            tagName: 'v2.7.0',
+            displayName: 'VRCX-0 2.7.0',
+            prerelease: false,
+            publishedAt: '2026-06-22T00:00:00Z',
+            body: ''
+        });
+
+        expect(installed).toBe(false);
+        expect(mocks.downloadAndInstallUpdate).not.toHaveBeenCalled();
+        expect(mocks.restartApplication).not.toHaveBeenCalled();
+        expect(mocks.toastError).toHaveBeenCalledWith(
+            'message.vrcx_updater.no_downloadable_releases_found',
+            expect.objectContaining({
+                position: 'bottom-right'
+            })
+        );
     });
 });

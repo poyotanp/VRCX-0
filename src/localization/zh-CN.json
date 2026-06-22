@@ -1839,6 +1839,8 @@
                     "tray": "最小化到系统托盘",
                     "background_mode": "最小化到托盘时切换到后台模式",
                     "background_mode_description": "最小化到系统托盘时切换到后台模式，内存占用降至约十分之一；恢复后部分页面状态可能重置。",
+                    "auto_install_updates_on_startup": "启动时自动更新",
+                    "auto_install_updates_on_startup_description": "打开后，VRCX-0 会在启动 app 时检查更新；如有可安装更新，将自动下载安装并重启完成更新。",
                     "disable_vr_overlay_gpu_acceleration": "禁用 VR 叠加界面的GPU加速",
                     "proxy": "代理服务器设置",
                     "proxy_description": "设置 VRCX-0 使用的代理服务器。更改代理后需要重启才能生效。",

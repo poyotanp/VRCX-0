@@ -15,8 +15,6 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 
 export const UPDATE_AVAILABLE_TOAST_ID = 'vrcx-update-available';
 
-let directInstallInFlight: Promise<void> | null = null;
-
 type DirectUpdateInstallOptions = {
     toastId?: string | number;
 };
@@ -79,8 +77,7 @@ function DownloadToastContent({
 }
 
 function readLatestUpdateRelease(): NormalizedRelease | null {
-    const release =
-        useRuntimeStore.getState().updateLoop.latestUpdaterRelease;
+    const release = useRuntimeStore.getState().updateLoop.latestUpdaterRelease;
     if (!isRecord(release)) {
         return null;
     }
@@ -110,20 +107,22 @@ function canInstallUpdateRelease(
 } {
     return Boolean(
         release &&
-            release.updaterType === 'tauri' &&
-            release.manifestUrl &&
-            release.target
+        release.updaterType === 'tauri' &&
+        release.manifestUrl &&
+        release.target
     );
 }
 
-export function installLatestAvailableUpdate({
-    toastId = UPDATE_AVAILABLE_TOAST_ID
-}: DirectUpdateInstallOptions = {}) {
+let directInstallInFlight: Promise<boolean> | null = null;
+
+export function installUpdateRelease(
+    release: NormalizedRelease | null,
+    { toastId = UPDATE_AVAILABLE_TOAST_ID }: DirectUpdateInstallOptions = {}
+) {
     if (directInstallInFlight) {
         return directInstallInFlight;
     }
 
-    const release = readLatestUpdateRelease();
     if (!canInstallUpdateRelease(release)) {
         toast.error(
             i18n.t('message.vrcx_updater.no_downloadable_releases_found'),
@@ -133,7 +132,7 @@ export function installLatestAvailableUpdate({
                 closeButton: true
             }
         );
-        return Promise.resolve();
+        return Promise.resolve(false);
     }
 
     const runtimeState = useRuntimeStore.getState();
@@ -153,12 +152,15 @@ export function installLatestAvailableUpdate({
     directInstallInFlight = (async () => {
         const updateLoadingToast = (progress: UpdateDownloadProgress) => {
             if (progress.percent >= 100) {
-                toast.loading(i18n.t('message.vrcx_updater.installing_update'), {
-                    id: toastId,
-                    duration: Infinity,
-                    position: 'bottom-right',
-                    dismissible: false
-                });
+                toast.loading(
+                    i18n.t('message.vrcx_updater.installing_update'),
+                    {
+                        id: toastId,
+                        duration: Infinity,
+                        position: 'bottom-right',
+                        dismissible: false
+                    }
+                );
                 return;
             }
 
@@ -188,9 +190,7 @@ export function installLatestAvailableUpdate({
             await downloadAndInstallUpdate(release, {
                 hostArch: getString(hostCapabilities.arch),
                 hostPlatform: getString(hostCapabilities.platform),
-                linuxPackageKind: getString(
-                    hostCapabilities.linuxPackageKind
-                ),
+                linuxPackageKind: getString(hostCapabilities.linuxPackageKind),
                 onDownloadProgress: updateLoadingToast
             });
             useRuntimeStore.getState().setUpdateLoopState({
@@ -208,6 +208,7 @@ export function installLatestAvailableUpdate({
                 }
             );
             await restartApplication();
+            return true;
         } catch (error) {
             toast.error(
                 userFacingErrorMessage(
@@ -221,6 +222,7 @@ export function installLatestAvailableUpdate({
                     closeButton: true
                 }
             );
+            return false;
         } finally {
             directInstallInFlight = null;
         }
@@ -229,13 +231,20 @@ export function installLatestAvailableUpdate({
     return directInstallInFlight;
 }
 
+export function installLatestAvailableUpdate(
+    options: DirectUpdateInstallOptions = {}
+) {
+    return installUpdateRelease(readLatestUpdateRelease(), options);
+}
+
 export async function openOrInstallLatestAvailableUpdate(
     options: DirectUpdateInstallOptions = {}
 ) {
     const release = readLatestUpdateRelease();
     if (canInstallUpdateRelease(release)) {
-        return installLatestAvailableUpdate(options);
+        return installUpdateRelease(release, options);
     }
 
     await openExternalLink(release?.htmlUrl || links.releases);
+    return false;
 }

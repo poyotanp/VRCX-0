@@ -1839,6 +1839,8 @@
                     "tray": "最小化到系統列",
                     "background_mode": "最小化到系統匣時切換到背景模式",
                     "background_mode_description": "關閉到系統匣時切換到背景模式，記憶體用量降至約十分之一；恢復後部分頁面狀態可能重設。",
+                    "auto_install_updates_on_startup": "啟動時自動更新",
+                    "auto_install_updates_on_startup_description": "開啟後，VRCX-0 會在啟動 app 時檢查更新；如有可安裝更新，將自動下載安裝並重新啟動完成更新。",
                     "disable_vr_overlay_gpu_acceleration": "停用 VR 嵌入介面 GPU 加速",
                     "proxy": "代理設定",
                     "proxy_description": "設定 VRCX-0 使用的代理伺服器。更改代理後需要重新啟動才能生效。",

@@ -1839,6 +1839,8 @@
                     "tray": "Minimize to Tray When Closing",
                     "background_mode": "Switch to Background Mode When Minimized to Tray",
                     "background_mode_description": "Automatically switch to background mode when minimized to tray. Reduces memory usage to 10% as before. Some page states may reset when restored.",
+                    "auto_install_updates_on_startup": "Auto-Update on Startup",
+                    "auto_install_updates_on_startup_description": "When enabled, VRCX-0 checks for updates when the app starts. If an installable update is available, it will download, install, and restart automatically.",
                     "disable_vr_overlay_gpu_acceleration": "Disable VR Overlay GPU Acceleration",
                     "proxy": "Proxy Settings",
                     "proxy_description": "Set the proxy server used by VRCX-0. Restart is required to apply a changed proxy.",

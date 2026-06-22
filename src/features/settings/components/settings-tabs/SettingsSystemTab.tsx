@@ -14,6 +14,7 @@ export function SettingsSystemTab({
     isCloseToTray,
     autoLoginDelayEnabled,
     autoLoginDelaySeconds,
+    autoInstallUpdatesOnStartup,
     backgroundModeEnabled,
     onStartAtWindowsStartupChange,
     onStartAsMinimizedChange,
@@ -21,6 +22,7 @@ export function SettingsSystemTab({
     onAutoLoginDelayEnabledChange,
     onPromptAutoLoginDelaySeconds,
     onBackgroundModeEnabledChange,
+    onAutoInstallUpdatesOnStartupChange,
     onProxySettings
 }: any) {
     const { t } = useTranslation();
@@ -85,6 +87,19 @@ export function SettingsSystemTab({
                         checked={backgroundModeEnabled}
                         disabled={!isCloseToTray}
                         onCheckedChange={onBackgroundModeEnabledChange}
+                    />
+                </Field>
+                <Field
+                    label={t(
+                        'view.settings.general.application.auto_install_updates_on_startup'
+                    )}
+                    description={t(
+                        'view.settings.general.application.auto_install_updates_on_startup_description'
+                    )}
+                >
+                    <Switch
+                        checked={autoInstallUpdatesOnStartup}
+                        onCheckedChange={onAutoInstallUpdatesOnStartupChange}
                     />
                 </Field>
                 <Field

@@ -14,6 +14,7 @@ export const ConfigKeys = {
     searchLimit: { type: 'int', default: 50000 },
     clearVRCXCacheFrequency: { type: 'int', default: 172800 },
     autoUpdateVRCX: { type: 'string', default: 'Auto Download' },
+    autoInstallUpdatesOnStartup: { type: 'bool', default: true },
     id: { type: 'string', default: '' },
     branch: { type: 'string', default: '' },
     telemetryInstallId: { type: 'string', default: null },

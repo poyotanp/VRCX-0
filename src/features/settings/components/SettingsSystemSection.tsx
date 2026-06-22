@@ -25,6 +25,7 @@ export function SettingsSystemSection({ system }: any) {
             isCloseToTray={prefs.isCloseToTray}
             autoLoginDelayEnabled={prefs.autoLoginDelayEnabled}
             autoLoginDelaySeconds={prefs.autoLoginDelaySeconds}
+            autoInstallUpdatesOnStartup={prefs.autoInstallUpdatesOnStartup}
             backgroundModeEnabled={prefs.backgroundModeEnabled}
             onStartAtWindowsStartupChange={(checked: any) => {
                 savePreferenceValue('isStartAtWindowsStartup', checked, () =>
@@ -52,6 +53,13 @@ export function SettingsSystemSection({ system }: any) {
                 saveBoolPreference(
                     'backgroundModeEnabled',
                     'backgroundModeEnabled',
+                    checked
+                );
+            }}
+            onAutoInstallUpdatesOnStartupChange={(checked: any) => {
+                saveBoolPreference(
+                    'autoInstallUpdatesOnStartup',
+                    'autoInstallUpdatesOnStartup',
                     checked
                 );
             }}
