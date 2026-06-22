@@ -947,7 +947,7 @@
                         "wayvr_notifications": "Notificações do WayVR",
                         "ovrtoolkit_hud_notifications": "Notificações HUD do OVR Toolkit",
                         "ovrtoolkit_wrist_notifications": "Notificações de Pulso do OVR Toolkit",
-                        "user_images": "Imagens de Usuário (Mais Lento)",
+                        "user_images": "Imagens de Usuário",
                         "notification_opacity": "Opacidade da Notificação",
                         "notification_timeout": "Tempo Limite da Notificação"
                     },

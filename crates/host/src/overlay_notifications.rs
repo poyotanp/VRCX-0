@@ -16,8 +16,6 @@ pub struct OvrToolkit {
 type WsSender =
     futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
 
-const OVR_TOOLKIT_ICON_BYTES: &[u8] = include_bytes!("../assets/icon.png");
-const XS_NOTIFICATION_ICON_BYTES: &[u8] = include_bytes!("../assets/xs_notification_icon.png");
 const MAX_UDP_PAYLOAD_BYTES: usize = 65_507;
 
 impl OvrToolkit {
@@ -109,11 +107,10 @@ fn xs_notification_payload(
     opacity: f64,
     image: Option<&str>,
 ) -> serde_json::Value {
-    let icon = image.map(str::trim).filter(|value| !value.is_empty());
-    let use_base64_icon = icon.is_none();
-    let icon = icon
-        .map(ToOwned::to_owned)
-        .unwrap_or_else(|| B64.encode(XS_NOTIFICATION_ICON_BYTES));
+    let icon = image
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or_default();
     let height = xs_notification_height(content);
     serde_json::json!({
         "messageType": 1,
@@ -124,7 +121,7 @@ fn xs_notification_payload(
         "timeout": timeout,
         "volume": 0.0,
         "audioPath": "",
-        "useBase64Icon": use_base64_icon,
+        "useBase64Icon": false,
         "icon": icon,
         "opacity": opacity
     })
@@ -145,7 +142,7 @@ fn ovr_toolkit_icon_base64(image: Option<&str>) -> String {
         .filter(|path| !path.is_empty() && Path::new(path).exists())
         .and_then(|path| std::fs::read(path).ok())
         .map(|bytes| B64.encode(bytes))
-        .unwrap_or_else(|| B64.encode(OVR_TOOLKIT_ICON_BYTES))
+        .unwrap_or_default()
 }
 
 async fn connect_ws() -> Result<WsSender, String> {
@@ -196,10 +193,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn xs_default_notification_payload_fits_udp_datagram() {
+    fn xs_payload_without_image_omits_icon() {
         let payload = xs_notification_payload("VRCX-0", "Friend joined a world", 3, 1.0, None);
-        let bytes = serde_json::to_vec(&payload).expect("payload should serialize");
 
+        assert_eq!(payload["useBase64Icon"], false);
+        assert_eq!(payload["icon"], "");
+
+        let bytes = serde_json::to_vec(&payload).expect("payload should serialize");
         assert!(
             bytes.len() <= MAX_UDP_PAYLOAD_BYTES,
             "payload is {} bytes",
@@ -208,7 +208,7 @@ mod tests {
     }
 
     #[test]
-    fn xs_image_path_payload_does_not_embed_default_icon() {
+    fn xs_image_path_payload_uses_path_icon() {
         let payload = xs_notification_payload(
             "VRCX-0",
             "Friend joined a world",
@@ -219,5 +219,10 @@ mod tests {
 
         assert_eq!(payload["useBase64Icon"], false);
         assert_eq!(payload["icon"], "C:/avatar.png");
+    }
+
+    #[test]
+    fn ovr_toolkit_icon_is_empty_without_image() {
+        assert_eq!(ovr_toolkit_icon_base64(None), "");
     }
 }

@@ -278,7 +278,7 @@
                         "wayvr_notifications": "Thông báo WayVR",
                         "ovrtoolkit_hud_notifications": "OVR Toolkit HUD Notifications",
                         "ovrtoolkit_wrist_notifications": "OVR Toolkit Wrist Notifications",
-                        "user_images": "Ảnh người chơi (chậm hơn)",
+                        "user_images": "Ảnh người chơi",
                         "notification_timeout": "Thời gian chờ thông báo tối đa (Timeout)"
                     },
                     "conditions": {

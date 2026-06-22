@@ -111,9 +111,6 @@ export function SettingsVrTab({
                     label={t(
                         'view.settings.notifications.notifications.vr_notifications.user_images'
                     )}
-                    description={t(
-                        'view.settings.notifications.notifications.vr_notifications.user_images_description'
-                    )}
                 >
                     <Switch
                         checked={Boolean(prefs.imageNotifications)}

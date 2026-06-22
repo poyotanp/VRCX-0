@@ -2059,8 +2059,7 @@
                         "ovrtoolkit_hud_notifications": "OVR Toolkit HUD 上での通知",
                         "ovrtoolkit_wrist_notifications": "OVR Toolkit 手首上での通知",
                         "notification_filters": "VR オーバーレイ通知フィルター",
-                        "user_images": "ユーザー画像を使用 (遅延が発生します)",
-                        "user_images_description": "パフォーマンスに影響を与える可能性があります",
+                        "user_images": "ユーザー画像を使用",
                         "notification_opacity": "通知の不透明度",
                         "notification_timeout": "通知のタイムアウト時間"
                     },

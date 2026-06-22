@@ -441,7 +441,7 @@
                         "wayvr_notifications": "Уведомления WayVR",
                         "ovrtoolkit_hud_notifications": "OVR Toolkit Уведомления в HUD",
                         "ovrtoolkit_wrist_notifications": "OVR Toolkit Уведомления на запястье",
-                        "user_images": "Иконка пользователя (медленнее)",
+                        "user_images": "Иконка пользователя",
                         "notification_opacity": "Прозрачность уведомлений",
                         "notification_timeout": "Время показа уведомлений"
                     },

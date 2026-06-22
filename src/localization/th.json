@@ -412,7 +412,7 @@
                         "wayvr_notifications": "การแจ้งเตือนของ WayVR",
                         "ovrtoolkit_hud_notifications": "การแจ้งเตือน HUD ของ OVR Toolkit",
                         "ovrtoolkit_wrist_notifications": "การแจ้งเตือนบนข้อมือของ OVR Toolkit",
-                        "user_images": "รูปภาพผู้ใช้ (ช้าลง)",
+                        "user_images": "รูปภาพผู้ใช้",
                         "notification_opacity": "ความโปร่งใสของการแจ้งเตือน",
                         "notification_timeout": "ระยะเวลาการแจ้งเตือน"
                     },

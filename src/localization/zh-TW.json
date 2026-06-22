@@ -2059,8 +2059,7 @@
                         "ovrtoolkit_hud_notifications": "OVR Toolkit HUD 通知",
                         "ovrtoolkit_wrist_notifications": "OVR Toolkit 手腕通知",
                         "notification_filters": "VR 疊加通知過濾器",
-                        "user_images": "用戶照片（較慢）",
-                        "user_images_description": "可能會影響效能。",
+                        "user_images": "用戶照片",
                         "notification_opacity": "通知不透明度",
                         "notification_timeout": "通知時長"
                     },

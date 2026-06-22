@@ -401,7 +401,7 @@
                         "wayvr_notifications": "Notificaciones de WayVR",
                         "ovrtoolkit_hud_notifications": "Notificaciones de HUD de OVR Toolkit",
                         "ovrtoolkit_wrist_notifications": "Notificaciones de Muñeca de OVR Toolkit",
-                        "user_images": "Imágenes de Usuario (más lento)",
+                        "user_images": "Imágenes de Usuario",
                         "notification_timeout": "Tiempo de Espera de Notificación"
                     },
                     "conditions": {

@@ -2060,7 +2060,6 @@
                         "ovrtoolkit_wrist_notifications": "OVR Toolkit Wrist Notifications",
                         "notification_filters": "VR Overlay Notification Filters",
                         "user_images": "Show User Icons",
-                        "user_images_description": "May impact performance.",
                         "notification_opacity": "Notification Opacity",
                         "notification_timeout": "Notification Timeout"
                     },

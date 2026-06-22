@@ -278,7 +278,7 @@
                         "wayvr_notifications": "WayVR értesítések",
                         "ovrtoolkit_hud_notifications": "OVR Toolkit HUD értesítések",
                         "ovrtoolkit_wrist_notifications": "OVR Toolkit csukló értesítések",
-                        "user_images": "Felhasználói képek (lassabb)",
+                        "user_images": "Felhasználói képek",
                         "notification_timeout": "Értesítés időtúllépése"
                     },
                     "conditions": {

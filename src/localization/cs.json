@@ -301,7 +301,7 @@
                         "xsoverlay_notifications": "XSOverlay oznámení",
                         "ovrtoolkit_hud_notifications": "OVR Toolkit HUD Oznámení",
                         "ovrtoolkit_wrist_notifications": "Oznámení náramku OVR Toolkit",
-                        "user_images": "Obrázky uživatelů (pomalejší)",
+                        "user_images": "Obrázky uživatelů",
                         "notification_timeout": "Časový limit oznámení"
                     },
                     "conditions": {
