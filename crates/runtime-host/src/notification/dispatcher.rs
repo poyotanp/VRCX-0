@@ -10,8 +10,10 @@ use vrcx_0_application::{
 use vrcx_0_core::location::{format_display_location, is_meaningful_world_name, parse_location};
 use vrcx_0_host::overlay_notifications::{send_xs_notification, OvrToolkit};
 use vrcx_0_persistence::config::ConfigRepository;
+use vrcx_0_persistence::DatabaseService;
 use vrcx_0_vrchat_client::web_client::WebExecuteRequest;
 
+use crate::notification::user_image::UserImageCache;
 use crate::vr_overlay::{OverlayLocale, OverlayLocalizer};
 
 const APP_LANGUAGE_CONFIG_KEY: &str = "appLanguage";
@@ -177,10 +179,12 @@ impl DesktopNotifier for DesktopNotifierSlot {
 pub struct NotificationDispatcher {
     session: HostSessionRuntime,
     config: ConfigRepository,
+    db: Arc<DatabaseService>,
     image_cache: Arc<ImageCache>,
     ovrt: Arc<OvrToolkit>,
     web: Arc<WebClient>,
     world_cache: Arc<WorldCache>,
+    user_image_cache: Arc<UserImageCache>,
     desktop: Arc<dyn DesktopNotifier>,
     event_bus: RuntimeEventBus,
     diagnostics: RuntimeDiagnostics,
@@ -190,6 +194,7 @@ pub struct NotificationDispatcher {
 pub struct NotificationDispatcherDeps {
     pub session: HostSessionRuntime,
     pub config: ConfigRepository,
+    pub db: Arc<DatabaseService>,
     pub image_cache: Arc<ImageCache>,
     pub web: Arc<WebClient>,
     pub world_cache: Arc<WorldCache>,
@@ -204,10 +209,12 @@ impl NotificationDispatcher {
         Self {
             session: deps.session,
             config: deps.config,
+            db: deps.db,
             image_cache: deps.image_cache,
             ovrt: Arc::new(OvrToolkit::new()),
             web: deps.web,
             world_cache: deps.world_cache,
+            user_image_cache: Arc::new(UserImageCache::new()),
             desktop: deps.desktop,
             event_bus: deps.event_bus,
             diagnostics: deps.diagnostics,
@@ -237,6 +244,9 @@ impl OverlayActivitySink for NotificationDispatcher {
         let image_cache = Arc::clone(&self.image_cache);
         let ovrt = Arc::clone(&self.ovrt);
         let web = Arc::clone(&self.web);
+        let db = Arc::clone(&self.db);
+        let user_image_cache = Arc::clone(&self.user_image_cache);
+        let allow_user_icon = config_bool(&self.config, "displayVRCPlusIconsAsAvatar", true);
         let desktop = Arc::clone(&self.desktop);
         let event_bus = self.event_bus.clone();
         let diagnostics = self.diagnostics.clone();
@@ -250,6 +260,17 @@ impl OverlayActivitySink for NotificationDispatcher {
                 &mut delivery,
             )
             .await;
+            if preferences.image_notifications && plan.needs_local_image() {
+                resolve_delivery_actor_image(
+                    user_image_cache.as_ref(),
+                    web.as_ref(),
+                    db.as_ref(),
+                    &endpoint,
+                    allow_user_icon,
+                    &mut delivery,
+                )
+                .await;
+            }
             let render = render_delivery(&delivery, locale);
             dispatch_rendered_notification(
                 delivery,
@@ -404,6 +425,32 @@ async fn resolve_delivery_world_name(
     if !display_location.trim().is_empty() {
         delivery.entry.content.display_location = display_location;
     }
+}
+
+async fn resolve_delivery_actor_image(
+    user_image_cache: &UserImageCache,
+    web: &WebClient,
+    db: &DatabaseService,
+    endpoint: &str,
+    allow_user_icon: bool,
+    delivery: &mut OverlayActivityDelivery,
+) {
+    if !delivery.entry.content.image_url.trim().is_empty() {
+        return;
+    }
+    let Some(image_url) = user_image_cache
+        .resolve(
+            web,
+            db,
+            endpoint,
+            delivery.entry.actor_user_id.trim(),
+            allow_user_icon,
+        )
+        .await
+    else {
+        return;
+    };
+    delivery.entry.content.image_url = image_url;
 }
 
 fn render_delivery(

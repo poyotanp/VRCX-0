@@ -1,4 +1,5 @@
 mod dispatcher;
+mod user_image;
 
 pub use dispatcher::{
     decide_notification_plan, filter_generic_webhook_payload, parse_webhook_fields,

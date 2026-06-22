@@ -113,6 +113,7 @@ impl RuntimeHostContext {
             Arc::new(NotificationDispatcher::new(NotificationDispatcherDeps {
                 session: session.clone(),
                 config: config.clone(),
+                db: Arc::clone(&db),
                 image_cache: Arc::clone(&image_cache),
                 web: Arc::clone(&web),
                 world_cache: Arc::clone(&world_cache),
