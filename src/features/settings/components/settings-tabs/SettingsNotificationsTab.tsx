@@ -74,6 +74,13 @@ const WEBHOOK_PAYLOAD_FIELDS: Array<[string, string]> = [
 
 const DEFAULT_WEBHOOK_FIELDS = WEBHOOK_PAYLOAD_FIELDS.map(([field]) => field);
 
+type WebhookPayloadFieldsDialogProps = {
+    webhookEnabled: boolean;
+    webhookFormat: string;
+    webhookFields: unknown;
+    onWebhookFieldsChange(value: string): void;
+};
+
 function parseWebhookFields(value: unknown): string[] {
     const raw = String(value || '').trim();
     let parsed: unknown[] = [];
@@ -148,10 +155,6 @@ export function SettingsNotificationsTab({
     onSpeakNotificationTts
 }: any) {
     const { t } = useTranslation();
-    const selectedWebhookFields = parseWebhookFields(prefs.webhookFields);
-    const webhookFieldsDisabled =
-        !prefs.webhookEnabled ||
-        (prefs.webhookFormat || 'generic') !== 'generic';
     return (
         <SettingsTabContent value="notifications">
             <SettingsGroup
@@ -185,50 +188,6 @@ export function SettingsNotificationsTab({
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                </Field>
-
-                <Field
-                    label={t(
-                        'view.settings.notifications.notifications.webhook.fields'
-                    )}
-                >
-                    <div className="grid max-w-2xl grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        {WEBHOOK_PAYLOAD_FIELDS.map(([field, labelKey]) => (
-                            <label
-                                key={field}
-                                className="flex min-h-9 items-center gap-2 text-sm"
-                            >
-                                <Checkbox
-                                    checked={selectedWebhookFields.includes(
-                                        field
-                                    )}
-                                    disabled={webhookFieldsDisabled}
-                                    onCheckedChange={(checked: any) => {
-                                        onWebhookFieldsChange(
-                                            formatWebhookFields(
-                                                updateWebhookFields(
-                                                    selectedWebhookFields,
-                                                    field,
-                                                    Boolean(checked)
-                                                )
-                                            )
-                                        );
-                                    }}
-                                />
-                                <span
-                                    className={
-                                        webhookFieldsDisabled
-                                            ? 'text-muted-foreground'
-                                            : undefined
-                                    }
-                                >
-                                    {t(
-                                        `view.settings.notifications.notifications.webhook.${labelKey}`
-                                    )}
-                                </span>
-                            </label>
-                        ))}
-                    </div>
                 </Field>
 
                 <Field
@@ -410,7 +369,6 @@ export function SettingsNotificationsTab({
                         onValueChange={onWebhookFormatChange}
                     >
                         <div className="flex items-center gap-2">
-                            <WebhookPayloadExamplesDialog />
                             <SelectTrigger
                                 id="settings-webhook-format"
                                 className="w-56"
@@ -433,6 +391,22 @@ export function SettingsNotificationsTab({
                             </SelectContent>
                         </div>
                     </Select>
+                </Field>
+
+                <Field
+                    label={t(
+                        'view.settings.notifications.notifications.webhook.fields'
+                    )}
+                    description={t(
+                        'view.settings.notifications.notifications.webhook.fields_description'
+                    )}
+                >
+                    <WebhookPayloadFieldsDialog
+                        webhookEnabled={Boolean(prefs.webhookEnabled)}
+                        webhookFormat={prefs.webhookFormat || 'generic'}
+                        webhookFields={prefs.webhookFields}
+                        onWebhookFieldsChange={onWebhookFieldsChange}
+                    />
                 </Field>
 
                 <Field
@@ -600,16 +574,29 @@ export function SettingsNotificationsTab({
     );
 }
 
-function WebhookPayloadExamplesDialog() {
+function WebhookPayloadFieldsDialog({
+    webhookEnabled,
+    webhookFormat,
+    webhookFields,
+    onWebhookFieldsChange
+}: WebhookPayloadFieldsDialogProps) {
     const { t } = useTranslation();
+    const selectedWebhookFields = parseWebhookFields(webhookFields);
+    const fieldsDisabled = !webhookEnabled || webhookFormat !== 'generic';
+    function handleFieldCheckedChange(field: string, checked: boolean) {
+        onWebhookFieldsChange(
+            formatWebhookFields(
+                updateWebhookFields(selectedWebhookFields, field, checked)
+            )
+        );
+    }
+
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button type="button" variant="outline" size="sm">
                     <CircleHelpIcon data-icon="inline-start" />
-                    {t(
-                        'view.settings.notifications.notifications.webhook.format_help'
-                    )}
+                    {t('common.actions.configure')}
                 </Button>
             </DialogTrigger>
             <DialogContent className="flex max-h-[calc(100vh-4rem)] min-h-0 flex-col sm:max-w-3xl">
@@ -627,6 +614,60 @@ function WebhookPayloadExamplesDialog() {
                 </DialogHeader>
 
                 <div className="flex min-h-0 flex-col gap-4 overflow-auto">
+                    <section className="flex min-w-0 flex-col gap-3 rounded-md border p-3">
+                        <div className="flex flex-col gap-1">
+                            <div className="text-sm font-medium">
+                                {t(
+                                    'view.settings.notifications.notifications.webhook.fields'
+                                )}
+                            </div>
+                            <div className="text-muted-foreground text-sm">
+                                {t(
+                                    'view.settings.notifications.notifications.webhook.fields_dialog_note'
+                                )}
+                            </div>
+                            {fieldsDisabled ? (
+                                <div className="text-muted-foreground text-sm">
+                                    {t(
+                                        'view.settings.notifications.notifications.webhook.fields_disabled_note'
+                                    )}
+                                </div>
+                            ) : null}
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            {WEBHOOK_PAYLOAD_FIELDS.map(([field, labelKey]) => (
+                                <label
+                                    key={field}
+                                    className="flex min-h-9 items-center gap-2 text-sm"
+                                >
+                                    <Checkbox
+                                        checked={selectedWebhookFields.includes(
+                                            field
+                                        )}
+                                        disabled={fieldsDisabled}
+                                        onCheckedChange={(checked: any) => {
+                                            handleFieldCheckedChange(
+                                                field,
+                                                Boolean(checked)
+                                            );
+                                        }}
+                                    />
+                                    <span
+                                        className={
+                                            fieldsDisabled
+                                                ? 'text-muted-foreground'
+                                                : undefined
+                                        }
+                                    >
+                                        {t(
+                                            `view.settings.notifications.notifications.webhook.${labelKey}`
+                                        )}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </section>
+
                     <div className="grid gap-3 lg:grid-cols-2">
                         <WebhookExampleBlock
                             title={t(
