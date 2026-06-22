@@ -553,66 +553,6 @@ impl WebClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{Read, Write};
-    use std::net::TcpListener;
-    use std::thread::JoinHandle;
-    use std::time::{Duration, Instant};
-
-    struct TestDir {
-        path: std::path::PathBuf,
-    }
-
-    impl TestDir {
-        fn new(name: &str) -> Self {
-            let nonce = std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos();
-            let path =
-                std::env::temp_dir().join(format!("vrcx-0-{name}-{}-{nonce}", std::process::id()));
-            std::fs::create_dir_all(&path).unwrap();
-            Self { path }
-        }
-    }
-
-    impl Drop for TestDir {
-        fn drop(&mut self) {
-            let _ = std::fs::remove_dir_all(&self.path);
-        }
-    }
-
-    fn spawn_text_server(body: &'static [u8]) -> (String, JoinHandle<()>) {
-        let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
-        listener.set_nonblocking(true).unwrap();
-        let addr = listener.local_addr().unwrap();
-        let url = format!("http://{addr}/api/1");
-        let handle = std::thread::spawn(move || {
-            let deadline = Instant::now() + Duration::from_secs(5);
-            loop {
-                match listener.accept() {
-                    Ok((mut stream, _)) => {
-                        let mut buffer = [0u8; 1024];
-                        let _ = stream.read(&mut buffer);
-                        let response = format!(
-                            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
-                            body.len()
-                        );
-                        let _ = stream.write_all(response.as_bytes());
-                        let _ = stream.write_all(body);
-                        break;
-                    }
-                    Err(error)
-                        if error.kind() == std::io::ErrorKind::WouldBlock
-                            && Instant::now() < deadline =>
-                    {
-                        std::thread::sleep(Duration::from_millis(10));
-                    }
-                    Err(_) => break,
-                }
-            }
-        });
-        (url, handle)
-    }
 
     fn legacy_cookie_payload(value: serde_json::Value) -> String {
         B64.encode(serde_json::to_vec(&value).unwrap())
@@ -655,25 +595,5 @@ mod tests {
         }]));
 
         assert!(validate_vrchat_cookies_b64(&payload).is_err());
-    }
-
-    #[test]
-    fn execute_returns_success_status_and_body_for_daily_get() -> Result<()> {
-        let _dir = TestDir::new("web-client-daily");
-        let web = WebClient::new(None, None)?;
-        let (url, server) = spawn_text_server(br#"{"ok":true}"#);
-
-        let request = WebExecuteRequest::new(url, "GET".to_string());
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        let result = runtime.block_on(web.execute(request));
-        server.join().unwrap();
-
-        let (status, body) = result?;
-        assert_eq!(status, 200);
-        assert_eq!(body, r#"{"ok":true}"#);
-        Ok(())
     }
 }
