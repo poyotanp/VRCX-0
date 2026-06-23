@@ -60,7 +60,12 @@ export function SettingsSystemTab({
                         onCheckedChange={onStartAsMinimizedChange}
                     />
                 </Field>
-                <Field label={t('view.settings.general.application.tray')}>
+                <Field
+                    label={t('view.settings.general.application.tray')}
+                    description={t(
+                        'view.settings.general.application.tray_description'
+                    )}
+                >
                     <Switch
                         checked={isCloseToTray}
                         onCheckedChange={onCloseToTrayChange}

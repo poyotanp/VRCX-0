@@ -1884,6 +1884,7 @@
                     "startup_system_description": "Creates a desktop autostart entry that launches VRCX-0 with --autostart.",
                     "minimized": "Start Minimized at System Startup",
                     "tray": "Minimize to Tray When Closing",
+                    "tray_description": "When enabled, clicking the close button (X) minimizes VRCX-0 to the system tray instead of quitting. When disabled, clicking X quits VRCX-0.",
                     "background_mode": "Switch to Background Mode When Minimized to Tray",
                     "background_mode_description": "Automatically switch to background mode when minimized to tray. Reduces memory usage to 10% as before. Some page states may reset when restored.",
                     "auto_install_updates_on_startup": "Auto-Update on Startup",
