@@ -120,7 +120,6 @@ impl AssistantController {
         if base_url.is_empty() {
             return Err(HarnessError::NotConfigured);
         }
-        tracing::info!(base_url = %base_url, has_key = !api_key.is_empty(), "assistant: list_models requested");
         let client = LlmClient::new(base_url, api_key, saved.model);
         Ok(client.list_models().await?)
     }

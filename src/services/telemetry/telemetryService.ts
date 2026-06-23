@@ -1,6 +1,10 @@
 import configRepository from '@/repositories/configRepository';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
+import {
+    resetAssistantHealth,
+    sendAssistantHealth
+} from './telemetryAssistantHealth';
 import { postTelemetry } from './telemetryClient';
 import {
     TELEMETRY_BASIC_INFO_REPORTED_VERSION_CONFIG_KEY,
@@ -211,6 +215,7 @@ export function startTelemetryLifecycle(): () => void {
             if (activeSession) {
                 silently(sendViewModeUsage(activeSession));
                 silently(sendPageReach(activeSession));
+                silently(sendAssistantHealth(activeSession));
             }
         }, TELEMETRY_HEARTBEAT_INTERVAL_MS);
     })().catch(() => {});
@@ -230,11 +235,13 @@ export function startTelemetryLifecycle(): () => void {
             silently(sendSessionEndHeartbeat(activeSession));
             silently(sendViewModeUsage(activeSession));
             silently(sendPageReach(activeSession));
+            silently(sendAssistantHealth(activeSession));
         }
         if (lastVrchatRunning === true && activeSession) {
             requestVrchatLifecycle(false, { force: true });
         }
         resetViewModeUsage();
         resetPageReach();
+        resetAssistantHealth();
     };
 }

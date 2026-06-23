@@ -118,7 +118,7 @@ impl SessionStore {
                 *self.seq.lock().unwrap() = max_seq;
             }
             Err(error) => {
-                tracing::warn!(%error, "assistant: failed to load persisted sessions");
+                tracing::error!(%error, "assistant: failed to load persisted sessions");
             }
         }
     }
@@ -130,7 +130,7 @@ impl SessionStore {
         if let Err(error) =
             assistant::assistant_session_upsert(db, id, title, created_at, updated_at)
         {
-            tracing::warn!(%error, "assistant: failed to persist session");
+            tracing::error!(%error, "assistant: failed to persist session");
         }
     }
 
@@ -164,7 +164,7 @@ impl SessionStore {
             &message.content,
             &message.created_at,
         ) {
-            tracing::warn!(%error, "assistant: failed to persist message");
+            tracing::error!(%error, "assistant: failed to persist message");
         }
     }
 
@@ -239,7 +239,7 @@ impl SessionStore {
         self.sessions.lock().unwrap().remove(session_id);
         if let Some(db) = self.db.as_ref() {
             if let Err(error) = assistant::assistant_session_delete(db, session_id) {
-                tracing::warn!(%error, "assistant: failed to delete persisted session");
+                tracing::error!(%error, "assistant: failed to delete persisted session");
             }
         }
     }

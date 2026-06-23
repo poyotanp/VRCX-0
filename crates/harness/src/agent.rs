@@ -95,7 +95,7 @@ pub(crate) async fn run_turn(ctx: TurnContext) {
                 .await;
             let resolved = resolve_tool_outcome(outcome);
             if !resolved.ok {
-                tracing::warn!(
+                tracing::error!(
                     tool = %call.function.name,
                     args = %call.function.arguments,
                     detail = %resolved.summary,

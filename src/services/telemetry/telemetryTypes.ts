@@ -65,7 +65,6 @@ export type TelemetryViewModeUsagePayload = TelemetryContextPayload & {
 };
 
 export type TelemetryPageRouteKey =
-    | 'feed'
     | 'friends_locations'
     | 'game_log'
     | 'instance_history'
@@ -88,8 +87,7 @@ export type TelemetryPageRouteKey =
     | 'screenshot_metadata'
     | 'vrchat_log'
     | 'themes'
-    | 'settings'
-    | 'login';
+    | 'settings';
 
 export type TelemetryRouteErrorClass = 'load_fail' | 'render_crash';
 
@@ -102,4 +100,9 @@ export type TelemetryPageUsageEntry = {
 
 export type TelemetryPageUsagePayload = TelemetryContextPayload & {
     routes: TelemetryPageUsageEntry[];
+};
+
+export type TelemetryAssistantHealthPayload = TelemetryContextPayload & {
+    toolErrors: number;
+    turnErrors: number;
 };

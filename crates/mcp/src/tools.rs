@@ -1946,7 +1946,13 @@ mod time_window_tests {
 
     #[test]
     fn relative_strings_produce_a_lower_bound() {
-        for phrase in ["today", "this week", "last month", "last 7 days", "past 3 weeks"] {
+        for phrase in [
+            "today",
+            "this week",
+            "last month",
+            "last 7 days",
+            "past 3 weeks",
+        ] {
             let window = time_window_from_value(&serde_json::json!(phrase));
             assert!(window.from.is_some(), "{phrase} should set a lower bound");
         }
@@ -1956,7 +1962,10 @@ mod time_window_tests {
     fn all_history_phrases_stay_empty() {
         for phrase in ["all", "all time", "ever", ""] {
             let window = time_window_from_value(&serde_json::json!(phrase));
-            assert!(window.from.is_none() && window.to.is_none(), "{phrase} should be unbounded");
+            assert!(
+                window.from.is_none() && window.to.is_none(),
+                "{phrase} should be unbounded"
+            );
         }
     }
 

@@ -75,6 +75,68 @@ describe('buildConfigSnapshot', () => {
             themeMode: 'dark'
         });
     });
+
+    async function themeCategory(options: {
+        bools?: Record<string, boolean>;
+        strings?: Record<string, string>;
+    }): Promise<string> {
+        mockDeps({ anonymous: true, ...options });
+        const { buildConfigSnapshot } =
+            await import('./telemetryConfigSnapshot');
+        return (await buildConfigSnapshot()).themeMode;
+    }
+
+    it('reports the built-in dark / light mode, not community theme names', async () => {
+        expect(await themeCategory({ strings: { ThemeMode: 'light' } })).toBe(
+            'light'
+        );
+        vi.resetModules();
+        expect(await themeCategory({ strings: { ThemeMode: 'midnight' } })).toBe(
+            'dark'
+        );
+    });
+
+    it('resolves system theme mode against the OS preference', async () => {
+        vi.stubGlobal('window', {
+            matchMedia: () => ({ matches: true })
+        });
+        expect(await themeCategory({ strings: { ThemeMode: 'system' } })).toBe(
+            'dark'
+        );
+    });
+
+    it('reports community theme as a single anonymous bucket', async () => {
+        expect(
+            await themeCategory({
+                bools: { VRCX_communityThemeEnabled: true },
+                strings: { ThemeMode: 'light' }
+            })
+        ).toBe('community');
+    });
+
+    it('distinguishes image-source and custom backgrounds', async () => {
+        expect(
+            await themeCategory({
+                bools: { VRCX_backgroundImageEnabled: true },
+                strings: { VRCX_backgroundImageMode: 'daily' }
+            })
+        ).toBe('background_image');
+        vi.resetModules();
+        expect(
+            await themeCategory({
+                bools: { VRCX_backgroundImageEnabled: true },
+                strings: { VRCX_backgroundImageMode: 'custom' }
+            })
+        ).toBe('background_custom');
+    });
+
+    it('treats the legacy official background flag as an image-source background', async () => {
+        expect(
+            await themeCategory({
+                bools: { VRCX_officialBackgroundEnabled: true }
+            })
+        ).toBe('background_image');
+    });
 });
 
 describe('sendConfigSnapshot', () => {

@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 
 import { tauriClient } from '@/platform/tauri/client';
+import {
+    recordAssistantToolError,
+    recordAssistantTurnError
+} from '@/services/telemetry/telemetryAssistantHealth';
 import { useAssistantChatStore } from '@/state/assistantChatStore';
 
 import type {
@@ -32,14 +36,22 @@ export function useAssistantEvents(): void {
                 store.applyDelta(payload as AssistantDeltaEvent),
             assistantToolCall: (payload) =>
                 store.applyToolCall(payload as AssistantToolCallEvent),
-            assistantToolResult: (payload) =>
-                store.applyToolResult(payload as AssistantToolResultEvent),
+            assistantToolResult: (payload) => {
+                const event = payload as AssistantToolResultEvent;
+                store.applyToolResult(event);
+                if (!event.ok) {
+                    recordAssistantToolError();
+                }
+            },
             assistantTurnEntities: (payload) =>
                 store.applyTurnEntities(payload as AssistantTurnEntitiesEvent),
             assistantDone: (payload) =>
                 store.applyDone(payload as AssistantDoneEvent),
-            assistantError: (payload) =>
-                store.applyError(payload as AssistantErrorEvent)
+            assistantError: (payload) => {
+                const event = payload as AssistantErrorEvent;
+                store.applyError(event);
+                recordAssistantTurnError(event.code);
+            }
         };
 
         for (const name of EVENT_NAMES) {

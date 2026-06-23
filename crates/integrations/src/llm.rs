@@ -204,7 +204,6 @@ impl LlmClient {
     /// List the model ids the configured endpoint advertises (`GET /models`).
     pub async fn list_models(&self) -> Result<Vec<String>, LlmError> {
         let url = format!("{}/models", self.base_url);
-        tracing::info!(url = %url, has_key = !self.api_key.is_empty(), "assistant: fetching models");
         let response = self.authorized(self.http.get(&url)).send().await?;
         let status = response.status();
         if !status.is_success() {
@@ -229,7 +228,6 @@ impl LlmClient {
             .filter_map(|model| model.id)
             .collect();
         models.sort();
-        tracing::info!(url = %url, count = models.len(), "assistant: models fetched");
         Ok(models)
     }
 

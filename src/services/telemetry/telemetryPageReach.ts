@@ -9,7 +9,6 @@ import type {
 } from './telemetryTypes';
 
 const EXACT_ROUTES: Record<string, TelemetryPageRouteKey> = {
-    '/feed': 'feed',
     '/friends-locations': 'friends_locations',
     '/game-log': 'game_log',
     '/instance-history': 'instance_history',
@@ -31,8 +30,7 @@ const EXACT_ROUTES: Record<string, TelemetryPageRouteKey> = {
     '/tools/screenshot-metadata': 'screenshot_metadata',
     '/tools/vrchat-log': 'vrchat_log',
     '/themes': 'themes',
-    '/settings': 'settings',
-    '/login': 'login'
+    '/settings': 'settings'
 };
 
 export function normalizeRouteKey(
