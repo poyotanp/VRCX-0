@@ -1,4 +1,5 @@
 pub mod activity;
+pub mod assistant;
 pub mod avatars;
 pub mod cache_entities;
 pub(crate) mod common;

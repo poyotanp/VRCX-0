@@ -94,6 +94,16 @@ impl From<vrcx_0_mcp::McpError> for AppError {
     }
 }
 
+impl From<vrcx_0_harness::HarnessError> for AppError {
+    fn from(value: vrcx_0_harness::HarnessError) -> Self {
+        match value {
+            vrcx_0_harness::HarnessError::Persistence(error) => AppError::from(error),
+            vrcx_0_harness::HarnessError::Mcp(error) => AppError::from(error),
+            other => AppError::Custom(other.to_string()),
+        }
+    }
+}
+
 impl From<vrcx_0_integrations::external_api::ExternalApiError> for AppError {
     fn from(value: vrcx_0_integrations::external_api::ExternalApiError) -> Self {
         match value {

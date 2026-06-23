@@ -39,6 +39,7 @@ vrcx-0-host = { path = "../crates/host" }
 vrcx-0-media = { path = "../crates/media" }
 vrcx-0-application = { path = "../crates/application" }
 vrcx-0-mcp = { path = "../crates/mcp" }
+vrcx-0-harness = { path = "../crates/harness" }
 vrcx-0-runtime-host = { path = "../crates/runtime-host" }
 vrcx-0-vrchat-client = { path = "../crates/vrchat-client" }
 specta-typescript = "0.0.9"

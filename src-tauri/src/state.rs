@@ -7,6 +7,7 @@ use std::time::{Duration, Instant};
 use crate::adapters::ipc::{IpcEventSink, IpcServer};
 use crate::adapters::log_watcher::LogWatcherCompatBridge;
 use crate::error::AppError;
+use vrcx_0_harness::AssistantController;
 use vrcx_0_host::app_paths::AppDataDirResolution;
 use vrcx_0_mcp::{McpRuntime, McpServerController};
 use vrcx_0_runtime_host::{RuntimeHostOptions, RuntimeHostState};
@@ -18,6 +19,7 @@ pub struct AppState {
     pub mcp_controller: McpServerController,
     pub log_watcher_compat_bridge: LogWatcherCompatBridge,
     pub ipc: IpcServer,
+    assistant: tokio::sync::OnceCell<AssistantController>,
     background_resume_route: Mutex<Option<String>>,
     main_window_rebuild_in_progress: AtomicBool,
     auth_failure_notification: Mutex<Option<AuthFailureNotificationRecord>>,
@@ -57,10 +59,18 @@ impl AppState {
             mcp_controller,
             log_watcher_compat_bridge,
             ipc,
+            assistant: tokio::sync::OnceCell::new(),
             background_resume_route: Mutex::new(None),
             main_window_rebuild_in_progress: AtomicBool::new(false),
             auth_failure_notification: Mutex::new(None),
         })
+    }
+
+    pub async fn assistant(&self) -> Result<&AssistantController, AppError> {
+        self.assistant
+            .get_or_try_init(|| AssistantController::from_host(&self.runtime))
+            .await
+            .map_err(AppError::from)
     }
 
     pub fn set_background_resume_route(&self, route: Option<String>) {

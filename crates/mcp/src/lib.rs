@@ -2,6 +2,7 @@ mod auth;
 mod config;
 mod controller;
 mod error;
+mod in_process;
 mod runtime;
 mod server;
 mod tools;
@@ -16,5 +17,6 @@ pub use config::{
 };
 pub use controller::McpServerController;
 pub use error::McpError;
+pub use in_process::{spawn_in_process_tools, InProcessMcpTools, ToolCallOutcome, ToolDescriptor};
 pub use runtime::McpRuntime;
 pub use types::{ClientConfigSnippets, McpServerState, McpServerStatus};

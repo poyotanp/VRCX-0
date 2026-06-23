@@ -8,6 +8,7 @@ import {
     PanelRightIcon,
     PanelRightOpenIcon,
     SearchIcon,
+    SparklesIcon,
     SquareIcon,
     XIcon
 } from 'lucide-react';
@@ -26,6 +27,7 @@ import {
     toggleMaximizeWindow
 } from '@/services/shellIntegrationService';
 import { openOrInstallLatestAvailableUpdate } from '@/services/updateInstallService';
+import { useAssistantChatStore } from '@/state/assistantChatStore';
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
@@ -419,6 +421,15 @@ export function AppTitleBar() {
                                 notificationButton
                             )
                         ) : null}
+                        <TitleBarButton
+                            label={t('assistant.title')}
+                            className="size-7 min-w-7 rounded-md px-0"
+                            onClick={() =>
+                                useAssistantChatStore.getState().setOpen(true)
+                            }
+                        >
+                            <SparklesIcon data-icon="icon" />
+                        </TitleBarButton>
                         <TitleBarButton
                             label={leftSidebarLabel}
                             className="size-7 min-w-7 rounded-md px-0"

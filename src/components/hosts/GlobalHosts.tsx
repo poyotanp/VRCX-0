@@ -1,3 +1,5 @@
+import { AssistantDialog } from '@/features/assistant/AssistantDialog';
+
 import { AppToaster } from './AppToaster';
 import { BackgroundRouteResumeHost } from './BackgroundRouteResumeHost';
 import { CommunityThemeSafetyHost } from './CommunityThemeSafetyHost';
@@ -26,6 +28,7 @@ export function GlobalHosts() {
             <LaunchDialogHost />
             <SystemDialogsHost />
             <ToolsDialogsHost />
+            <AssistantDialog />
         </>
     );
 }

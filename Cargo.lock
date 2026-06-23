@@ -6740,6 +6740,7 @@ dependencies = [
  "tracing-subscriber",
  "vrcx-0-application",
  "vrcx-0-core",
+ "vrcx-0-harness",
  "vrcx-0-host",
  "vrcx-0-integrations",
  "vrcx-0-mcp",
@@ -6786,6 +6787,26 @@ dependencies = [
  "serde_json",
  "specta",
  "tracing",
+]
+
+[[package]]
+name = "vrcx-0-harness"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "getrandom 0.4.3",
+ "serde",
+ "serde_json",
+ "specta",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "vrcx-0-application",
+ "vrcx-0-integrations",
+ "vrcx-0-mcp",
+ "vrcx-0-persistence",
+ "vrcx-0-runtime-host",
 ]
 
 [[package]]
@@ -6836,10 +6857,13 @@ dependencies = [
 name = "vrcx-0-integrations"
 version = "0.1.0"
 dependencies = [
+ "futures-util",
+ "reqwest",
  "serde",
  "serde_json",
  "specta",
  "thiserror 2.0.18",
+ "tracing",
  "url",
 ]
 

@@ -146,6 +146,33 @@ async appMcpServerSetPort(port: number) : Promise<McpServerStatus> {
 async appMcpServerRotateToken() : Promise<McpServerStatus> {
     return await TAURI_INVOKE("app__mcp_server_rotate_token");
 },
+async appAssistantSendMessage(sessionId: string | null, text: string, locale: string | null) : Promise<SendResult> {
+    return await TAURI_INVOKE("app__assistant_send_message", { sessionId, text, locale });
+},
+async appAssistantCancel(sessionId: string) : Promise<null> {
+    return await TAURI_INVOKE("app__assistant_cancel", { sessionId });
+},
+async appAssistantListSessions() : Promise<SessionSummary[]> {
+    return await TAURI_INVOKE("app__assistant_list_sessions");
+},
+async appAssistantGetSession(sessionId: string) : Promise<Session | null> {
+    return await TAURI_INVOKE("app__assistant_get_session", { sessionId });
+},
+async appAssistantNewSession() : Promise<Session> {
+    return await TAURI_INVOKE("app__assistant_new_session");
+},
+async appAssistantDeleteSession(sessionId: string) : Promise<null> {
+    return await TAURI_INVOKE("app__assistant_delete_session", { sessionId });
+},
+async appAssistantListModels(baseUrl: string, apiKey: string | null) : Promise<string[]> {
+    return await TAURI_INVOKE("app__assistant_list_models", { baseUrl, apiKey });
+},
+async appAssistantConfigStatus() : Promise<AssistantConfigStatus> {
+    return await TAURI_INVOKE("app__assistant_config_status");
+},
+async appAssistantSetConfig(baseUrl: string, apiKey: string | null, model: string) : Promise<AssistantConfigStatus> {
+    return await TAURI_INVOKE("app__assistant_set_config", { baseUrl, apiKey, model });
+},
 async appOverlayActivityDefinitionsGet() : Promise<OverlayActivityTypeDefinition[]> {
     return await TAURI_INVOKE("app__overlay_activity_definitions_get");
 },
@@ -1346,6 +1373,7 @@ async appSaveEmojiToFile(url: string, ugcFolderPath: string, monthFolder: string
 
 /** user-defined types **/
 
+export type ActiveTurn = { turnId: string; status: TurnStatus }
 export type ActivityBucketCacheInput = { ownerUserId: string; targetUserId?: string; rangeDays: JsonValue; viewKind: string; excludeKey?: string; bucketVersion?: JsonValue; builtFromCursor?: string; rawBuckets?: JsonValue; normalizedBuckets?: JsonValue; summary?: JsonValue; builtAt?: string }
 export type ActivityBucketCacheOutput = { ownerUserId: string; targetUserId: string; rangeDays: number; viewKind: string; excludeKey: string; bucketVersion: number; builtFromCursor: string; rawBuckets: JsonValue; normalizedBuckets: JsonValue; summary: JsonValue; builtAt: string }
 export type ActivityBucketCacheQueryInput = { ownerUserId: string; targetUserId?: string; rangeDays: JsonValue; viewKind: string; excludeKey?: string }
@@ -1375,6 +1403,7 @@ export type AppLauncherScope = "all" | "desktop" | "vr"
 export type AppLauncherSession = { id: string; steamvrRunning: boolean; startedAt: number; runs: AppLauncherRun[] }
 export type AppLauncherSnapshot = { enabled: boolean; entries: AppLauncherEntry[]; activeSession: AppLauncherSession | null; testRuns: AppLauncherRun[] }
 export type AppLauncherStopPolicy = "keepRunning" | "closeByVrcx"
+export type AssistantConfigStatus = { configured: boolean; baseUrl: string; model: string; isLocal: boolean }
 export type AuthorDetail = { id?: string; displayName?: string | null }
 export type AvatarCacheOutput = { id: string; authorId: string; authorName: string; created_at: string; description: string; imageUrl: string; name: string; releaseStatus: string; thumbnailImageUrl: string; updated_at: string; version: number }
 export type AvatarMemoOutput = { avatarId: string; editedAt: string; memo: string }
@@ -1442,6 +1471,7 @@ export type MaintenanceTableSizesOutput = { gps: number; status: number; bio: nu
 export type McpServerState = "disabled" | "running"
 export type McpServerStatus = { enabled: boolean; allowVrchatWrites: boolean; state: McpServerState; port: number | null; activeConnections: number; lastError: string | null; clientConfig: ClientConfigSnippets | null }
 export type MemoSaveResult = { entityId: string; editedAt: string; memo: string }
+export type Message = { id: string; seq: number; role: Role; content: string; createdAt: string }
 export type ModerationSyncMutationInput = { ownerUserId?: string; endpoint?: string; targetUserId: string; targetDisplayName?: string; type: string; enabled: boolean }
 export type ModerationSyncMutationOutput = { targetUserId: string; type: string; enabled: boolean; local: LocalModerationOutput | null }
 export type ModerationSyncRefreshInput = { userId: string; endpoint?: string }
@@ -1486,6 +1516,7 @@ export type RealtimeWsStatusPayload = { status: string; websocketDomain: string;
 export type RegistryBackupMaintenanceResult = { backups: RegistryBackupSnapshot[]; autoBackupCreated: boolean; restorePromptNeeded: boolean; restorePromptBackupDate: string | null; detail: string }
 export type RegistryBackupSnapshot = { key: string; name: string; date: string; data: JsonValue }
 export type RemoteModerationRow = { id: string; type: string; sourceUserId: string; sourceDisplayName: string; targetUserId: string; targetDisplayName: string; created: string }
+export type Role = "user" | "assistant"
 export type RuntimeAppSnapshot = { runtime: RuntimeLifecycleSnapshot; backgroundJobs: RuntimeBackgroundJobSnapshot[]; sync: RuntimeSyncSnapshot; diagnostics: RuntimeDiagnosticsSnapshot; gameLog: GameLogRuntimeSnapshotDto }
 export type RuntimeAuthScopeSetInput = { userId?: string; endpoint?: string }
 export type RuntimeAuthScopeSnapshot = { currentUserId: string; endpoint: string; generation: number; active: boolean }
@@ -1505,12 +1536,16 @@ export type ScreenshotFolderTree = { rootPath: string; folders: ScreenshotFolder
 export type ScreenshotLibraryImage = { path: string; folderPath: string; fileName: string; sizeBytes: number; modifiedAt: number; createdAt: number | null; width: number | null; height: number | null; worldId: string | null; worldName: string | null; capturedAt: string | null; metadata: ScreenshotMetadata | null; error: string | null }
 export type ScreenshotLibraryScanStatus = { running: boolean; scanned: number; indexed: number; changed: number; skipped: number; deleted: number; error: string | null; lastScanAt: string | null }
 export type ScreenshotMetadata = { application?: string | null; version?: number; author: AuthorDetail; world: WorldDetail; players: PlayerDetail[]; timestamp?: string | null; note?: string | null; pos?: [number, number, number] | null; sourceFile?: string | null; error?: string | null }
+export type SendResult = { sessionId: string; turnId: string }
+export type Session = { id: string; title: string; messages: Message[]; activeTurn: ActiveTurn | null; createdAt: string; updatedAt: string }
+export type SessionSummary = { id: string; title: string; busy: boolean; updatedAt: string }
 export type SocialFavoritesBaselineInput = { userId?: string; endpoint?: string; currentUserSnapshot?: RawJson; friendRosterById?: RawJson }
 export type SocialFavoritesBaselineOutput = { userId: string; stale: boolean; count: number; snapshot: RawJson | null }
 export type SocialFriendRosterBaselineInput = { userId?: string; endpoint?: string; websocket?: string; currentUserSnapshot?: RawJson; isFirstLoad?: boolean }
 export type SocialFriendRosterBaselineOutput = { userId: string; stale: boolean; count: number; detail: string; snapshot: RawJson | null; friendLogChanged: boolean }
 export type TauriDownloadEvent = { event: "Started"; data: { contentLength: number | null } } | { event: "Progress"; data: { chunkLength: number } } | { event: "Finished" }
 export type TauriUpdateMetadata = { currentVersion: string; version: string; date: string | null; body: string | null; rawJson: JsonValue }
+export type TurnStatus = "running" | "done" | "error" | "cancelled"
 export type UserMemoOutput = { userId: string; editedAt: string; memo: string }
 export type UserNoteOutput = { userId: string; displayName: string; note: string; createdAt: string }
 export type UserTableContextOutput = { userId: string; userPrefix: string }

@@ -1,4 +1,48 @@
 {
+    "assistant": {
+        "title": "소셜 AI",
+        "new_chat": "새 대화",
+        "sessions_empty": "아직 대화가 없습니다",
+        "composer_placeholder": "무엇이든 물어보세요",
+        "send": "보내기",
+        "stop": "중지",
+        "empty_title": "당신의 소셜 활동에 대해 물어보세요",
+        "example_1": "이번 주에 누구와 가장 많이 놀았나요?",
+        "example_2": "요즘 누구와 멀어지고 있나요?",
+        "example_3": "친구들이 접속해 있을 가능성이 가장 높은 시간은?",
+        "not_configured": "시작하려면 설정에서 모델과 API 키를 입력하세요.",
+        "tool_running": "{{name}} 호출 중…",
+        "entities_title": "언급됨",
+        "entities_empty": "답변에서 언급된 사람과 월드가 여기에 표시됩니다.",
+        "untitled": "새 대화",
+        "close": "닫기",
+        "connection": {
+            "checking": "연결 확인 중…",
+            "ok": "연결됨",
+            "error": "연결 실패",
+            "unconfigured": "설정되지 않음"
+        },
+        "settings": {
+            "title": "소셜 AI",
+            "description": "직접 준비한 OpenAI 호환 엔드포인트로 앱 내 어시스턴트를 구동합니다. VRCX-0의 도구를 통해 로컬 VRChat 소셜 기록을 읽을 수 있습니다.",
+            "base_url": "API 기본 URL",
+            "base_url_placeholder": "https://api.openai.com/v1",
+            "api_key": "API 키",
+            "api_key_placeholder": "sk-…",
+            "api_key_set": "키가 저장되어 있습니다. 변경하지 않으려면 비워 두세요.",
+            "model": "모델",
+            "model_placeholder": "gpt-4o-mini",
+            "detect": "감지",
+            "detecting": "감지 중…",
+            "detect_success": "감지 성공",
+            "detect_failed": "감지 실패",
+            "save": "저장",
+            "saved": "저장됨",
+            "privacy_title": "개인정보",
+            "privacy_local": "요청은 이 PC의 로컬 엔드포인트로 전송되며 소셜 데이터는 컴퓨터를 벗어나지 않습니다.",
+            "privacy_remote": "온라인 AI 서비스를 사용하면 데이터가 유출될 수 있습니다. 신중하게 사용하세요."
+        }
+    },
     "user_hover_card": {
         "note_local": "로컬 메모",
         "note_synced": "VRChat 노트",

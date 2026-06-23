@@ -15,6 +15,7 @@ import { Switch } from '@/ui/shadcn/switch';
 
 import { Field, SettingsGroup } from '../SettingsField';
 import { SettingsTabContent } from '../SettingsViewParts';
+import { AssistantSettingsGroup } from './AssistantSettingsGroup';
 import { WebhookSettingsGroup } from './WebhookSettingsGroup';
 
 type McpCommandOptions = {
@@ -355,6 +356,8 @@ export function SettingsIntegrationsTab({ integrations }: any) {
                     />
                 </Field>
             </SettingsGroup>
+
+            <AssistantSettingsGroup />
 
             <WebhookSettingsGroup
                 prefs={prefs}

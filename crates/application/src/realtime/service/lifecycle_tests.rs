@@ -661,14 +661,20 @@ mod tests {
             .find(|event| event.name == "realtimeNotificationProjection")
             .expect("cache-hit notification should emit a realtime projection");
         let projected = &projection.payload["upserts"][0]["notification"];
-        assert_eq!(projected["imageUrl"], "https://images.example/user-icon.png");
+        assert_eq!(
+            projected["imageUrl"],
+            "https://images.example/user-icon.png"
+        );
 
         let entries = runtime.deps.overlay_activity.snapshot().entries;
         let entry = entries
             .iter()
             .find(|entry| entry.source_id == "notification:notif-avatar-cache-hit")
             .expect("runtime delivery should be projected to overlay activity");
-        assert_eq!(entry.content.image_url, "https://images.example/user-icon.png");
+        assert_eq!(
+            entry.content.image_url,
+            "https://images.example/user-icon.png"
+        );
         Ok(())
     }
 
@@ -800,7 +806,8 @@ mod tests {
     }
 
     #[test]
-    fn notification_avatar_fallback_preserves_existing_image_and_skips_group_sender() -> Result<()> {
+    fn notification_avatar_fallback_preserves_existing_image_and_skips_group_sender() -> Result<()>
+    {
         let (_dir, runtime, active_session) =
             runtime_with_active_session("notification-avatar-existing-and-group")?;
         runtime.ingest_user_facts(vec![json!({

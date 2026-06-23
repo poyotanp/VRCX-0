@@ -1,4 +1,48 @@
 {
+    "assistant": {
+        "title": "ソーシャル AI",
+        "new_chat": "新しいチャット",
+        "sessions_empty": "まだ会話がありません",
+        "composer_placeholder": "質問してみよう",
+        "send": "送信",
+        "stop": "停止",
+        "empty_title": "あなたの交友関係について聞いてみよう",
+        "example_1": "今週、誰と一番一緒に遊んだ？",
+        "example_2": "最近疎遠になっている人は？",
+        "example_3": "フレンドがオンラインになりやすい時間は？",
+        "not_configured": "開始するには設定でモデルと API キーを設定してください。",
+        "tool_running": "{{name}} を呼び出し中…",
+        "entities_title": "言及",
+        "entities_empty": "回答で言及された人やワールドがここに表示されます。",
+        "untitled": "新しい会話",
+        "close": "閉じる",
+        "connection": {
+            "checking": "接続を確認中…",
+            "ok": "接続済み",
+            "error": "接続に失敗しました",
+            "unconfigured": "未設定"
+        },
+        "settings": {
+            "title": "ソーシャル AI",
+            "description": "OpenAI 互換のエンドポイントでアプリ内アシスタントを動かします。VRCX-0 のツールを通じてローカルの VRChat 交流履歴を読み取れます。",
+            "base_url": "API ベース URL",
+            "base_url_placeholder": "https://api.openai.com/v1",
+            "api_key": "API キー",
+            "api_key_placeholder": "sk-…",
+            "api_key_set": "キーが保存されています。変更しない場合は空欄のままにしてください。",
+            "model": "モデル",
+            "model_placeholder": "gpt-4o-mini",
+            "detect": "検出",
+            "detecting": "検出中…",
+            "detect_success": "検出に成功しました",
+            "detect_failed": "検出に失敗しました",
+            "save": "保存",
+            "saved": "保存しました",
+            "privacy_title": "プライバシー",
+            "privacy_local": "リクエストはこの PC 上のローカルエンドポイントに送信され、交流データは外部に出ません。",
+            "privacy_remote": "オンラインの AI サービスを使うとデータが漏れる可能性があります。慎重に操作してください。"
+        }
+    },
     "user_hover_card": {
         "note_local": "ローカルメモ",
         "note_synced": "VRChatノート",

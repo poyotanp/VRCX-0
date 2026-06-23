@@ -1,4 +1,48 @@
 {
+    "assistant": {
+        "title": "Social AI",
+        "new_chat": "New chat",
+        "sessions_empty": "No conversations yet",
+        "composer_placeholder": "Ask something",
+        "send": "Send",
+        "stop": "Stop",
+        "empty_title": "Ask about your social life",
+        "example_1": "Who have I played with most this week?",
+        "example_2": "Who am I drifting away from?",
+        "example_3": "When is the best time to catch my friends online?",
+        "not_configured": "Set your model and API key in Settings to start.",
+        "tool_running": "Calling {{name}}…",
+        "entities_title": "Mentioned",
+        "entities_empty": "People and worlds mentioned in answers show up here.",
+        "untitled": "New conversation",
+        "close": "Close",
+        "connection": {
+            "checking": "Checking connection…",
+            "ok": "Connected",
+            "error": "Connection failed",
+            "unconfigured": "Not configured"
+        },
+        "settings": {
+            "title": "Social AI",
+            "description": "Drive an in-app assistant with your own OpenAI-compatible endpoint. It can read your local VRChat social history through VRCX-0's tools.",
+            "base_url": "API base URL",
+            "base_url_placeholder": "https://api.openai.com/v1",
+            "api_key": "API key",
+            "api_key_placeholder": "sk-…",
+            "api_key_set": "A key is saved. Leave blank to keep it.",
+            "model": "Model",
+            "model_placeholder": "gpt-4o-mini",
+            "detect": "Detect",
+            "detecting": "Detecting…",
+            "detect_success": "Detection succeeded",
+            "detect_failed": "Detection failed",
+            "save": "Save",
+            "saved": "Saved",
+            "privacy_title": "Privacy",
+            "privacy_local": "Requests go to a local endpoint on this machine. Your social data does not leave your computer.",
+            "privacy_remote": "Using an online AI service may expose your data. Proceed with caution."
+        }
+    },
     "user_hover_card": {
         "note_local": "Local note",
         "note_synced": "VRChat note",

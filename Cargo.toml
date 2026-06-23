@@ -12,6 +12,7 @@ members = [
     "crates/runtime-host",
     "crates/headless",
     "crates/mcp",
+    "crates/harness",
 ]
 default-members = [
     "src-tauri",
@@ -26,6 +27,7 @@ default-members = [
     "crates/runtime-host",
     "crates/headless",
     "crates/mcp",
+    "crates/harness",
 ]
 resolver = "2"
 

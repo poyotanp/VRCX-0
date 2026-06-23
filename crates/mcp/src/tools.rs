@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use chrono::{DateTime, Datelike, Duration, Utc};
+use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::CallToolResult;
 use rmcp::{schemars, tool, tool_router};
@@ -1024,11 +1024,23 @@ impl VrcxMcpServer {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, schemars::JsonSchema)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, Default, schemars::JsonSchema)]
 struct TimeWindowParams {
     from: Option<String>,
     to: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for TimeWindowParams {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        // Accept the documented object form `{from, to}` but also tolerate a
+        // bare natural-language string (e.g. "this week") that models often pass
+        // despite the schema. Unrecognized strings fall back to all history.
+        let value = Value::deserialize(deserializer)?;
+        Ok(time_window_from_value(&value))
+    }
 }
 
 impl From<TimeWindowParams> for social_aggregates::TimeWindow {
@@ -1038,6 +1050,101 @@ impl From<TimeWindowParams> for social_aggregates::TimeWindow {
             to: value.to,
         }
     }
+}
+
+fn time_window_from_value(value: &Value) -> TimeWindowParams {
+    match value {
+        Value::String(text) => parse_relative_window(text),
+        Value::Object(map) => TimeWindowParams {
+            from: map.get("from").and_then(Value::as_str).map(str::to_string),
+            to: map.get("to").and_then(Value::as_str).map(str::to_string),
+        },
+        _ => TimeWindowParams::default(),
+    }
+}
+
+fn parse_relative_window(text: &str) -> TimeWindowParams {
+    let normalized = text.trim().to_ascii_lowercase();
+    let now = Utc::now();
+    let rfc = |dt: DateTime<Utc>| Some(dt.to_rfc3339());
+    let window = |from, to| TimeWindowParams { from, to };
+
+    match normalized.as_str() {
+        "" | "all" | "all time" | "alltime" | "any" | "anytime" | "ever" | "always" => {
+            return TimeWindowParams::default();
+        }
+        "today" => return window(rfc(start_of_day(now)), None),
+        "yesterday" => {
+            let start_today = start_of_day(now);
+            return window(rfc(start_today - Duration::days(1)), rfc(start_today));
+        }
+        "this week" | "week" => return window(rfc(start_of_week(now)), None),
+        "last week" | "past week" | "previous week" => {
+            let this = start_of_week(now);
+            return window(rfc(this - Duration::days(7)), rfc(this));
+        }
+        "this month" | "month" => return window(rfc(start_of_month(now)), None),
+        "last month" | "past month" | "previous month" => {
+            return window(rfc(start_of_prev_month(now)), rfc(start_of_month(now)));
+        }
+        _ => {}
+    }
+
+    if let Some(window) = parse_rolling_window(&normalized, now) {
+        return window;
+    }
+
+    tracing::warn!(input = %text, "assistant: unrecognized time window string, using all history");
+    TimeWindowParams::default()
+}
+
+fn parse_rolling_window(text: &str, now: DateTime<Utc>) -> Option<TimeWindowParams> {
+    let number: i64 = text
+        .split(|ch: char| !ch.is_ascii_digit())
+        .find(|token| !token.is_empty())
+        .and_then(|token| token.parse().ok())?;
+    let duration = if text.contains("hour") {
+        Duration::hours(number)
+    } else if text.contains("day") {
+        Duration::days(number)
+    } else if text.contains("week") {
+        Duration::days(number * 7)
+    } else if text.contains("month") {
+        Duration::days(number * 30)
+    } else if text.contains("year") {
+        Duration::days(number * 365)
+    } else {
+        return None;
+    };
+    Some(TimeWindowParams {
+        from: Some((now - duration).to_rfc3339()),
+        to: None,
+    })
+}
+
+fn start_of_day(now: DateTime<Utc>) -> DateTime<Utc> {
+    now.date_naive()
+        .and_hms_opt(0, 0, 0)
+        .map(|naive| Utc.from_utc_datetime(&naive))
+        .unwrap_or(now)
+}
+
+fn start_of_week(now: DateTime<Utc>) -> DateTime<Utc> {
+    let days = now.weekday().num_days_from_monday() as i64;
+    start_of_day(now) - Duration::days(days)
+}
+
+fn start_of_month(now: DateTime<Utc>) -> DateTime<Utc> {
+    now.date_naive()
+        .with_day(1)
+        .and_then(|date| date.and_hms_opt(0, 0, 0))
+        .map(|naive| Utc.from_utc_datetime(&naive))
+        .unwrap_or(now)
+}
+
+fn start_of_prev_month(now: DateTime<Utc>) -> DateTime<Utc> {
+    let last_day_prev = start_of_month(now) - Duration::days(1);
+    start_of_month(last_day_prev)
 }
 
 #[derive(Clone, Debug, Default, Deserialize, schemars::JsonSchema)]
@@ -1115,6 +1222,7 @@ impl From<FriendChangeKindParam> for social_aggregates::FriendChangeKind {
 #[derive(Clone, Debug, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct CopresenceSummaryParams {
+    #[serde(default)]
     time_window: TimeWindowParams,
     #[serde(default)]
     group_by: CopresenceGroupByParam,
@@ -1127,6 +1235,7 @@ struct CopresenceSummaryParams {
 #[serde(rename_all = "camelCase")]
 struct FriendActivityPatternParams {
     user_id: Option<String>,
+    #[serde(default)]
     time_window: TimeWindowParams,
     #[serde(default)]
     bucket: ActivityBucketParam,
@@ -1135,6 +1244,7 @@ struct FriendActivityPatternParams {
 #[derive(Clone, Debug, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct SearchWorldsVisitedParams {
+    #[serde(default)]
     time_window: TimeWindowParams,
     limit: Option<i64>,
 }
@@ -1225,6 +1335,7 @@ struct SocialGraphParams {
 #[serde(rename_all = "camelCase")]
 struct CompanionsOfParams {
     user_id: String,
+    #[serde(default)]
     time_window: TimeWindowParams,
     limit: Option<i64>,
 }
@@ -1232,6 +1343,7 @@ struct CompanionsOfParams {
 #[derive(Clone, Debug, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct InviteHistoryParams {
+    #[serde(default)]
     time_window: TimeWindowParams,
     #[serde(default)]
     direction: InviteDirectionParam,
@@ -1241,6 +1353,7 @@ struct InviteHistoryParams {
 #[derive(Clone, Debug, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct FriendChangesParams {
+    #[serde(default)]
     time_window: TimeWindowParams,
     #[serde(default)]
     kind: FriendChangeKindParam,
@@ -1258,6 +1371,7 @@ struct FadingFriendsParams {
 #[derive(Clone, Debug, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct BestTimeToPlayParams {
+    #[serde(default)]
     time_window: TimeWindowParams,
     #[serde(default)]
     bucket: ActivityBucketParam,
@@ -1816,4 +1930,39 @@ fn vrchat_favorite_caveats(blocked_by_setting: bool) -> Vec<String> {
         );
     }
     caveats
+}
+
+#[cfg(test)]
+mod time_window_tests {
+    use super::*;
+
+    #[test]
+    fn parses_object_form() {
+        let value = serde_json::json!({ "from": "2026-01-01T00:00:00Z", "to": null });
+        let window = time_window_from_value(&value);
+        assert_eq!(window.from.as_deref(), Some("2026-01-01T00:00:00Z"));
+        assert_eq!(window.to, None);
+    }
+
+    #[test]
+    fn relative_strings_produce_a_lower_bound() {
+        for phrase in ["today", "this week", "last month", "last 7 days", "past 3 weeks"] {
+            let window = time_window_from_value(&serde_json::json!(phrase));
+            assert!(window.from.is_some(), "{phrase} should set a lower bound");
+        }
+    }
+
+    #[test]
+    fn all_history_phrases_stay_empty() {
+        for phrase in ["all", "all time", "ever", ""] {
+            let window = time_window_from_value(&serde_json::json!(phrase));
+            assert!(window.from.is_none() && window.to.is_none(), "{phrase} should be unbounded");
+        }
+    }
+
+    #[test]
+    fn unknown_string_falls_back_to_all_history() {
+        let window = time_window_from_value(&serde_json::json!("whenever-ish"));
+        assert!(window.from.is_none() && window.to.is_none());
+    }
 }

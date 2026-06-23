@@ -52,18 +52,17 @@ impl RealtimeHostRuntime {
         }
     }
 
-    pub(super) fn enrich_notification_images(&self, projection: &mut RealtimeNotificationProjection) {
+    pub(super) fn enrich_notification_images(
+        &self,
+        projection: &mut RealtimeNotificationProjection,
+    ) {
         let endpoint = self.active_endpoint();
         if endpoint.is_empty() {
             return;
         }
         let allow_user_icon = self.display_vrc_plus_icons_as_avatar();
         for upsert in &mut projection.upserts {
-            self.enrich_notification_image(
-                &endpoint,
-                &mut upsert.notification,
-                allow_user_icon,
-            );
+            self.enrich_notification_image(&endpoint, &mut upsert.notification, allow_user_icon);
         }
     }
 
@@ -136,12 +135,8 @@ impl RealtimeHostRuntime {
     }
 
     fn display_vrc_plus_icons_as_avatar(&self) -> bool {
-        config_store::get_bool(
-            self.deps.db.as_ref(),
-            "displayVRCPlusIconsAsAvatar",
-            true,
-        )
-        .unwrap_or(true)
+        config_store::get_bool(self.deps.db.as_ref(), "displayVRCPlusIconsAsAvatar", true)
+            .unwrap_or(true)
     }
 
     pub(super) fn finalize_notification_output_for_delivery(
@@ -546,7 +541,8 @@ fn notification_upsert_needs_remote_resolution(upsert: &RealtimeNotificationUpse
         return false;
     }
     notification_has_unresolved_required_display(&upsert.notification)
-        || upsert.deliver_runtime && notification_needs_avatar_image_resolution(&upsert.notification)
+        || upsert.deliver_runtime
+            && notification_needs_avatar_image_resolution(&upsert.notification)
 }
 
 fn notification_upsert_is_visible(upsert: &RealtimeNotificationUpsert) -> bool {

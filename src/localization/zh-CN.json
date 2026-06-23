@@ -1,4 +1,48 @@
 {
+    "assistant": {
+        "title": "社交 AI",
+        "new_chat": "新建对话",
+        "sessions_empty": "还没有对话",
+        "composer_placeholder": "问点什么",
+        "send": "发送",
+        "stop": "停止",
+        "empty_title": "聊聊你的社交生活",
+        "example_1": "这周我和谁玩得最多？",
+        "example_2": "我正在和谁疏远？",
+        "example_3": "什么时候最容易碰到我的好友在线？",
+        "not_configured": "请先在设置里填写模型和 API 密钥。",
+        "tool_running": "正在调用 {{name}}…",
+        "entities_title": "提及",
+        "entities_empty": "回答中提到的人和世界会显示在这里。",
+        "untitled": "新对话",
+        "close": "关闭",
+        "connection": {
+            "checking": "正在检查连接…",
+            "ok": "已连接",
+            "error": "连接失败",
+            "unconfigured": "未配置"
+        },
+        "settings": {
+            "title": "社交 AI",
+            "description": "用你自己的 OpenAI 兼容接口驱动应用内助手。它可以通过 VRCX-0 的工具读取你本地的 VRChat 社交记录。",
+            "base_url": "API 基础地址",
+            "base_url_placeholder": "https://api.openai.com/v1",
+            "api_key": "API 密钥",
+            "api_key_placeholder": "sk-…",
+            "api_key_set": "已保存密钥。留空则保持不变。",
+            "model": "模型",
+            "model_placeholder": "gpt-4o-mini",
+            "detect": "检测",
+            "detecting": "检测中…",
+            "detect_success": "检测成功",
+            "detect_failed": "检测失败",
+            "save": "保存",
+            "saved": "已保存",
+            "privacy_title": "隐私",
+            "privacy_local": "请求发送到本机的本地接口，你的社交数据不会离开你的电脑。",
+            "privacy_remote": "使用在线 AI 服务可能会泄露你的数据，请谨慎操作。"
+        }
+    },
     "user_hover_card": {
         "note_local": "本地备注",
         "note_synced": "线上备注",
