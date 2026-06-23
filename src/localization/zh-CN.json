@@ -1757,6 +1757,7 @@
                     "status_label": "状态",
                     "port_active_connections": "端口 {port}；活动连接 {count}",
                     "client_config": "客户端配置",
+                    "client_config_description": "选择与您客户端匹配的选项。Claude Code：复制一次性 `claude mcp add` 命令，在终端中运行以注册服务器。通用 (HTTP)：复制直接通过 HTTP 连接到服务器的 JSON 配置，无需额外工具。通用 (mcp-remote)：复制通过 Node.js 代理进程进行隧道连接的 JSON 配置，适用于不支持原生 HTTP 的客户端（如 Claude Desktop）；需要 PATH 中存在 Node.js。",
                     "copy_claude_code": "Claude Code",
                     "copy_mcp_remote": "通用 (mcp-remote)",
                     "copy_generic": "通用 (HTTP)",

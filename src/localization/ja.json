@@ -1757,6 +1757,7 @@
                     "status_label": "状態",
                     "port_active_connections": "ポート {port}、アクティブ接続 {count}",
                     "client_config": "クライアント設定",
+                    "client_config_description": "クライアントに合ったオプションを選択してください。Claude Code: サーバーを登録するためにターミナルで一度だけ実行する `claude mcp add` コマンドをコピーします。汎用 (HTTP): 追加ツール不要でHTTP経由でサーバーに直接接続するJSON設定をコピーします。汎用 (mcp-remote): ネイティブHTTPをサポートしないクライアント（例: Claude Desktop）向けに、Node.jsプロキシ経由でトンネリングするJSON設定をコピーします。PATHにNode.jsが必要です。",
                     "copy_claude_code": "Claude Code",
                     "copy_mcp_remote": "汎用 (mcp-remote)",
                     "copy_generic": "汎用 (HTTP)",

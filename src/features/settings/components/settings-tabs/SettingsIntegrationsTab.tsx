@@ -475,9 +475,16 @@ export function SettingsIntegrationsTab({ integrations }: any) {
                     label={t(
                         'view.settings.integrations.mcp_server.client_config'
                     )}
-                    description={t(
-                        'view.settings.integrations.mcp_server.security_note'
-                    )}
+                    description={
+                        <>
+                            {t(
+                                'view.settings.integrations.mcp_server.client_config_description'
+                            )}{' '}
+                            {t(
+                                'view.settings.integrations.mcp_server.security_note'
+                            )}
+                        </>
+                    }
                     disabled={!mcpClientConfig}
                     className="lg:grid-cols-1 lg:items-start"
                     controlClassName="lg:justify-start"
