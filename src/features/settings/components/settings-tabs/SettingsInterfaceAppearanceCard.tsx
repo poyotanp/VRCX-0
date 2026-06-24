@@ -7,7 +7,8 @@ import {
     APP_CJK_FONT_PACK_DEFAULT_KEY,
     APP_CJK_FONT_PACKS,
     APP_FONT_DEFAULT_KEY,
-    APP_FONT_FAMILIES
+    APP_FONT_FAMILIES,
+    supportsConfigurableCjkFontPack
 } from '@/services/themeService';
 import { Button } from '@/ui/shadcn/button';
 import {
@@ -63,7 +64,7 @@ const cjkFontPackOptions = APP_CJK_FONT_PACKS.map((value: any) => [
     cjkFontPackLabelKeys[value]
 ]);
 
-function getFontDropdownDisplayText(t: any, prefs: any) {
+function getFontDropdownDisplayText(t: any, prefs: any, showCjkFontPack: any) {
     if (prefs.appFontFamily === 'custom') {
         return t('view.settings.appearance.appearance.font_family_custom');
     }
@@ -71,6 +72,10 @@ function getFontDropdownDisplayText(t: any, prefs: any) {
     const fontLabel =
         fontFamilyLabelKeys[prefs.appFontFamily] ||
         fontFamilyLabelKeys[APP_FONT_DEFAULT_KEY];
+    if (!showCjkFontPack) {
+        return t(fontLabel);
+    }
+
     const cjkLabel =
         cjkFontPackLabelKeys[prefs.appCjkFontPack] ||
         cjkFontPackLabelKeys[APP_CJK_FONT_PACK_DEFAULT_KEY];
@@ -79,10 +84,12 @@ function getFontDropdownDisplayText(t: any, prefs: any) {
 
 function FontFamilyPreferenceField({
     t,
+    locale,
     prefs,
     onFontFamilyChange,
     onCjkFontPackChange
 }: any) {
+    const showCjkFontPack = supportsConfigurableCjkFontPack(locale);
     const [fontMenuOpen, setFontMenuOpen] = useState(false);
 
     function openCustomFontDialogAfterMenuClose() {
@@ -109,7 +116,11 @@ function FontFamilyPreferenceField({
                         className="min-w-44 justify-between font-normal"
                     >
                         <span className="truncate">
-                            {getFontDropdownDisplayText(t, prefs)}
+                            {getFontDropdownDisplayText(
+                                t,
+                                prefs,
+                                showCjkFontPack
+                            )}
                         </span>
                         <ChevronDownIcon
                             data-icon="inline-end"
@@ -147,28 +158,32 @@ function FontFamilyPreferenceField({
                             </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                        <DropdownMenuRadioGroup
-                            value={
-                                prefs.appFontFamily === 'custom'
-                                    ? ''
-                                    : prefs.appCjkFontPack
-                            }
-                            onValueChange={onCjkFontPackChange}
-                        >
-                            {cjkFontPackOptions.map(
-                                ([value, labelKey]: any) => (
-                                    <DropdownMenuRadioItem
-                                        key={value}
-                                        value={value}
-                                    >
-                                        {t(labelKey)}
-                                    </DropdownMenuRadioItem>
-                                )
-                            )}
-                        </DropdownMenuRadioGroup>
-                    </DropdownMenuGroup>
+                    {showCjkFontPack ? (
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                <DropdownMenuRadioGroup
+                                    value={
+                                        prefs.appFontFamily === 'custom'
+                                            ? ''
+                                            : prefs.appCjkFontPack
+                                    }
+                                    onValueChange={onCjkFontPackChange}
+                                >
+                                    {cjkFontPackOptions.map(
+                                        ([value, labelKey]: any) => (
+                                            <DropdownMenuRadioItem
+                                                key={value}
+                                                value={value}
+                                            >
+                                                {t(labelKey)}
+                                            </DropdownMenuRadioItem>
+                                        )
+                                    )}
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuGroup>
+                        </>
+                    ) : null}
                 </DropdownMenuContent>
             </DropdownMenu>
         </Field>
@@ -216,6 +231,7 @@ export function SettingsInterfaceAppearanceCard({
             {!hideFontControls ? (
                 <FontFamilyPreferenceField
                     t={t}
+                    locale={locale}
                     prefs={prefs}
                     onFontFamilyChange={onFontFamilyChange}
                     onCjkFontPackChange={onCjkFontPackChange}
