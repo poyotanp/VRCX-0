@@ -1,5 +1,10 @@
-import { ChevronsUpDownIcon, RefreshCwIcon, UserRoundIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import {
+    ChevronsUpDownIcon,
+    ChevronUpIcon,
+    RefreshCwIcon,
+    UserRoundIcon
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -23,8 +28,29 @@ import {
 } from '@/components/layout/PageScaffold';
 import { normalizeEndpoint, normalizeUserId } from '@/domain/users/userFacts';
 import { UserPickerRow } from '@/features/charts/components/MutualFriendsViewParts';
+import { InstanceActivityDateControls } from '@/features/instance-history/components/InstanceActivityDateControls';
+import { InstanceActivitySettingsPopover } from '@/features/instance-history/components/InstanceActivitySettingsPopover';
 import { InstanceHistoryList } from '@/features/instance-history/components/InstanceHistoryList';
-import { formatCompactDateTime } from '@/lib/dateTime';
+import {
+    buildChartRows,
+    buildDetailGroups,
+    filterDetailGroups,
+    getDetailGroupKeys
+} from '@/features/instance-history/instance-activity/instanceActivityRows';
+import { useInstanceActivityChartLifecycle } from '@/features/instance-history/instance-activity/useInstanceActivityChartLifecycle';
+import { useInstanceActivityData } from '@/features/instance-history/instance-activity/useInstanceActivityData';
+import { useInstanceActivityRuntime } from '@/features/instance-history/instance-activity/useInstanceActivityRuntime';
+import { useInstanceActivitySettings } from '@/features/instance-history/instance-activity/useInstanceActivitySettings';
+import {
+    activityRowKey,
+    buildAvailableInstanceHistoryDays,
+    filterPreviousInstanceRowsForDay,
+    findActivityRowForPreviousInstanceRow,
+    findPreviousInstanceRowForActivityRow,
+    sanitizeInstanceHistoryMode,
+    selectDefaultInstanceHistoryDay
+} from '@/features/instance-history/instanceHistoryDayMode';
+import { formatCompactDateTime, timeToText } from '@/lib/dateTime';
 import gameLogRepository from '@/repositories/gameLogRepository';
 import { useModalStore } from '@/state/modalStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
@@ -39,6 +65,7 @@ import {
 } from '@/ui/shadcn/resizable';
 import { ScrollArea } from '@/ui/shadcn/scroll-area';
 import { Spinner } from '@/ui/shadcn/spinner';
+import { ToggleGroup, ToggleGroupItem } from '@/ui/shadcn/toggle-group';
 
 function rowsFromResult(result: any) {
     if (result instanceof Set || result instanceof Map) {
@@ -84,6 +111,8 @@ export function InstanceHistoryPage({
         (state: any) => state.auth.currentUserEndpoint
     );
     const usersByKey = useUserFactsStore((state: any) => state.usersByKey);
+    const mode = sanitizeInstanceHistoryMode(searchParams.get('mode'));
+    const isDayMode = mode === 'day';
     const [targetPickerOpen, setTargetPickerOpen] = useState(false);
     const [targetSearch, setTargetSearch] = useState('');
     const [rows, setRows] = useState<any[]>([]);
@@ -100,9 +129,20 @@ export function InstanceHistoryPage({
     const [pageIndex, setPageIndex] = useState(0);
     const [detailRow, setDetailRow] = useState<any>(null);
     const [reloadToken, setReloadToken] = useState(0);
+    const [selectedDay, setSelectedDay] = useState('');
     const endpoint = normalizeEndpoint(currentEndpoint);
     const paramUserId = normalizeUserId(searchParams.get('id'));
     const activeUserId = paramUserId || normalizeUserId(currentUserId);
+    const isSelfScope = activeUserId === normalizeUserId(currentUserId);
+    const activityRuntime = useInstanceActivityRuntime(activeUserId);
+    const activitySettings = useInstanceActivitySettings();
+    const selectedDayForData = selectedDay || '';
+    const activityData = useInstanceActivityData({
+        currentEndpoint,
+        currentUserId: isDayMode ? activeUserId : '',
+        reloadToken,
+        selectedDate: isDayMode ? selectedDayForData : ''
+    });
 
     const knownUsers = useMemo(() => {
         const usersById = new Map();
@@ -177,9 +217,117 @@ export function InstanceHistoryPage({
             });
     }, [currentUserId, knownUsers, targetSearch, t]);
 
+    const fallbackAvailableDays = useMemo(
+        () => buildAvailableInstanceHistoryDays(rows),
+        [rows]
+    );
+    const availableDays = activityData.availableDates.length
+        ? activityData.availableDates
+        : fallbackAvailableDays;
+    const resolvedSelectedDay = selectDefaultInstanceHistoryDay(
+        selectedDay,
+        availableDays
+    );
+    const rawDayRows = useMemo(
+        () => filterPreviousInstanceRowsForDay(rows, resolvedSelectedDay),
+        [resolvedSelectedDay, rows]
+    );
+    const rawChartRows = useMemo(
+        () =>
+            buildChartRows(
+                activityData.rawRows,
+                resolvedSelectedDay,
+                activeUserId,
+                activityData.worldDetailsById
+            ),
+        [
+            activeUserId,
+            activityData.rawRows,
+            activityData.worldDetailsById,
+            resolvedSelectedDay
+        ]
+    );
+    const detailGroups = useMemo(
+        () =>
+            buildDetailGroups(
+                activityData.rawRows,
+                rawChartRows,
+                activeUserId,
+                activityRuntime.friendIdSet,
+                activityRuntime.favoriteIdSet
+            ),
+        [
+            activeUserId,
+            activityData.rawRows,
+            activityRuntime.favoriteIdSet,
+            activityRuntime.friendIdSet,
+            rawChartRows
+        ]
+    );
+    const visibleDetailGroups = useMemo(
+        () =>
+            filterDetailGroups(detailGroups, {
+                isDetailVisible: true,
+                isSoloInstanceVisible: activitySettings.isSoloInstanceVisible,
+                isNoFriendInstanceVisible:
+                    activitySettings.isNoFriendInstanceVisible
+            }),
+        [
+            activitySettings.isNoFriendInstanceVisible,
+            activitySettings.isSoloInstanceVisible,
+            detailGroups
+        ]
+    );
+    const visibleActivityKeySet = useMemo(() => {
+        const keys = new Set();
+        for (const group of visibleDetailGroups) {
+            for (const key of getDetailGroupKeys(group, activeUserId)) {
+                keys.add(key);
+            }
+        }
+        return keys;
+    }, [activeUserId, visibleDetailGroups]);
+    const chartRows = useMemo(() => {
+        if (activitySettings.isChartCollapsed || !rawChartRows.length) {
+            return [];
+        }
+        if (!detailGroups.length) {
+            return rawChartRows;
+        }
+        return rawChartRows.filter((row: any) =>
+            visibleActivityKeySet.has(activityRowKey(row))
+        );
+    }, [
+        activitySettings.isChartCollapsed,
+        detailGroups.length,
+        rawChartRows,
+        visibleActivityKeySet
+    ]);
+    const totalOnlineTime = useMemo(
+        () =>
+            rawChartRows.reduce(
+                (total: any, row: any) => total + row.visibleDurationMs,
+                0
+            ),
+        [rawChartRows]
+    );
+    const selectedActivityKey = detailRow
+        ? findActivityRowForPreviousInstanceRow(detailRow, chartRows)
+              ?.activityKey || ''
+        : '';
+
     useEffect(() => {
         setPageIndex(0);
     }, [dateRange.from, dateRange.to, search, sortDesc, sortKey]);
+
+    useEffect(() => {
+        if (mode !== 'day') {
+            return;
+        }
+        if (resolvedSelectedDay && resolvedSelectedDay !== selectedDay) {
+            setSelectedDay(resolvedSelectedDay);
+        }
+    }, [mode, resolvedSelectedDay, selectedDay]);
 
     useEffect(() => {
         if (!activeUserId) {
@@ -247,16 +395,32 @@ export function InstanceHistoryPage({
         setSortDesc(Boolean(nextDesc));
     }
 
+    function commitSearchParams({
+        nextMode = mode,
+        nextUserId = activeUserId
+    }: any) {
+        const params = new URLSearchParams();
+        if (nextMode === 'day') {
+            params.set('mode', 'day');
+        }
+        if (nextUserId && nextUserId !== normalizeUserId(currentUserId)) {
+            params.set('scope', 'user');
+            params.set('id', nextUserId);
+        }
+        setSearchParams(params);
+    }
+
+    function changeMode(nextMode: any) {
+        const sanitizedMode = sanitizeInstanceHistoryMode(nextMode);
+        commitSearchParams({ nextMode: sanitizedMode });
+    }
+
     function applyTarget(value: any) {
         const nextUserId = normalizeUserId(value);
         if (!nextUserId) {
             return;
         }
-        if (nextUserId === normalizeUserId(currentUserId)) {
-            setSearchParams({});
-            return;
-        }
-        setSearchParams({ scope: 'user', id: nextUserId });
+        commitSearchParams({ nextUserId });
     }
 
     function refresh() {
@@ -269,6 +433,47 @@ export function InstanceHistoryPage({
     function clearDateRange() {
         setDateRange({ from: null, to: null });
     }
+
+    function handleSearchChange(value: any) {
+        setSearch(value);
+        setPageIndex(0);
+    }
+
+    function handlePageSizeChange(value: any) {
+        setPageSize(value);
+        setPageIndex(0);
+    }
+
+    function handlePreviousPage() {
+        setPageIndex((value: any) => Math.max(0, value - 1));
+    }
+
+    function handleNextPage() {
+        setPageIndex((value: any) => Math.min(totalPages - 1, value + 1));
+    }
+
+    const handleActivityRowActivate = useCallback(
+        (activityRow: any) => {
+            const matchedRow = findPreviousInstanceRowForActivityRow(
+                activityRow,
+                rawDayRows
+            );
+            if (matchedRow) {
+                setDetailRow(matchedRow);
+            }
+        },
+        [rawDayRows]
+    );
+
+    const activityChartLifecycle = useInstanceActivityChartLifecycle({
+        barWidth: activitySettings.barWidth,
+        chartRows,
+        hour12: activityRuntime.hour12,
+        onRowActivate: handleActivityRowActivate,
+        resolvedTheme: activityRuntime.resolvedTheme,
+        selectedActivityKey,
+        selectedDate: resolvedSelectedDay
+    });
 
     const dateActive = Boolean(dateRange.from || dateRange.to);
 
@@ -283,6 +488,7 @@ export function InstanceHistoryPage({
         <DateTimeRangePicker
             value={dateRange}
             onChange={setDateRange}
+            triggerClassName="w-full"
             placeholder={t('view.instance_history.label.date_range')}
             startLabel={t('view.instance_history.label.start')}
             endLabel={t('view.instance_history.label.end')}
@@ -329,6 +535,7 @@ export function InstanceHistoryPage({
                 currentRows.filter((item: any) => item !== row)
             );
             setDetailRow((current: any) => (current === row ? null : current));
+            setReloadToken((value: any) => value + 1);
             toast.success(
                 t('dialog.previous_instances.success.instance_record_deleted')
             );
@@ -342,6 +549,38 @@ export function InstanceHistoryPage({
             );
         }
     }
+
+    const listVisibleRows = isDayMode ? rawDayRows : visibleRows;
+    const listTotalCount = isDayMode ? rawDayRows.length : rows.length;
+    const listFilteredCount = isDayMode
+        ? rawDayRows.length
+        : filteredRows.length;
+    const dayStatus = activityData.dataStatus;
+    const dayHasChartRows = chartRows.length > 0;
+    const instanceHistoryListProps = {
+        mode,
+        totalCount: listTotalCount,
+        filteredCount: listFilteredCount,
+        visibleRows: listVisibleRows,
+        selectedRow: detailRow,
+        search,
+        onSearchChange: handleSearchChange,
+        pageSize,
+        onPageSizeChange: handlePageSizeChange,
+        sortKey,
+        sortDesc,
+        onSortSelect: selectSort,
+        currentPageIndex,
+        totalPages,
+        onPreviousPage: handlePreviousPage,
+        onNextPage: handleNextPage,
+        onOpenDetails: setDetailRow,
+        onDeleteRow: deleteRow,
+        dateRangeControl,
+        dateActive,
+        dateRangeLabel,
+        onClearDate: clearDateRange
+    };
 
     return (
         <PageScaffold embedded={embedded}>
@@ -418,15 +657,34 @@ export function InstanceHistoryPage({
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        disabled={!currentUserId}
-                        onClick={() => applyTarget(currentUserId)}
+                    {!isSelfScope ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled={!currentUserId}
+                            onClick={() => applyTarget(currentUserId)}
+                        >
+                            <UserRoundIcon data-icon="inline-start" />
+                            {t('view.instance_history.action.current_user')}
+                        </Button>
+                    ) : null}
+                    <ToggleGroup
+                        type="single"
+                        value={mode}
+                        onValueChange={(value: any) => {
+                            if (value) {
+                                changeMode(value);
+                            }
+                        }}
+                        className="shrink-0"
                     >
-                        <UserRoundIcon data-icon="inline-start" />
-                        {t('view.instance_history.action.current_user')}
-                    </Button>
+                        <ToggleGroupItem value="search">
+                            {t('view.instance_history.mode.search')}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="day">
+                            {t('view.instance_history.mode.day')}
+                        </ToggleGroupItem>
+                    </ToggleGroup>
                     <Button
                         type="button"
                         variant="outline"
@@ -446,69 +704,139 @@ export function InstanceHistoryPage({
                 ) : null}
             </PageToolbar>
             <PageBody>
-                <ResizablePanelGroup
-                    id="instance-history-layout"
-                    orientation="horizontal"
-                    className="min-h-0 flex-1"
-                >
-                    <ResizablePanel
-                        id="instance-history-list"
-                        defaultSize={36}
-                        minSize={28}
-                        className="min-h-0 min-w-0 pr-3"
+                <div className="flex min-h-0 flex-1 flex-col gap-3">
+                    {isDayMode ? (
+                        <div className="flex shrink-0 flex-col gap-3 rounded-md border p-3">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <InstanceActivityDateControls
+                                        selectedDate={resolvedSelectedDay}
+                                        onSelectedDateChange={setSelectedDay}
+                                        availableDates={availableDays}
+                                        dataStatus={dayStatus}
+                                    />
+                                    <div className="flex items-baseline gap-2 text-sm">
+                                        <span className="text-muted-foreground">
+                                            {t(
+                                                'view.charts.instance_activity.online_time'
+                                            )}
+                                        </span>
+                                        <span className="font-medium tabular-nums">
+                                            {timeToText(totalOnlineTime, true)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <InstanceActivitySettingsPopover
+                                        barWidth={activitySettings.barWidth}
+                                        isDetailVisible
+                                        isSoloInstanceVisible={
+                                            activitySettings.isSoloInstanceVisible
+                                        }
+                                        isNoFriendInstanceVisible={
+                                            activitySettings.isNoFriendInstanceVisible
+                                        }
+                                        showDetailControl={false}
+                                        onBarWidthCommit={
+                                            activitySettings.handleBarWidthCommit
+                                        }
+                                        onSoloInstanceVisibleChange={
+                                            activitySettings.setSoloInstanceVisible
+                                        }
+                                        onNoFriendInstanceVisibleChange={
+                                            activitySettings.setNoFriendInstanceVisible
+                                        }
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        aria-label={t(
+                                            activitySettings.isChartCollapsed
+                                                ? 'view.instance_history.day.expand_chart'
+                                                : 'view.instance_history.day.collapse_chart'
+                                        )}
+                                        onClick={() =>
+                                            activitySettings.setChartCollapsed(
+                                                !activitySettings.isChartCollapsed
+                                            )
+                                        }
+                                    >
+                                        <ChevronUpIcon
+                                            data-icon="icon"
+                                            className={
+                                                activitySettings.isChartCollapsed
+                                                    ? 'rotate-180'
+                                                    : ''
+                                            }
+                                        />
+                                    </Button>
+                                </div>
+                            </div>
+                            {activitySettings.isChartCollapsed ? null : dayStatus ===
+                              'running' ? (
+                                <div className="text-muted-foreground flex min-h-24 items-center justify-center gap-2 text-sm">
+                                    <Spinner className="size-4" />
+                                    {t(
+                                        'view.charts.loading.loading_instance_activity'
+                                    )}
+                                </div>
+                            ) : dayStatus === 'error' ? (
+                                <div className="text-destructive text-sm">
+                                    {activityData.dataDetail ||
+                                        t(
+                                            'view.charts.error.instance_activity_failed_to_load'
+                                        )}
+                                </div>
+                            ) : (
+                                <>
+                                    <div
+                                        ref={
+                                            activityChartLifecycle.setMainChartElementRef
+                                        }
+                                        className="min-h-24 w-full bg-transparent"
+                                    />
+                                    {!dayHasChartRows ? (
+                                        <div className="text-muted-foreground text-sm">
+                                            {t(
+                                                'view.charts.empty.no_instance_activity_on_this_day'
+                                            )}
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
+                        </div>
+                    ) : null}
+                    <ResizablePanelGroup
+                        id="instance-history-layout"
+                        orientation="horizontal"
+                        className="min-h-0 flex-1"
                     >
-                        <InstanceHistoryList
-                            rows={rows}
-                            filteredRows={filteredRows}
-                            visibleRows={visibleRows}
-                            selectedRow={detailRow}
-                            search={search}
-                            onSearchChange={(value: any) => {
-                                setSearch(value);
-                                setPageIndex(0);
-                            }}
-                            pageSize={pageSize}
-                            onPageSizeChange={(value: any) => {
-                                setPageSize(value);
-                                setPageIndex(0);
-                            }}
-                            sortKey={sortKey}
-                            sortDesc={sortDesc}
-                            onSortSelect={selectSort}
-                            currentPageIndex={currentPageIndex}
-                            totalPages={totalPages}
-                            onPreviousPage={() =>
-                                setPageIndex((value: any) =>
-                                    Math.max(0, value - 1)
-                                )
-                            }
-                            onNextPage={() =>
-                                setPageIndex((value: any) =>
-                                    Math.min(totalPages - 1, value + 1)
-                                )
-                            }
-                            onOpenDetails={setDetailRow}
-                            onDeleteRow={deleteRow}
-                            dateRangeControl={dateRangeControl}
-                            dateActive={dateActive}
-                            dateRangeLabel={dateRangeLabel}
-                            onClearDate={clearDateRange}
-                        />
-                    </ResizablePanel>
-                    <ResizableHandle withHandle />
-                    <ResizablePanel
-                        id="instance-history-details"
-                        defaultSize={64}
-                        minSize={40}
-                        className="min-h-0 min-w-0 pl-3"
-                    >
-                        <PreviousInstanceDetailsPanel
-                            row={detailRow}
-                            showTitle
-                            className="h-full min-h-0"
-                        />
-                    </ResizablePanel>
-                </ResizablePanelGroup>
+                        <ResizablePanel
+                            id="instance-history-list"
+                            defaultSize={36}
+                            minSize={28}
+                            className="min-h-0 min-w-0 pr-3"
+                        >
+                            <InstanceHistoryList
+                                {...instanceHistoryListProps}
+                            />
+                        </ResizablePanel>
+                        <ResizableHandle withHandle />
+                        <ResizablePanel
+                            id="instance-history-details"
+                            defaultSize={64}
+                            minSize={40}
+                            className="min-h-0 min-w-0 pl-3"
+                        >
+                            <PreviousInstanceDetailsPanel
+                                row={detailRow}
+                                showTitle
+                                className="h-full min-h-0"
+                            />
+                        </ResizablePanel>
+                    </ResizablePanelGroup>
+                </div>
             </PageBody>
         </PageScaffold>
     );

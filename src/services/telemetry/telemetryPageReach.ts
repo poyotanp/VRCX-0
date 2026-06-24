@@ -22,7 +22,6 @@ const EXACT_ROUTES: Record<string, TelemetryPageRouteKey> = {
     '/my-avatars': 'my_avatars',
     '/notification': 'notification',
     '/social/friend-list': 'friend_list',
-    '/charts/instance': 'charts_instance',
     '/charts/mutual': 'charts_mutual',
     '/tools': 'tools',
     '/tools/gallery': 'gallery',

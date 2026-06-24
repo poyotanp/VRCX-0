@@ -3,9 +3,68 @@ import { formatClock as formatAppClock, timeToText } from '@/lib/dateTime';
 import { getLocalDayBounds } from './instanceActivityRows';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const THREE_HOURS_MS = 3 * HOUR_MS;
+const AXIS_PADDING_MS = 30 * 60 * 1000;
 
-export function formatClock(value: any, hour12: any, includeSeconds: any = false) {
+function pickAxisInterval(spanMs: number) {
+    const candidates = [
+        30 * 60 * 1000,
+        HOUR_MS,
+        2 * HOUR_MS,
+        THREE_HOURS_MS,
+        6 * HOUR_MS
+    ];
+    for (const candidate of candidates) {
+        if (spanMs / candidate <= 8) {
+            return candidate;
+        }
+    }
+    return THREE_HOURS_MS;
+}
+
+function getActivityAxisWindow(rows: any[], dayStartMs: number) {
+    const fullDay = {
+        originMs: dayStartMs,
+        spanMs: DAY_MS,
+        interval: THREE_HOURS_MS
+    };
+    if (!rows.length) {
+        return fullDay;
+    }
+    let first = Infinity;
+    let last = -Infinity;
+    for (const row of rows) {
+        const start = row.visibleStartMs;
+        const end = row.visibleStartMs + row.visibleDurationMs;
+        if (start < first) {
+            first = start;
+        }
+        if (end > last) {
+            last = end;
+        }
+    }
+    if (!Number.isFinite(first) || !Number.isFinite(last) || last <= first) {
+        return fullDay;
+    }
+    const dayEndMs = dayStartMs + DAY_MS;
+    let origin = Math.floor((first - AXIS_PADDING_MS) / HOUR_MS) * HOUR_MS;
+    let end = Math.ceil((last + AXIS_PADDING_MS) / HOUR_MS) * HOUR_MS;
+    origin = Math.max(origin, dayStartMs);
+    end = Math.min(end, dayEndMs);
+    if (end - origin < HOUR_MS) {
+        end = Math.min(origin + HOUR_MS, dayEndMs);
+        origin = Math.max(end - HOUR_MS, dayStartMs);
+    }
+    const spanMs = end - origin;
+    return { originMs: origin, spanMs, interval: pickAxisInterval(spanMs) };
+}
+
+export function formatClock(
+    value: any,
+    hour12: any,
+    includeSeconds: any = false
+) {
     return formatAppClock(value, { hour12, includeSeconds });
 }
 
@@ -21,8 +80,16 @@ function worldNameLabel(row: any, t: any) {
     return row?.worldName || t('dashboard.widget.unknown_world');
 }
 
-export function buildChartOption({ rows, selectedDate, barWidth, hour12, t }: any) {
+export function buildChartOption({
+    rows,
+    selectedDate,
+    barWidth,
+    hour12,
+    selectedActivityKey = '',
+    t
+}: any) {
     const { startMs } = getLocalDayBounds(selectedDate);
+    const axis = getActivityAxisWindow(rows, startMs);
 
     return {
         animationDuration: 250,
@@ -83,11 +150,11 @@ export function buildChartOption({ rows, selectedDate, barWidth, hour12, t }: an
         xAxis: {
             type: 'value',
             min: 0,
-            max: DAY_MS,
-            interval: THREE_HOURS_MS,
+            max: axis.spanMs,
+            interval: axis.interval,
             axisLabel: {
                 formatter(value: any) {
-                    return formatClock(startMs + value, hour12, false);
+                    return formatClock(axis.originMs + value, hour12, false);
                 }
             },
             splitLine: {
@@ -112,7 +179,7 @@ export function buildChartOption({ rows, selectedDate, barWidth, hour12, t }: an
                     }
                 },
                 data: rows.map((row: any) =>
-                    Math.max(0, row.visibleStartMs - startMs)
+                    Math.max(0, row.visibleStartMs - axis.originMs)
                 )
             },
             {
@@ -127,11 +194,36 @@ export function buildChartOption({ rows, selectedDate, barWidth, hour12, t }: an
                     shadowOffsetX: 0.7,
                     shadowOffsetY: 0.5
                 },
-                data: rows.map((row: any) => row.visibleDurationMs)
+                data: rows.map((row: any) => {
+                    if (
+                        !selectedActivityKey ||
+                        row.activityKey !== selectedActivityKey
+                    ) {
+                        return row.visibleDurationMs;
+                    }
+                    return {
+                        value: row.visibleDurationMs,
+                        itemStyle: {
+                            borderColor: '#facc15',
+                            borderWidth: 2,
+                            shadowBlur: 5
+                        }
+                    };
+                })
             }
         ],
         backgroundColor: 'transparent'
     };
+}
+
+export function getMainChartClickedRow(params: any, rows: any[] = []) {
+    if (params?.componentType === 'yAxis') {
+        return rows[params.dataIndex] || null;
+    }
+    if (params?.componentType === 'series' && params?.seriesName === 'Time') {
+        return rows[params.dataIndex] || null;
+    }
+    return null;
 }
 
 export function buildDetailChartOption({ group, barWidth, hour12 }: any) {
@@ -165,7 +257,9 @@ export function buildDetailChartOption({ group, barWidth, hour12 }: any) {
     }
 
     const maxEntryCount = Math.max(
-        ...Array.from(groupedByUser.values()).map((entries: any) => entries.length)
+        ...Array.from(groupedByUser.values()).map(
+            (entries: any) => entries.length
+        )
     );
     const series = [];
     for (let entryIndex = 0; entryIndex < maxEntryCount; entryIndex += 1) {

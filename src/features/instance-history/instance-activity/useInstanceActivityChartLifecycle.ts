@@ -3,14 +3,19 @@ import { useTranslation } from 'react-i18next';
 
 import { echarts } from '@/lib/echarts';
 
-import { buildChartOption } from './instanceActivityChart';
+import {
+    buildChartOption,
+    getMainChartClickedRow
+} from './instanceActivityChart';
 
 export function useInstanceActivityChartLifecycle({
     barWidth,
     chartRows,
     hour12,
+    onRowActivate,
     onYAxisClick,
     resolvedTheme,
+    selectedActivityKey = '',
     selectedDate
 }: any) {
     const { t } = useTranslation();
@@ -82,24 +87,32 @@ export function useInstanceActivityChartLifecycle({
                 selectedDate,
                 barWidth,
                 hour12,
+                selectedActivityKey,
                 t
             }),
             true
         );
         chart.on('click', (params: any) => {
-            if (params.componentType !== 'yAxis') {
+            const row = getMainChartClickedRow(params, chartRows);
+            if (!row) {
                 return;
             }
 
-            onYAxisClick(chartRows[params.dataIndex]);
+            if (typeof onRowActivate === 'function') {
+                onRowActivate(row);
+                return;
+            }
+            onYAxisClick?.(row);
         });
     }, [
         barWidth,
         chartRows,
         hour12,
         mainChartElement,
+        onRowActivate,
         onYAxisClick,
         resolvedTheme,
+        selectedActivityKey,
         selectedDate,
         t
     ]);

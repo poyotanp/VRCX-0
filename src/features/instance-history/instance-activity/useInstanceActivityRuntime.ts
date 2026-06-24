@@ -7,8 +7,10 @@ import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useShellStore } from '@/state/shellStore';
 
-export function useInstanceActivityRuntime() {
-    const currentUserId = useRuntimeStore((state: any) => state.auth.currentUserId);
+export function useInstanceActivityRuntime(userIdOverride: any = '') {
+    const authUserId = useRuntimeStore(
+        (state: any) => state.auth.currentUserId
+    );
     const currentEndpoint = useRuntimeStore(
         (state: any) => state.auth.currentUserEndpoint
     );
@@ -37,7 +39,7 @@ export function useInstanceActivityRuntime() {
 
     return {
         currentEndpoint,
-        currentUserId,
+        currentUserId: userIdOverride || authUserId,
         favoriteIdSet,
         friendIdSet,
         hour12,

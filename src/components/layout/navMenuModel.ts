@@ -24,8 +24,6 @@ export {
     publishNavCustomizeRequested
 };
 
-const CHART_KEYS = ['charts-instance', 'charts-mutual'];
-
 export const routePathByName = Object.freeze({
     feed: '/feed',
     'friends-locations': '/friends-locations',
@@ -41,7 +39,6 @@ export const routePathByName = Object.freeze({
     moderation: '/social/moderation',
     notification: '/notification',
     'my-avatars': '/my-avatars',
-    'charts-instance': '/charts/instance',
     'charts-mutual': '/charts/mutual',
     tools: '/tools',
     gallery: '/tools/gallery',
@@ -94,14 +91,7 @@ export function createBaseDefaultNavLayout(t: any) {
         },
         { type: 'item', key: 'notification' },
         { type: 'item', key: 'my-avatars' },
-        {
-            type: 'folder',
-            id: 'default-folder-charts',
-            nameKey: 'nav_tooltip.charts',
-            name: t('nav_tooltip.charts'),
-            icon: 'lucide:ChartBar',
-            items: CHART_KEYS
-        },
+        { type: 'item', key: 'charts-mutual' },
         { type: 'item', key: 'tools' }
     ];
 }
@@ -169,6 +159,13 @@ function getFolderItemIcon(item: any) {
     return typeof item === 'object' && item ? item.icon : undefined;
 }
 
+function isDefaultChartsFolder(entry: any) {
+    return (
+        entry?.id === 'default-folder-charts' ||
+        entry?.nameKey === 'nav_tooltip.charts'
+    );
+}
+
 function normalizeHiddenKeys(hiddenKeys: any, definitionMap: any) {
     const seen = new Set();
     const normalized = [];
@@ -216,7 +213,11 @@ export function sanitizeNavLayout({
     const usedKeys = new Set();
     const normalized = [];
 
-    const appendItemEntry = (key: any, target: any = normalized, sourceEntry: any = null) => {
+    const appendItemEntry = (
+        key: any,
+        target: any = normalized,
+        sourceEntry: any = null
+    ) => {
         if (
             !key ||
             usedKeys.has(key) ||
@@ -239,36 +240,21 @@ export function sanitizeNavLayout({
         usedKeys.add(key);
     };
 
-    const appendChartsFolder = (target: any = normalized) => {
-        if (CHART_KEYS.some((key: any) => usedKeys.has(key) || hiddenSet.has(key))) {
-            return;
-        }
-        if (!CHART_KEYS.every((key: any) => definitionMap.has(key))) {
-            return;
-        }
-        CHART_KEYS.forEach((key: any) => usedKeys.add(key));
-        target.push({
-            type: 'folder',
-            id: 'default-folder-charts',
-            nameKey: 'nav_tooltip.charts',
-            name: t('nav_tooltip.charts'),
-            icon: 'lucide:ChartBar',
-            items: [...CHART_KEYS]
-        });
-    };
-
     if (Array.isArray(layout)) {
         for (const entry of layout) {
             if (entry?.type === 'item') {
-                if (entry.key === 'charts') {
-                    appendChartsFolder();
-                } else {
-                    appendItemEntry(entry.key, normalized, entry);
-                }
+                appendItemEntry(entry.key, normalized, entry);
                 continue;
             }
 
             if (entry?.type === 'folder') {
+                if (isDefaultChartsFolder(entry)) {
+                    for (const item of entry.items || []) {
+                        appendItemEntry(getFolderItemKey(item));
+                    }
+                    continue;
+                }
+
                 const folderItems = [];
                 for (const item of entry.items || []) {
                     const key = getFolderItemKey(item);
@@ -315,12 +301,8 @@ export function sanitizeNavLayout({
     }
 
     for (const definition of appendDefinitions) {
-        if (CHART_KEYS.includes(definition.key)) {
-            continue;
-        }
         appendItemEntry(definition.key);
     }
-    appendChartsFolder();
 
     return normalized;
 }
@@ -385,7 +367,11 @@ export function buildMenuItems(layout: any, definitionMap: any, t: any) {
     return items;
 }
 
-export async function loadNavMenuModel({ dashboards, notificationLayout, t }: any) {
+export async function loadNavMenuModel({
+    dashboards,
+    notificationLayout,
+    t
+}: any) {
     const dashboardDefinitions = buildDashboardNavDefinitions(dashboards);
     const definitions = [...navDefinitions, ...dashboardDefinitions];
     const definitionMap = createNavDefinitionMap(definitions);

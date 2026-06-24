@@ -1,6 +1,7 @@
 import {
-    ArrowDownIcon,
-    ArrowUpIcon,
+    ArrowDownUpIcon,
+    ArrowDownWideNarrowIcon,
+    ArrowUpNarrowWideIcon,
     ListXIcon,
     Trash2Icon,
     XIcon
@@ -118,8 +119,9 @@ function InstanceHistoryRow({
 }
 
 export function InstanceHistoryList({
-    rows,
-    filteredRows,
+    mode = 'search',
+    totalCount = 0,
+    filteredCount = 0,
     visibleRows,
     selectedRow,
     search,
@@ -141,10 +143,12 @@ export function InstanceHistoryList({
     onClearDate
 }: any) {
     const { t } = useTranslation();
+    const isDayMode = mode === 'day';
     const activeSortKey = SORT_FIELDS.includes(sortKey) ? sortKey : 'date';
-    const grouped = activeSortKey === 'date';
-    const searchActive = Boolean(search && search.trim());
-    const anyFilterActive = searchActive || dateActive;
+    const grouped = !isDayMode && activeSortKey === 'date';
+    const searchActive = !isDayMode && Boolean(search && search.trim());
+    const dayRangeActive = !isDayMode && dateActive;
+    const anyFilterActive = searchActive || dayRangeActive;
 
     const sortFieldLabel: Record<string, string> = {
         date: t('table.previous_instances.date'),
@@ -156,75 +160,79 @@ export function InstanceHistoryList({
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-                <Input
-                    value={search}
-                    onChange={(event: any) =>
-                        onSearchChange(event.target.value)
-                    }
-                    placeholder={t(
-                        'dialog.previous_instances.search_placeholder'
-                    )}
-                    className="min-w-40 flex-1"
-                />
-                {dateRangeControl}
-                <Select
-                    value={activeSortKey}
-                    onValueChange={(value: any) =>
-                        onSortSelect(value, sortDesc)
-                    }
-                >
-                    <SelectTrigger size="sm" className="w-32">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {SORT_FIELDS.map((field: any) => (
-                                <SelectItem key={field} value={field}>
-                                    {sortFieldLabel[field]}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="icon-sm"
-                    aria-label={t('table.previous_instances.action')}
-                    onClick={() => onSortSelect(activeSortKey, !sortDesc)}
-                >
-                    {sortDesc ? (
-                        <ArrowDownIcon data-icon="icon" />
-                    ) : (
-                        <ArrowUpIcon data-icon="icon" />
-                    )}
-                </Button>
-                <Select
-                    value={String(pageSize)}
-                    onValueChange={(value: any) =>
-                        onPageSizeChange(Number.parseInt(value, 10) || 10)
-                    }
-                >
-                    <SelectTrigger size="sm" className="w-20">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {[10, 25, 50, 100].map((size: any) => (
-                                <SelectItem key={size} value={String(size)}>
-                                    {size}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-            </div>
+            {!isDayMode ? (
+                <div className="flex flex-col gap-2">
+                    <Input
+                        value={search}
+                        onChange={(event: any) =>
+                            onSearchChange(event.target.value)
+                        }
+                        placeholder={t(
+                            'dialog.previous_instances.search_placeholder'
+                        )}
+                        className="w-full"
+                    />
+                    <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1">{dateRangeControl}</div>
+                        <div className="flex shrink-0 items-center">
+                            <Select
+                                value={activeSortKey}
+                                onValueChange={(value: any) =>
+                                    onSortSelect(value, sortDesc)
+                                }
+                            >
+                                <SelectTrigger
+                                    size="sm"
+                                    className="w-32 rounded-r-none border-r-0"
+                                    aria-label={t(
+                                        'dialog.previous_instances.label.sort_by'
+                                    )}
+                                >
+                                    <ArrowDownUpIcon className="text-muted-foreground size-3.5" />
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {SORT_FIELDS.map((field: any) => (
+                                            <SelectItem
+                                                key={field}
+                                                value={field}
+                                            >
+                                                {sortFieldLabel[field]}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="rounded-l-none px-2"
+                                aria-label={t(
+                                    sortDesc
+                                        ? 'dialog.previous_instances.label.sort_descending'
+                                        : 'dialog.previous_instances.label.sort_ascending'
+                                )}
+                                onClick={() =>
+                                    onSortSelect(activeSortKey, !sortDesc)
+                                }
+                            >
+                                {sortDesc ? (
+                                    <ArrowDownWideNarrowIcon data-icon="icon" />
+                                ) : (
+                                    <ArrowUpNarrowWideIcon data-icon="icon" />
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
 
             <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="text-muted-foreground">
-                    {formatPreviousInstanceCount(filteredRows.length)}/
-                    {formatPreviousInstanceCount(rows.length)}{' '}
+                    {formatPreviousInstanceCount(filteredCount)}/
+                    {formatPreviousInstanceCount(totalCount)}{' '}
                     {t(
                         'dialog.previous_instances.label.recorded_instance_visits'
                     )}
@@ -239,7 +247,7 @@ export function InstanceHistoryList({
                         <XIcon className="text-muted-foreground size-3" />
                     </button>
                 ) : null}
-                {dateActive ? (
+                {dayRangeActive ? (
                     <button
                         type="button"
                         className="bg-card text-foreground hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-0.5"
@@ -301,32 +309,60 @@ export function InstanceHistoryList({
                 />
             )}
 
-            <div className="flex items-center justify-between">
-                <div className="text-muted-foreground text-sm">
-                    {t('dialog.previous_instances.label.page')}{' '}
-                    {currentPageIndex + 1} / {totalPages}
+            {!isDayMode ? (
+                <div className="flex items-center justify-between gap-2">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <Select
+                            value={String(pageSize)}
+                            onValueChange={(value: any) =>
+                                onPageSizeChange(
+                                    Number.parseInt(value, 10) || 10
+                                )
+                            }
+                        >
+                            <SelectTrigger size="sm" className="w-20">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {[10, 25, 50, 100].map((size: any) => (
+                                        <SelectItem
+                                            key={size}
+                                            value={String(size)}
+                                        >
+                                            {size}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <span>
+                            {t('dialog.previous_instances.label.page')}{' '}
+                            {currentPageIndex + 1} / {totalPages}
+                        </span>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPageIndex <= 0}
+                            onClick={onPreviousPage}
+                        >
+                            {t('table.pagination.previous')}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={currentPageIndex >= totalPages - 1}
+                            onClick={onNextPage}
+                        >
+                            {t('table.pagination.next')}
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={currentPageIndex <= 0}
-                        onClick={onPreviousPage}
-                    >
-                        {t('table.pagination.previous')}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={currentPageIndex >= totalPages - 1}
-                        onClick={onNextPage}
-                    >
-                        {t('table.pagination.next')}
-                    </Button>
-                </div>
-            </div>
+            ) : null}
         </div>
     );
 }

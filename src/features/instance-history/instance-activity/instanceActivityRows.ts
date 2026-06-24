@@ -60,7 +60,8 @@ export function normalizeInstanceRow(
         joinMs,
         leaveMs,
         visibleStartMs,
-        visibleDurationMs
+        visibleDurationMs,
+        activityKey: getActivityDetailKey(row.location, joinMs)
     };
 }
 
@@ -130,7 +131,10 @@ export function doIntervalsOverlap(left: any, right: any) {
     return !(left.leaveMs < right.joinMs || right.leaveMs < left.joinMs);
 }
 
-export function splitDetailGroupsByCurrentUserOverlap(groups: any, currentUserId: any) {
+export function splitDetailGroupsByCurrentUserOverlap(
+    groups: any,
+    currentUserId: any
+) {
     const result = [];
 
     for (const group of groups) {
@@ -176,13 +180,16 @@ export function splitDetailGroupsByCurrentUserOverlap(groups: any, currentUserId
                 }
             }
             result.push(
-                component.sort((left: any, right: any) => left.joinMs - right.joinMs)
+                component.sort(
+                    (left: any, right: any) => left.joinMs - right.joinMs
+                )
             );
         }
     }
 
     return result.sort(
-        (left: any, right: any) => (left[0]?.joinMs || 0) - (right[0]?.joinMs || 0)
+        (left: any, right: any) =>
+            (left[0]?.joinMs || 0) - (right[0]?.joinMs || 0)
     );
 }
 

@@ -35,6 +35,8 @@ describe('page reach telemetry', () => {
         expect(mod.normalizeRouteKey('/login')).toBeNull();
         expect(mod.normalizeRouteKey('/dashboard/abc-123')).toBe('dashboard');
         expect(mod.normalizeRouteKey('/social/friend-log')).toBe('friend_log');
+        expect(mod.normalizeRouteKey('/charts/instance')).toBeNull();
+        expect(mod.normalizeRouteKey('/charts/mutual')).toBe('charts_mutual');
         expect(mod.normalizeRouteKey('/tools/gallery/')).toBe('gallery');
         expect(mod.normalizeRouteKey('/unknown-page')).toBeNull();
     });

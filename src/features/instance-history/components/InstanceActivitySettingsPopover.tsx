@@ -11,12 +11,14 @@ export function InstanceActivitySettingsPopover({
     isDetailVisible,
     isSoloInstanceVisible,
     isNoFriendInstanceVisible,
+    showDetailControl = true,
     onBarWidthCommit,
     onDetailVisibleChange,
     onSoloInstanceVisibleChange,
     onNoFriendInstanceVisibleChange
 }: any) {
     const { t } = useTranslation();
+    const showInstanceFilters = isDetailVisible || !showDetailControl;
 
     return (
         <Popover>
@@ -25,7 +27,9 @@ export function InstanceActivitySettingsPopover({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-label={'Instance activity settings'}
+                    aria-label={t(
+                        'view.charts.instance_activity.settings.header'
+                    )}
                 >
                     <Settings2Icon data-icon="inline-start" />
                 </Button>
@@ -44,22 +48,26 @@ export function InstanceActivitySettingsPopover({
                         max={50}
                         step={1}
                         value={[barWidth]}
-                        onValueChange={([value]: any) => onBarWidthCommit(value)}
+                        onValueChange={([value]: any) =>
+                            onBarWidthCommit(value)
+                        }
                         className="w-40"
                     />
                 </div>
-                <div className="flex h-8 items-center justify-between gap-4 text-sm">
-                    <span className="shrink-0">
-                        {t(
-                            'view.charts.instance_activity.settings.show_detail'
-                        )}
-                    </span>
-                    <Switch
-                        checked={isDetailVisible}
-                        onCheckedChange={onDetailVisibleChange}
-                    />
-                </div>
-                {isDetailVisible ? (
+                {showDetailControl ? (
+                    <div className="flex h-8 items-center justify-between gap-4 text-sm">
+                        <span className="shrink-0">
+                            {t(
+                                'view.charts.instance_activity.settings.show_detail'
+                            )}
+                        </span>
+                        <Switch
+                            checked={isDetailVisible}
+                            onCheckedChange={onDetailVisibleChange}
+                        />
+                    </div>
+                ) : null}
+                {showInstanceFilters ? (
                     <>
                         <div className="flex h-8 items-center justify-between gap-4 text-sm">
                             <span className="shrink-0">

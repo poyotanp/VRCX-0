@@ -1,5 +1,3 @@
-import { InstanceActivityPage } from '@/features/charts/InstanceActivityPage';
-import { MutualFriendsPage } from '@/features/charts/MutualFriendsPage';
 import {
     FavoriteAvatarsPage,
     FavoriteFriendsPage,
@@ -34,8 +32,6 @@ const dashboardPagePanelComponentMap: any = {
     'friend-log': FriendLogPage,
     'friend-list': FriendListPage,
     moderation: ModerationPage,
-    'charts-instance': InstanceActivityPage,
-    'charts-mutual': MutualFriendsPage,
     tools: ToolsPage
 };
 

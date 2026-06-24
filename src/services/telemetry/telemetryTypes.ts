@@ -79,7 +79,6 @@ export type TelemetryPageRouteKey =
     | 'my_avatars'
     | 'notification'
     | 'friend_list'
-    | 'charts_instance'
     | 'charts_mutual'
     | 'tools'
     | 'gallery'

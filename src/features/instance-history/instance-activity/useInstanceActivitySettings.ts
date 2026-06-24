@@ -8,6 +8,7 @@ const DETAIL_VISIBLE_KEY = 'VRCX_InstanceActivityDetailVisible';
 const SOLO_INSTANCE_VISIBLE_KEY = 'VRCX_InstanceActivitySoloInstanceVisible';
 const NO_FRIEND_INSTANCE_VISIBLE_KEY =
     'VRCX_InstanceActivityNoFriendInstanceVisible';
+const CHART_COLLAPSED_KEY = 'VRCX_InstanceActivityChartCollapsed';
 
 function normalizeBarWidth(value: any) {
     return Number.isFinite(value)
@@ -21,6 +22,7 @@ export function useInstanceActivitySettings() {
     const [isSoloInstanceVisible, setIsSoloInstanceVisible] = useState(true);
     const [isNoFriendInstanceVisible, setIsNoFriendInstanceVisible] =
         useState(true);
+    const [isChartCollapsed, setIsChartCollapsed] = useState(false);
 
     useEffect(() => {
         let active = true;
@@ -29,14 +31,16 @@ export function useInstanceActivitySettings() {
             configRepository.getInt(BAR_WIDTH_KEY, DEFAULT_BAR_WIDTH),
             configRepository.getBool(DETAIL_VISIBLE_KEY, true),
             configRepository.getBool(SOLO_INSTANCE_VISIBLE_KEY, true),
-            configRepository.getBool(NO_FRIEND_INSTANCE_VISIBLE_KEY, true)
+            configRepository.getBool(NO_FRIEND_INSTANCE_VISIBLE_KEY, true),
+            configRepository.getBool(CHART_COLLAPSED_KEY, false)
         ])
             .then(
                 ([
                     nextBarWidth,
                     nextDetailVisible,
                     nextSoloVisible,
-                    nextNoFriendVisible
+                    nextNoFriendVisible,
+                    nextChartCollapsed
                 ]: any) => {
                     if (!active) {
                         return;
@@ -46,6 +50,7 @@ export function useInstanceActivitySettings() {
                     setIsDetailVisible(Boolean(nextDetailVisible));
                     setIsSoloInstanceVisible(Boolean(nextSoloVisible));
                     setIsNoFriendInstanceVisible(Boolean(nextNoFriendVisible));
+                    setIsChartCollapsed(Boolean(nextChartCollapsed));
                 }
             )
             .catch(() => {});
@@ -78,14 +83,21 @@ export function useInstanceActivitySettings() {
         configRepository.setBool(NO_FRIEND_INSTANCE_VISIBLE_KEY, value);
     }
 
+    function setChartCollapsed(value: any) {
+        setIsChartCollapsed(value);
+        configRepository.setBool(CHART_COLLAPSED_KEY, value);
+    }
+
     return {
         barWidth,
         isDetailVisible,
         isSoloInstanceVisible,
         isNoFriendInstanceVisible,
+        isChartCollapsed,
         handleBarWidthCommit,
         setDetailVisible,
         setSoloInstanceVisible,
-        setNoFriendInstanceVisible
+        setNoFriendInstanceVisible,
+        setChartCollapsed
     };
 }

@@ -3,15 +3,17 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/ui/shadcn/button';
-import { Input } from '@/ui/shadcn/input';
+import { Calendar } from '@/ui/shadcn/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/shadcn/popover';
 
 import {
     formatDateLabel,
-    getTodayKey
+    parseLocalDayKey,
+    toLocalDayKey
 } from '../instance-activity/instanceActivityDate';
 
 export function InstanceActivityDateControls({
@@ -20,6 +22,8 @@ export function InstanceActivityDateControls({
     availableDates,
     dataStatus
 }: any) {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
     const sortedDatesDesc = useMemo(
         () =>
             [...availableDates].sort((left: any, right: any) =>
@@ -32,13 +36,13 @@ export function InstanceActivityDateControls({
     const selectedDateIndex = sortedDatesDesc.findIndex(
         (value: any) => value === selectedDate
     );
-    const dateOptions = useMemo(() => {
-        const options = [...sortedDatesDesc];
-        if (selectedDate && !options.includes(selectedDate)) {
-            options.unshift(selectedDate);
-        }
-        return options;
-    }, [selectedDate, sortedDatesDesc]);
+    const availableDateObjects = useMemo(
+        () => availableDates.map((dayKey: any) => parseLocalDayKey(dayKey)),
+        [availableDates]
+    );
+    const selectedDateObject = selectedDate
+        ? parseLocalDayKey(selectedDate)
+        : undefined;
 
     const isNextDayDisabled = !latestDate || selectedDate >= latestDate;
     const isPrevDayDisabled = !earliestDate || selectedDate === earliestDate;
@@ -78,7 +82,7 @@ export function InstanceActivityDateControls({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={'Previous day'}
+                    aria-label={t('view.charts.instance_activity.previous_day')}
                     disabled={isPrevDayDisabled}
                     onClick={() => handleDateStep(false)}
                 >
@@ -88,14 +92,14 @@ export function InstanceActivityDateControls({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={'Next day'}
+                    aria-label={t('view.charts.instance_activity.next_day')}
                     disabled={isNextDayDisabled}
                     onClick={() => handleDateStep(true)}
                 >
                     <ChevronRightIcon data-icon="inline-start" />
                 </Button>
             </div>
-            <Popover>
+            <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <Button
                         type="button"
@@ -104,46 +108,29 @@ export function InstanceActivityDateControls({
                         disabled={dataStatus === 'running'}
                     >
                         <CalendarDaysIcon data-icon="inline-start" />
-                        {selectedDate}
+                        {selectedDate
+                            ? formatDateLabel(selectedDate)
+                            : selectedDate}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className="w-72 p-3">
-                    <div className="grid gap-3">
-                        <Input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(event: any) =>
-                                onSelectedDateChange(
-                                    event.target.value || getTodayKey()
-                                )
+                <PopoverContent align="start" className="w-auto p-0">
+                    <Calendar
+                        mode="single"
+                        selected={selectedDateObject}
+                        defaultMonth={selectedDateObject}
+                        disabled={{ after: new Date() }}
+                        modifiers={{ hasActivity: availableDateObjects }}
+                        modifiersClassNames={{
+                            hasActivity:
+                                'relative after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-primary'
+                        }}
+                        onSelect={(date: any) => {
+                            if (date) {
+                                onSelectedDateChange(toLocalDayKey(date));
+                                setOpen(false);
                             }
-                        />
-                        {dateOptions.length ? (
-                            <div className="grid max-h-56 gap-1 overflow-y-auto">
-                                {dateOptions.map((dayKey: any) => (
-                                    <Button
-                                        key={dayKey}
-                                        type="button"
-                                        variant={
-                                            dayKey === selectedDate
-                                                ? 'default'
-                                                : 'ghost'
-                                        }
-                                        size="sm"
-                                        className="justify-start"
-                                        onClick={() =>
-                                            onSelectedDateChange(dayKey)
-                                        }
-                                    >
-                                        {formatDateLabel(dayKey)}
-                                        {availableDates.includes(dayKey)
-                                            ? ''
-                                            : ' (no activity)'}
-                                    </Button>
-                                ))}
-                            </div>
-                        ) : null}
-                    </div>
+                        }}
+                    />
                 </PopoverContent>
             </Popover>
         </>

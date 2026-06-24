@@ -150,20 +150,6 @@ export const DASHBOARD_PAGE_DEFINITIONS = [
         descriptionKey: 'dashboard.registry.avatar_collection_page'
     },
     {
-        key: 'charts-instance',
-        category: 'page',
-        labelKey: 'dashboard.registry.instance_activity',
-        path: '/charts/instance',
-        descriptionKey: 'dashboard.registry.instance_activity_chart'
-    },
-    {
-        key: 'charts-mutual',
-        category: 'page',
-        labelKey: 'dashboard.registry.mutual_friends',
-        path: '/charts/mutual',
-        descriptionKey: 'dashboard.registry.mutual_friends_chart'
-    },
-    {
         key: 'tools',
         category: 'page',
         labelKey: 'dashboard.registry.tools',
