@@ -1,7 +1,7 @@
 import type { DashboardPanel } from '@/repositories/dashboardRepository';
 import { DASHBOARD_BLOCKED_PANEL_KEYS } from '@/shared/constants/dashboard';
 
-type DashboardPanelDefinition = {
+export type DashboardPanelDefinition = {
     key: string;
     category: 'widget' | 'page';
     labelKey: string;
