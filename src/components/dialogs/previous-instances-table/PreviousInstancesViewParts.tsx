@@ -57,10 +57,6 @@ import {
     rowWorldId
 } from './previousInstancesRows';
 
-export function formatDate(value: any) {
-    return formatDateFilterOrFallback(value, 'long');
-}
-
 function playerLeaveMs(player: any) {
     const value = new Date(
         player?.created_at || player?.createdAt || 0
@@ -110,7 +106,10 @@ function instanceDetailsSummary(row: any, t: any) {
     if (parts.length) {
         return parts.join(' / ');
     }
-    const dateText = formatDate(row?.created_at || row?.createdAt);
+    const dateText = formatDateFilterOrFallback(
+        row?.created_at || row?.createdAt,
+        'long'
+    );
     return dateText !== '-'
         ? dateText
         : t('dialog.previous_instances.description.instance_details');
@@ -455,7 +454,10 @@ export function PreviousInstanceDetailsPanel({
                             {t('table.previous_instances.date')}
                         </span>
                         <div>
-                            {formatDate(row?.created_at || row?.createdAt)}
+                            {formatDateFilterOrFallback(
+                                row?.created_at || row?.createdAt,
+                                'long'
+                            )}
                         </div>
                     </div>
                     <div>
@@ -650,9 +652,10 @@ export function PreviousInstanceDetailsPanel({
                                                                     : '-'}
                                                             </TableCell>
                                                             <TableCell className="text-muted-foreground align-top text-xs">
-                                                                {formatDate(
+                                                                {formatDateFilterOrFallback(
                                                                     player?.created_at ||
-                                                                        player?.createdAt
+                                                                        player?.createdAt,
+                                                                    'long'
                                                                 )}
                                                             </TableCell>
                                                         </TableRow>

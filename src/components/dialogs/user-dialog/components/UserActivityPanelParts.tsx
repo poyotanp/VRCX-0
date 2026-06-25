@@ -15,6 +15,8 @@ import {
     EmptyTitle
 } from '@/ui/shadcn/empty';
 
+import { getWorldThumbnailUrl } from '../userActivityPanelModel';
+
 function toHeatmapSeriesData(normalizedBuckets: any, weekStartsOn: any) {
     const data = [];
     for (let day = 0; day < 7; day += 1) {
@@ -244,11 +246,6 @@ export function HeatmapChart({
             }}
         />
     );
-}
-
-export function getWorldThumbnailUrl(world: any) {
-    const url = world?.thumbnailImageUrl || world?.imageUrl || '';
-    return url ? url.replace('256', '128') : '';
 }
 
 export function ActivityEmptyState({ title, description }: any) {

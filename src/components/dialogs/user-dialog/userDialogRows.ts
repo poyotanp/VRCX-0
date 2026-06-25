@@ -210,20 +210,6 @@ export function normalizeLanguageRows(rows: any, tags: any[] = []) {
     return normalizedRows;
 }
 
-export function formatDate(value: any) {
-    return formatDateFilterOrFallback(value, 'long', {
-        empty: DASH,
-        invalid: DASH
-    });
-}
-
-export function formatDateOnly(value: any) {
-    return formatDateFilterOrFallback(value, 'date', {
-        empty: DASH,
-        invalid: DASH
-    });
-}
-
 export function formatStatsDate(value: any) {
     return formatDateFilterOrFallback(value, 'long', { empty: DASH });
 }

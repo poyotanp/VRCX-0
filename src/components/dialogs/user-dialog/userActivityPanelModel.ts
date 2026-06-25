@@ -20,9 +20,9 @@ export const USER_ACTIVITY_HOUR_LABELS = Array.from(
     { length: 24 },
     (_: any, index: any) => `${String(index).padStart(2, '0')}:00`
 );
-export const TOP_WORLDS_LOADING_DELAY = 150;
-export const OVERLAP_LOADING_DELAY = 120;
-export const OVERLAP_RENDER_DELAY = 80;
+export const TOP_WORLDS_LOADING_DELAY_MS = 150;
+export const OVERLAP_LOADING_DELAY_MS = 120;
+export const OVERLAP_RENDER_DELAY_MS = 80;
 
 export function getRangeDays(period: any) {
     return Number.parseInt(period, 10) || 30;
@@ -41,4 +41,9 @@ export function normalizeActivityPeriod(period: any) {
 
 export function normalizeTopWorldsSort(sortBy: any) {
     return ['time', 'count'].includes(sortBy) ? sortBy : 'time';
+}
+
+export function getWorldThumbnailUrl(world: any) {
+    const url = world?.thumbnailImageUrl || world?.imageUrl || '';
+    return url ? url.replace('256', '128') : '';
 }

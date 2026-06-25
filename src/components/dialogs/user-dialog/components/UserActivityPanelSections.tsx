@@ -14,7 +14,7 @@ import { Spinner } from '@/ui/shadcn/spinner';
 import { Switch } from '@/ui/shadcn/switch';
 
 import {
-    OVERLAP_RENDER_DELAY,
+    OVERLAP_RENDER_DELAY_MS,
     USER_ACTIVITY_HOUR_LABELS
 } from '../userActivityPanelModel';
 import { HeatmapChart, TopWorldRows } from './UserActivityPanelParts';
@@ -171,7 +171,7 @@ export function UserActivityOverlapSection({
                     unitLabel={t(
                         'dialog.user.activity.overlap.minutes_overlap'
                     )}
-                    renderDelay={OVERLAP_RENDER_DELAY}
+                    renderDelay={OVERLAP_RENDER_DELAY_MS}
                     onContextMenu={onOverlapChartRightClick}
                 />
             ) : !overlapLoading && !hasOverlapData ? (

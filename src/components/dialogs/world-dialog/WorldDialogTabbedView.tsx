@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { formatDateFilterOrFallback } from '@/lib/dateTime';
 import groupProfileRepository from '@/repositories/groupProfileRepository';
 import mediaRepository from '@/repositories/mediaRepository';
 import playerListPersistenceRepository from '@/repositories/playerListPersistenceRepository';
@@ -38,12 +37,6 @@ import {
     resolveLaunchLocation,
     sameLocationTag
 } from './WorldDialogViewParts';
-function formatDate(value: any) {
-    return formatDateFilterOrFallback(value, 'long', {
-        empty: '',
-        invalid: (rawValue) => String(rawValue)
-    });
-}
 
 let lastWorldDialogTab = 'instances';
 
@@ -928,7 +921,6 @@ export function WorldDialogTabbedView({
                 <WorldDialogTabPanels
                     tabModel={tabModel}
                     tabCommands={tabCommands}
-                    formatDate={formatDate}
                 />
             </EntityDialogTwoColumnLayout>
         </EntityDialogScaffold>

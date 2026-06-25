@@ -5,7 +5,7 @@ import { InstanceActionBar } from '@/components/instances/InstanceActionBar';
 import { LocationWorld } from '@/components/LocationWorld';
 import { ScreenshotThumbnailCard } from '@/features/tools/components/ScreenshotThumbnailGrid';
 import { useScreenshotGalleryGrid } from '@/features/tools/useScreenshotGalleryGrid';
-import { timeToText } from '@/lib/dateTime';
+import { formatDateFilterOrFallback, timeToText } from '@/lib/dateTime';
 import { openExternalLink } from '@/services/entityMediaService';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
@@ -32,6 +32,11 @@ import {
     WorldInstancesEmptyState,
     resolveLaunchLocation
 } from './WorldDialogViewParts';
+
+const WORLD_DATE_FALLBACKS = {
+    empty: '',
+    invalid: String
+};
 
 function firstKnownValue(...values: any[]) {
     for (const value of values) {
@@ -127,7 +132,6 @@ export function WorldDialogTabPanels(props: any) {
     const { t } = useTranslation();
     const model = props?.tabModel || props || {};
     const commands = props?.tabCommands || props || {};
-    const { formatDate } = props || {};
     const {
         activeTab,
         authorTags,
@@ -395,28 +399,46 @@ export function WorldDialogTabPanels(props: any) {
                     />
                     <EntityInfoBlock
                         label={t('dialog.world.info.created_at')}
-                        value={formatDate(world.createdAt || world.created_at)}
+                        value={formatDateFilterOrFallback(
+                            world.createdAt || world.created_at,
+                            'long',
+                            WORLD_DATE_FALLBACKS
+                        )}
                     />
                     <EntityInfoBlock
                         label={t('dialog.world.info.last_updated')}
-                        value={formatDate(world.updatedAt || world.updated_at)}
+                        value={formatDateFilterOrFallback(
+                            world.updatedAt || world.updated_at,
+                            'long',
+                            WORLD_DATE_FALLBACKS
+                        )}
                     />
                     {world.labsPublicationDate &&
                     world.labsPublicationDate !== 'none' ? (
                         <EntityInfoBlock
                             label={t('dialog.world.info.labs_publication_date')}
-                            value={formatDate(world.labsPublicationDate)}
+                            value={formatDateFilterOrFallback(
+                                world.labsPublicationDate,
+                                'long',
+                                WORLD_DATE_FALLBACKS
+                            )}
                         />
                     ) : null}
                     <EntityInfoBlock
                         label={t('dialog.world.info.publication_date')}
-                        value={formatDate(world.publicationDate)}
+                        value={formatDateFilterOrFallback(
+                            world.publicationDate,
+                            'long',
+                            WORLD_DATE_FALLBACKS
+                        )}
                     />
                     <EntityInfoBlock
                         label={t('dialog.world.info.last_visited')}
-                        value={formatDate(
+                        value={formatDateFilterOrFallback(
                             lastVisitedInstance?.created_at ||
-                                lastVisitedInstance?.createdAt
+                                lastVisitedInstance?.createdAt,
+                            'long',
+                            WORLD_DATE_FALLBACKS
                         )}
                     />
                     <EntityInfoBlock
