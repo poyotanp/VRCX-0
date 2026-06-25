@@ -14,6 +14,7 @@ use crate::web_client::WebClient;
 use crate::worker::{RuntimeWorker, RuntimeWorkerOptions};
 use crate::world_cache::WorldCache;
 use crate::Result;
+use crate::RuntimeAuthScope;
 
 use super::host::GameLogHostActions;
 use super::ingest::GameLogProcessEvent;
@@ -28,6 +29,7 @@ pub struct GameLogRuntimeDeps {
     pub event_bus: RuntimeEventBus,
     pub tasks: TaskSupervisor,
     pub sync: RuntimeSyncEngine,
+    pub auth_scope: RuntimeAuthScope,
     pub session: HostSessionRuntime,
     pub snapshot: Arc<Mutex<RuntimeSnapshot>>,
     pub host_actions: Arc<dyn GameLogHostActions>,
@@ -50,6 +52,7 @@ impl GameLogRuntime {
             event_bus: deps.event_bus.clone(),
             tasks: deps.tasks,
             sync: deps.sync,
+            auth_scope: deps.auth_scope,
             snapshot: deps.snapshot,
             host_actions: deps.host_actions,
             overlay_activity: deps.overlay_activity,

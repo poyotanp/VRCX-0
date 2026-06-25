@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -26,9 +27,12 @@ use crate::task_supervisor::TaskSupervisor;
 use crate::web_client::WebClient;
 use crate::world_cache::WorldCache;
 use crate::world_enrich::{is_meaningful_world_name, world_id_from_location_or_id};
+use crate::RuntimeAuthScope;
 use crate::{Error, Result};
 
 const GAME_LOG_WRITE_RETRY_DELAYS_MS: &[u64] = &[25, 100, 250];
+const JOIN_NOTIFICATION_SUPPRESS_MS: i64 = 30_000;
+const LEAVE_NOTIFICATION_SUPPRESS_MS: i64 = 5_000;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum GameLogWriteOutcome {
@@ -50,6 +54,7 @@ pub struct GameLogProcessorDeps {
     pub event_bus: RuntimeEventBus,
     pub tasks: TaskSupervisor,
     pub sync: RuntimeSyncEngine,
+    pub auth_scope: RuntimeAuthScope,
     pub snapshot: Arc<Mutex<RuntimeSnapshot>>,
     pub host_actions: Arc<dyn GameLogHostActions>,
     pub overlay_activity: OverlayActivityRuntime,
@@ -111,7 +116,7 @@ impl GameLogProcessor {
                 .ok()
                 .flatten()
             {
-                engine.seed_current_location(last.location, last.world_name);
+                engine.seed_current_location(last.location, last.world_name, last.created_at);
             }
         }
         Self {
@@ -192,7 +197,10 @@ impl GameLogProcessor {
         let write_outcome =
             self.write_batch_or_emit_failure_telemetry(&output.batch, output.raw_rows.clone())?;
         if let GameLogWriteOutcome::RuntimePersisted { affected_count } = write_outcome {
-            self.deps.overlay_activity.ingest_game_log_output(&output);
+            let overlay_output = self.overlay_activity_output(&output);
+            self.deps
+                .overlay_activity
+                .ingest_game_log_output(&overlay_output);
             self.deps.event_bus.emit_game_log_persisted(affected_count);
             if let Some(projection) = output.projection {
                 self.deps.event_bus.emit_game_log_projection(projection);
@@ -205,6 +213,28 @@ impl GameLogProcessor {
             dispatch_side_effect(deps.clone(), side_effect);
         }
         Ok(())
+    }
+
+    fn overlay_activity_output(&self, output: &GameLogIngestOutput) -> GameLogIngestOutput {
+        let current_snapshot = self
+            .deps
+            .snapshot
+            .lock()
+            .map(|snapshot| snapshot.clone())
+            .unwrap_or_default();
+        let current_user_id = self.deps.auth_scope.snapshot().current_user_id;
+        let context = OverlayJoinLeaveSuppressionContext::from_output(output, current_snapshot);
+        let mut overlay_output = output.clone();
+        overlay_output.batch.join_leave = output
+            .batch
+            .join_leave
+            .iter()
+            .filter(|entry| {
+                should_deliver_join_leave_overlay_activity(entry, &context, &current_user_id)
+            })
+            .cloned()
+            .collect();
+        overlay_output
     }
 
     fn enrich_ingest_output_world_names(&self, output: &mut GameLogIngestOutput) {
@@ -279,6 +309,113 @@ impl GameLogProcessor {
             .map_err(|error| Error::Custom(format!("GameLog runtime state lock: {error}")))?;
         Ok(f(&mut engine))
     }
+}
+
+struct OverlayJoinLeaveSuppressionContext {
+    current_snapshot: RuntimeSnapshot,
+    location_started_at_by_location: HashMap<String, String>,
+    destination_started_at: Vec<String>,
+}
+
+impl OverlayJoinLeaveSuppressionContext {
+    fn from_output(output: &GameLogIngestOutput, current_snapshot: RuntimeSnapshot) -> Self {
+        let location_started_at_by_location = output
+            .batch
+            .locations
+            .iter()
+            .map(|entry| (entry.location.clone(), entry.created_at.clone()))
+            .collect();
+        let destination_started_at = output
+            .raw_rows
+            .iter()
+            .filter(|row| row.get(2).map(String::as_str) == Some("location-destination"))
+            .filter_map(|row| row.get(1).cloned())
+            .collect();
+
+        Self {
+            current_snapshot,
+            location_started_at_by_location,
+            destination_started_at,
+        }
+    }
+
+    fn join_reference_at(&self, location: &str) -> Option<&str> {
+        self.location_started_at_by_location
+            .get(location)
+            .map(String::as_str)
+            .or_else(|| {
+                (self.current_snapshot.location == location)
+                    .then_some(self.current_snapshot.started_at.as_str())
+            })
+    }
+
+    fn is_within_leave_suppression_window(&self, created_at: &str) -> bool {
+        self.destination_started_at
+            .iter()
+            .map(String::as_str)
+            .chain(
+                (self.current_snapshot.location == "traveling")
+                    .then_some(self.current_snapshot.started_at.as_str()),
+            )
+            .any(|reference_at| {
+                is_within_suppression_window(
+                    created_at,
+                    reference_at,
+                    LEAVE_NOTIFICATION_SUPPRESS_MS,
+                )
+            })
+    }
+}
+
+fn should_deliver_join_leave_overlay_activity(
+    entry: &vrcx_0_persistence::game_log::GameLogJoinLeaveEntry,
+    context: &OverlayJoinLeaveSuppressionContext,
+    current_user_id: &str,
+) -> bool {
+    if !current_user_id.trim().is_empty() && entry.user_id.trim() == current_user_id.trim() {
+        return false;
+    }
+
+    if is_join_activity_type(&entry.event_type) {
+        if let Some(reference_at) = context.join_reference_at(&entry.location) {
+            return !is_within_suppression_window(
+                &entry.created_at,
+                reference_at,
+                JOIN_NOTIFICATION_SUPPRESS_MS,
+            );
+        }
+    }
+
+    if is_left_activity_type(&entry.event_type) {
+        return !context.is_within_leave_suppression_window(&entry.created_at);
+    }
+
+    true
+}
+
+fn is_join_activity_type(activity_type: &str) -> bool {
+    matches!(
+        activity_type,
+        "OnPlayerJoined" | "BlockedOnPlayerJoined" | "MutedOnPlayerJoined"
+    )
+}
+
+fn is_left_activity_type(activity_type: &str) -> bool {
+    matches!(
+        activity_type,
+        "OnPlayerLeft" | "BlockedOnPlayerLeft" | "MutedOnPlayerLeft"
+    )
+}
+
+fn is_within_suppression_window(created_at: &str, reference_at: &str, window_ms: i64) -> bool {
+    let Some(created_at_ms) = crate::game_log::parse_event_time_ms(created_at) else {
+        return false;
+    };
+    let Some(reference_at_ms) = crate::game_log::parse_event_time_ms(reference_at) else {
+        return false;
+    };
+
+    created_at_ms >= reference_at_ms && created_at_ms <= reference_at_ms.saturating_add(window_ms)
 }
 
 fn remember_error(first_error: &mut Option<Error>, error: Error) {
@@ -418,6 +555,7 @@ mod tests {
     use crate::task_supervisor::TaskSupervisor;
     use crate::web_client::WebClient;
     use crate::Result;
+    use crate::RuntimeAuthScope;
 
     use super::{GameLogProcessor, GameLogProcessorDeps, GameLogWorkerJob};
 
@@ -455,6 +593,11 @@ mod tests {
     fn test_processor(name: &str) -> Result<(TestDir, Arc<DatabaseService>, GameLogProcessor)> {
         let dir = TestDir::new(name);
         let db = Arc::new(DatabaseService::new(&dir.path.join("VRCX-0.sqlite3"))?);
+        let processor = build_test_processor(&dir, Arc::clone(&db))?;
+        Ok((dir, db, processor))
+    }
+
+    fn build_test_processor(dir: &TestDir, db: Arc<DatabaseService>) -> Result<GameLogProcessor> {
         let storage = StorageService::new(&dir.path.join("VRCX-0.json"))?;
         let web = Arc::new(WebClient::new(
             &storage,
@@ -476,6 +619,7 @@ mod tests {
             event_bus: RuntimeEventBus::new(),
             tasks: TaskSupervisor::new(),
             sync: RuntimeSyncEngine::new(),
+            auth_scope: RuntimeAuthScope::new(),
             snapshot: Arc::new(Mutex::new(RuntimeSnapshot::default())),
             host_actions: Arc::new(NoopGameLogHostActions),
             overlay_activity: OverlayActivityRuntime::with_filters(
@@ -497,7 +641,7 @@ mod tests {
             ),
             world_cache,
         });
-        Ok((dir, db, processor))
+        Ok(processor)
     }
 
     #[test]
@@ -592,7 +736,7 @@ mod tests {
                 },
             )),
             GameLogWorkerJob::Event(event(
-                "2026-05-14T07:00:10.000Z",
+                "2026-05-14T07:00:40.000Z",
                 GameLogEventKind::PlayerJoined {
                     display_name: "Traveler".into(),
                     user_id: "usr_traveler".into(),
@@ -615,6 +759,181 @@ mod tests {
                 .and_then(|value| value.as_str()),
             Some("Named World")
         );
+        Ok(())
+    }
+
+    #[test]
+    fn suppresses_initial_current_instance_join_overlay_notifications() -> Result<()> {
+        let (_dir, db, processor) = test_processor("runtime-gamelog-join-suppress")?;
+
+        processor.handle_jobs(vec![
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:00:00.000Z",
+                GameLogEventKind::Location {
+                    location: "wrld_public:123".into(),
+                    world_name: "Public World".into(),
+                },
+            )),
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:00:10.000Z",
+                GameLogEventKind::PlayerJoined {
+                    display_name: "Existing Player".into(),
+                    user_id: "usr_existing".into(),
+                },
+            )),
+        ])?;
+
+        let join_leave = vrcx_0_persistence::game_log::get_game_log_join_leave(&db)?;
+        assert_eq!(join_leave.len(), 1);
+        assert!(processor
+            .deps
+            .overlay_activity
+            .snapshot()
+            .entries
+            .is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn suppresses_seeded_location_join_overlay_notifications() -> Result<()> {
+        let dir = TestDir::new("runtime-gamelog-seeded-join-suppress");
+        let db = Arc::new(DatabaseService::new(&dir.path.join("VRCX-0.sqlite3"))?);
+        vrcx_0_persistence::game_log::write_batch(
+            &db,
+            &vrcx_0_persistence::game_log::GameLogWriteBatch {
+                locations: vec![vrcx_0_persistence::game_log::GameLogLocationEntry {
+                    created_at: "2026-05-14T08:05:00.000Z".into(),
+                    location: "wrld_seeded:123".into(),
+                    world_id: "wrld_seeded".into(),
+                    world_name: "Seeded World".into(),
+                    time: 0,
+                    group_name: String::new(),
+                }],
+                ..vrcx_0_persistence::game_log::GameLogWriteBatch::default()
+            },
+        )?;
+        let processor = build_test_processor(&dir, Arc::clone(&db))?;
+
+        processor.handle_jobs(vec![GameLogWorkerJob::Event(event(
+            "2026-05-14T08:05:10.000Z",
+            GameLogEventKind::PlayerJoined {
+                display_name: "Seeded Existing Player".into(),
+                user_id: "usr_seeded_existing".into(),
+            },
+        ))])?;
+
+        let join_leave = vrcx_0_persistence::game_log::get_game_log_join_leave(&db)?;
+        assert_eq!(join_leave.len(), 1);
+        assert!(processor
+            .deps
+            .overlay_activity
+            .snapshot()
+            .entries
+            .is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn allows_later_current_instance_join_overlay_notifications() -> Result<()> {
+        let (_dir, _db, processor) = test_processor("runtime-gamelog-join-later")?;
+
+        processor.handle_jobs(vec![
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:10:00.000Z",
+                GameLogEventKind::Location {
+                    location: "wrld_public:456".into(),
+                    world_name: "Public World".into(),
+                },
+            )),
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:10:31.000Z",
+                GameLogEventKind::PlayerJoined {
+                    display_name: "Late Player".into(),
+                    user_id: "usr_late".into(),
+                },
+            )),
+        ])?;
+
+        let entries = processor.deps.overlay_activity.snapshot().entries;
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].actor_user_id, "usr_late");
+        Ok(())
+    }
+
+    #[test]
+    fn suppresses_leave_overlay_notifications_right_after_destination() -> Result<()> {
+        let (_dir, db, processor) = test_processor("runtime-gamelog-leave-suppress")?;
+
+        processor.handle_jobs(vec![
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:20:00.000Z",
+                GameLogEventKind::Location {
+                    location: "wrld_old:123".into(),
+                    world_name: "Old World".into(),
+                },
+            )),
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:20:40.000Z",
+                GameLogEventKind::PlayerJoined {
+                    display_name: "Departing Player".into(),
+                    user_id: "usr_departing".into(),
+                },
+            )),
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:21:00.000Z",
+                GameLogEventKind::LocationDestination {
+                    location: "wrld_next:123".into(),
+                },
+            )),
+        ])?;
+
+        let join_leave = vrcx_0_persistence::game_log::get_game_log_join_leave(&db)?;
+        assert_eq!(join_leave.len(), 2);
+        let entries = processor.deps.overlay_activity.snapshot().entries;
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].activity_type, "OnPlayerJoined");
+        Ok(())
+    }
+
+    #[test]
+    fn suppresses_current_user_join_leave_overlay_notifications() -> Result<()> {
+        let (_dir, db, processor) = test_processor("runtime-gamelog-current-user-suppress")?;
+        processor
+            .deps
+            .auth_scope
+            .set("usr_self", "https://api.vrchat.cloud/api/1");
+
+        processor.handle_jobs(vec![
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:30:00.000Z",
+                GameLogEventKind::Location {
+                    location: "wrld_self:123".into(),
+                    world_name: "Self World".into(),
+                },
+            )),
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:30:40.000Z",
+                GameLogEventKind::PlayerJoined {
+                    display_name: "Self".into(),
+                    user_id: "usr_self".into(),
+                },
+            )),
+            GameLogWorkerJob::Event(event(
+                "2026-05-14T08:31:00.000Z",
+                GameLogEventKind::LocationDestination {
+                    location: "wrld_next:123".into(),
+                },
+            )),
+        ])?;
+
+        let join_leave = vrcx_0_persistence::game_log::get_game_log_join_leave(&db)?;
+        assert_eq!(join_leave.len(), 2);
+        assert!(processor
+            .deps
+            .overlay_activity
+            .snapshot()
+            .entries
+            .is_empty());
         Ok(())
     }
 }

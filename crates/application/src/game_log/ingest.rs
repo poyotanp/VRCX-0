@@ -78,12 +78,19 @@ impl GameLogIngestEngine {
     pub fn runtime_snapshot(&self) -> RuntimeSnapshot {
         self.state.snapshot()
     }
-    pub fn seed_current_location(&mut self, location: String, world_name: String) {
+    pub fn seed_current_location(
+        &mut self,
+        location: String,
+        world_name: String,
+        started_at: String,
+    ) {
         if location.is_empty() || !self.state.current_location.is_empty() {
             return;
         }
         self.state.current_location = location;
         self.state.current_world_name = world_name;
+        self.state.current_location_started_at = started_at.clone();
+        self.state.current_location_started_at_ms = parse_event_time_ms(&started_at);
     }
 
     pub fn ingest_events(
@@ -606,7 +613,11 @@ mod tests {
     #[test]
     fn seeded_location_applies_to_join_without_location_event() {
         let mut engine = GameLogIngestEngine::default();
-        engine.seed_current_location("wrld_seed:1".into(), "Seed World".into());
+        engine.seed_current_location(
+            "wrld_seed:1".into(),
+            "Seed World".into(),
+            "2026-05-14T10:00:00.000Z".into(),
+        );
         let output = engine.ingest_events(
             &[event(
                 "2026-05-14T10:05:00.000Z",
@@ -620,6 +631,10 @@ mod tests {
 
         assert_eq!(output.batch.join_leave.len(), 1);
         assert_eq!(output.batch.join_leave[0].location, "wrld_seed:1");
+        assert_eq!(
+            engine.runtime_snapshot().started_at,
+            "2026-05-14T10:00:00.000Z"
+        );
     }
 
     #[test]
@@ -635,7 +650,11 @@ mod tests {
             )],
             GameLogIngestOptions::default(),
         );
-        engine.seed_current_location("wrld_seed:1".into(), "Seed".into());
+        engine.seed_current_location(
+            "wrld_seed:1".into(),
+            "Seed".into(),
+            "2026-05-14T09:00:00.000Z".into(),
+        );
         let output = engine.ingest_events(
             &[event(
                 "2026-05-14T10:01:00.000Z",

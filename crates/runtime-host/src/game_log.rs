@@ -72,6 +72,7 @@ impl GameLogHostRuntime {
             event_bus: context.event_bus.clone(),
             tasks: context.tasks.clone(),
             sync: context.sync.clone(),
+            auth_scope: context.auth_scope.clone(),
             snapshot: context.game_log_snapshot_handle(),
             session: context.session.clone(),
             overlay_activity: context.overlay_activity.clone(),
