@@ -57,7 +57,7 @@ export function requestScreenshotThumbnail(path: any) {
         subscribers: 1,
         started: false,
         cancelled: false,
-        sequence: requestSequence += 1
+        sequence: (requestSequence += 1)
     };
     const promise = new Promise((resolve: any, reject: any) => {
         task.resolve = resolve;

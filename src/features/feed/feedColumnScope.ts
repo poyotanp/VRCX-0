@@ -37,10 +37,7 @@ function buildFavoriteIdsForGroupSelection({
     };
     const acceptsLocalGroup = (groupName: unknown) => {
         const normalizedGroupName = normalizeId(groupName);
-        return (
-            allGroups ||
-            selectedGroups.has(`local:${normalizedGroupName}`)
-        );
+        return allGroups || selectedGroups.has(`local:${normalizedGroupName}`);
     };
 
     for (const favorite of Object.values(remoteFavoritesById || {})) {
@@ -130,7 +127,8 @@ export function buildFeedFavoriteGroupOptions({
         if (key) {
             options.set(key, {
                 key,
-                label: normalizeId(group?.displayName || group?.name || key) || key
+                label:
+                    normalizeId(group?.displayName || group?.name || key) || key
             });
         }
     }
@@ -167,7 +165,11 @@ export function describeFeedColumnScope(
             : Array.isArray(excludedGroupKeys) && excludedGroupKeys.length
               ? options.excludedGroupCountLabel?.(excludedGroupKeys.length)
               : '';
-    return [scope, exclusion, column.feedTypes.map(options.typeLabel).join(', ')]
+    return [
+        scope,
+        exclusion,
+        column.feedTypes.map(options.typeLabel).join(', ')
+    ]
         .filter(Boolean)
         .join(' · ');
 }

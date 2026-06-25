@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatDateFilter, timeToText } from '@/lib/dateTime';
+import { cn } from '@/lib/utils';
 import {
     getNameColour,
     openExternalLink,
     userImage
 } from '@/services/entityMediaService';
-import { cn } from '@/lib/utils';
 import { getFaviconUrl } from '@/shared/utils/urlUtils';
 import { Button } from '@/ui/shadcn/button';
 import { Checkbox } from '@/ui/shadcn/checkbox';
@@ -219,9 +219,7 @@ export function useFriendListColumns({
                                 <i className={status.indicatorClassName} />
                             ) : null}
                             {status.label ? (
-                                <span className="truncate">
-                                    {status.label}
-                                </span>
+                                <span className="truncate">{status.label}</span>
                             ) : null}
                         </span>
                     );
@@ -248,8 +246,10 @@ export function useFriendListColumns({
                             {languages.map((entry: any) => {
                                 const key = entry?.key || entry?.value || '';
                                 const code = languageCodeLabel(key);
-                                const tooltipLabel =
-                                    languageTooltipLabel(entry, code);
+                                const tooltipLabel = languageTooltipLabel(
+                                    entry,
+                                    code
+                                );
                                 if (!code) {
                                     return null;
                                 }

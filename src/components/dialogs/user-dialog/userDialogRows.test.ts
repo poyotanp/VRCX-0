@@ -88,16 +88,12 @@ describe('userDialogRows', () => {
             'avtr_b',
             'avtr_c'
         ]);
-        expect(sortAvatarRows(rows, 'update').map((row: any) => row.id)).toEqual([
-            'avtr_a',
-            'avtr_b',
-            'avtr_c'
-        ]);
-        expect(sortAvatarRows(rows, 'createdAt').map((row: any) => row.id)).toEqual([
-            'avtr_c',
-            'avtr_b',
-            'avtr_a'
-        ]);
+        expect(
+            sortAvatarRows(rows, 'update').map((row: any) => row.id)
+        ).toEqual(['avtr_a', 'avtr_b', 'avtr_c']);
+        expect(
+            sortAvatarRows(rows, 'createdAt').map((row: any) => row.id)
+        ).toEqual(['avtr_c', 'avtr_b', 'avtr_a']);
     });
 
     it('shows mutual friends with roster details while keeping dialog friend order', () => {
@@ -140,10 +136,14 @@ describe('userDialogRows', () => {
             }
         ]);
         expect(
-            sortMutualFriendRows(hydrated, 'friendOrder').map((row: any) => row.id)
+            sortMutualFriendRows(hydrated, 'friendOrder').map(
+                (row: any) => row.id
+            )
         ).toEqual(['usr_bob', 'usr_alice']);
         expect(
-            sortMutualFriendRows(hydrated, 'alphabetical').map((row: any) => row.id)
+            sortMutualFriendRows(hydrated, 'alphabetical').map(
+                (row: any) => row.id
+            )
         ).toEqual(['usr_alice', 'usr_bob']);
     });
 

@@ -86,10 +86,7 @@ function normalizeLaunchDelaySeconds(value: unknown): number {
     if (!Number.isFinite(numeric)) {
         return 0;
     }
-    return Math.min(
-        MAX_LAUNCH_DELAY_SECONDS,
-        Math.max(0, Math.trunc(numeric))
-    );
+    return Math.min(MAX_LAUNCH_DELAY_SECONDS, Math.max(0, Math.trunc(numeric)));
 }
 
 function shortTarget(entry: AppLauncherEntry): string {
@@ -111,10 +108,11 @@ function applyPickedTarget(
         args:
             picked.kind === 'localApp'
                 ? entry.kind === 'localApp'
-                    ? entry.args ?? ''
+                    ? (entry.args ?? '')
                     : ''
                 : undefined,
-        stopPolicy: picked.kind === 'steamApp' ? 'keepRunning' : entry.stopPolicy,
+        stopPolicy:
+            picked.kind === 'steamApp' ? 'keepRunning' : entry.stopPolicy,
         processName: picked.processName ?? '',
         workingDirectory: null
     });
@@ -376,9 +374,7 @@ export function AppLauncherDialog({ open, onOpenChange }: any) {
                                     <EmptyTitle>
                                         {loading
                                             ? t('dialog.app_launcher.loading')
-                                            : t(
-                                                  'dialog.app_launcher.empty'
-                                              )}
+                                            : t('dialog.app_launcher.empty')}
                                     </EmptyTitle>
                                 </EmptyHeader>
                             </Empty>

@@ -97,7 +97,9 @@ function FavoritesToolbar({
                     </InputGroupAddon>
                     <InputGroupInput
                         value={searchQuery}
-                        onChange={(event: any) => onSearchChange(event.target.value)}
+                        onChange={(event: any) =>
+                            onSearchChange(event.target.value)
+                        }
                         placeholder={searchPlaceholder}
                         className="text-sm"
                     />

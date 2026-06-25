@@ -60,16 +60,12 @@ export function PostUpdateChangelogToastHost() {
                         value: displayVersion
                     }),
                     {
-                        description: t(
-                            'dialog.change_log.toast_description'
-                        ),
+                        description: t('dialog.change_log.toast_description'),
                         duration: Infinity,
                         position: 'bottom-right',
                         closeButton: true,
                         action: {
-                            label: t(
-                                'dialog.change_log.view_changes'
-                            ),
+                            label: t('dialog.change_log.view_changes'),
                             onClick: () => {
                                 recordSeen();
                                 toast.dismiss(toastId);
@@ -82,7 +78,10 @@ export function PostUpdateChangelogToastHost() {
                     }
                 );
             } catch (error) {
-                console.warn('Failed to show post-update changelog toast:', error);
+                console.warn(
+                    'Failed to show post-update changelog toast:',
+                    error
+                );
             }
         };
 

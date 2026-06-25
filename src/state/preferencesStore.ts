@@ -557,33 +557,29 @@ export type PreferencesStoreState = PreferencesSnapshot & {
     ): void;
 };
 
-export const usePreferencesStore = create<PreferencesStoreState>(
-    (set) => ({
-        ...normalizePreferenceSnapshot(DEFAULT_PREFERENCES),
-        preferencesHydrated: false,
-        hydratePreferences(snapshot: unknown) {
-            set({
-                ...normalizePreferenceSnapshot(
-                    snapshot as PreferenceInputSnapshot
-                ),
-                preferencesHydrated: true
-            });
-        },
-        patchPreferences(patch: Partial<PreferencesSnapshot>) {
-            set((state) =>
-                normalizePreferenceSnapshot({
-                    ...state,
-                    ...patch
-                } as PreferenceInputSnapshot)
-            );
-        },
-        setPreferenceValue(key, value) {
-            set((state) =>
-                normalizePreferenceSnapshot({
-                    ...state,
-                    [key]: value
-                } as PreferenceInputSnapshot)
-            );
-        }
-    })
-);
+export const usePreferencesStore = create<PreferencesStoreState>((set) => ({
+    ...normalizePreferenceSnapshot(DEFAULT_PREFERENCES),
+    preferencesHydrated: false,
+    hydratePreferences(snapshot: unknown) {
+        set({
+            ...normalizePreferenceSnapshot(snapshot as PreferenceInputSnapshot),
+            preferencesHydrated: true
+        });
+    },
+    patchPreferences(patch: Partial<PreferencesSnapshot>) {
+        set((state) =>
+            normalizePreferenceSnapshot({
+                ...state,
+                ...patch
+            } as PreferenceInputSnapshot)
+        );
+    },
+    setPreferenceValue(key, value) {
+        set((state) =>
+            normalizePreferenceSnapshot({
+                ...state,
+                [key]: value
+            } as PreferenceInputSnapshot)
+        );
+    }
+}));

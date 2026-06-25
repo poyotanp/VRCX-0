@@ -1,4 +1,6 @@
-export function buildRemoteFavoriteFriendGroupOptions(favoriteFriendGroups: any) {
+export function buildRemoteFavoriteFriendGroupOptions(
+    favoriteFriendGroups: any
+) {
     return (favoriteFriendGroups || [])
         .map((group: any) => ({
             value: group?.key,

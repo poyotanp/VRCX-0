@@ -98,9 +98,7 @@ describe('app dateTime wrappers', () => {
         expect(timeToText(13 * MINUTE_MS + 58 * SECOND_MS, true)).toBe(
             '14m 0s'
         );
-        expect(timeToText(59 * MINUTE_MS + 58 * SECOND_MS, true)).toBe(
-            '1h 0s'
-        );
+        expect(timeToText(59 * MINUTE_MS + 58 * SECOND_MS, true)).toBe('1h 0s');
         expect(
             timeToText(23 * HOUR_MS + 59 * MINUTE_MS + 58 * SECOND_MS, true)
         ).toBe('1d 0s');

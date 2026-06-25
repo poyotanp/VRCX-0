@@ -15,8 +15,8 @@ import { ResizableTableCell } from '@/components/data-table/ResizableTableParts'
 import { PageFooter } from '@/components/layout/PageScaffold';
 import { Table, TableBody, TableRow } from '@/ui/shadcn/table';
 
-import type { GameLogPaginationSetter, GameLogRow } from '../gameLogTypes';
 import { resolveGameLogPageSize } from '../gameLogState';
+import type { GameLogPaginationSetter, GameLogRow } from '../gameLogTypes';
 
 type GameLogTableShellProps = {
     pageCount: number;

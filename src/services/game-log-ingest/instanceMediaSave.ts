@@ -10,9 +10,10 @@ import {
     parseInventoryFromUrl,
     parsePrintFromUrl
 } from '@/shared/utils/gameLog';
+import { normalizeString } from '@/shared/utils/string';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
-import { delay, normalizeString } from './parsing';
+import { delay } from './parsing';
 
 const INSTANCE_MEDIA_SAVE_INTERVAL_MS = 2500;
 

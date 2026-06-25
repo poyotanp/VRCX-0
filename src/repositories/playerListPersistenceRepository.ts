@@ -1,5 +1,6 @@
 import { commands } from '@/platform/tauri/bindings';
 import { parseLocation } from '@/shared/utils/locationParser';
+import { normalizeString } from '@/shared/utils/string';
 
 type RowRecord = Record<string, unknown>;
 
@@ -46,12 +47,6 @@ interface CurrentInstanceSnapshotInput {
     currentUserId?: unknown;
     currentLocation?: unknown;
     currentLocationStartedAt?: unknown;
-}
-
-function normalizeString(value: unknown) {
-    return typeof value === 'string'
-        ? value.trim()
-        : String(value ?? '').trim();
 }
 
 function parseDateMs(value: unknown) {
@@ -228,7 +223,8 @@ async function resolveCurrentLocationContext(
     const normalizedLocation = normalizeString(currentLocation);
 
     if (isLiveLocation(normalizedLocation)) {
-        const exactRow = await commands.appPlayerListLocationGet(normalizedLocation);
+        const exactRow =
+            await commands.appPlayerListLocationGet(normalizedLocation);
 
         if (exactRow) {
             return {
@@ -287,7 +283,10 @@ async function rebuildInstanceRoster(
     normalizedCurrentUserId: string
 ) {
     const startedAtMs = parseDateMs(startedAt);
-    const rows = await commands.appPlayerListJoinLeaveRows(location, startedAtMs ? startedAt : '');
+    const rows = await commands.appPlayerListJoinLeaveRows(
+        location,
+        startedAtMs ? startedAt : ''
+    );
 
     const playersByKey = new Map<string, PlayerListPlayer>();
     let observedPlayerEventCount = 0;

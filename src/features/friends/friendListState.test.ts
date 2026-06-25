@@ -138,7 +138,8 @@ describe('friendListState', () => {
             'status',
             'avatar',
             ...FRIEND_LIST_COLUMN_IDS.filter(
-                (columnId: any) => columnId !== 'status' && columnId !== 'avatar'
+                (columnId: any) =>
+                    columnId !== 'status' && columnId !== 'avatar'
             )
         ]);
 

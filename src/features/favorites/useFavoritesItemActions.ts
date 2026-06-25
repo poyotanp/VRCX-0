@@ -85,9 +85,7 @@ export function useFavoritesItemActions({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t(
-                          'view.favorites.toast.failed_to_refresh_avatar_history'
-                      )
+                    : t('view.favorites.toast.failed_to_refresh_avatar_history')
             );
         } finally {
             setAvatarHistoryLoading(false);
@@ -188,7 +186,9 @@ export function useFavoritesItemActions({
                 friends: friendsMap
             })
         ) {
-            toast.error(t('view.favorite.error.cannot_self_invite_to_this_instance'));
+            toast.error(
+                t('view.favorite.error.cannot_self_invite_to_this_instance')
+            );
             return;
         }
         try {
@@ -241,7 +241,8 @@ export function useFavoritesItemActions({
         const result = await confirm({
             title: t('view.favorites.modal.send_invite'),
             description:
-                friend?.displayName || t('view.favorites.description.this_user'),
+                friend?.displayName ||
+                t('view.favorites.description.this_user'),
             confirmText: t('view.favorites.modal.invite'),
             cancelText: t('common.actions.cancel')
         });
@@ -276,7 +277,8 @@ export function useFavoritesItemActions({
         const result = await confirm({
             title: t('view.favorites.modal.request_invite'),
             description:
-                friend?.displayName || t('view.favorites.description.this_user'),
+                friend?.displayName ||
+                t('view.favorites.description.this_user'),
             confirmText: t('view.favorites.modal.request_invite_2'),
             cancelText: t('common.actions.cancel')
         });
@@ -307,8 +309,7 @@ export function useFavoritesItemActions({
         try {
             const result = await boopPrompt({
                 endpoint: currentEndpoint,
-                targetLabel:
-                    friend?.displayName || friend?.username || friendId
+                targetLabel: friend?.displayName || friend?.username || friendId
             });
             if (!result.ok) {
                 return;
@@ -425,12 +426,16 @@ export function useFavoritesItemActions({
             await navigator.clipboard.writeText(
                 selectedContentItems.map((item: any) => `${item.id}\n`).join('')
             );
-            toast.success(t('view.favorite.success.copied_selected_favorite_ids'));
+            toast.success(
+                t('view.favorite.success.copied_selected_favorite_ids')
+            );
         } catch (error) {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t('view.favorites.toast.failed_to_copy_selected_favorites')
+                    : t(
+                          'view.favorites.toast.failed_to_copy_selected_favorites'
+                      )
             );
         }
     }

@@ -86,14 +86,16 @@ export function FeedFilterDialog({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {setting.options.map((option: any) => (
-                                                <SelectItem
-                                                    key={option.label}
-                                                    value={option.label}
-                                                >
-                                                    {t(option.textKey)}
-                                                </SelectItem>
-                                            ))}
+                                            {setting.options.map(
+                                                (option: any) => (
+                                                    <SelectItem
+                                                        key={option.label}
+                                                        value={option.label}
+                                                    >
+                                                        {t(option.textKey)}
+                                                    </SelectItem>
+                                                )
+                                            )}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

@@ -286,7 +286,9 @@ export const DEFAULT_VR_NOTIFICATION_ACTIVITY_FILTERS =
 export const DEFAULT_WEBHOOK_ACTIVITY_FILTERS: OverlayActivityFilterProfilePreference =
     {
         version: 1,
-        types: disabledOverlayActivityTypeRules(OVERLAY_ACTIVITY_TYPE_DEFINITIONS)
+        types: disabledOverlayActivityTypeRules(
+            OVERLAY_ACTIVITY_TYPE_DEFINITIONS
+        )
     };
 
 export function overlayActivityCategoriesFromDefinitions(
@@ -351,9 +353,8 @@ export function defaultOverlayActivityFilterProfileFromDefinitions(
 export function defaultOverlayActivityFiltersFromDefinitions(
     definitions: OverlayActivityTypeDefinition[]
 ): OverlayActivityFiltersPreference {
-    const profile = defaultOverlayActivityFilterProfileFromDefinitions(
-        definitions
-    );
+    const profile =
+        defaultOverlayActivityFilterProfileFromDefinitions(definitions);
     return {
         version: 1,
         wrist: {

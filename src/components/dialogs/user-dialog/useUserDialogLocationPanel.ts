@@ -9,9 +9,9 @@ import {
     resolvePresenceLocation,
     userDisplayName
 } from '@/domain/instances/instanceRoster';
-import vrchatInstanceRepository from '@/repositories/vrchatInstanceRepository';
 import playerListPersistenceRepository from '@/repositories/playerListPersistenceRepository';
 import userProfileRepository from '@/repositories/userProfileRepository';
+import vrchatInstanceRepository from '@/repositories/vrchatInstanceRepository';
 import {
     recordGameRuntimePresence,
     recordKnownUsers,
@@ -168,16 +168,14 @@ export function useUserDialogLocationPanel({
     const groupInstancesScopeMatches =
         groupInstancesState.userId === currentUserId &&
         groupInstancesState.endpoint === currentEndpoint;
-    const groupInstances =
-        groupInstancesScopeMatches
-            ? groupInstancesState.instances
-            : [];
-    const groupInstancesRevision =
-        groupInstancesScopeMatches
-            ? groupInstancesState.lastLoadedAt ||
-              groupInstancesState.fetchedAt ||
-              groupInstancesState.status
-            : '';
+    const groupInstances = groupInstancesScopeMatches
+        ? groupInstancesState.instances
+        : [];
+    const groupInstancesRevision = groupInstancesScopeMatches
+        ? groupInstancesState.lastLoadedAt ||
+          groupInstancesState.fetchedAt ||
+          groupInstancesState.status
+        : '';
     const [locationPanel, setLocationPanel] = useState(() =>
         createEmptyUserDialogLocationPanel()
     );
@@ -241,7 +239,9 @@ export function useUserDialogLocationPanel({
 
         addKnownUser(profile);
         addKnownUser(currentUserSnapshot);
-        for (const friend of Object.values(friendsById as Record<string, any>)) {
+        for (const friend of Object.values(
+            friendsById as Record<string, any>
+        )) {
             addKnownUser(friend);
         }
 
@@ -250,7 +250,9 @@ export function useUserDialogLocationPanel({
             mergeLocationUser(rowsById, currentUserSnapshot);
         }
 
-        for (const friend of Object.values(friendsById as Record<string, any>)) {
+        for (const friend of Object.values(
+            friendsById as Record<string, any>
+        )) {
             if (!userIsAtLocation(friend)) {
                 continue;
             }
@@ -317,7 +319,11 @@ export function useUserDialogLocationPanel({
             playerSnapshotPromise
         ])
             .then(
-                async ([ownerResult, instanceResult, playerSnapshotResult]: any) => {
+                async ([
+                    ownerResult,
+                    instanceResult,
+                    playerSnapshotResult
+                ]: any) => {
                     if (!active) {
                         return;
                     }

@@ -1,9 +1,10 @@
-import { commands } from '@/platform/tauri/bindings';
 import {
     entityQueryPolicies,
     fetchCachedData,
     queryKeys
 } from '@/lib/entityQueryCache';
+import { commands } from '@/platform/tauri/bindings';
+import { normalizeString } from '@/shared/utils/string';
 
 import {
     createRequestError,
@@ -62,12 +63,6 @@ type VrchatInstanceIdentity = {
     worldId: string;
     instanceId: string;
 };
-
-function normalizeString(value: unknown): string {
-    return typeof value === 'string'
-        ? value.trim()
-        : String(value ?? '').trim();
-}
 
 function toApiAccessType(accessType: InstanceAccessType): string {
     if (accessType === 'friends') {

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { createDefaultFavoriteCachedRef } from '@/shared/utils/entityTransforms';
+
 import {
     buildRemoteFavoriteCollections,
     cloneFavoriteLimits,
@@ -236,16 +237,15 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
                         getSortedLocalGroupNames(localAvatarFavorites),
                     localAvatarFavoritesList:
                         flattenFavoriteGroups(localAvatarFavorites),
-                    localAvatarDetailsById:
-                        isObjectRecord(entity)
-                            ? {
-                                  ...state.localAvatarDetailsById,
-                                  [normalizedEntityId]: {
-                                      id: normalizedEntityId,
-                                      ...entity
-                                  }
+                    localAvatarDetailsById: isObjectRecord(entity)
+                        ? {
+                              ...state.localAvatarDetailsById,
+                              [normalizedEntityId]: {
+                                  id: normalizedEntityId,
+                                  ...entity
                               }
-                            : state.localAvatarDetailsById
+                          }
+                        : state.localAvatarDetailsById
                 };
             }
 
@@ -270,16 +270,15 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
                         getSortedLocalGroupNames(localWorldFavorites),
                     localWorldFavoritesList:
                         flattenFavoriteGroups(localWorldFavorites),
-                    localWorldDetailsById:
-                        isObjectRecord(entity)
-                            ? {
-                                  ...state.localWorldDetailsById,
-                                  [normalizedEntityId]: {
-                                      id: normalizedEntityId,
-                                      ...entity
-                                  }
+                    localWorldDetailsById: isObjectRecord(entity)
+                        ? {
+                              ...state.localWorldDetailsById,
+                              [normalizedEntityId]: {
+                                  id: normalizedEntityId,
+                                  ...entity
                               }
-                            : state.localWorldDetailsById
+                          }
+                        : state.localWorldDetailsById
                 };
             }
 

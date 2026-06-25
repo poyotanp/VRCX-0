@@ -104,7 +104,8 @@ export function useFavoritesActions({
     });
     const bulkActions = useFavoritesBulkActions({
         handleRemoveLocalFavorite: collectionActions.handleRemoveLocalFavorite,
-        handleRemoveRemoteFavorite: collectionActions.handleRemoveRemoteFavorite,
+        handleRemoveRemoteFavorite:
+            collectionActions.handleRemoveRemoteFavorite,
         selectedContentItems,
         setEditMode,
         setSelectedKeys

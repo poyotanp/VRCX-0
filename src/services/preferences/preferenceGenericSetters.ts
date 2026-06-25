@@ -2,8 +2,14 @@ import { normalizeLanguageCode } from '@/localization/locales';
 import { commands } from '@/platform/tauri/bindings';
 import configRepository from '@/repositories/configRepository';
 import storageRepository from '@/repositories/storageRepository';
+import {
+    isValidTrustColor,
+    normalizeTrustColors,
+    TRUST_COLOR_DEFAULTS
+} from '@/shared/utils/trustColors';
 import { normalizeSharedFeedFilters } from '@/state/preferencesStore';
 import type { TrustColorKey } from '@/state/preferencesStore';
+import { usePreferencesStore } from '@/state/preferencesStore';
 import {
     normalizeNavWidth,
     normalizeTableDensity,
@@ -28,11 +34,6 @@ import {
     resolveThemeMode
 } from '../themeService';
 import { applyTrustColorClasses } from '../trustColorService';
-import {
-    isValidTrustColor,
-    normalizeTrustColors,
-    TRUST_COLOR_DEFAULTS
-} from '@/shared/utils/trustColors';
 import {
     DEFAULT_NOTIFICATION_LAYOUT,
     DEFAULT_TABLE_PAGE_SIZE,
@@ -61,7 +62,6 @@ import type {
     ProxyServerPreferenceOptions,
     StringConfigPreferenceKey
 } from './preferencesTypes';
-import { usePreferencesStore } from '@/state/preferencesStore';
 
 export async function setAppLanguagePreference(language: unknown) {
     const nextLanguage = normalizeLanguageCode(language);

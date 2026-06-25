@@ -1,4 +1,3 @@
-import { commands } from '@/platform/tauri/bindings';
 import {
     entityQueryPolicies,
     fetchCachedData,
@@ -6,6 +5,7 @@ import {
     queryKeys,
     setCachedQueryData
 } from '@/lib/entityQueryCache';
+import { commands } from '@/platform/tauri/bindings';
 import { storeAvatarImage } from '@/shared/utils/avatar';
 import { extractFileId } from '@/shared/utils/fileUtils';
 import { normalizeVrchatEndpointDomain } from '@/shared/vrchatEndpoint';
@@ -219,9 +219,8 @@ function normalizeAvatarProfile(
             normalizeEntityId(source.authorId ?? source.author_id) ||
             'Unknown author',
         releaseStatus:
-            normalizeEntityId(
-                source.releaseStatus ?? source.release_status
-            ) || 'unknown',
+            normalizeEntityId(source.releaseStatus ?? source.release_status) ||
+            'unknown',
         thumbnailImageUrl: normalizeString(
             source.thumbnailImageUrl ?? source.thumbnail_image_url
         ),
@@ -306,7 +305,9 @@ async function getLocalSnapshot(
                       .getAvatarTimeSpent(currentUserId, normalizedAvatarId)
                       .catch(() => null)
                 : Promise.resolve(null),
-            memoPersistenceRepository.getAvatarMemo(normalizedAvatarId).catch(() => null)
+            memoPersistenceRepository
+                .getAvatarMemo(normalizedAvatarId)
+                .catch(() => null)
         ]);
 
     return {
@@ -629,7 +630,9 @@ async function deleteImposter({ avatarId, endpoint = '' }: AvatarIdInput) {
     );
 }
 
-async function getAvatarModerations({ endpoint = '' }: AvatarRequestOptions = {}) {
+async function getAvatarModerations({
+    endpoint = ''
+}: AvatarRequestOptions = {}) {
     return unwrapVrchatAvatarResponse(
         await commands.appVrchatAvatarModerationsGet({ endpoint }),
         'auth/user/avatarmoderations'

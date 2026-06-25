@@ -149,9 +149,7 @@ async function getDashboards(): Promise<Dashboard[]> {
             .map((dashboard) =>
                 sanitizeDashboard(dashboard, { generateMissingRowIds: false })
             )
-            .filter((dashboard): dashboard is Dashboard =>
-                Boolean(dashboard)
-            );
+            .filter((dashboard): dashboard is Dashboard => Boolean(dashboard));
     } catch {
         return [];
     }

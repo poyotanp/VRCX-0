@@ -9,16 +9,16 @@ import {
 } from '@/services/preferencesService';
 import { triggerToolByKey } from '@/services/toolActionService';
 import { DASHBOARD_NAV_KEY_PREFIX } from '@/shared/constants/dashboard';
+import { useBackgroundImageStore } from '@/state/backgroundImageStore';
+import {
+    communityThemeControlsAppearance,
+    useCommunityThemeStore
+} from '@/state/communityThemeStore';
 import { useDashboardStore } from '@/state/dashboardStore';
 import { useModalStore } from '@/state/modalStore';
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useSessionStore } from '@/state/sessionStore';
-import {
-    communityThemeControlsAppearance,
-    useCommunityThemeStore
-} from '@/state/communityThemeStore';
-import { useBackgroundImageStore } from '@/state/backgroundImageStore';
 import { useShellStore } from '@/state/shellStore';
 import { useVrcNotificationStore } from '@/state/vrcNotificationStore';
 

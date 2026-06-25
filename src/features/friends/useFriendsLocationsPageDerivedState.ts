@@ -219,7 +219,8 @@ export function useFriendsLocationsPageDerivedState({
     const onlineWithoutSameInstanceFriends = useMemo(
         () =>
             onlineNonFavoriteFriends.filter(
-                (friend: any) => !sameInstanceFriendIds.has(normalizeId(friend?.id))
+                (friend: any) =>
+                    !sameInstanceFriendIds.has(normalizeId(friend?.id))
             ),
         [onlineNonFavoriteFriends, sameInstanceFriendIds]
     );
@@ -284,7 +285,10 @@ export function useFriendsLocationsPageDerivedState({
             return [];
         }
         const friendById = new Map(
-            favoriteFriends.map((friend: any) => [normalizeId(friend?.id), friend])
+            favoriteFriends.map((friend: any) => [
+                normalizeId(friend?.id),
+                friend
+            ])
         );
         const seen = new Set();
         const sections = [];
@@ -295,7 +299,8 @@ export function useFriendsLocationsPageDerivedState({
                     group?.displayName || group?.name || normalizeId(group?.key)
             }))
             .filter(
-                (group: any) => group.key && selectedFavoriteGroupKeys.has(group.key)
+                (group: any) =>
+                    group.key && selectedFavoriteGroupKeys.has(group.key)
             )
             .sort((left: any, right: any) =>
                 compareFavoriteGroups(

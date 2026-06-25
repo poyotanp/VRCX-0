@@ -35,9 +35,8 @@ export function PlayerListWorldHeader({
         instanceSnapshot.location || currentUserLocation || ''
     );
     const [currentWorldProfile, setCurrentWorldProfile] = useState(null);
-    const [currentWorldFileAnalysis, setCurrentWorldFileAnalysis] = useState<any>(
-        {}
-    );
+    const [currentWorldFileAnalysis, setCurrentWorldFileAnalysis] =
+        useState<any>({});
     const [currentWorldCacheInfo, setCurrentWorldCacheInfo] = useState(() =>
         defaultWorldCacheInfo()
     );

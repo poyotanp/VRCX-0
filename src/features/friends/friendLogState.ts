@@ -135,6 +135,7 @@ export function parseTypeFilters(value: any) {
     }
 
     return parsed.filter(
-        (entry: any) => typeof entry === 'string' && FRIEND_LOG_TYPES.includes(entry)
+        (entry: any) =>
+            typeof entry === 'string' && FRIEND_LOG_TYPES.includes(entry)
     );
 }

@@ -4,11 +4,9 @@ import { toast } from 'sonner';
 
 import { openUserDialog } from '@/services/dialogService';
 import { resolveUserByDisplayName } from '@/services/userIdentityService';
+import { normalizeString } from '@/shared/utils/string';
 
-import {
-    buildPlayerDialogSeedData,
-    normalizeString
-} from './playerListRows';
+import { buildPlayerDialogSeedData } from './playerListRows';
 
 export function usePlayerListActions({ currentUserEndpoint }: any) {
     const { t } = useTranslation();

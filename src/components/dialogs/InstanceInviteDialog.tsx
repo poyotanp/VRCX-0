@@ -9,6 +9,7 @@ import { userImage } from '@/services/entityMediaService';
 import { sendInviteToLocation } from '@/services/inviteDeliveryService';
 import { selfInviteToInstance } from '@/services/launchService';
 import { parseLocation } from '@/shared/utils/locationParser';
+import { normalizeString as normalizeId } from '@/shared/utils/string';
 import { useFavoriteStore } from '@/state/favoriteStore';
 import { useFriendRosterStore } from '@/state/friendRosterStore';
 import { useModalStore } from '@/state/modalStore';
@@ -48,7 +49,6 @@ import {
     buildFriendsInCurrentInstanceIds,
     displayNameForUser,
     filterInviteUserIds,
-    normalizeId,
     sortInviteUserIdsWithSelectedFirst
 } from './inviteDialogModel';
 

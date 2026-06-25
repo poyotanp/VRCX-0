@@ -1,10 +1,10 @@
 import { formatDateFilterOrFallback, timeToText } from '@/lib/dateTime';
-import { userStatusLabel } from '@/shared/utils/userStatus';
 import {
     compareByDisplayName,
     compareByFriendOrder,
     compareByLastActiveRef
 } from '@/shared/utils/compare';
+import { userStatusLabel } from '@/shared/utils/userStatus';
 
 const DASH = '\u2014';
 

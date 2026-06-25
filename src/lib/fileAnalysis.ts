@@ -61,9 +61,11 @@ function isAnalyzablePackage(
     return true;
 }
 
-function formatFileAnalysis(json: unknown): (Record<string, any> & {
-    success?: boolean;
-}) | null {
+function formatFileAnalysis(json: unknown):
+    | (Record<string, any> & {
+          success?: boolean;
+      })
+    | null {
     if (!json || typeof json !== 'object') {
         return null;
     }

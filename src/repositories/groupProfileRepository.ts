@@ -1,11 +1,11 @@
-import { commands } from '@/platform/tauri/bindings';
 import {
     entityQueryPolicies,
     fetchCachedData,
     queryKeys
 } from '@/lib/entityQueryCache';
-import { replaceBioSymbols } from '@/shared/utils/string';
+import { commands } from '@/platform/tauri/bindings';
 import { createDefaultGroupRef } from '@/shared/utils/groupTransforms';
+import { replaceBioSymbols } from '@/shared/utils/string';
 
 import {
     createRequestError,
@@ -278,7 +278,10 @@ function responseRows(json: unknown, key = ''): unknown[] {
 
 async function collectPages(
     fetchPage: (page: PageRequest) => Promise<unknown[]>,
-    { pageSize = 100, maxPages = Number.POSITIVE_INFINITY }: CollectPagesOptions = {}
+    {
+        pageSize = 100,
+        maxPages = Number.POSITIVE_INFINITY
+    }: CollectPagesOptions = {}
 ) {
     const rows: unknown[] = [];
 
@@ -991,9 +994,7 @@ async function getGroupLogs({
             n,
             offset,
             eventTypes:
-                typeof params.eventTypes === 'string'
-                    ? params.eventTypes
-                    : '',
+                typeof params.eventTypes === 'string' ? params.eventTypes : '',
             endpoint
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/auditLogs`

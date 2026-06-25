@@ -1,3 +1,4 @@
+import { assetBundleRepository } from '@/repositories/assetBundleRepository';
 import vrchatAuthRepository from '@/repositories/vrchatAuthRepository';
 import { compareUnityVersion } from '@/shared/utils/avatar';
 import {
@@ -5,8 +6,6 @@ import {
     extractFileVersion,
     extractVariantVersion
 } from '@/shared/utils/fileUtils';
-import { assetBundleRepository } from '@/repositories/assetBundleRepository';
-
 
 type UnityPackage = Record<string, any> & {
     assetUrl?: string;

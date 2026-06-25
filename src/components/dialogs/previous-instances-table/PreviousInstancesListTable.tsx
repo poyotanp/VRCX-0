@@ -271,7 +271,10 @@ export function PreviousInstancesListTable({
                                         </TableCell>
                                         {showWorldGroupColumn ? (
                                             <TableCell className="text-muted-foreground align-middle text-xs leading-5">
-                                                {[row?.worldName, row?.groupName]
+                                                {[
+                                                    row?.worldName,
+                                                    row?.groupName
+                                                ]
                                                     .filter(Boolean)
                                                     .join(' / ') || '-'}
                                             </TableCell>

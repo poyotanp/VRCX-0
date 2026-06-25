@@ -118,10 +118,9 @@ function useToolsQuickAccessState() {
             const value =
                 typeof updater === 'function' ? updater(current) : updater;
             const nextKeys = normalizeQuickAccessToolKeys(value);
-            configRepository.setString(
-                quickAccessConfigKey,
-                JSON.stringify(nextKeys)
-            ).then(() => publishToolsQuickAccessUpdated())
+            configRepository
+                .setString(quickAccessConfigKey, JSON.stringify(nextKeys))
+                .then(() => publishToolsQuickAccessUpdated())
                 .catch(() => {});
             return nextKeys;
         });

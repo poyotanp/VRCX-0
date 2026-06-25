@@ -1,8 +1,8 @@
 import configRepository from '@/repositories/configRepository';
 
-import { TELEMETRY_VIEW_MODE_DIMENSIONS } from './telemetryContract';
 import { postTelemetry } from './telemetryClient';
 import { isAnonymousUsageTelemetryEnabled } from './telemetryConfig';
+import { TELEMETRY_VIEW_MODE_DIMENSIONS } from './telemetryContract';
 import { buildTelemetryContext } from './telemetryPayload';
 import type {
     TelemetrySessionState,

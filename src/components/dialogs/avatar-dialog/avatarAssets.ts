@@ -31,7 +31,10 @@ export function avatarGalleryImageUrl(file: any) {
     );
 }
 
-export function isCacheCandidatePackage(unityPackage: any, sdkUnityVersion: any = '') {
+export function isCacheCandidatePackage(
+    unityPackage: any,
+    sdkUnityVersion: any = ''
+) {
     if (!unityPackage || unityPackage.platform !== 'standalonewindows') {
         return false;
     }

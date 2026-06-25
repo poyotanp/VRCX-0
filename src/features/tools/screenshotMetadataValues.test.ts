@@ -223,15 +223,15 @@ describe('screenshotMetadataValues', () => {
             ]
         };
 
-        expect(resolveGalleryFolder(folderTree, ['D:\\Missing', 'D:\\Old'])).toBe(
-            'D:\\Old'
-        );
+        expect(
+            resolveGalleryFolder(folderTree, ['D:\\Missing', 'D:\\Old'])
+        ).toBe('D:\\Old');
         expect(resolveGalleryFolder(folderTree, '')).toBe('D:\\New');
         expect(getGalleryFolderPathSet(folderTree)).toEqual(
             new Set(['D:\\Old', 'D:\\New', 'D:\\Empty'])
         );
-        expect(resolveGalleryFolder({ rootPath: 'D:\\Root', folders: [] }, '')).toBe(
-            'D:\\Root'
-        );
+        expect(
+            resolveGalleryFolder({ rootPath: 'D:\\Root', folders: [] }, '')
+        ).toBe('D:\\Root');
     });
 });

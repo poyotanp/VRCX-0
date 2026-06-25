@@ -7,19 +7,18 @@ import {
 } from '@/shared/constants/overlayActivityFilters';
 import { normalizeOverlayActivityFilters } from '@/state/preferencesStore';
 
-import {
-    patchPreferences,
-    publishPreferenceChanged
-} from './preferencesCore';
+import { patchPreferences, publishPreferenceChanged } from './preferencesCore';
 
 async function loadOverlayActivityTypeDefinitionsForSave() {
-    return commands.appOverlayActivityDefinitionsGet().catch((error: unknown) => {
-        console.warn(
-            'Failed to load overlay activity definitions for save:',
-            error
-        );
-        return [] as OverlayActivityTypeDefinition[];
-    });
+    return commands
+        .appOverlayActivityDefinitionsGet()
+        .catch((error: unknown) => {
+            console.warn(
+                'Failed to load overlay activity definitions for save:',
+                error
+            );
+            return [] as OverlayActivityTypeDefinition[];
+        });
 }
 
 export async function setOverlayActivityFiltersPreference(
@@ -66,7 +65,9 @@ export function setVrNotificationActivityFiltersPreference(value: unknown) {
     );
 }
 
-export function setDesktopNotificationActivityFiltersPreference(value: unknown) {
+export function setDesktopNotificationActivityFiltersPreference(
+    value: unknown
+) {
     return setNotificationActivityFilterSurfacePreference(
         'desktopNotificationActivityFilters',
         value

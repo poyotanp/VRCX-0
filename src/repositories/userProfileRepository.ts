@@ -1,4 +1,3 @@
-import { commands } from '@/platform/tauri/bindings';
 import { recordUserProfile } from '@/domain/users/userFactAccess';
 import {
     entityQueryPolicies,
@@ -7,6 +6,7 @@ import {
     queryKeys,
     setCachedQueryData
 } from '@/lib/entityQueryCache';
+import { commands } from '@/platform/tauri/bindings';
 import { stripDefaultAvatarImage } from '@/shared/utils/avatar';
 import {
     computeTrustLevel,
@@ -332,11 +332,10 @@ async function getRepresentedGroup({
         policy: entityQueryPolicies.representedGroup,
         force,
         queryFn: async () => {
-            const response =
-                await commands.appVrchatUserRepresentedGroupGet({
-                    userId: normalizedUserId,
-                    endpoint
-                });
+            const response = await commands.appVrchatUserRepresentedGroupGet({
+                userId: normalizedUserId,
+                endpoint
+            });
             const json = unwrapVrchatUserResponse(
                 response,
                 `users/${encodeURIComponent(normalizedUserId)}/groups/represented`

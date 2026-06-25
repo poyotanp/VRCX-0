@@ -1,10 +1,9 @@
 import { AppleIcon, MonitorIcon, RectangleGogglesIcon } from 'lucide-react';
 
 import { convertFileUrlToImageUrl } from '@/services/entityMediaService';
-import { userStatusIndicatorClassName } from '@/shared/utils/userStatus';
 import { parseLocation } from '@/shared/utils/locationParser';
-
-import { normalizeString } from './playerListRows';
+import { normalizeString } from '@/shared/utils/string';
+import { userStatusIndicatorClassName } from '@/shared/utils/userStatus';
 
 export function resolvePlatformMeta(platform: any) {
     const normalized = normalizeString(platform).toLowerCase();
@@ -48,9 +47,9 @@ function isLivePlayerLocation(location: any) {
     const parsed = parseLocation(normalizeString(location));
     return Boolean(
         parsed.worldId &&
-            !parsed.isOffline &&
-            !parsed.isPrivate &&
-            !parsed.isTraveling
+        !parsed.isOffline &&
+        !parsed.isPrivate &&
+        !parsed.isTraveling
     );
 }
 
@@ -193,7 +192,10 @@ export function resolvePlatformBadge(platform: any) {
     };
 }
 
-export function fileAnalysisSizeForPlatform(fileAnalysis: any, platformKey: any) {
+export function fileAnalysisSizeForPlatform(
+    fileAnalysis: any,
+    platformKey: any
+) {
     if (platformKey === 'PC') {
         return fileAnalysis?.standalonewindows?._fileSize || '';
     }

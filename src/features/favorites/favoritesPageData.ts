@@ -224,7 +224,9 @@ export function buildFavoriteAvatarHistoryGroups({
 }
 
 export function buildFavoriteGroupLabelByKey(groups: any) {
-    return Object.fromEntries(groups.map((group: any) => [group.key, group.label]));
+    return Object.fromEntries(
+        groups.map((group: any) => [group.key, group.label])
+    );
 }
 
 export function buildFavoriteRemoteItemsByGroup({
@@ -271,12 +273,12 @@ export function buildFavoriteRemoteItemsByGroup({
         return itemsByGroup;
     }
 
-    const remoteFavorites = (Object.values(remoteFavoritesById) as any[]).filter(
-        (favorite: any) =>
-            kind === 'avatar'
-                ? favorite?.type === 'avatar'
-                : favorite?.type === 'world' ||
-                  favorite?.type === 'vrcPlusWorld'
+    const remoteFavorites = (
+        Object.values(remoteFavoritesById) as any[]
+    ).filter((favorite: any) =>
+        kind === 'avatar'
+            ? favorite?.type === 'avatar'
+            : favorite?.type === 'world' || favorite?.type === 'vrcPlusWorld'
     );
 
     for (const favorite of remoteFavorites) {
@@ -322,7 +324,9 @@ export function buildFavoriteRemoteItemsByGroup({
             description: displayDetail?.description || '',
             seedData: detail || cachedWorldDetail || null,
             imageUrl: shrinkImage(
-                displayDetail?.thumbnailImageUrl || displayDetail?.imageUrl || ''
+                displayDetail?.thumbnailImageUrl ||
+                    displayDetail?.imageUrl ||
+                    ''
             ),
             isPrivate: displayDetail?.releaseStatus === 'private',
             isUnavailable,
@@ -426,7 +430,11 @@ export function buildFavoriteLocalItemsByGroup({
     return itemsByGroup;
 }
 
-export function buildFavoriteAvatarHistoryItems({ kind, avatarHistory, t }: any) {
+export function buildFavoriteAvatarHistoryItems({
+    kind,
+    avatarHistory,
+    t
+}: any) {
     if (kind !== 'avatar') {
         return [];
     }

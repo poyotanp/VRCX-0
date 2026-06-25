@@ -26,8 +26,8 @@ import {
     sortScreenshotRowsByNewest
 } from './screenshotMetadataValues';
 import { useScreenshotGalleryController } from './useScreenshotGalleryController';
-import { useScreenshotMetadataSearch } from './useScreenshotMetadataSearch';
 import { useScreenshotMetadataNavigation } from './useScreenshotMetadataNavigation';
+import { useScreenshotMetadataSearch } from './useScreenshotMetadataSearch';
 
 function openSearchResult(
     row: any,

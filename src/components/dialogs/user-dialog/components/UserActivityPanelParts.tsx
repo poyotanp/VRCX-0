@@ -2,8 +2,8 @@ import { ImageIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { echarts } from '@/lib/echarts';
 import { timeToText } from '@/lib/dateTime';
+import { echarts } from '@/lib/echarts';
 import { cn } from '@/lib/utils';
 import { openWorldDialog } from '@/services/dialogService';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/shadcn/avatar';
@@ -267,7 +267,10 @@ export function ActivityEmptyState({ title, description }: any) {
 export function TopWorldRows({ worlds, sortBy }: any) {
     const { t } = useTranslation();
     const key = sortBy === 'count' ? 'visitCount' : 'totalTime';
-    const maxValue = Math.max(...worlds.map((world: any) => world[key] || 0), 0);
+    const maxValue = Math.max(
+        ...worlds.map((world: any) => world[key] || 0),
+        0
+    );
 
     if (!worlds.length) {
         return null;

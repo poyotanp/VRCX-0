@@ -3,9 +3,10 @@ import gameLogRepository from '@/repositories/gameLogRepository';
 import mediaRepository from '@/repositories/mediaRepository';
 import { parseLocation } from '@/shared/utils/locationParser';
 import { parseVrchatScreenshotDateFromFileName } from '@/shared/utils/screenshot';
+import { normalizeString } from '@/shared/utils/string';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
-import { getFileNameFromPath, normalizeString } from './parsing';
+import { getFileNameFromPath } from './parsing';
 import { getCurrentLocation, ingestState } from './state';
 
 const SCREENSHOT_METADATA_FALLBACK_LOCATION_MAX_AGE_MS = 15 * 60 * 1000;
@@ -192,12 +193,11 @@ async function processScreenshot(
             (await resolveScreenshotMetadataContext(
                 screenshotPath,
                 screenshotDateTime
-        ));
+            ));
         if (screenshotContext?.location) {
             const location = parseLocation(screenshotContext.location);
-            const currentUser =
-                (useRuntimeStore.getState().auth.currentUserSnapshot ||
-                    {}) as Record<string, unknown>;
+            const currentUser = (useRuntimeStore.getState().auth
+                .currentUserSnapshot || {}) as Record<string, unknown>;
             const metadata: ScreenshotMetadata = {
                 application: 'VRCX-0',
                 version: 1,

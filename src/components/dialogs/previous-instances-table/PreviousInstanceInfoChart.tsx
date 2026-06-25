@@ -21,10 +21,7 @@ import {
     buildInfoChartOption,
     buildInfoChartTooltipParts
 } from './previousInstancesChart';
-import {
-    normalizeInfoChartRows,
-    playerUserId
-} from './previousInstancesRows';
+import { normalizeInfoChartRows, playerUserId } from './previousInstancesRows';
 
 function InfoChartEmptyState({ title, description }: any) {
     return (
@@ -63,7 +60,9 @@ function createInfoChartTooltipElement(detailEntry: any, hour12: any) {
 export function PreviousInstanceInfoChart({ rows }: any) {
     const { t } = useTranslation();
 
-    const currentUserId = useRuntimeStore((state: any) => state.auth.currentUserId);
+    const currentUserId = useRuntimeStore(
+        (state: any) => state.auth.currentUserId
+    );
     const currentEndpoint = useRuntimeStore(
         (state: any) => state.auth.currentUserEndpoint
     );

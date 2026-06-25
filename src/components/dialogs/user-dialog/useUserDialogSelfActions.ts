@@ -20,7 +20,11 @@ import {
 } from './userProfileFields';
 import { useSelfStatusPresets } from './useSelfStatusPresets';
 
-function setSelfActionStatus(actionStatusRef: any, setActionStatus: any, nextStatus: any) {
+function setSelfActionStatus(
+    actionStatusRef: any,
+    setActionStatus: any,
+    nextStatus: any
+) {
     actionStatusRef.current = nextStatus;
     setActionStatus(nextStatus);
 }
@@ -131,26 +135,24 @@ export function useUserDialogSelfActions({
     const [languageOptions, setLanguageOptions] = useState<any[]>([]);
     const [languageOptionsStatus, setLanguageOptionsStatus] = useState('idle');
 
-    const selfStatusOptions = useMemo(
-        () => {
-            const baseOptions = selfStatusBaseOptions.map((option: any) => ({
-                ...option,
-                label: t(option.labelKey)
-            }));
-            return profile?.$isModerator
-                ? [
-                      ...baseOptions,
-                      {
-                          value: 'offline',
-                          label: t('dialog.user.status.offline')
-                      }
-                  ]
-                : baseOptions;
-        },
-        [profile?.$isModerator, t]
-    );
+    const selfStatusOptions = useMemo(() => {
+        const baseOptions = selfStatusBaseOptions.map((option: any) => ({
+            ...option,
+            label: t(option.labelKey)
+        }));
+        return profile?.$isModerator
+            ? [
+                  ...baseOptions,
+                  {
+                      value: 'offline',
+                      label: t('dialog.user.status.offline')
+                  }
+              ]
+            : baseOptions;
+    }, [profile?.$isModerator, t]);
     const languageOptionsMap = useMemo(
-        () => new Map(languageOptions.map((option: any) => [option.key, option])),
+        () =>
+            new Map(languageOptions.map((option: any) => [option.key, option])),
         [languageOptions]
     );
     const currentLanguageRows = useMemo(
@@ -191,7 +193,10 @@ export function useUserDialogSelfActions({
     const selfStatusLabelByValue = useMemo(
         () =>
             new Map(
-                selfStatusOptions.map((option: any) => [option.value, option.label])
+                selfStatusOptions.map((option: any) => [
+                    option.value,
+                    option.label
+                ])
             ),
         [selfStatusOptions]
     );
@@ -259,8 +264,9 @@ export function useUserDialogSelfActions({
         if (storeUser?.id) {
             useRuntimeStore.getState().setAuthBootstrap({
                 currentUserId: String(storeUser.id),
-                currentUserDisplayName:
-                    String(storeUser.displayName || storeUser.username || storeUser.id),
+                currentUserDisplayName: String(
+                    storeUser.displayName || storeUser.username || storeUser.id
+                ),
                 currentUserSnapshot: storeUser
             });
         }
@@ -452,7 +458,9 @@ export function useUserDialogSelfActions({
                     await userProfileRepository.removeCurrentUserTags({
                         userId: currentUserId,
                         endpoint: currentEndpoint,
-                        tags: removeLanguageKeys.map((key: any) => `language_${key}`)
+                        tags: removeLanguageKeys.map(
+                            (key: any) => `language_${key}`
+                        )
                     });
                 applyCurrentUserSnapshot(nextProfile);
             }
@@ -461,7 +469,9 @@ export function useUserDialogSelfActions({
                     await userProfileRepository.addCurrentUserTags({
                         userId: currentUserId,
                         endpoint: currentEndpoint,
-                        tags: addLanguageKeys.map((key: any) => `language_${key}`)
+                        tags: addLanguageKeys.map(
+                            (key: any) => `language_${key}`
+                        )
                     });
                 applyCurrentUserSnapshot(nextProfile);
             }
@@ -472,9 +482,7 @@ export function useUserDialogSelfActions({
             toast.error(
                 userFacingErrorMessage(
                     error,
-                    t(
-                        'dialog.user.toast.failed_to_update_profile_details'
-                    )
+                    t('dialog.user.toast.failed_to_update_profile_details')
                 )
             );
         } finally {
@@ -488,8 +496,8 @@ export function useUserDialogSelfActions({
         }
         const isVrcPlusSupporter = Boolean(
             currentUserSnapshot?.$isVRCPlus ||
-                currentUserSnapshot?.tags?.includes?.('system_supporter') ||
-                globalThis?.$debug?.debugVrcPlus
+            currentUserSnapshot?.tags?.includes?.('system_supporter') ||
+            globalThis?.$debug?.debugVrcPlus
         );
         if (!isVrcPlusSupporter) {
             toast.error(t('message.vrcplus.required'));
@@ -595,9 +603,7 @@ export function useUserDialogSelfActions({
                     showcased: hidden ? false : Boolean(badge.showcased)
                 }),
             successMessage: t('message.badge.updated'),
-            fallbackErrorMessage: t(
-                'dialog.user.toast.failed_to_update_badge'
-            ),
+            fallbackErrorMessage: t('dialog.user.toast.failed_to_update_badge'),
             onSuccess: (nextProfile: any) => {
                 applyCurrentUserSnapshot(nextProfile);
             }
@@ -619,9 +625,7 @@ export function useUserDialogSelfActions({
                     showcased
                 }),
             successMessage: t('message.badge.updated'),
-            fallbackErrorMessage: t(
-                'dialog.user.toast.failed_to_update_badge'
-            ),
+            fallbackErrorMessage: t('dialog.user.toast.failed_to_update_badge'),
             onSuccess: (nextProfile: any) => {
                 applyCurrentUserSnapshot(nextProfile);
             }

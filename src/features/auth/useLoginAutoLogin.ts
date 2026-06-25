@@ -215,9 +215,7 @@ export function useLoginAutoLogin({
                 }
 
                 autoLoginAbortRef.current = null;
-                if (
-                    autoLoginInFlightKeyRef.current === autoLoginSnapshotKey
-                ) {
+                if (autoLoginInFlightKeyRef.current === autoLoginSnapshotKey) {
                     autoLoginInFlightKeyRef.current = '';
                 }
                 if (result.status !== 'skipped') {
@@ -299,9 +297,7 @@ export function useLoginAutoLogin({
                 }
 
                 autoLoginAbortRef.current = null;
-                if (
-                    autoLoginInFlightKeyRef.current === autoLoginSnapshotKey
-                ) {
+                if (autoLoginInFlightKeyRef.current === autoLoginSnapshotKey) {
                     autoLoginInFlightKeyRef.current = '';
                 }
                 autoLoginSuppressedKeyRef.current = autoLoginSnapshotKey;
@@ -317,9 +313,7 @@ export function useLoginAutoLogin({
                 toast.error(
                     getErrorMessage(
                         error,
-                        t(
-                            'view.auth.toast.automatic_login_failed_unexpectedly'
-                        )
+                        t('view.auth.toast.automatic_login_failed_unexpectedly')
                     )
                 );
             });

@@ -25,14 +25,14 @@ import { Spinner } from '@/ui/shadcn/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import {
-    UserActivityOverlapSection,
-    UserActivityTopWorldsSection
-} from './user-dialog/components/UserActivityPanelSections';
-import {
     ActivityEmptyState,
     getWorldThumbnailUrl,
     HeatmapChart
 } from './user-dialog/components/UserActivityPanelParts';
+import {
+    UserActivityOverlapSection,
+    UserActivityTopWorldsSection
+} from './user-dialog/components/UserActivityPanelSections';
 import {
     ACTIVITY_FRIEND_PERIOD_KEY,
     ACTIVITY_SELF_EXCLUDE_HOME_WORLD_KEY,
@@ -50,7 +50,10 @@ import {
     USER_ACTIVITY_HOUR_LABELS
 } from './user-dialog/userActivityPanelModel';
 
-export { getDisplayDayLabels, getRangeDays } from './user-dialog/userActivityPanelModel';
+export {
+    getDisplayDayLabels,
+    getRangeDays
+} from './user-dialog/userActivityPanelModel';
 
 export function UserActivityPanel({
     profile,

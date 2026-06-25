@@ -15,7 +15,9 @@ export const toolCatalogDropId = 'tools-catalog-drop-zone';
 
 const quickAccessDragPrefix = 'tools-quick-access-tool:';
 const catalogDragPrefix = 'tools-catalog-tool:';
-const collapsibleCategories = toolCategories.map((category: any) => category.key);
+const collapsibleCategories = toolCategories.map(
+    (category: any) => category.key
+);
 
 export const defaultCollapsedState: any = {
     group: false,

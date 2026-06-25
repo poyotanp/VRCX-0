@@ -1,7 +1,4 @@
-import {
-    parseLocation,
-    normalizeLocationValue
-} from '@/shared/utils/location';
+import { parseLocation, normalizeLocationValue } from '@/shared/utils/location';
 
 export function normalizeLocationText(value: any) {
     return typeof value === 'string'

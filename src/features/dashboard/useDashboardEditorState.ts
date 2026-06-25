@@ -58,7 +58,11 @@ export function useDashboardEditorState({
         ]);
     };
 
-    const handleUpdatePanel = (rowIndex: any, panelIndex: any, nextPanel: any) => {
+    const handleUpdatePanel = (
+        rowIndex: any,
+        panelIndex: any,
+        nextPanel: any
+    ) => {
         setEditRows((current: any) =>
             current.map((row: any, currentRowIndex: any) => {
                 if (currentRowIndex !== rowIndex) {
@@ -95,7 +99,8 @@ export function useDashboardEditorState({
                     };
                 })
                 .filter(
-                    (row: any) => Array.isArray(row?.panels) && row.panels.length > 0
+                    (row: any) =>
+                        Array.isArray(row?.panels) && row.panels.length > 0
                 )
         );
     };
@@ -142,9 +147,7 @@ export function useDashboardEditorState({
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t(
-                          'view.dashboard.toast.failed_to_save_dashboard'
-                      )
+                    : t('view.dashboard.toast.failed_to_save_dashboard')
             );
         } finally {
             setIsSaving(false);

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import { openExternalLink } from '@/services/entityMediaService';
 import {
     executeManualLogin,
     executeSavedCredentialLogin
@@ -11,6 +10,7 @@ import {
     deleteSavedAuthSnapshot,
     refreshSavedAuthSnapshot
 } from '@/services/authSnapshotService';
+import { openExternalLink } from '@/services/entityMediaService';
 import { promptLegacyVrcxForceMigration } from '@/services/legacyVrcxMigrationService';
 import {
     loadPreferenceSnapshot,
@@ -143,9 +143,7 @@ export function useLoginPageState() {
                 toast.error(
                     error instanceof Error
                         ? error.message
-                        : t(
-                              'view.auth.toast.failed_to_load_proxy_settings'
-                          )
+                        : t('view.auth.toast.failed_to_load_proxy_settings')
                 );
             }
         }
@@ -171,9 +169,7 @@ export function useLoginPageState() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t(
-                          'view.auth.toast.failed_to_save_proxy_settings'
-                      )
+                    : t('view.auth.toast.failed_to_save_proxy_settings')
             );
         } finally {
             isSavingProxySettingsRef.current = false;
@@ -197,9 +193,7 @@ export function useLoginPageState() {
             toast.error(
                 error instanceof Error
                     ? error.message
-                    : t(
-                          'view.auth.toast.failed_to_remove_saved_account'
-                      )
+                    : t('view.auth.toast.failed_to_remove_saved_account')
             );
         } finally {
             setIsDeleting(false);
@@ -226,9 +220,7 @@ export function useLoginPageState() {
 
         if (!databaseReady) {
             toast.error(
-                t(
-                    'common.status.database_initialization_is_still_pending'
-                )
+                t('common.status.database_initialization_is_still_pending')
             );
             return;
         }
@@ -249,9 +241,7 @@ export function useLoginPageState() {
             });
             applySnapshot(nextSnapshot);
             toast.success(
-                t(
-                    'common.label.authenticated_and_prepared_the_session'
-                )
+                t('common.label.authenticated_and_prepared_the_session')
             );
         } catch (error) {
             if (error?.authSnapshot) {
@@ -276,9 +266,7 @@ export function useLoginPageState() {
 
         if (!databaseReady) {
             toast.error(
-                t(
-                    'common.status.database_initialization_is_still_pending'
-                )
+                t('common.status.database_initialization_is_still_pending')
             );
             return;
         }
@@ -303,9 +291,7 @@ export function useLoginPageState() {
             toast.error(
                 getErrorMessage(
                     error,
-                    t(
-                        'view.auth.toast.failed_to_restore_the_saved_account'
-                    )
+                    t('view.auth.toast.failed_to_restore_the_saved_account')
                 )
             );
         } finally {

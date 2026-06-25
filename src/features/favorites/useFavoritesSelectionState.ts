@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { FavoriteItem, FavoriteKind, FavoriteSource } from './favoritesTypes';
+import type {
+    FavoriteItem,
+    FavoriteKind,
+    FavoriteSource
+} from './favoritesTypes';
 
 export function useFavoritesSelectionState({
     contentItems,

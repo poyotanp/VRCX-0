@@ -3,8 +3,7 @@ import { toast } from 'sonner';
 
 import { PreviousInstancesTableDialog } from '@/components/dialogs/PreviousInstancesTableDialog';
 import gameLogRepository from '@/repositories/gameLogRepository';
-
-import { normalizeString } from './useLocationMetadata';
+import { normalizeString } from '@/shared/utils/string';
 
 export function useLocationPreviousInstancesDialog({
     currentLocation,
@@ -16,7 +15,9 @@ export function useLocationPreviousInstancesDialog({
     worldNameHint
 }: any) {
     const [previousInstancesOpen, setPreviousInstancesOpen] = useState(false);
-    const [previousInstancesRows, setPreviousInstancesRows] = useState<any[]>([]);
+    const [previousInstancesRows, setPreviousInstancesRows] = useState<any[]>(
+        []
+    );
     const [previousInstancesTitle, setPreviousInstancesTitle] =
         useState('Instance History');
     const [previousInstancesDetailsOnly, setPreviousInstancesDetailsOnly] =

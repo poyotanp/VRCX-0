@@ -100,7 +100,9 @@ export function useUserInviteActions({
         };
     }
 
-    function buildInviteRequestContext({ requireCurrentUser = false }: any = {}) {
+    function buildInviteRequestContext({
+        requireCurrentUser = false
+    }: any = {}) {
         const rosterUserId = normalizeUserId(profile?.id);
         if (
             !rosterUserId ||
@@ -237,9 +239,7 @@ export function useUserInviteActions({
             );
             toast.success(
                 requestSlot !== null
-                    ? t(
-                          'dialog.user.toast.invite_request_message_sent'
-                      )
+                    ? t('dialog.user.toast.invite_request_message_sent')
                     : t('dialog.user.toast.invite_request_sent')
             );
             return true;

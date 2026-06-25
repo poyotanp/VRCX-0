@@ -109,8 +109,9 @@ export function useModerationTableState({
         if (!preferencesHydrated) {
             return;
         }
-        const resolvedPageSizes =
-            sanitizeModerationPageSizes(tablePageSizesPreference);
+        const resolvedPageSizes = sanitizeModerationPageSizes(
+            tablePageSizesPreference
+        );
         setPageSizes(resolvedPageSizes);
         setPagination((current: any) => {
             const pageSize = resolveModerationPageSize(

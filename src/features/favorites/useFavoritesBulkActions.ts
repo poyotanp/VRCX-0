@@ -65,7 +65,9 @@ export function useFavoritesBulkActions({
         }
         if (failedCount === 0) {
             setEditMode(false);
-            toast.success(t('view.favorite.success.selected_favorites_removed'));
+            toast.success(
+                t('view.favorite.success.selected_favorites_removed')
+            );
             return;
         }
         toast.error(

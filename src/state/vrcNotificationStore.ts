@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
 import notificationPersistenceRepository from '@/repositories/notificationPersistenceRepository';
+import { windowDelay } from '@/shared/utils/delays';
 import {
     getNotificationCategory,
     getNotificationTs
 } from '@/shared/utils/notificationCategory';
-import { windowDelay } from '@/shared/utils/delays';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { useShellStore } from '@/state/shellStore';
 
@@ -126,7 +126,9 @@ function isUnseenNotification(notification?: NotificationRow | null): boolean {
     );
 }
 
-function shouldMarkSeenOnCenterClose(notification?: NotificationRow | null): boolean {
+function shouldMarkSeenOnCenterClose(
+    notification?: NotificationRow | null
+): boolean {
     const version = Number(notification?.version ?? 1);
     const type = String(notification?.type || '');
     return !(version !== 2 && ACTION_REQUIRED_V1_TYPES.has(type));

@@ -1,4 +1,3 @@
-import { commands } from '@/platform/tauri/bindings';
 import {
     useCallback,
     useEffect,
@@ -10,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import { commands } from '@/platform/tauri/bindings';
 import type {
     VrchatLogEntriesReadOutput,
     VrchatLogEntryOutput,
@@ -519,8 +519,7 @@ export function useVrchatLogController() {
 
             Promise.resolve()
                 .then(async () => {
-                    const nextFiles =
-                        await commands.appVrchatLogFilesList();
+                    const nextFiles = await commands.appVrchatLogFilesList();
                     if (!active) {
                         return;
                     }

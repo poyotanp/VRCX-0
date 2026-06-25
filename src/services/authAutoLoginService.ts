@@ -1,6 +1,6 @@
-import { commands } from '@/platform/tauri/bindings';
 import { toast } from 'sonner';
 
+import { commands } from '@/platform/tauri/bindings';
 import authRepository, {
     type SavedAuthSnapshot,
     type SavedCredentialRecord
@@ -45,9 +45,9 @@ function createAutoLoginAbortError() {
 function isMissingCredentialsError(error: unknown) {
     return Boolean(
         isRecord(error) &&
-            error.status === 401 &&
-            typeof error.message === 'string' &&
-            error.message.includes('Missing Credentials')
+        error.status === 401 &&
+        typeof error.message === 'string' &&
+        error.message.includes('Missing Credentials')
     );
 }
 
@@ -216,8 +216,7 @@ export async function executeReactAutoLogin(
         'saved account';
     const lastUserLoggedIn = String(snapshot?.lastUserLoggedIn || '').trim();
     const throttleKey =
-        String(snapshot?.autoLoginThrottleKey || '').trim() ||
-        lastUserLoggedIn;
+        String(snapshot?.autoLoginThrottleKey || '').trim() || lastUserLoggedIn;
 
     const cookieRestoreEligible = Boolean(snapshot?.cookieRestoreEligible);
     const savedCredentialFallbackAvailable = Boolean(

@@ -385,8 +385,9 @@ export async function loadPreferenceSnapshot() {
         webhookUrl: String(webhookUrl || ''),
         webhookFormat: webhookFormat === 'discord' ? 'discord' : 'generic',
         wristOverlayEnabled: Boolean(wristOverlayEnabled),
-        wristOverlayStartMode:
-            normalizeWristOverlayStartMode(wristOverlayStartMode),
+        wristOverlayStartMode: normalizeWristOverlayStartMode(
+            wristOverlayStartMode
+        ),
         wristOverlayButton: normalizeWristOverlayButton(wristOverlayButton),
         wristOverlayHand: normalizeWristOverlayHand(wristOverlayHand),
         wristOverlaySize: normalizeWristOverlaySize(wristOverlaySize),

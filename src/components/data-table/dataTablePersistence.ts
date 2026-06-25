@@ -96,7 +96,11 @@ export function sanitizeTableColumnVisibility(value: any, columnIds: any) {
     return visibility;
 }
 
-export function sanitizeTableColumnOrder(value: any, columnIds: any, fallback: any[] = []) {
+export function sanitizeTableColumnOrder(
+    value: any,
+    columnIds: any,
+    fallback: any[] = []
+) {
     if (!Array.isArray(value) || !Array.isArray(columnIds)) {
         return fallback;
     }
@@ -124,7 +128,9 @@ export function usePersistedDataTableLayout({
         () => (tableId ? getDataTableStorageKey(tableId) : null),
         [tableId]
     );
-    const [persistedState] = useState(() => readPersistedTableState(storageKey));
+    const [persistedState] = useState(() =>
+        readPersistedTableState(storageKey)
+    );
     const [columnVisibility, setColumnVisibility] = useState(() => ({
         ...initialColumnVisibility,
         ...sanitizeTableColumnVisibility(

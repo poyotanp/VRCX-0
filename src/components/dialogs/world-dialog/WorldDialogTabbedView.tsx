@@ -2,13 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import {
-    convertFileUrlToImageUrl,
-    copyTextToClipboard,
-    openExternalLink
-} from '@/services/entityMediaService';
-import groupProfileRepository from '@/repositories/groupProfileRepository';
 import { formatDateFilterOrFallback } from '@/lib/dateTime';
+import groupProfileRepository from '@/repositories/groupProfileRepository';
 import mediaRepository from '@/repositories/mediaRepository';
 import playerListPersistenceRepository from '@/repositories/playerListPersistenceRepository';
 import userProfileRepository from '@/repositories/userProfileRepository';
@@ -18,6 +13,11 @@ import {
     recordGameRuntimePresence,
     recordLocationHintsFromInstances
 } from '@/services/domainIngestionService';
+import {
+    convertFileUrlToImageUrl,
+    copyTextToClipboard,
+    openExternalLink
+} from '@/services/entityMediaService';
 import { parseLocation } from '@/shared/utils/locationParser';
 import { replaceVrcPackageUrl } from '@/shared/utils/urlUtils';
 

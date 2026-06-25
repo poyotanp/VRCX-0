@@ -148,7 +148,11 @@ const createBoopDialogState = (): BoopDialogState => ({
     dismissible: true
 });
 
-function createResult(ok: boolean, reason: string, value?: unknown): ModalResult {
+function createResult(
+    ok: boolean,
+    reason: string,
+    value?: unknown
+): ModalResult {
     return {
         ok,
         reason,
@@ -203,10 +207,7 @@ export const useModalStore = create<ModalStore>((set: any, get: any) => {
         }
     }
 
-    function openBaseAlert(
-        mode: AlertMode,
-        options: AlertDialogOptions = {}
-    ) {
+    function openBaseAlert(mode: AlertMode, options: AlertDialogOptions = {}) {
         if (pendingAlert) {
             resolveAlert(createResult(false, 'replaced'));
         }

@@ -396,7 +396,9 @@ function handleRealtimeStatus(
     }
 }
 
-async function subscribeRuntimeRealtimeEvents(context: RuntimeTransportContext) {
+async function subscribeRuntimeRealtimeEvents(
+    context: RuntimeTransportContext
+) {
     const unsubscribers = await Promise.all([
         tauriClient.events.subscribe<RealtimeWsStatusPayload>(
             'realtimeWsStatus',

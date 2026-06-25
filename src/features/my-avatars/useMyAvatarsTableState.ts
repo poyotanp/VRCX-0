@@ -23,7 +23,10 @@ import type { MyAvatarsViewMode } from './myAvatarsTypes';
 
 function resolveTableColumnOrder(columnOrder: any) {
     const ordered = sanitizeMyAvatarsColumnOrder(columnOrder);
-    return [...ordered.filter((columnId: any) => columnId !== 'actions'), 'actions'];
+    return [
+        ...ordered.filter((columnId: any) => columnId !== 'actions'),
+        'actions'
+    ];
 }
 
 export function useMyAvatarsTableState({

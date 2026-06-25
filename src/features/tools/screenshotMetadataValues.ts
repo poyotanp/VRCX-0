@@ -1,10 +1,10 @@
-import { parseVrchatScreenshotDateFromFileName } from '@/shared/utils/screenshot';
+import { SCREENSHOT_GALLERY_CONFIG_KEYS } from '@/repositories/configKeys';
 import {
     formatDateTimeValue,
     formatIsoDateTime,
     normalizeDateLocale
 } from '@/shared/utils/dateTimeFormatters';
-import { SCREENSHOT_GALLERY_CONFIG_KEYS } from '@/repositories/configKeys';
+import { parseVrchatScreenshotDateFromFileName } from '@/shared/utils/screenshot';
 import { useShellStore } from '@/state/shellStore';
 
 export const SCREENSHOT_METADATA_SEARCH_TYPES = [
@@ -217,8 +217,11 @@ export function formatScreenshotDateTime(value: any, locale: any = undefined) {
         return '—';
     }
 
-    const { dateHour12, dateIsoFormat, locale: appLocale } =
-        useShellStore.getState();
+    const {
+        dateHour12,
+        dateIsoFormat,
+        locale: appLocale
+    } = useShellStore.getState();
 
     if (dateIsoFormat) {
         return formatIsoDateTime(date);
@@ -247,7 +250,11 @@ export function getFileNameFromPath(path: any) {
     );
 }
 
-export function resolveScreenshotMetadataDate(metadata: any, extra: any, fileName: any) {
+export function resolveScreenshotMetadataDate(
+    metadata: any,
+    extra: any,
+    fileName: any
+) {
     if (metadata?.timestamp) {
         const parsed = Date.parse(metadata.timestamp);
         if (Number.isFinite(parsed)) {

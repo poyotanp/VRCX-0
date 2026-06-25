@@ -1,6 +1,6 @@
-import { commands } from '@/platform/tauri/bindings';
 import { toast } from 'sonner';
 
+import { commands } from '@/platform/tauri/bindings';
 import configRepository from '@/repositories/configRepository';
 import vrchatInstanceRepository from '@/repositories/vrchatInstanceRepository';
 import {
@@ -12,6 +12,7 @@ import { requireHostCapabilitySupported } from '@/services/hostCapabilityService
 import i18n from '@/services/i18nService';
 import { getLaunchURL, isRealInstance } from '@/shared/utils/instance';
 import { parseLocation } from '@/shared/utils/locationParser';
+import { normalizeString } from '@/shared/utils/string';
 
 type InstanceShortNameResponse = {
     json?: {
@@ -32,12 +33,6 @@ type LaunchDialogDetails = {
     worldName: string;
     parsed: ReturnType<typeof parseLocation>;
 };
-
-function normalizeString(value: unknown): string {
-    return typeof value === 'string'
-        ? value.trim()
-        : String(value ?? '').trim();
-}
 
 function resolveLaunchLocation(location: unknown): string {
     const parsed = parseLocation(location);

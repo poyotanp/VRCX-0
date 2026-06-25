@@ -1,11 +1,11 @@
 import { isVrchatMissingCredentialsError } from '@/repositories/vrchatRequest';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
+import { shouldHandleRuntimeAuthFailure } from './authSessionRecoveryService';
 import {
     resetBackgroundMaintenance,
     runBackgroundMaintenanceTick
 } from './backgroundMaintenanceService';
-import { shouldHandleRuntimeAuthFailure } from './authSessionRecoveryService';
 import {
     isRuntimeGameLogSideEffectsActive,
     syncGameLogTail
@@ -179,9 +179,7 @@ export function stopRuntimeUpdateLoop() {
     notifyUpdateLoopIdle();
 }
 
-export async function stopRuntimeUpdateLoopAndWaitForIdle(
-    timeoutMs = 10000
-) {
+export async function stopRuntimeUpdateLoopAndWaitForIdle(timeoutMs = 10000) {
     stopRuntimeUpdateLoop();
     if (activeTickCount === 0) {
         return;

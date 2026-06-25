@@ -101,7 +101,10 @@ export function resolveFeedLocationForDisplay(row: any) {
     return location;
 }
 
-export function resolveFeedFriendStateBucket(friend: any, currentUserSnapshot: any) {
+export function resolveFeedFriendStateBucket(
+    friend: any,
+    currentUserSnapshot: any
+) {
     const friendId = normalizeFeedId(friend?.id || friend?.userId);
     const explicitState = normalizePresenceState(
         friend?.stateBucket || friend?.state
@@ -128,7 +131,10 @@ export function resolveFeedFriendStateBucket(friend: any, currentUserSnapshot: a
     return '';
 }
 
-export function canRequestInviteFromFeedFriend(friend: any, currentUserSnapshot: any) {
+export function canRequestInviteFromFeedFriend(
+    friend: any,
+    currentUserSnapshot: any
+) {
     return (
         resolveFeedFriendStateBucket(friend, currentUserSnapshot) === 'online'
     );

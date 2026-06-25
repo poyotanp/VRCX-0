@@ -58,10 +58,10 @@ export function VrcNotificationCenterHost() {
     const isLocalUserVrcPlusSupporter = useRuntimeStore((state: any) =>
         Boolean(
             state.auth.currentUserSnapshot?.$isVRCPlus ||
-                state.auth.currentUserSnapshot?.tags?.includes?.(
-                    'system_supporter'
-                ) ||
-                globalThis?.$debug?.debugVrcPlus
+            state.auth.currentUserSnapshot?.tags?.includes?.(
+                'system_supporter'
+            ) ||
+            globalThis?.$debug?.debugVrcPlus
         )
     );
     const currentLocation = useRuntimeStore(

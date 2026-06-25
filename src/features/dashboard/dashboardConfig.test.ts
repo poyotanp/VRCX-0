@@ -71,11 +71,13 @@ describe('dashboardConfig', () => {
             label: 'Existing · legacy-panel'
         });
         expect(
-            options.some((option: any) => option.label === 'Widget · Feed Widget')
+            options.some(
+                (option: any) => option.label === 'Widget · Feed Widget'
+            )
         ).toBe(true);
-        expect(options.some((option: any) => option.label === 'Page · Feed')).toBe(
-            true
-        );
+        expect(
+            options.some((option: any) => option.label === 'Page · Feed')
+        ).toBe(true);
         expect(
             createDashboardPanelSelectOptions('__none__', dashboardT).some(
                 (option: any) => option.value === '__none__'

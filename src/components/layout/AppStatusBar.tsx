@@ -2,24 +2,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import configRepository from '@/repositories/configRepository';
+import { formatDateTime } from '@/lib/dateTime';
 import { STATUS_BAR_CONFIG_KEYS } from '@/repositories/configKeys';
+import configRepository from '@/repositories/configRepository';
 import { startBackgroundModeForCurrentSession } from '@/services/backgroundModeService';
-import {
-    loadPreferenceSnapshot,
-    setProxyServerPreference
-} from '@/services/preferencesService';
 import {
     refreshMutualGraphFetchStatus,
     startMutualGraphFetchStatusPolling,
     wasMutualGraphFetchStartedInThisSession
 } from '@/services/mutualGraphFetchService';
+import {
+    loadPreferenceSnapshot,
+    setProxyServerPreference
+} from '@/services/preferencesService';
 import { openExternalLink } from '@/services/shellIntegrationService';
 import {
     formatZoomPercentage,
     normalizeZoomLevel
 } from '@/services/themeService';
-import { formatDateTime } from '@/lib/dateTime';
 import { refreshVrcStatusNow } from '@/services/vrcStatusService';
 import {
     queueZoomLevelPreference,
@@ -395,7 +395,9 @@ export function AppStatusBar() {
 
         if (mutualGraphStatus === 'completed') {
             notifiedMutualGraphRunRef.current = runId;
-            toast.success(t('view.charts.success.mutual_friends_graph_refreshed'));
+            toast.success(
+                t('view.charts.success.mutual_friends_graph_refreshed')
+            );
             return;
         }
 

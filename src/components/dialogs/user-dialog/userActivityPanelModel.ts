@@ -12,7 +12,8 @@ export const OVERLAP_EXCLUDE_ENABLED_KEY =
     USER_ACTIVITY_CONFIG_KEYS.overlapExcludeEnabled;
 export const OVERLAP_EXCLUDE_START_KEY =
     USER_ACTIVITY_CONFIG_KEYS.overlapExcludeStart;
-export const OVERLAP_EXCLUDE_END_KEY = USER_ACTIVITY_CONFIG_KEYS.overlapExcludeEnd;
+export const OVERLAP_EXCLUDE_END_KEY =
+    USER_ACTIVITY_CONFIG_KEYS.overlapExcludeEnd;
 
 export const VALID_ACTIVITY_PERIODS = new Set(['7', '30', '90']);
 export const USER_ACTIVITY_HOUR_LABELS = Array.from(

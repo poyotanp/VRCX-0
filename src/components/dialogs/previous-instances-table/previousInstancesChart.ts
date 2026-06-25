@@ -82,7 +82,9 @@ export function buildInfoChartOption({
     }
 
     const maxEntryCount = Math.max(
-        ...Array.from(groupedByUser.values()).map((entries: any) => entries.length)
+        ...Array.from(groupedByUser.values()).map(
+            (entries: any) => entries.length
+        )
     );
     const series = [];
     for (let entryIndex = 0; entryIndex < maxEntryCount; entryIndex += 1) {

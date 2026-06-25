@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 
 import { InstanceActionBar } from '@/components/instances/InstanceActionBar';
 import { LocationWorld } from '@/components/LocationWorld';
-import { timeToText } from '@/lib/dateTime';
-import { openExternalLink } from '@/services/entityMediaService';
 import { ScreenshotThumbnailCard } from '@/features/tools/components/ScreenshotThumbnailGrid';
 import { useScreenshotGalleryGrid } from '@/features/tools/useScreenshotGalleryGrid';
+import { timeToText } from '@/lib/dateTime';
+import { openExternalLink } from '@/services/entityMediaService';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import {
@@ -25,8 +25,8 @@ import {
     EntityMemoTextarea,
     EntityRawJson
 } from '../EntityDialogScaffold';
-import { PreviousInstancesPanel } from '../PreviousInstancesTableDialog';
 import { formatPreviousInstanceCount } from '../previous-instances-table/previousInstancesRows';
+import { PreviousInstancesPanel } from '../PreviousInstancesTableDialog';
 import {
     InstanceUserTiles,
     WorldInstancesEmptyState,
@@ -49,9 +49,7 @@ function WorldScreenshotsEmptyState({ loading = false, message = '' }: any) {
         <Empty className="min-h-32 border">
             <EmptyHeader>
                 {loading ? <Spinner /> : null}
-                <EmptyTitle>
-                    {t('dialog.world.screenshots.header')}
-                </EmptyTitle>
+                <EmptyTitle>{t('dialog.world.screenshots.header')}</EmptyTitle>
                 <EmptyDescription>
                     {message ||
                         t(
@@ -93,7 +91,10 @@ function WorldScreenshotsGrid({
                     count: safeScreenshots.length
                 })}
             </Badge>
-            <div ref={viewportRef} className="min-h-0 flex-1 overflow-auto pr-1">
+            <div
+                ref={viewportRef}
+                className="min-h-0 flex-1 overflow-auto pr-1"
+            >
                 <div className="relative" style={{ height: totalHeight }}>
                     {visibleRows.map((row: any) => (
                         <div

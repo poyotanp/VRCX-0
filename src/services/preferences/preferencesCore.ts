@@ -19,7 +19,10 @@ import {
     LEGACY_OVERLAY_NOTIFICATION_KEYS,
     WRIST_OVERLAY_RUNTIME_CONFIG_KEYS
 } from './preferencesConstants';
-import type { PreferenceKey, StorePreferenceConfigKey } from './preferencesTypes';
+import type {
+    PreferenceKey,
+    StorePreferenceConfigKey
+} from './preferencesTypes';
 
 export function setDocumentLanguage(language: string) {
     document.documentElement.setAttribute('lang', language);

@@ -21,7 +21,12 @@ function formatDifferenceHtml(
         .split(/\s+/)
         .flatMap((word: any) => word.split(/(<br>)/));
 
-    function findLongestMatch(oldStart: any, oldEnd: any, newStart: any, newEnd: any) {
+    function findLongestMatch(
+        oldStart: any,
+        oldEnd: any,
+        newStart: any,
+        newEnd: any
+    ) {
         let bestOldStart = oldStart;
         let bestNewStart = newStart;
         let bestSize = 0;

@@ -1,9 +1,7 @@
 import { buildCurrentUserPresenceView } from '@/shared/utils/currentUserPresence';
+import { normalizeString as normalizeId } from '@/shared/utils/string';
 
-import {
-    normalizeId,
-    resolveCurrentUserStateBucket
-} from './friendsSidebarModel';
+import { resolveCurrentUserStateBucket } from './friendsSidebarModel';
 
 const STOPPED_GAME_CURRENT_USER_PRESENCE_FIELDS = [
     'location',
@@ -35,7 +33,11 @@ function pushFriendRows(
     nextRows: any,
     sectionKey: any,
     sectionRows: any,
-    { currentUserId, isCurrentUser = false, isGroupByInstance = false }: any = {}
+    {
+        currentUserId,
+        isCurrentUser = false,
+        isGroupByInstance = false
+    }: any = {}
 ) {
     for (const friend of sectionRows) {
         const friendId = normalizeId(friend?.id);

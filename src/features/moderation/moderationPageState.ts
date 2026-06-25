@@ -154,7 +154,8 @@ export function normalizeModerationSelectedTypes(value: any) {
         return [];
     }
     return value.filter(
-        (entry: any) => typeof entry === 'string' && moderationTypes.includes(entry)
+        (entry: any) =>
+            typeof entry === 'string' && moderationTypes.includes(entry)
     );
 }
 

@@ -119,7 +119,9 @@ export function useMyAvatarsActions({
     setManageTagsAvatar
 }: MyAvatarsActionsOptions) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore((state: any) => state.auth.currentUserId);
+    const currentUserId = useRuntimeStore(
+        (state: any) => state.auth.currentUserId
+    );
     const currentEndpoint = useRuntimeStore(
         (state: any) => state.auth.currentUserEndpoint
     );
@@ -387,7 +389,9 @@ export function useMyAvatarsActions({
                 return;
             }
             setDetail(t('view.my_avatars.label.impostor_queued_for_creation'));
-            toast.success(t('view.my_avatars.label.impostor_queued_for_creation'));
+            toast.success(
+                t('view.my_avatars.label.impostor_queued_for_creation')
+            );
         } catch (error) {
             if (!isRuntimeAuthTarget(authTarget)) {
                 return;
@@ -419,7 +423,10 @@ export function useMyAvatarsActions({
         imageUploadInputRef.current?.click();
     }
 
-    async function handleAvatarAction(action: MyAvatarAction, avatar: MyAvatarRow) {
+    async function handleAvatarAction(
+        action: MyAvatarAction,
+        avatar: MyAvatarRow
+    ) {
         switch (action) {
             case 'details':
                 openAvatarDetails(avatar);
@@ -453,7 +460,9 @@ export function useMyAvatarsActions({
         if (validation.reason === 'too_large') {
             toast.error(t('view.my_avatars.error.selected_image_is_too_large'));
         } else if (validation.reason === 'not_image') {
-            toast.error(t('view.my_avatars.error.selected_file_is_not_an_image'));
+            toast.error(
+                t('view.my_avatars.error.selected_file_is_not_an_image')
+            );
         }
     }
 
@@ -531,7 +540,9 @@ export function useMyAvatarsActions({
                 const message =
                     error instanceof Error
                         ? error.message
-                        : t('view.my_avatars.toast.failed_to_upload_avatar_image');
+                        : t(
+                              'view.my_avatars.toast.failed_to_upload_avatar_image'
+                          );
                 setDetail(message);
                 toast.error(message);
             }

@@ -39,7 +39,10 @@ describe('startTelemetryLifecycle', () => {
         vi.doMock('./telemetryIdentity', () => ({
             createTelemetrySessionId: () => 'session-test',
             getOrCreateTelemetryInstallIdentity: () =>
-                Promise.resolve({ installId: 'install-test', isNewInstall: false })
+                Promise.resolve({
+                    installId: 'install-test',
+                    isNewInstall: false
+                })
         }));
         vi.doMock('@/repositories/configRepository', () => ({
             default: {
@@ -75,7 +78,9 @@ describe('startTelemetryLifecycle', () => {
         const { startTelemetryLifecycle } = await import('./telemetryService');
         const cleanup = startTelemetryLifecycle();
 
-        await vi.waitFor(() => expect(seedViewModeUsage).toHaveBeenCalledOnce());
+        await vi.waitFor(() =>
+            expect(seedViewModeUsage).toHaveBeenCalledOnce()
+        );
         expect(sendConfigSnapshot).toHaveBeenCalledWith({
             installId: 'install-test',
             sessionId: 'session-test',
@@ -139,7 +144,10 @@ describe('startTelemetryLifecycle', () => {
         vi.doMock('./telemetryIdentity', () => ({
             createTelemetrySessionId: () => 'session-test',
             getOrCreateTelemetryInstallIdentity: () =>
-                Promise.resolve({ installId: 'install-test', isNewInstall: false })
+                Promise.resolve({
+                    installId: 'install-test',
+                    isNewInstall: false
+                })
         }));
         vi.doMock('@/repositories/configRepository', () => ({
             default: {
@@ -219,7 +227,10 @@ describe('startTelemetryLifecycle', () => {
         vi.doMock('./telemetryIdentity', () => ({
             createTelemetrySessionId: () => 'session-test',
             getOrCreateTelemetryInstallIdentity: () =>
-                Promise.resolve({ installId: 'install-test', isNewInstall: false })
+                Promise.resolve({
+                    installId: 'install-test',
+                    isNewInstall: false
+                })
         }));
         vi.doMock('@/repositories/configRepository', () => ({
             default: {
@@ -301,7 +312,10 @@ describe('startTelemetryLifecycle', () => {
         vi.doMock('./telemetryIdentity', () => ({
             createTelemetrySessionId: () => 'session-test',
             getOrCreateTelemetryInstallIdentity: () =>
-                Promise.resolve({ installId: 'install-test', isNewInstall: true })
+                Promise.resolve({
+                    installId: 'install-test',
+                    isNewInstall: true
+                })
         }));
         vi.doMock('@/repositories/configRepository', () => ({
             default: {
@@ -386,7 +400,10 @@ describe('startTelemetryLifecycle', () => {
         vi.doMock('./telemetryIdentity', () => ({
             createTelemetrySessionId: () => 'session-test',
             getOrCreateTelemetryInstallIdentity: () =>
-                Promise.resolve({ installId: 'install-test', isNewInstall: false })
+                Promise.resolve({
+                    installId: 'install-test',
+                    isNewInstall: false
+                })
         }));
         vi.doMock('@/repositories/configRepository', () => ({
             default: {

@@ -40,8 +40,10 @@ export function useScreenshotGalleryController({
     const [galleryImagesFolder, setGalleryImagesFolder] = useState('');
     const [selectedGalleryFolder, setSelectedGalleryFolder] = useState('');
     const [storedGalleryFolder, setStoredGalleryFolder] = useState('');
-    const [isGalleryFolderPreferenceLoaded, setIsGalleryFolderPreferenceLoaded] =
-        useState(false);
+    const [
+        isGalleryFolderPreferenceLoaded,
+        setIsGalleryFolderPreferenceLoaded
+    ] = useState(false);
     const [scanStatus, setScanStatus] = useState(null);
     const [galleryScanError, setGalleryScanError] = useState('');
     const [galleryTreeError, setGalleryTreeError] = useState('');
@@ -60,7 +62,10 @@ export function useScreenshotGalleryController({
     useEffect(() => {
         let active = true;
         Promise.all([
-            configRepository.getString(SCREENSHOT_GALLERY_FOLDER_CONFIG_KEY, ''),
+            configRepository.getString(
+                SCREENSHOT_GALLERY_FOLDER_CONFIG_KEY,
+                ''
+            ),
             configRepository.getObject(SCREENSHOT_GALLERY_SCROLL_CONFIG_KEY, {})
         ])
             .then(([folder, scrollPositions]: any) => {

@@ -1,5 +1,5 @@
-import type { FavoriteKind } from './favoritesTypes';
 import { normalizeFavoriteEntityId as normalizeEntityId } from './favoritesItems';
+import type { FavoriteKind } from './favoritesTypes';
 
 const EMPTY_ARRAY: any[] = [];
 const EMPTY_OBJECT: Record<string, any> = {};
@@ -77,7 +77,9 @@ export function selectFavoritesCollectionsState(kind: FavoriteKind) {
             favoriteFriendGroups: isFriend
                 ? state.favoriteFriendGroups
                 : EMPTY_ARRAY,
-            favoriteWorldGroups: isWorld ? state.favoriteWorldGroups : EMPTY_ARRAY,
+            favoriteWorldGroups: isWorld
+                ? state.favoriteWorldGroups
+                : EMPTY_ARRAY,
             favoriteAvatarGroups: isAvatar
                 ? state.favoriteAvatarGroups
                 : EMPTY_ARRAY,

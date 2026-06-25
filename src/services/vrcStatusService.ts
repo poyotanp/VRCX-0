@@ -196,7 +196,8 @@ export function refreshVrcStatus(): Promise<void> {
 
 async function deferNextVrcStatusRefresh(): Promise<void> {
     const interval = useRuntimeStore.getState().vrcStatus.pollingIntervalMs;
-    await commands.appRuntimeFrontendScheduleJobDefer({
+    await commands
+        .appRuntimeFrontendScheduleJobDefer({
             name: VRC_STATUS_REFRESH_JOB,
             delaySeconds: pollingCadenceSeconds(interval)
         })
@@ -207,7 +208,8 @@ async function deferNextVrcStatusRefresh(): Promise<void> {
 
 async function claimVrcStatusRefreshDue(): Promise<boolean> {
     const interval = useRuntimeStore.getState().vrcStatus.pollingIntervalMs;
-    return commands.appRuntimeFrontendScheduleJobDueClaim({
+    return commands
+        .appRuntimeFrontendScheduleJobDueClaim({
             name: VRC_STATUS_REFRESH_JOB,
             cadenceSeconds: pollingCadenceSeconds(interval),
             initialDelaySeconds: 0

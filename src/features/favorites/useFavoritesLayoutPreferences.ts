@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-import configRepository from '@/repositories/configRepository';
 import { FAVORITES_LAYOUT_CONFIG_KEYS } from '@/repositories/configKeys';
+import configRepository from '@/repositories/configRepository';
 
 const SPLITTER_DEFAULT_SIZE_PX = 260;
 const SPLITTER_MIN_SIZE_PX = 0;

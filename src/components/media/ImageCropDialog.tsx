@@ -163,7 +163,9 @@ export function ImageCropDialog({
             }
             await onConfirm?.(
                 blob,
-                Object.keys(uploadOptions).length > 0 ? uploadOptions : undefined
+                Object.keys(uploadOptions).length > 0
+                    ? uploadOptions
+                    : undefined
             );
         } finally {
             setIsConfirming(false);

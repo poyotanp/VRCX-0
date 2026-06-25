@@ -62,8 +62,9 @@ function validTimestampMs(value: any) {
 }
 
 function isCurrentlyOnline(profile: any) {
-    const state = normalizedText(profile?.stateBucket || profile?.state)
-        .toLowerCase();
+    const state = normalizedText(
+        profile?.stateBucket || profile?.state
+    ).toLowerCase();
     return state === 'online';
 }
 

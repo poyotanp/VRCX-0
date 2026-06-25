@@ -23,7 +23,9 @@ export const DEFAULT_FAVORITE_LIMITS = Object.freeze({
     })
 }) satisfies FavoriteLimits;
 
-export function isObjectRecord(value: unknown): value is Record<string, unknown> {
+export function isObjectRecord(
+    value: unknown
+): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }
 
@@ -98,7 +100,8 @@ export function removeFromFavoriteGroups(
     for (const [key, values] of Object.entries(source || {})) {
         const nextValues = Array.isArray(values)
             ? values.filter(
-                  (value) => normalizeFavoriteStoreId(value) !== normalizedEntityId
+                  (value) =>
+                      normalizeFavoriteStoreId(value) !== normalizedEntityId
               )
             : [];
 
@@ -236,7 +239,9 @@ export function normalizeFavoriteGroups(source: unknown): FavoriteGroup[] {
         : [];
 }
 
-export function normalizeFavoriteDetailsById(source: unknown): FavoriteDetailsById {
+export function normalizeFavoriteDetailsById(
+    source: unknown
+): FavoriteDetailsById {
     if (!isObjectRecord(source)) {
         return {};
     }

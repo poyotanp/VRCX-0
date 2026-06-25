@@ -459,7 +459,9 @@ const toolNavDefinitions: ToolNavDefinition[] = [
     ...legacyToolNavDefinitions
 ];
 
-const defaultHiddenToolNavKeys = toolNavDefinitions.map((tool: any) => tool.key);
+const defaultHiddenToolNavKeys = toolNavDefinitions.map(
+    (tool: any) => tool.key
+);
 const isToolNavKey = (key: unknown): key is string =>
     typeof key === 'string' && key.startsWith('tool-');
 

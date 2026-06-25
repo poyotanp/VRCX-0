@@ -35,7 +35,9 @@ export function useModerationRowActions({
     const currentEndpoint = useRuntimeStore(
         (state: any) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore((state: any) => state.auth.currentUserId);
+    const currentUserId = useRuntimeStore(
+        (state: any) => state.auth.currentUserId
+    );
     const confirm = useModalStore((state: any) => state.confirm);
     const [deletingModerationKey, setDeletingModerationKey] = useState('');
 

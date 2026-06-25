@@ -1,5 +1,4 @@
 import type { Dispatch, SetStateAction } from 'react';
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type ViewportMetrics = Readonly<{
@@ -48,8 +47,9 @@ export function useScrollViewportMetrics({
 }: UseScrollViewportMetricsOptions = {}) {
     const viewportRef = useRef<HTMLElement | null>(null);
     const pendingScrollTopRef = useRef<number | null>(null);
-    const [viewportElement, setViewportElement] =
-        useState<HTMLElement | null>(null);
+    const [viewportElement, setViewportElement] = useState<HTMLElement | null>(
+        null
+    );
     const [viewportMetrics, setViewportMetrics] = useState(
         EMPTY_VIEWPORT_METRICS
     );

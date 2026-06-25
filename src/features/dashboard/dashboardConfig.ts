@@ -8,7 +8,9 @@ import {
 } from '@/components/dashboard/dashboardRegistry';
 
 const DASHBOARD_INSTANCE_WIDGET_COLUMN_KEYS = new Set(
-    DASHBOARD_INSTANCE_WIDGET_COLUMN_DEFINITIONS.map((column: any) => column.key)
+    DASHBOARD_INSTANCE_WIDGET_COLUMN_DEFINITIONS.map(
+        (column: any) => column.key
+    )
 );
 
 export function cloneDashboardRows(rows: any) {
@@ -35,7 +37,10 @@ export function getDashboardRowKey(row: any) {
     return `legacy-${hash.toString(36)}`;
 }
 
-export function createDashboardPanelSelectOptions(currentPanelKey: any, t: any) {
+export function createDashboardPanelSelectOptions(
+    currentPanelKey: any,
+    t: any
+) {
     const options = [
         ...DASHBOARD_WIDGET_DEFINITIONS.map((definition: any) => ({
             value: definition.key,
@@ -103,7 +108,11 @@ export function isDashboardFilterActive(config: any, filterType: any) {
     return filters.length === 0 || filters.includes(filterType);
 }
 
-export function getNextDashboardFilterConfig(config: any, filterType: any, filterTypes: any) {
+export function getNextDashboardFilterConfig(
+    config: any,
+    filterType: any,
+    filterTypes: any
+) {
     const currentFilters = getDashboardFilterList(config);
     let filters;
 
@@ -148,8 +157,8 @@ export function getDashboardInstanceWidgetColumns(config: any) {
 }
 
 export function getKnownDashboardInstanceWidgetColumns(config: any) {
-    const columns = getDashboardInstanceWidgetColumns(config).filter((column: any) =>
-        DASHBOARD_INSTANCE_WIDGET_COLUMN_KEYS.has(column)
+    const columns = getDashboardInstanceWidgetColumns(config).filter(
+        (column: any) => DASHBOARD_INSTANCE_WIDGET_COLUMN_KEYS.has(column)
     );
 
     if (!columns.includes('displayName')) {
@@ -161,7 +170,10 @@ export function getKnownDashboardInstanceWidgetColumns(config: any) {
         : [...DASHBOARD_INSTANCE_WIDGET_DEFAULT_COLUMNS];
 }
 
-export function getNextDashboardInstanceColumnConfig(config: any, columnKey: any) {
+export function getNextDashboardInstanceColumnConfig(
+    config: any,
+    columnKey: any
+) {
     if (columnKey === 'displayName') {
         return config;
     }

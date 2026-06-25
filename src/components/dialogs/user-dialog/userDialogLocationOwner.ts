@@ -46,7 +46,11 @@ export function resolveOwnerId(
     );
 }
 
-export function resolveOwnerSeed(source: any, ownerId: any, knownUsersById: any) {
+export function resolveOwnerSeed(
+    source: any,
+    ownerId: any,
+    knownUsersById: any
+) {
     if (!ownerId) {
         return null;
     }

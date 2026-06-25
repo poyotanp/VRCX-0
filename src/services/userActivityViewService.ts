@@ -115,7 +115,11 @@ function pairCursor(leftCursor: any, rightCursor: any) {
     return `${leftCursor || ''}|${rightCursor || ''}`;
 }
 
-async function hydrateSnapshot(userId: any, isSelf: any, ownerUserId: any = '') {
+async function hydrateSnapshot(
+    userId: any,
+    isSelf: any,
+    ownerUserId: any = ''
+) {
     const snapshot = getSnapshot(userId, isSelf, ownerUserId);
     if (snapshot.sync.updatedAt || snapshot.sessions.length > 0) {
         return snapshot;
@@ -160,12 +164,13 @@ async function fullRefresh(snapshot: any, rangeDays: any) {
         return;
     }
 
-    const sourceItems = await activityPersistenceRepository.getActivitySourceSlice({
-        userId: snapshot.userId,
-        ownerUserId: snapshot.sync.ownerUserId || '',
-        isSelf: snapshot.isSelf,
-        fromDays: rangeDays
-    });
+    const sourceItems =
+        await activityPersistenceRepository.getActivitySourceSlice({
+            userId: snapshot.userId,
+            ownerUserId: snapshot.sync.ownerUserId || '',
+            isSelf: snapshot.isSelf,
+            fromDays: rangeDays
+        });
     const sourceLastCreatedAt = sourceItems.length
         ? sourceItems[sourceItems.length - 1].created_at
         : '';
@@ -194,7 +199,9 @@ async function fullRefresh(snapshot: any, rangeDays: any) {
             snapshot.userId,
             snapshot.sessions
         );
-        await activityPersistenceRepository.upsertActivitySyncState(snapshot.sync);
+        await activityPersistenceRepository.upsertActivitySyncState(
+            snapshot.sync
+        );
     }
 }
 
@@ -212,23 +219,29 @@ async function incrementalRefresh(snapshot: any) {
             });
         const previousCursor = snapshot.sync.sourceLastCreatedAt;
         applySelfRefreshResult(snapshot, result);
-        if (result.sourceCount > 0 || snapshot.sync.sourceLastCreatedAt !== previousCursor) {
+        if (
+            result.sourceCount > 0 ||
+            snapshot.sync.sourceLastCreatedAt !== previousCursor
+        ) {
             clearDerivedViews(snapshot);
         }
         return;
     }
 
-    const sourceItems = await activityPersistenceRepository.getActivitySourceAfter({
-        userId: snapshot.userId,
-        ownerUserId: snapshot.sync.ownerUserId || '',
-        isSelf: snapshot.isSelf,
-        afterCreatedAt: snapshot.sync.sourceLastCreatedAt,
-        inclusive: snapshot.isSelf
-    });
+    const sourceItems =
+        await activityPersistenceRepository.getActivitySourceAfter({
+            userId: snapshot.userId,
+            ownerUserId: snapshot.sync.ownerUserId || '',
+            isSelf: snapshot.isSelf,
+            afterCreatedAt: snapshot.sync.sourceLastCreatedAt,
+            inclusive: snapshot.isSelf
+        });
     if (sourceItems.length === 0) {
         snapshot.sync.updatedAt = new Date().toISOString();
         if (snapshot.isSelf) {
-            await activityPersistenceRepository.upsertActivitySyncState(snapshot.sync);
+            await activityPersistenceRepository.upsertActivitySyncState(
+                snapshot.sync
+            );
         }
         return;
     }
@@ -267,7 +280,9 @@ async function incrementalRefresh(snapshot: any) {
                       ),
             replaceFromStartAt
         });
-        await activityPersistenceRepository.upsertActivitySyncState(snapshot.sync);
+        await activityPersistenceRepository.upsertActivitySyncState(
+            snapshot.sync
+        );
     }
 }
 
@@ -290,13 +305,14 @@ async function expandRange(snapshot: any, rangeDays: any) {
         return;
     }
 
-    const sourceItems = await activityPersistenceRepository.getActivitySourceSlice({
-        userId: snapshot.userId,
-        ownerUserId: snapshot.sync.ownerUserId || '',
-        isSelf: snapshot.isSelf,
-        fromDays: rangeDays,
-        toDays: currentDays
-    });
+    const sourceItems =
+        await activityPersistenceRepository.getActivitySourceSlice({
+            userId: snapshot.userId,
+            ownerUserId: snapshot.sync.ownerUserId || '',
+            isSelf: snapshot.isSelf,
+            fromDays: rangeDays,
+            toDays: currentDays
+        });
     const result = await runActivityWorkerTask('computeSessionsSnapshot', {
         sourceType: 'friend_presence',
         events: sourceItems,
@@ -319,7 +335,9 @@ async function expandRange(snapshot: any, rangeDays: any) {
     snapshot.sync.updatedAt = new Date().toISOString();
     clearDerivedViews(snapshot);
     if (snapshot.isSelf) {
-        await activityPersistenceRepository.upsertActivitySyncState(snapshot.sync);
+        await activityPersistenceRepository.upsertActivitySyncState(
+            snapshot.sync
+        );
     }
 }
 
@@ -435,7 +453,11 @@ export function pickOverlapNormalizeConfig(rangeDays: any) {
     );
 }
 
-async function getCache(userId: any, isSelf: any = false, ownerUserId: any = '') {
+async function getCache(
+    userId: any,
+    isSelf: any = false,
+    ownerUserId: any = ''
+) {
     const snapshot = await hydrateSnapshot(userId, isSelf, ownerUserId);
     return {
         userId: snapshot.userId,
@@ -480,12 +502,14 @@ async function loadActivityView({
     }
 
     if (!forceRefresh && cacheOwnerUserId) {
-        const persisted = await activityPersistenceRepository.getActivityBucketCache({
-            ownerUserId: cacheOwnerUserId,
-            targetUserId: cacheTargetUserId,
-            rangeDays,
-            viewKind: activityPersistenceRepository.ACTIVITY_VIEW_KIND.ACTIVITY
-        });
+        const persisted =
+            await activityPersistenceRepository.getActivityBucketCache({
+                ownerUserId: cacheOwnerUserId,
+                targetUserId: cacheTargetUserId,
+                rangeDays,
+                viewKind:
+                    activityPersistenceRepository.ACTIVITY_VIEW_KIND.ACTIVITY
+            });
         if (persisted?.builtFromCursor === currentCursor) {
             view = {
                 ...(persisted.summary as Record<string, any>),
@@ -524,7 +548,8 @@ async function loadActivityView({
                 ownerUserId: cacheOwnerUserId,
                 targetUserId: cacheTargetUserId,
                 rangeDays,
-                viewKind: activityPersistenceRepository.ACTIVITY_VIEW_KIND.ACTIVITY,
+                viewKind:
+                    activityPersistenceRepository.ACTIVITY_VIEW_KIND.ACTIVITY,
                 builtFromCursor: currentCursor,
                 rawBuckets: view.rawBuckets,
                 normalizedBuckets: view.normalizedBuckets,
@@ -590,13 +615,15 @@ async function loadOverlapView({
     }
 
     if (!forceRefresh && ownerUserId) {
-        const persisted = await activityPersistenceRepository.getActivityBucketCache({
-            ownerUserId,
-            targetUserId,
-            rangeDays,
-            viewKind: activityPersistenceRepository.ACTIVITY_VIEW_KIND.OVERLAP,
-            excludeKey
-        });
+        const persisted =
+            await activityPersistenceRepository.getActivityBucketCache({
+                ownerUserId,
+                targetUserId,
+                rangeDays,
+                viewKind:
+                    activityPersistenceRepository.ACTIVITY_VIEW_KIND.OVERLAP,
+                excludeKey
+            });
         if (persisted?.builtFromCursor === cursor) {
             view = {
                 ...(persisted.summary as Record<string, any>),
@@ -636,7 +663,8 @@ async function loadOverlapView({
                 ownerUserId,
                 targetUserId,
                 rangeDays,
-                viewKind: activityPersistenceRepository.ACTIVITY_VIEW_KIND.OVERLAP,
+                viewKind:
+                    activityPersistenceRepository.ACTIVITY_VIEW_KIND.OVERLAP,
                 excludeKey,
                 builtFromCursor: cursor,
                 rawBuckets: view.rawBuckets,

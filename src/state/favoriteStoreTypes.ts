@@ -17,7 +17,9 @@ export type FavoriteGroup = Record<string, unknown> & {
 };
 export type FavoriteGroupMap = Record<string, string[]>;
 export type FavoriteDetailsById = Record<string, Record<string, unknown>>;
-export type FavoriteSnapshot = Partial<Record<keyof FavoriteStoreState, unknown>> &
+export type FavoriteSnapshot = Partial<
+    Record<keyof FavoriteStoreState, unknown>
+> &
     Record<string, unknown> & {
         favoriteLimits?: unknown;
     };

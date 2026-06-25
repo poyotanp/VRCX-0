@@ -1,4 +1,5 @@
 import { delay } from '@/shared/utils/delays';
+import { normalizeString } from '@/shared/utils/string';
 
 type RawGameLogRow = unknown[];
 type ParsedGameLog = Record<string, unknown> & {
@@ -8,12 +9,6 @@ type ParsedGameLog = Record<string, unknown> & {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object');
-}
-
-function normalizeString(value: unknown): string {
-    return typeof value === 'string'
-        ? value.trim()
-        : String(value ?? '').trim();
 }
 
 function parseRawGameLog(
@@ -195,7 +190,6 @@ export {
     delay,
     getFileNameFromPath,
     getPlayerKey,
-    normalizeString,
     parseRawRow,
     parseWebJson,
     parseYouTubeVideoId
