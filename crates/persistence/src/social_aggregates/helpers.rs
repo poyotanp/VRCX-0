@@ -92,6 +92,25 @@ pub(crate) fn bucket_label(bucket: &ActivityBucket, key: &str) -> String {
     }
 }
 
+#[derive(Clone, Debug, Default)]
+pub(crate) struct LatestName {
+    name: String,
+    at: String,
+}
+
+impl LatestName {
+    pub(crate) fn observe(&mut self, name: &str, created_at: &str) {
+        if self.name.is_empty() || created_at > self.at.as_str() {
+            self.name = name.to_string();
+            self.at = created_at.to_string();
+        }
+    }
+
+    pub(crate) fn into_name(self) -> String {
+        self.name
+    }
+}
+
 fn weekday_name(key: &str) -> &'static str {
     match key {
         "0" => "Sunday",

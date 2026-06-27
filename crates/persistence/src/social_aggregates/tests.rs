@@ -184,6 +184,133 @@ fn copresence_summary_applies_limit_after_ranking() {
 }
 
 #[test]
+fn copresence_merges_renamed_user_into_one_row() {
+    let (_dir, db) = test_db("copresence-renamed");
+    create_game_log_tables(&db);
+    insert_join_leave(
+        &db,
+        "2026-06-01T20:00:00Z",
+        "OnPlayerLeft",
+        "AliceOld",
+        "usr_alice",
+        "wrld_a:1",
+        600_000,
+    );
+    insert_join_leave(
+        &db,
+        "2026-06-02T20:00:00Z",
+        "OnPlayerLeft",
+        "AliceNew",
+        "usr_alice",
+        "wrld_a:1",
+        300_000,
+    );
+
+    let output = get_copresence_summary(
+        &db,
+        CopresenceSummaryInput {
+            time_window: TimeWindow::all(),
+            group_by: CopresenceGroupBy::Friend,
+            min_minutes: None,
+            limit: None,
+            owner_user_id: None,
+            friends_only: false,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.total_rows, 1);
+    assert_eq!(output.rows.len(), 1);
+    let row = &output.rows[0];
+    assert_eq!(row.user_id, "usr_alice");
+    assert_eq!(row.display_name, "AliceNew");
+    assert_eq!(row.total_minutes, 15);
+    assert_eq!(row.co_days, 2);
+    assert_eq!(row.last_seen_together, "2026-06-02T20:00:00Z");
+}
+
+#[test]
+fn copresence_keeps_distinct_name_only_strangers_separate() {
+    let (_dir, db) = test_db("copresence-name-only");
+    create_game_log_tables(&db);
+    for display_name in ["Stranger One", "Stranger Two"] {
+        db.execute_non_query(
+            "INSERT INTO gamelog_join_leave (created_at, type, display_name, location, user_id, time)
+             VALUES ('2026-06-01T20:00:00Z', 'OnPlayerLeft', @display_name, 'wrld_a:1', NULL, 600000)",
+            &crate::common::ParamsBuilder::new()
+                .set("display_name", display_name)
+                .build(),
+        )
+        .unwrap();
+    }
+
+    let output = get_copresence_summary(
+        &db,
+        CopresenceSummaryInput {
+            time_window: TimeWindow::all(),
+            group_by: CopresenceGroupBy::Friend,
+            min_minutes: None,
+            limit: None,
+            owner_user_id: None,
+            friends_only: false,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.total_rows, 2);
+    assert_eq!(output.rows.len(), 2);
+    let names = output
+        .rows
+        .iter()
+        .map(|row| row.display_name.as_str())
+        .collect::<Vec<_>>();
+    assert!(names.contains(&"Stranger One"));
+    assert!(names.contains(&"Stranger Two"));
+    assert!(output.rows.iter().all(|row| row.user_id.is_empty()));
+}
+
+#[test]
+fn copresence_renamed_user_does_not_inflate_total_rows() {
+    let (_dir, db) = test_db("copresence-renamed-total-rows");
+    create_game_log_tables(&db);
+    for (created_at, display_name, user_id, millis) in [
+        ("2026-06-01T20:00:00Z", "AliceOld", "usr_alice", 1_200_000),
+        ("2026-06-02T20:00:00Z", "AliceNew", "usr_alice", 2_400_000),
+        ("2026-06-02T21:00:00Z", "Bob", "usr_bob", 1_800_000),
+    ] {
+        insert_join_leave(
+            &db,
+            created_at,
+            "OnPlayerLeft",
+            display_name,
+            user_id,
+            "wrld_a:1",
+            millis,
+        );
+    }
+
+    let output = get_copresence_summary(
+        &db,
+        CopresenceSummaryInput {
+            time_window: TimeWindow::all(),
+            group_by: CopresenceGroupBy::Friend,
+            min_minutes: None,
+            limit: Some(1),
+            owner_user_id: None,
+            friends_only: false,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.total_rows, 2);
+    assert_eq!(output.returned_rows, 1);
+    assert!(output.truncated);
+    assert_eq!(output.rows[0].user_id, "usr_alice");
+    assert_eq!(output.rows[0].display_name, "AliceNew");
+    assert_eq!(output.rows[0].total_minutes, 60);
+}
+
+#[test]
 fn copresence_friend_world_keeps_tied_worlds_separate() {
     let (_dir, db) = test_db("copresence-world-tie");
     create_game_log_tables(&db);
@@ -368,6 +495,45 @@ fn friend_activity_pattern_counts_online_events_by_hour() {
     assert_eq!(output.rows[0].buckets.get("18"), Some(&2));
     assert_eq!(output.rows[0].buckets.get("21"), Some(&1));
     assert_eq!(output.rows[0].typical_online_window, "18:00-19:00");
+}
+
+#[test]
+fn friend_activity_pattern_merges_renamed_user_buckets() {
+    let (_dir, db) = test_db("activity-pattern-renamed");
+    ensure_realtime_tables(&db, "usrself").unwrap();
+    for (display_name, created_at) in [
+        ("AliceOld", "2026-06-01T18:05:00Z"),
+        ("AliceNew", "2026-06-02T18:45:00Z"),
+    ] {
+        db.execute_non_query(
+            "INSERT INTO usrself_feed_online_offline
+                (created_at, user_id, display_name, type, location, world_name, time, group_name)
+             VALUES (@created_at, 'usr_alice', @display_name, 'Online', '', '', 0, '')",
+            &crate::common::ParamsBuilder::new()
+                .set("created_at", created_at)
+                .set("display_name", display_name)
+                .build(),
+        )
+        .unwrap();
+    }
+
+    let output = get_friend_activity_pattern(
+        &db,
+        FriendActivityPatternInput {
+            owner_user_id: "usr_self".into(),
+            user_id: Some("usr_alice".into()),
+            time_window: TimeWindow::all(),
+            bucket: ActivityBucket::HourOfDay,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.rows.len(), 1);
+    let row = &output.rows[0];
+    assert_eq!(row.user_id, "usr_alice");
+    assert_eq!(row.display_name, "AliceNew");
+    assert_eq!(row.buckets.get("18"), Some(&2));
+    assert_eq!(row.typical_online_window, "18:00-19:00");
 }
 
 #[test]
@@ -819,6 +985,46 @@ fn companions_of_uses_visible_gps_overlap_and_excludes_private_rows() {
 }
 
 #[test]
+fn companions_of_renamed_user_shows_latest_name() {
+    let (_dir, db) = test_db("companions-of-renamed");
+    ensure_realtime_tables(&db, "usrself").unwrap();
+    for (created_at, user_id, display_name, time) in [
+        ("2026-06-04T20:00:00Z", "usr_target", "Target", 600_000),
+        ("2026-06-01T20:00:00Z", "usr_alice", "AliceOld", 345_600_000),
+        ("2026-06-03T20:00:00Z", "usr_target", "Target", 600_000),
+        ("2026-06-03T20:00:00Z", "usr_alice", "AliceNew", 600_000),
+    ] {
+        db.execute_non_query(
+            "INSERT INTO usrself_feed_gps
+                (created_at, user_id, display_name, location, world_name, previous_location, time, group_name)
+             VALUES (@created_at, @user_id, @display_name, 'wrld_public:1', 'Public World', '', @time, '')",
+            &crate::common::ParamsBuilder::new()
+                .set("created_at", created_at)
+                .set("user_id", user_id)
+                .set("display_name", display_name)
+                .set("time", time)
+                .build(),
+        )
+        .unwrap();
+    }
+
+    let output = get_companions_of(
+        &db,
+        CompanionsOfInput {
+            owner_user_id: "usr_self".into(),
+            user_id: "usr_target".into(),
+            time_window: TimeWindow::all(),
+            limit: Some(10),
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.rows.len(), 1);
+    assert_eq!(output.rows[0].user_id, "usr_alice");
+    assert_eq!(output.rows[0].display_name, "AliceNew");
+}
+
+#[test]
 fn invite_history_groups_received_and_sent_notifications() {
     let (_dir, db) = test_db("invite-history");
     ensure_realtime_tables(&db, "usrself").unwrap();
@@ -1042,6 +1248,54 @@ fn fading_friends_ranks_dropped_copresence_for_current_friends() {
 }
 
 #[test]
+fn fading_friends_renamed_user_shows_latest_name() {
+    let (_dir, db) = test_db("fading-friends-renamed");
+    create_game_log_tables(&db);
+    ensure_realtime_tables(&db, "usrself").unwrap();
+    db.execute_non_query(
+        "INSERT INTO usrself_friend_log_current (user_id, display_name, trust_level, friend_number)
+             VALUES ('usr_alice', 'AliceNew', 'Trusted', 1)",
+        &Default::default(),
+    )
+    .unwrap();
+    insert_join_leave(
+        &db,
+        "2026-05-05T20:00:00Z",
+        "OnPlayerLeft",
+        "AliceOld",
+        "usr_alice",
+        "wrld_a:1",
+        3_600_000,
+    );
+    insert_join_leave(
+        &db,
+        "2026-06-10T20:00:00Z",
+        "OnPlayerLeft",
+        "AliceNew",
+        "usr_alice",
+        "wrld_a:1",
+        600_000,
+    );
+
+    let output = get_fading_friends(
+        &db,
+        FadingFriendsInput {
+            owner_user_id: "usr_self".into(),
+            prior_from: "2026-05-01T00:00:00Z".into(),
+            pivot: "2026-06-01T00:00:00Z".into(),
+            now: "2026-07-01T00:00:00Z".into(),
+            min_prior_minutes: Some(30),
+            limit: None,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.rows.len(), 1);
+    assert_eq!(output.rows[0].user_id, "usr_alice");
+    assert_eq!(output.rows[0].display_name, "AliceNew");
+}
+
+#[test]
 fn best_time_to_play_ranks_buckets_by_distinct_friends() {
     let (_dir, db) = test_db("best-time");
     ensure_realtime_tables(&db, "usrself").unwrap();
@@ -1083,6 +1337,85 @@ fn best_time_to_play_ranks_buckets_by_distinct_friends() {
     assert_eq!(top.online_events, 3);
     assert_eq!(top.top_friends[0].user_id, "usr_alice");
     assert_eq!(top.top_friends[0].online_events, 2);
+}
+
+#[test]
+fn best_time_renamed_user_shows_latest_name() {
+    let (_dir, db) = test_db("best-time-renamed");
+    ensure_realtime_tables(&db, "usrself").unwrap();
+    for (display_name, created_at) in [
+        ("AliceA", "2026-06-01T20:05:00Z"),
+        ("AliceZ", "2026-06-02T20:30:00Z"),
+    ] {
+        db.execute_non_query(
+            "INSERT INTO usrself_feed_online_offline
+                (created_at, user_id, display_name, type, location, world_name, time, group_name)
+             VALUES (@created_at, 'usr_alice', @display_name, 'Online', '', '', 0, '')",
+            &crate::common::ParamsBuilder::new()
+                .set("created_at", created_at)
+                .set("display_name", display_name)
+                .build(),
+        )
+        .unwrap();
+    }
+
+    let output = get_best_time_to_play(
+        &db,
+        BestTimeToPlayInput {
+            owner_user_id: "usr_self".into(),
+            time_window: TimeWindow::all(),
+            bucket: ActivityBucket::HourOfDay,
+            limit: None,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.rows.len(), 1);
+    let top = &output.rows[0];
+    assert_eq!(top.bucket, "20");
+    assert_eq!(top.distinct_friends, 1);
+    assert_eq!(top.online_events, 2);
+    assert_eq!(top.top_friends.len(), 1);
+    assert_eq!(top.top_friends[0].user_id, "usr_alice");
+    assert_eq!(top.top_friends[0].display_name, "AliceZ");
+    assert_eq!(top.top_friends[0].online_events, 2);
+}
+
+#[test]
+fn best_time_renamed_user_shows_latest_name_across_buckets() {
+    let (_dir, db) = test_db("best-time-renamed-across-buckets");
+    ensure_realtime_tables(&db, "usrself").unwrap();
+    for (display_name, created_at) in [
+        ("AliceA", "2026-06-01T20:05:00Z"),
+        ("AliceZ", "2026-06-02T21:30:00Z"),
+    ] {
+        db.execute_non_query(
+            "INSERT INTO usrself_feed_online_offline
+                (created_at, user_id, display_name, type, location, world_name, time, group_name)
+             VALUES (@created_at, 'usr_alice', @display_name, 'Online', '', '', 0, '')",
+            &crate::common::ParamsBuilder::new()
+                .set("created_at", created_at)
+                .set("display_name", display_name)
+                .build(),
+        )
+        .unwrap();
+    }
+
+    let output = get_best_time_to_play(
+        &db,
+        BestTimeToPlayInput {
+            owner_user_id: "usr_self".into(),
+            time_window: TimeWindow::all(),
+            bucket: ActivityBucket::HourOfDay,
+            limit: None,
+        },
+    )
+    .unwrap();
+
+    let bucket_20 = output.rows.iter().find(|row| row.bucket == "20").unwrap();
+    assert_eq!(bucket_20.top_friends.len(), 1);
+    assert_eq!(bucket_20.top_friends[0].user_id, "usr_alice");
+    assert_eq!(bucket_20.top_friends[0].display_name, "AliceZ");
 }
 
 #[test]

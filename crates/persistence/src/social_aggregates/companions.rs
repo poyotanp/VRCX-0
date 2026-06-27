@@ -10,7 +10,7 @@ use crate::Error;
 use super::caveats::companions_caveats;
 use super::helpers::{
     append_time_window_filter, clamped_optional_limit, is_visible_instance_location,
-    millis_to_minutes, table_exists,
+    millis_to_minutes, table_exists, LatestName,
 };
 use super::types::{CompanionOfRow, CompanionWorldRow, CompanionsOfInput, CompanionsOfOutput};
 
@@ -42,7 +42,8 @@ pub fn get_companions_of(
                         CAST(strftime('%s', other.created_at) AS INTEGER)
                     )
                 ) * 1000,
-                CASE WHEN target.created_at > other.created_at THEN target.created_at ELSE other.created_at END
+                CASE WHEN target.created_at > other.created_at THEN target.created_at ELSE other.created_at END,
+                other.created_at
          FROM {table_name} target
          JOIN {table_name} other ON other.location = target.location
          WHERE target.user_id = @target_user_id
@@ -80,13 +81,14 @@ pub fn get_companions_of(
         let world_name = row_string(&row, 3);
         let overlap_millis = row_i64(&row, 4).max(0);
         let seen_at = row_string(&row, 5);
+        let other_created_at = row_string(&row, 6);
         let entry = grouped
             .entry(user_id.clone())
             .or_insert_with(|| CompanionAccumulator {
                 user_id,
-                display_name,
                 ..CompanionAccumulator::default()
             });
+        entry.latest_name.observe(&display_name, &other_created_at);
         entry.overlap_millis += overlap_millis;
         entry.overlap_events += 1;
         if seen_at > entry.last_seen_together {
@@ -104,7 +106,7 @@ pub fn get_companions_of(
         .into_values()
         .map(|entry| CompanionOfRow {
             user_id: entry.user_id,
-            display_name: entry.display_name,
+            display_name: entry.latest_name.into_name(),
             overlap_minutes: millis_to_minutes(entry.overlap_millis),
             overlap_events: entry.overlap_events,
             shared_instances: entry.shared_instances.len(),
@@ -131,7 +133,7 @@ pub fn get_companions_of(
 #[derive(Clone, Debug, Default)]
 struct CompanionAccumulator {
     user_id: String,
-    display_name: String,
+    latest_name: LatestName,
     overlap_millis: i64,
     overlap_events: i64,
     shared_instances: BTreeSet<String>,
