@@ -236,6 +236,100 @@ fn copresence_friend_world_keeps_tied_worlds_separate() {
 }
 
 #[test]
+fn copresence_summary_excludes_owner_self_rows() {
+    let (_dir, db) = test_db("copresence-exclude-self");
+    create_game_log_tables(&db);
+    // The owner's own OnPlayerLeft rows have the longest stay, so without the
+    // data-layer exclusion they would rank first.
+    for (display_name, user_id, millis) in [
+        ("Self", "usr_self", 3_600_000),
+        ("Alice", "usr_alice", 600_000),
+    ] {
+        db.execute_non_query(
+            "INSERT INTO gamelog_join_leave (created_at, type, display_name, location, user_id, time)
+                 VALUES ('2026-06-01T10:00:00Z', 'OnPlayerLeft', @display_name, 'wrld_a:1', @user_id, @time)",
+            &crate::common::ParamsBuilder::new()
+                .set("display_name", display_name)
+                .set("user_id", user_id)
+                .set("time", millis)
+                .build(),
+        )
+        .unwrap();
+    }
+    // Name-only legacy row (NULL user_id) must survive the owner exclusion.
+    db.execute_non_query(
+        "INSERT INTO gamelog_join_leave (created_at, type, display_name, location, user_id, time)
+             VALUES ('2026-06-01T10:00:00Z', 'OnPlayerLeft', 'Mallory', 'wrld_a:1', NULL, 900000)",
+        &Default::default(),
+    )
+    .unwrap();
+
+    let output = get_copresence_summary(
+        &db,
+        CopresenceSummaryInput {
+            time_window: TimeWindow::all(),
+            group_by: CopresenceGroupBy::Friend,
+            min_minutes: None,
+            limit: None,
+            owner_user_id: Some("usr_self".into()),
+            friends_only: false,
+        },
+    )
+    .unwrap();
+
+    assert_eq!(output.total_rows, 2);
+    assert!(output.rows.iter().all(|row| row.user_id != "usr_self"));
+    assert!(output.rows.iter().any(|row| row.user_id == "usr_alice"));
+    assert!(output
+        .rows
+        .iter()
+        .any(|row| row.user_id.is_empty() && row.display_name == "Mallory"));
+}
+
+#[test]
+fn recall_encounter_excludes_owner_self_rows() {
+    let (_dir, db) = test_db("recall-exclude-self");
+    create_game_log_tables(&db);
+    ensure_realtime_tables(&db, "usrself").unwrap();
+    // A display name that also matches the owner's own join rows; the owner must
+    // never surface even when the name query would otherwise catch them.
+    insert_join_leave(
+        &db,
+        "2026-06-10T21:00:00Z",
+        "OnPlayerJoined",
+        "Luna",
+        "usr_self",
+        "wrld_party:1",
+        0,
+    );
+    insert_join_leave(
+        &db,
+        "2026-06-10T21:05:00Z",
+        "OnPlayerJoined",
+        "LunaBunny",
+        "usr_luna",
+        "wrld_party:1",
+        0,
+    );
+
+    let output = recall_encounter(
+        &db,
+        RecallEncounterInput {
+            owner_user_id: "usr_self".into(),
+            name_query: Some("luna".into()),
+            world_id: None,
+            co_present_with_user_id: None,
+            time_window: TimeWindow::all(),
+            limit: None,
+        },
+    )
+    .unwrap();
+
+    assert!(output.rows.iter().all(|row| row.user_id != "usr_self"));
+    assert!(output.rows.iter().any(|row| row.user_id == "usr_luna"));
+}
+
+#[test]
 fn friend_activity_pattern_counts_online_events_by_hour() {
     let (_dir, db) = test_db("activity-pattern");
     ensure_realtime_tables(&db, "usrself").unwrap();

@@ -60,6 +60,14 @@ pub fn get_copresence_summary(
     let mut params = ParamsBuilder::new();
     append_time_window_filter(&mut sql, &mut params, &input.time_window, "g.created_at");
 
+    let owner_user_id = input
+        .owner_user_id
+        .as_deref()
+        .map(str::trim)
+        .unwrap_or_default()
+        .to_string();
+    sql.push_str(" AND (@owner_user_id = '' OR COALESCE(g.user_id, '') <> @owner_user_id)");
+
     if input.friends_only {
         if let Some(owner_user_id) = input
             .owner_user_id
@@ -143,7 +151,10 @@ pub fn get_copresence_summary(
             AND access.world_id = ranked.world_id
         ORDER BY ranked.total_millis DESC, ranked.display_name ASC, ranked.user_id ASC, ranked.world_id ASC, access.access_bucket ASC",
     );
-    params = params.set("min_millis", min_millis).set("limit", limit);
+    params = params
+        .set("min_millis", min_millis)
+        .set("limit", limit)
+        .set("owner_user_id", owner_user_id);
 
     let mut rows = Vec::new();
     let mut current_key: Option<CopresenceKey> = None;

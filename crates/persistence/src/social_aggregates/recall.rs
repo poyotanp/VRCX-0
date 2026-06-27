@@ -24,6 +24,12 @@ pub fn recall_encounter(
     );
     let mut params = ParamsBuilder::new().set("scan_limit", SCAN_LIMIT);
 
+    let owner_user_id = input.owner_user_id.trim();
+    if !owner_user_id.is_empty() {
+        sql.push_str(" AND COALESCE(g.user_id, '') <> @owner_user_id");
+        params = params.set("owner_user_id", owner_user_id.to_string());
+    }
+
     if let Some(name_query) = trimmed(&input.name_query) {
         sql.push_str(" AND display_name LIKE @name_pattern");
         params = params.set("name_pattern", format!("%{name_query}%"));
