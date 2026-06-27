@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use chrono::{DateTime, Datelike, FixedOffset, Local, Utc};
 use serde_json::{Map, Value};
 use tokio_util::sync::CancellationToken;
 use vrcx_0_integrations::llm::{ChatMessage, LlmClient, ToolDefinition};
@@ -37,6 +38,12 @@ presenting figures as exact.
 - For most/top/closest/ranked questions, the tools already rank and limit the rows. \
 Read the top rows and answer — do NOT keep calling tools to enumerate everyone. \
 Mention coverage or truncation when it matters.
+- When the question names a time period, you MUST set the tool's `time_window`. Prefer a \
+relative string: \"today\", \"yesterday\", \"this week\", \"last week\", \"this month\", \
+\"last month\", or a rolling window like \"7d\", \"2w\", \"3mo\", \"24h\", \"1y\". Use an \
+object {from, to} in RFC3339 only for a custom range. Relative windows resolve in UTC and \
+weeks start on Monday. Omit `time_window` only when the user means all of history (e.g. \
+\"ever\", \"so far\").
 
 Style:
 - Stay on VRChat social topics. Be concise and refer to people by name.
@@ -188,8 +195,24 @@ pub(crate) async fn run_turn(ctx: TurnContext) {
     ctx.emitter.done();
 }
 
+fn current_time_directive(now_local: DateTime<FixedOffset>) -> String {
+    let now_utc = now_local.with_timezone(&Utc);
+    format!(
+        "The current date is {date} ({weekday}), UTC — resolve relative time windows \
+(\"today\", \"this week\", \"7d\", etc.) against this UTC date. The user's local timezone \
+is UTC{offset}; when you show or describe timestamps to the user, convert the UTC times \
+returned by tools into this local timezone.",
+        date = now_utc.format("%Y-%m-%d"),
+        weekday = now_utc.weekday(),
+        offset = now_local.format("%:z"),
+    )
+}
+
 fn build_context(ctx: &TurnContext) -> Vec<ChatMessage> {
-    let mut working = vec![ChatMessage::system(SYSTEM_PROMPT)];
+    let mut working = vec![
+        ChatMessage::system(SYSTEM_PROMPT),
+        ChatMessage::system(current_time_directive(Local::now().fixed_offset())),
+    ];
     if let Some(locale) = ctx
         .locale
         .as_deref()
@@ -539,6 +562,16 @@ mod tests {
     fn keeps_everything_under_the_limit() {
         let history = turns(4);
         assert_eq!(context_window_start(&history), 0);
+    }
+
+    #[test]
+    fn current_time_directive_states_utc_date_and_local_offset() {
+        // 2026-06-28 06:00 at UTC+09:00 is still 2026-06-27 (Saturday) in UTC.
+        let now_local = DateTime::parse_from_rfc3339("2026-06-28T06:00:00+09:00").unwrap();
+        let directive = current_time_directive(now_local);
+        assert!(directive.contains("2026-06-27"));
+        assert!(directive.contains("Sat"));
+        assert!(directive.contains("UTC+09:00"));
     }
 
     #[test]
