@@ -234,11 +234,13 @@ impl OverlayActivitySink for NotificationDispatcher {
             return;
         }
         let locale = load_locale(&self.config);
-        let endpoint = self
-            .session
-            .snapshot()
-            .realtime_context
-            .map(|context| context.endpoint)
+        let realtime_context = self.session.snapshot().realtime_context;
+        let endpoint = realtime_context
+            .as_ref()
+            .map(|context| context.endpoint.clone())
+            .unwrap_or_default();
+        let current_user_id = realtime_context
+            .map(|context| context.current_user_id)
             .unwrap_or_default();
         let world_cache = Arc::clone(&self.world_cache);
         let image_cache = Arc::clone(&self.image_cache);
@@ -267,6 +269,7 @@ impl OverlayActivitySink for NotificationDispatcher {
                     db.as_ref(),
                     &endpoint,
                     allow_user_icon,
+                    &current_user_id,
                     &mut delivery,
                 )
                 .await;
@@ -433,24 +436,37 @@ async fn resolve_delivery_actor_image(
     db: &DatabaseService,
     endpoint: &str,
     allow_user_icon: bool,
+    current_user_id: &str,
     delivery: &mut OverlayActivityDelivery,
 ) {
-    if !delivery.entry.content.image_url.trim().is_empty() {
+    let Some(actor_user_id) = delivery_actor_image_user_id(delivery, current_user_id) else {
         return;
-    }
+    };
     let Some(image_url) = user_image_cache
-        .resolve(
-            web,
-            db,
-            endpoint,
-            delivery.entry.actor_user_id.trim(),
-            allow_user_icon,
-        )
+        .resolve(web, db, endpoint, actor_user_id, allow_user_icon)
         .await
     else {
         return;
     };
     delivery.entry.content.image_url = image_url;
+}
+
+fn delivery_actor_image_user_id<'a>(
+    delivery: &'a OverlayActivityDelivery,
+    current_user_id: &str,
+) -> Option<&'a str> {
+    if !delivery.entry.content.image_url.trim().is_empty() {
+        return None;
+    }
+    let actor_user_id = delivery.entry.actor_user_id.trim();
+    if !actor_user_id.starts_with("usr_") {
+        return None;
+    }
+    let current_user_id = current_user_id.trim();
+    if !current_user_id.is_empty() && actor_user_id == current_user_id {
+        return None;
+    }
+    Some(actor_user_id)
 }
 
 fn render_delivery(
@@ -875,8 +891,8 @@ mod tests {
     use crate::vr_overlay::OverlayLocale;
 
     use super::{
-        overlay_notification_render, parse_webhook_fields, render_delivery, webhook_payload,
-        RenderedNotification,
+        delivery_actor_image_user_id, overlay_notification_render, parse_webhook_fields,
+        render_delivery, webhook_payload, RenderedNotification,
     };
 
     #[test]
@@ -928,6 +944,23 @@ mod tests {
         assert_eq!(overlay.title, "VRCX-0");
         assert_eq!(overlay.text, "Traveler joined Named World");
         assert_eq!(render.title, "Traveler");
+    }
+
+    #[test]
+    fn delivery_actor_image_user_id_skips_current_user_actor() {
+        let mut delivery = delivery();
+        delivery.entry.actor_user_id = "usr_self".into();
+
+        assert_eq!(delivery_actor_image_user_id(&delivery, "usr_self"), None);
+
+        delivery.entry.actor_user_id = "usr_sender".into();
+        assert_eq!(
+            delivery_actor_image_user_id(&delivery, "usr_self"),
+            Some("usr_sender")
+        );
+
+        delivery.entry.content.image_url = "https://images.example/existing.png".into();
+        assert_eq!(delivery_actor_image_user_id(&delivery, "usr_self"), None);
     }
 
     #[test]

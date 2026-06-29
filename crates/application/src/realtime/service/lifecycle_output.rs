@@ -82,7 +82,7 @@ impl RealtimeHostRuntime {
         let mut projection = output.projection;
         let mut world_name_fetch_ids = self.enrich_notification_world_names(&mut projection);
         self.enrich_notification_sender_names(&mut projection);
-        self.enrich_notification_images(&mut projection);
+        self.enrich_notification_images(&mut projection, &output.owner_user_id);
         world_name_fetch_ids.extend(self.enrich_persistence_world_names(&mut output.persistence));
         self.enrich_persistence_sender_names(&mut output.persistence);
         output.projection = projection;

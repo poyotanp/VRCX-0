@@ -55,6 +55,7 @@ impl RealtimeHostRuntime {
     pub(super) fn enrich_notification_images(
         &self,
         projection: &mut RealtimeNotificationProjection,
+        owner_user_id: &str,
     ) {
         let endpoint = self.active_endpoint();
         if endpoint.is_empty() {
@@ -62,7 +63,12 @@ impl RealtimeHostRuntime {
         }
         let allow_user_icon = self.display_vrc_plus_icons_as_avatar();
         for upsert in &mut projection.upserts {
-            self.enrich_notification_image(&endpoint, &mut upsert.notification, allow_user_icon);
+            self.enrich_notification_image(
+                &endpoint,
+                &mut upsert.notification,
+                allow_user_icon,
+                owner_user_id,
+            );
         }
     }
 
@@ -118,14 +124,14 @@ impl RealtimeHostRuntime {
         endpoint: &str,
         value: &mut Value,
         allow_user_icon: bool,
+        owner_user_id: &str,
     ) -> bool {
         if notification_has_direct_image(value) {
             return true;
         }
-        let user_id = notification_image_user_id(value);
-        if !user_id.starts_with("usr_") {
+        let Some(user_id) = notification_avatar_user_id(value, owner_user_id) else {
             return false;
-        }
+        };
         let Some(image_url) = self.cached_user_image_url(endpoint, &user_id, allow_user_icon)
         else {
             return false;
@@ -168,8 +174,9 @@ impl RealtimeHostRuntime {
         }
         let deadline = Instant::now() + Duration::from_millis(NOTIFICATION_RESOLVE_BUDGET_MS);
         let allow_user_icon = self.display_vrc_plus_icons_as_avatar();
+        let owner_user_id = output.owner_user_id.clone();
         for upsert in &mut output.projection.upserts {
-            if !notification_upsert_needs_remote_resolution(upsert) {
+            if !notification_upsert_needs_remote_resolution(upsert, &owner_user_id) {
                 continue;
             }
             self.resolve_notification_sender_name(&endpoint, &mut upsert.notification, deadline)
@@ -178,6 +185,7 @@ impl RealtimeHostRuntime {
                 &endpoint,
                 &mut upsert.notification,
                 allow_user_icon,
+                &owner_user_id,
                 deadline,
             )
             .await;
@@ -214,15 +222,15 @@ impl RealtimeHostRuntime {
         endpoint: &str,
         value: &mut Value,
         allow_user_icon: bool,
+        owner_user_id: &str,
         deadline: Instant,
     ) {
-        if self.enrich_notification_image(endpoint, value, allow_user_icon) {
+        if self.enrich_notification_image(endpoint, value, allow_user_icon, owner_user_id) {
             return;
         }
-        let user_id = notification_image_user_id(value);
-        if !user_id.starts_with("usr_") {
+        let Some(user_id) = notification_avatar_user_id(value, owner_user_id) else {
             return;
-        }
+        };
         let Some(image_url) = self
             .fetch_user_value_with_retries(endpoint, &user_id, deadline, |profile| {
                 user_notification_image_url(profile, allow_user_icon)
@@ -393,11 +401,9 @@ impl RealtimeHostRuntime {
         &self,
         output: &RealtimeNotificationOutput,
     ) -> bool {
-        output
-            .projection
-            .upserts
-            .iter()
-            .any(notification_upsert_needs_remote_resolution)
+        output.projection.upserts.iter().any(|upsert| {
+            notification_upsert_needs_remote_resolution(upsert, &output.owner_user_id)
+        })
     }
 
     pub(super) fn enrich_persistence_world_names(
@@ -536,13 +542,16 @@ async fn sleep_before_retry(deadline: Instant) {
     }
 }
 
-fn notification_upsert_needs_remote_resolution(upsert: &RealtimeNotificationUpsert) -> bool {
+fn notification_upsert_needs_remote_resolution(
+    upsert: &RealtimeNotificationUpsert,
+    owner_user_id: &str,
+) -> bool {
     if upsert.insert_defaults.is_some() || !notification_upsert_is_visible(upsert) {
         return false;
     }
     notification_has_unresolved_required_display(&upsert.notification)
         || upsert.deliver_runtime
-            && notification_needs_avatar_image_resolution(&upsert.notification)
+            && notification_needs_avatar_image_resolution(&upsert.notification, owner_user_id)
 }
 
 fn notification_upsert_is_visible(upsert: &RealtimeNotificationUpsert) -> bool {
@@ -563,8 +572,9 @@ fn notification_has_unresolved_required_display(value: &Value) -> bool {
             && !notification_has_private_location_label(value)
 }
 
-fn notification_needs_avatar_image_resolution(value: &Value) -> bool {
-    !notification_has_direct_image(value) && notification_image_user_id(value).starts_with("usr_")
+fn notification_needs_avatar_image_resolution(value: &Value, owner_user_id: &str) -> bool {
+    !notification_has_direct_image(value)
+        && notification_avatar_user_id(value, owner_user_id).is_some()
 }
 
 fn notification_has_direct_image(value: &Value) -> bool {
@@ -583,15 +593,9 @@ fn notification_has_direct_image(value: &Value) -> bool {
     .any(|value| !value.trim().is_empty())
 }
 
-fn notification_requires_sender_name(value: &Value) -> bool {
-    let Some(object) = value.as_object() else {
-        return false;
-    };
-    if object_string(object, "senderUserId").starts_with("grp_") {
-        return false;
-    }
+fn is_person_notification_type(notification_type: &str) -> bool {
     matches!(
-        object_string(object, "type").as_str(),
+        notification_type,
         "friendRequest"
             | "ignoredFriendRequest"
             | "invite"
@@ -601,6 +605,41 @@ fn notification_requires_sender_name(value: &Value) -> bool {
             | "boop"
             | "message"
     )
+}
+
+fn notification_requires_sender_name(value: &Value) -> bool {
+    let Some(object) = value.as_object() else {
+        return false;
+    };
+    if object_string(object, "senderUserId").starts_with("grp_") {
+        return false;
+    }
+    is_person_notification_type(&object_string(object, "type"))
+}
+
+fn notification_allows_avatar_resolution(value: &Value) -> bool {
+    let Some(object) = value.as_object() else {
+        return false;
+    };
+    if object_string(object, "senderUserId").starts_with("grp_") {
+        return false;
+    }
+    is_person_notification_type(&object_string(object, "type"))
+}
+
+fn notification_avatar_user_id(value: &Value, owner_user_id: &str) -> Option<String> {
+    if !notification_allows_avatar_resolution(value) {
+        return None;
+    }
+    let user_id = sender_user_id(value);
+    if !user_id.starts_with("usr_") {
+        return None;
+    }
+    let owner_user_id = owner_user_id.trim();
+    if !owner_user_id.is_empty() && user_id == owner_user_id {
+        return None;
+    }
+    Some(user_id)
 }
 
 fn notification_requires_world_name(value: &Value) -> bool {
@@ -664,20 +703,6 @@ fn sender_user_id(value: &Value) -> String {
     } else {
         sender_user_id
     }
-}
-
-fn notification_image_user_id(value: &Value) -> String {
-    let Some(object) = value.as_object() else {
-        return String::new();
-    };
-    [
-        object_string(object, "senderUserId"),
-        object_string(object, "userId"),
-        object_string(object, "receiverUserId"),
-    ]
-    .into_iter()
-    .find(|user_id| !user_id.is_empty())
-    .unwrap_or_default()
 }
 
 fn user_display_name(value: &Value) -> Option<String> {

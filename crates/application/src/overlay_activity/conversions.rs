@@ -236,11 +236,12 @@ fn notification_candidate(value: &Value) -> Option<OverlayActivityCandidate> {
         string_field(value, "createdAt"),
         string_field(value, "created_at"),
     ]);
-    let actor_user_id = first_non_empty([
-        string_field(value, "senderUserId"),
-        string_field(value, "userId"),
-        string_field(value, "receiverUserId"),
-    ]);
+    let actor_user_id = string_field(value, "senderUserId");
+    let actor_user_id = if actor_user_id.starts_with("usr_") {
+        actor_user_id
+    } else {
+        String::new()
+    };
     let actor_display_name = notification_actor_display_name(value);
     let source_id = if id.trim().is_empty() {
         format!(

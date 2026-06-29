@@ -683,16 +683,73 @@ mod tests {
     }
 
     #[test]
-    fn notification_avatar_fallback_uses_receiver_actor_when_sender_is_absent() -> Result<()> {
+    fn notification_avatar_resolves_from_user_id_when_sender_field_absent() -> Result<()> {
+        let (_dir, runtime, active_session) =
+            runtime_with_active_session("notification-avatar-user-id")?;
+        runtime.ingest_user_facts(vec![json!({
+            "user": {
+                "id": "usr_sender",
+                "displayName": "Cached Sender",
+                "userIcon": "https://images.example/user-icon.png",
+                "profilePicOverride": "https://images.example/profile.png",
+                "currentAvatarThumbnailImageUrl": "https://images.example/avatar-thumb.png"
+            },
+            "source": "test",
+            "isFriend": false
+        })]);
+        runtime.deps.event_bus.take_events_for_test();
+        let notification = json!({
+            "id": "notif-avatar-user-id",
+            "createdAt": "2026-06-21T00:00:00.000Z",
+            "type": "friendRequest",
+            "userId": "usr_sender",
+            "senderUsername": "usr_sender",
+            "message": "Friend request"
+        });
+
+        runtime.apply_notification_output(RealtimeNotificationOutput {
+            owner_user_id: active_session.user_id.clone(),
+            projection: RealtimeNotificationProjection {
+                generation: 7,
+                upserts: vec![RealtimeNotificationUpsert {
+                    notification: notification.clone(),
+                    insert_defaults: None,
+                    notify_menu: true,
+                    deliver_runtime: true,
+                    run_automation: false,
+                }],
+                ..RealtimeNotificationProjection::default()
+            },
+            persistence: RealtimePersistenceBatch {
+                notification_v2_upserts: vec![notification],
+                ..RealtimePersistenceBatch::default()
+            },
+        });
+
+        let events = runtime.deps.event_bus.take_events_for_test();
+        let projection = events
+            .iter()
+            .find(|event| event.name == "realtimeNotificationProjection")
+            .expect("user-id sender notification should emit a realtime projection");
+        let projected = &projection.payload["upserts"][0]["notification"];
+        assert_eq!(
+            projected["imageUrl"],
+            "https://images.example/user-icon.png"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn notification_avatar_fallback_skips_owner_receiver_when_sender_is_absent() -> Result<()> {
         let (_dir, runtime, active_session) =
             runtime_with_active_session("notification-avatar-receiver")?;
         runtime.ingest_user_facts(vec![json!({
             "user": {
-                "id": "usr_receiver",
-                "displayName": "Receiver",
-                "userIcon": "https://images.example/receiver-icon.png",
-                "profilePicOverride": "https://images.example/receiver-profile.png",
-                "currentAvatarThumbnailImageUrl": "https://images.example/receiver-avatar.png"
+                "id": "usr_self",
+                "displayName": "Self",
+                "userIcon": "https://images.example/self-icon.png",
+                "profilePicOverride": "https://images.example/self-profile.png",
+                "currentAvatarThumbnailImageUrl": "https://images.example/self-avatar.png"
             },
             "source": "test",
             "isFriend": false
@@ -701,10 +758,10 @@ mod tests {
         let notification = json!({
             "id": "notif-avatar-receiver",
             "createdAt": "2026-06-21T00:00:00.000Z",
-            "type": "friendRequest",
-            "receiverUserId": "usr_receiver",
-            "displayName": "Receiver",
-            "message": "Friend request"
+            "type": "group.announcement",
+            "receiverUserId": "usr_self",
+            "userId": "usr_self",
+            "message": "Group announcement"
         });
 
         runtime.apply_notification_output(RealtimeNotificationOutput {
@@ -732,21 +789,77 @@ mod tests {
             .find(|event| event.name == "realtimeNotificationProjection")
             .expect("receiver-only notification should emit a realtime projection");
         let projected = &projection.payload["upserts"][0]["notification"];
-        assert_eq!(
-            projected["imageUrl"],
-            "https://images.example/receiver-icon.png"
-        );
+        assert!(projected["imageUrl"].is_null());
 
         let entries = runtime.deps.overlay_activity.snapshot().entries;
         let entry = entries
             .iter()
             .find(|entry| entry.source_id == "notification:notif-avatar-receiver")
             .expect("runtime delivery should be projected to overlay activity");
-        assert_eq!(entry.actor_user_id, "usr_receiver");
-        assert_eq!(
-            entry.content.image_url,
-            "https://images.example/receiver-icon.png"
-        );
+        assert!(entry.actor_user_id.is_empty());
+        assert!(entry.content.image_url.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn notification_avatar_fallback_skips_current_user_sender() -> Result<()> {
+        let (_dir, runtime, active_session) =
+            runtime_with_active_session("notification-avatar-self-sender")?;
+        runtime.ingest_user_facts(vec![json!({
+            "user": {
+                "id": "usr_self",
+                "displayName": "Self",
+                "userIcon": "https://images.example/self-icon.png",
+                "profilePicOverride": "https://images.example/self-profile.png",
+                "currentAvatarThumbnailImageUrl": "https://images.example/self-avatar.png"
+            },
+            "source": "test",
+            "isFriend": false
+        })]);
+        runtime.deps.event_bus.take_events_for_test();
+        let notification = json!({
+            "id": "notif-avatar-self-sender",
+            "createdAt": "2026-06-21T00:00:00.000Z",
+            "type": "friendRequest",
+            "senderUserId": "usr_self",
+            "senderUsername": "Self",
+            "message": "Friend request"
+        });
+
+        runtime.apply_notification_output(RealtimeNotificationOutput {
+            owner_user_id: active_session.user_id,
+            projection: RealtimeNotificationProjection {
+                generation: 7,
+                upserts: vec![RealtimeNotificationUpsert {
+                    notification: notification.clone(),
+                    insert_defaults: None,
+                    notify_menu: true,
+                    deliver_runtime: true,
+                    run_automation: false,
+                }],
+                ..RealtimeNotificationProjection::default()
+            },
+            persistence: RealtimePersistenceBatch {
+                notification_v2_upserts: vec![notification],
+                ..RealtimePersistenceBatch::default()
+            },
+        });
+
+        let events = runtime.deps.event_bus.take_events_for_test();
+        let projection = events
+            .iter()
+            .find(|event| event.name == "realtimeNotificationProjection")
+            .expect("self-sender notification should emit a realtime projection");
+        let projected = &projection.payload["upserts"][0]["notification"];
+        assert!(projected["imageUrl"].is_null());
+
+        let entries = runtime.deps.overlay_activity.snapshot().entries;
+        let entry = entries
+            .iter()
+            .find(|entry| entry.source_id == "notification:notif-avatar-self-sender")
+            .expect("runtime delivery should be projected to overlay activity");
+        assert_eq!(entry.actor_user_id, "usr_self");
+        assert!(entry.content.image_url.is_empty());
         Ok(())
     }
 

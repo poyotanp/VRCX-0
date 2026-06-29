@@ -165,6 +165,45 @@ fn notification_projection_uses_sender_as_actor() {
 }
 
 #[test]
+fn notification_projection_does_not_use_receiver_as_actor() {
+    let runtime = OverlayActivityRuntime::with_filters(OverlayActivityFilters::from_json(json!({
+        "version": 1,
+        "wrist": {
+            "types": {
+                "group.announcement": {
+                    "scope": "on",
+                    "favoriteGroupKeys": "all"
+                }
+            }
+        }
+    })));
+    let projection = RealtimeNotificationProjection {
+        upserts: vec![RealtimeNotificationUpsert {
+            notification: json!({
+                "id": "notification-group",
+                "type": "group.announcement",
+                "createdAt": "2026-05-31T00:02:00.000Z",
+                "receiverUserId": "usr_self",
+                "userId": "usr_self",
+                "message": "Group announcement"
+            }),
+            insert_defaults: None,
+            notify_menu: true,
+            deliver_runtime: true,
+            run_automation: true,
+        }],
+        ..RealtimeNotificationProjection::default()
+    };
+
+    runtime.ingest_notification_projection(&projection);
+
+    let entries = runtime.snapshot().entries;
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].source_id, "notification:notification-group");
+    assert!(entries[0].actor_user_id.is_empty());
+}
+
+#[test]
 fn notification_projection_keeps_unresolved_direct_actor_with_user_id_title() {
     let (runtime, sink) = webhook_only_invite_runtime();
     let projection = RealtimeNotificationProjection {
