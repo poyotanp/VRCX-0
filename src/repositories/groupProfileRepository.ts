@@ -167,6 +167,12 @@ type GroupAuditLogRow = GroupRecord & {
     targetId: string;
 };
 
+type GroupLogsPage = {
+    hasNext: boolean;
+    results: GroupAuditLogRow[];
+    totalCount: number | null;
+};
+
 type GroupModerationRow = GroupMemberRow;
 type VrchatApiResult = {
     status: number;
@@ -324,6 +330,11 @@ function parseInteger(value: unknown): number {
     return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function parseOptionalInteger(value: unknown): number | null {
+    const parsed = Number.parseInt(String(value), 10);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
 function normalizeGroupRoles(values: unknown): GroupRecord[] {
     if (!Array.isArray(values)) {
         return [];
@@ -403,6 +414,16 @@ function responseRows<TRow = unknown>(json: unknown, key = ''): TRow[] {
     }
 
     return [];
+}
+
+function responsePage<TRow = unknown>(json: unknown, key = '') {
+    const results = responseRows<TRow>(json, key);
+    const record = isRecord(json) ? json : {};
+    return {
+        hasNext: record.hasNext === true,
+        results,
+        totalCount: parseOptionalInteger(record.totalCount)
+    };
 }
 
 async function collectPages<TRow = unknown>(
@@ -1106,6 +1127,23 @@ async function getGroupLogs({
     offset = 0,
     eventTypes = []
 }: GroupLogsInput) {
+    const page = await getGroupLogsPage({
+        groupId,
+        endpoint,
+        n,
+        offset,
+        eventTypes
+    });
+    return page.results;
+}
+
+async function getGroupLogsPage({
+    groupId,
+    endpoint = '',
+    n = VRCHAT_API_DEFAULT_PAGE_SIZE,
+    offset = 0,
+    eventTypes = []
+}: GroupLogsInput): Promise<GroupLogsPage> {
     const normalizedGroupId = normalizeEntityId(groupId);
     if (!normalizedGroupId) {
         throw new Error(
@@ -1113,23 +1151,22 @@ async function getGroupLogs({
         );
     }
 
-    const params: QueryParams = { n, offset };
-    if (Array.isArray(eventTypes) && eventTypes.length) {
-        params.eventTypes = eventTypes.join(',');
-    }
+    const eventTypesValue =
+        Array.isArray(eventTypes) && eventTypes.length
+            ? eventTypes.join(',')
+            : '';
 
     const response = unwrapVrchatGroupResponse(
         await commands.appVrchatGroupLogsGet({
             groupId: normalizedGroupId,
             n,
             offset,
-            eventTypes:
-                typeof params.eventTypes === 'string' ? params.eventTypes : '',
+            eventTypes: eventTypesValue,
             endpoint
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/auditLogs`
     );
-    return responseRows<GroupAuditLogRow>(response.json, 'results');
+    return responsePage<GroupAuditLogRow>(response.json, 'results');
 }
 
 async function getAllGroupLogs({
@@ -1137,9 +1174,37 @@ async function getAllGroupLogs({
     endpoint = '',
     eventTypes = []
 }: Omit<GroupLogsInput, 'n' | 'offset'>) {
-    return collectPages(({ n, offset }) =>
-        getGroupLogs({ groupId, endpoint, n, offset, eventTypes })
-    );
+    const rows: GroupAuditLogRow[] = [];
+    const seenIds = new Set<string>();
+    const pageSize = VRCHAT_API_DEFAULT_PAGE_SIZE;
+    const maxPages = 50;
+
+    for (let page = 0; page < maxPages; page += 1) {
+        const nextPage = await getGroupLogsPage({
+            groupId,
+            endpoint,
+            n: pageSize,
+            offset: page * pageSize,
+            eventTypes
+        });
+
+        for (const row of nextPage.results) {
+            const id = normalizeEntityId(row.id);
+            if (id) {
+                if (seenIds.has(id)) {
+                    continue;
+                }
+                seenIds.add(id);
+            }
+            rows.push(row);
+        }
+
+        if (!nextPage.hasNext) {
+            break;
+        }
+    }
+
+    return rows;
 }
 
 async function setGroupRepresentation({
@@ -1284,6 +1349,7 @@ const groupProfileRepository = Object.freeze({
     getAllGroupJoinRequests,
     getGroupAuditLogTypes,
     getGroupLogs,
+    getGroupLogsPage,
     getAllGroupLogs,
     setGroupRepresentation,
     setGroupMemberProps,
@@ -1325,6 +1391,7 @@ export {
     getAllGroupJoinRequests,
     getGroupAuditLogTypes,
     getGroupLogs,
+    getGroupLogsPage,
     getAllGroupLogs,
     setGroupRepresentation,
     setGroupMemberProps,

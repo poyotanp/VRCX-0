@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -13,10 +13,12 @@ import {
 } from '@/ui/shadcn/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/ui/shadcn/tabs';
 
+import { GroupModerationLogsPanel } from './GroupModerationLogsPanel';
 import {
     getGroupModerationTabs,
     moderationRowLabel,
-    moderationRowUserId
+    moderationRowUserId,
+    resolveGroupModerationActiveTab
 } from './groupModerationRows';
 import { GroupModerationTabPanel } from './GroupModerationTabPanel';
 
@@ -37,23 +39,40 @@ export function GroupModerationToolsDialog({
     const [pageIndex, setPageIndex] = useState(0);
     const [reloadToken, setReloadToken] = useState(0);
     const [actionKey, setActionKey] = useState('');
-    const moderationTabs = getGroupModerationTabs(t);
+    const resetKeyRef = useRef('');
+    const moderationTabs = useMemo(
+        () => getGroupModerationTabs(t, group),
+        [group.id, group.myMember, group.roles, t]
+    );
+    const resetKey = `${endpoint}\u0000${group.id || ''}`;
     const rows = rowsByTab[activeTab] || [];
     const loading = statusByTab[activeTab] === 'running';
     const error = errorsByTab[activeTab] || '';
 
     useEffect(() => {
         if (!open) {
+            resetKeyRef.current = '';
             return;
         }
-        setActiveTab('members');
-        setRowsByTab({});
-        setStatusByTab({});
-        setErrorsByTab({});
-        setSearch('');
-        setPageIndex(0);
-        setActionKey('');
-    }, [endpoint, group.id, open]);
+
+        if (resetKeyRef.current !== resetKey) {
+            resetKeyRef.current = resetKey;
+            setActiveTab(
+                resolveGroupModerationActiveTab('members', moderationTabs)
+            );
+            setRowsByTab({});
+            setStatusByTab({});
+            setErrorsByTab({});
+            setSearch('');
+            setPageIndex(0);
+            setActionKey('');
+            return;
+        }
+
+        setActiveTab((current) =>
+            resolveGroupModerationActiveTab(current, moderationTabs)
+        );
+    }, [moderationTabs, open, resetKey]);
 
     useEffect(() => {
         setSearch('');
@@ -61,7 +80,7 @@ export function GroupModerationToolsDialog({
     }, [activeTab]);
 
     useEffect(() => {
-        if (!open) {
+        if (!open || !activeTab || activeTab === 'logs') {
             return;
         }
 
@@ -94,16 +113,11 @@ export function GroupModerationToolsDialog({
                             endpoint,
                             blocked: false
                         })
-                      : activeTab === 'blocked'
-                        ? groupProfileRepository.getAllGroupJoinRequests({
-                              groupId: group.id,
-                              endpoint,
-                              blocked: true
-                          })
-                        : groupProfileRepository.getAllGroupLogs({
-                              groupId: group.id,
-                              endpoint
-                          });
+                      : groupProfileRepository.getAllGroupJoinRequests({
+                            groupId: group.id,
+                            endpoint,
+                            blocked: true
+                        });
 
         request
             .then((nextRows: any) => {
@@ -265,44 +279,55 @@ export function GroupModerationToolsDialog({
                         variant="line"
                         className="h-auto w-full justify-start overflow-x-auto rounded-none border-b px-0 pb-1"
                     >
-                        {moderationTabs.map((tab: any) => (
+                        {moderationTabs.map((tab) => (
                             <TabsTrigger
                                 key={tab.value}
                                 value={tab.value}
+                                disabled={tab.disabled}
                                 className="flex-none rounded-none px-3"
                             >
                                 {tab.label}
                             </TabsTrigger>
                         ))}
                     </TabsList>
-                    {moderationTabs.map((tab: any) => (
-                        <GroupModerationTabPanel
-                            key={tab.value}
-                            actionKey={actionKey}
-                            activeTab={activeTab}
-                            error={error}
-                            group={group}
-                            loading={loading}
-                            onPageIndexChange={setPageIndex}
-                            onPageSizeChange={(nextPageSize: any) => {
-                                setPageSize(nextPageSize);
-                                setPageIndex(0);
-                            }}
-                            onReload={() =>
-                                setReloadToken((value: any) => value + 1)
-                            }
-                            onRunAction={runModerationAction}
-                            onSearchChange={(nextSearch: any) => {
-                                setSearch(nextSearch);
-                                setPageIndex(0);
-                            }}
-                            pageIndex={pageIndex}
-                            pageSize={pageSize}
-                            rows={rows}
-                            search={search}
-                            tab={tab}
-                        />
-                    ))}
+                    {moderationTabs.map((tab) =>
+                        tab.value === 'logs' ? (
+                            <GroupModerationLogsPanel
+                                key={tab.value}
+                                active={activeTab === 'logs'}
+                                endpoint={endpoint}
+                                group={group}
+                                open={open}
+                            />
+                        ) : (
+                            <GroupModerationTabPanel
+                                key={tab.value}
+                                actionKey={actionKey}
+                                activeTab={activeTab}
+                                error={error}
+                                group={group}
+                                loading={loading}
+                                onPageIndexChange={setPageIndex}
+                                onPageSizeChange={(nextPageSize: any) => {
+                                    setPageSize(nextPageSize);
+                                    setPageIndex(0);
+                                }}
+                                onReload={() =>
+                                    setReloadToken((value: any) => value + 1)
+                                }
+                                onRunAction={runModerationAction}
+                                onSearchChange={(nextSearch: any) => {
+                                    setSearch(nextSearch);
+                                    setPageIndex(0);
+                                }}
+                                pageIndex={pageIndex}
+                                pageSize={pageSize}
+                                rows={rows}
+                                search={search}
+                                tab={tab}
+                            />
+                        )
+                    )}
                 </Tabs>
             </DialogContent>
         </Dialog>

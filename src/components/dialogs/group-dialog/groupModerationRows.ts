@@ -1,26 +1,71 @@
-import { getGroupRoleNameMap } from './groupDialogUtils';
+import {
+    getGroupRoleNameMap,
+    groupModerationTabPermissions,
+    hasGroupPermission,
+    type GroupModerationTabValue
+} from './groupDialogUtils';
 
-export function getGroupModerationTabs(t: any) {
-    return [
-        {
-            value: 'members',
-            label: t('dialog.group_member_moderation.members')
-        },
-        { value: 'bans', label: t('dialog.group_member_moderation.bans') },
-        {
-            value: 'invites',
-            label: t('dialog.group_member_moderation.invites')
-        },
-        {
-            value: 'requests',
-            label: t('dialog.group_member_moderation.join_requests')
-        },
-        {
-            value: 'blocked',
-            label: t('dialog.group_member_moderation.blocked_requests')
-        },
-        { value: 'logs', label: t('dialog.group_member_moderation.logs') }
-    ];
+type TranslateFn = (key: string) => string;
+
+export interface GroupModerationTab {
+    disabled: boolean;
+    label: string;
+    value: GroupModerationTabValue;
+}
+
+const GROUP_MODERATION_TAB_LABELS: Array<{
+    labelKey: string;
+    value: GroupModerationTabValue;
+}> = [
+    {
+        value: 'members',
+        labelKey: 'dialog.group_member_moderation.members'
+    },
+    { value: 'bans', labelKey: 'dialog.group_member_moderation.bans' },
+    {
+        value: 'invites',
+        labelKey: 'dialog.group_member_moderation.invites'
+    },
+    {
+        value: 'requests',
+        labelKey: 'dialog.group_member_moderation.join_requests'
+    },
+    {
+        value: 'blocked',
+        labelKey: 'dialog.group_member_moderation.blocked_requests'
+    },
+    { value: 'logs', labelKey: 'dialog.group_member_moderation.logs' }
+];
+
+export function getGroupModerationTabs(
+    t: TranslateFn,
+    group?: unknown
+): GroupModerationTab[] {
+    return GROUP_MODERATION_TAB_LABELS.map((tab) => {
+        const permissions = groupModerationTabPermissions(tab.value);
+        return {
+            value: tab.value,
+            label: t(tab.labelKey),
+            disabled: Boolean(
+                group &&
+                permissions.length &&
+                !permissions.some((permission) =>
+                    hasGroupPermission(group, permission)
+                )
+            )
+        };
+    });
+}
+
+export function resolveGroupModerationActiveTab(
+    activeTab: string,
+    tabs: GroupModerationTab[]
+) {
+    const currentTab = tabs.find((tab) => tab.value === activeTab);
+    if (currentTab && !currentTab.disabled) {
+        return currentTab.value;
+    }
+    return tabs.find((tab) => !tab.disabled)?.value || '';
 }
 
 export function moderationRowUserId(row: any) {

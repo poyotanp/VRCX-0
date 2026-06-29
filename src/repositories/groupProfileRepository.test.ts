@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const tauriMock = vi.hoisted(() => ({
     commands: {
-        appVrchatGroupGet: vi.fn()
+        appVrchatGroupGet: vi.fn(),
+        appVrchatGroupLogsGet: vi.fn()
     }
 }));
 
@@ -97,6 +98,107 @@ describe('GroupProfileRepository', () => {
             status: 403,
             endpoint: 'groups/grp_123',
             payload: 'Forbidden'
+        });
+    });
+
+    it('collects group logs by hasNext and deduplicates by id', async () => {
+        tauriMock.commands.appVrchatGroupLogsGet
+            .mockResolvedValueOnce({
+                status: 200,
+                data: JSON.stringify({
+                    hasNext: true,
+                    results: [
+                        {
+                            id: 'log_1',
+                            description: 'first page'
+                        }
+                    ],
+                    totalCount: 3
+                }),
+                raw: {}
+            })
+            .mockResolvedValueOnce({
+                status: 200,
+                data: JSON.stringify({
+                    hasNext: false,
+                    results: [
+                        {
+                            id: 'log_1',
+                            description: 'duplicate'
+                        },
+                        {
+                            id: 'log_2',
+                            description: 'second page'
+                        }
+                    ],
+                    totalCount: 3
+                }),
+                raw: {}
+            });
+
+        const rows = await groupProfileRepository.getAllGroupLogs({
+            groupId: 'grp_123',
+            eventTypes: ['group.member.ban', 'group.member.kick']
+        });
+
+        expect(rows.map((row) => row.id)).toEqual(['log_1', 'log_2']);
+        expect(tauriMock.commands.appVrchatGroupLogsGet).toHaveBeenCalledTimes(
+            2
+        );
+        expect(
+            tauriMock.commands.appVrchatGroupLogsGet
+        ).toHaveBeenNthCalledWith(1, {
+            groupId: 'grp_123',
+            n: 100,
+            offset: 0,
+            eventTypes: 'group.member.ban,group.member.kick',
+            endpoint: ''
+        });
+        expect(
+            tauriMock.commands.appVrchatGroupLogsGet
+        ).toHaveBeenNthCalledWith(2, {
+            groupId: 'grp_123',
+            n: 100,
+            offset: 100,
+            eventTypes: 'group.member.ban,group.member.kick',
+            endpoint: ''
+        });
+    });
+
+    it('keeps getGroupLogs compatible with row-array callers', async () => {
+        tauriMock.commands.appVrchatGroupLogsGet.mockResolvedValue({
+            status: 200,
+            data: JSON.stringify({
+                hasNext: false,
+                results: [
+                    {
+                        id: 'log_rows',
+                        eventType: 'group.member.remove'
+                    }
+                ],
+                totalCount: 1
+            }),
+            raw: {}
+        });
+
+        await expect(
+            groupProfileRepository.getGroupLogs({
+                groupId: 'grp_123',
+                eventTypes: ['group.member.remove']
+            })
+        ).resolves.toEqual([
+            {
+                id: 'log_rows',
+                eventType: 'group.member.remove'
+            }
+        ]);
+
+        expect(tauriMock.commands.appVrchatGroupLogsGet).toHaveBeenCalledWith({
+            groupId: 'grp_123',
+            n: 100,
+            offset: 0,
+            eventTypes: 'group.member.remove',
+            endpoint: ''
         });
     });
 });

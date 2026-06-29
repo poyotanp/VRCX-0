@@ -9,7 +9,8 @@ import {
     moderationRowSearchText,
     moderationRowStatus,
     moderationRowSubtitle,
-    moderationRowUserId
+    moderationRowUserId,
+    resolveGroupModerationActiveTab
 } from './groupModerationRows';
 
 const t = (key: string) => key;
@@ -23,7 +24,7 @@ describe('groupModerationRows', () => {
     };
 
     it('builds moderation tab metadata from locale keys', () => {
-        expect(getGroupModerationTabs(t).map((tab: any) => tab.value)).toEqual([
+        expect(getGroupModerationTabs(t).map((tab) => tab.value)).toEqual([
             'members',
             'bans',
             'invites',
@@ -31,6 +32,77 @@ describe('groupModerationRows', () => {
             'blocked',
             'logs'
         ]);
+    });
+
+    it('disables moderation tabs that the current member cannot access', () => {
+        const tabs = getGroupModerationTabs(t, {
+            myMember: {
+                permissions: ['group-audit-view']
+            }
+        });
+
+        expect(
+            tabs.map((tab) => ({
+                value: tab.value,
+                disabled: tab.disabled
+            }))
+        ).toEqual([
+            { value: 'members', disabled: true },
+            { value: 'bans', disabled: true },
+            { value: 'invites', disabled: true },
+            { value: 'requests', disabled: true },
+            { value: 'blocked', disabled: true },
+            { value: 'logs', disabled: false }
+        ]);
+    });
+
+    it('enables the members tab for kick-only moderators', () => {
+        const tabs = getGroupModerationTabs(t, {
+            myMember: {
+                permissions: ['group-members-remove']
+            }
+        });
+
+        expect(
+            tabs.map((tab) => ({
+                value: tab.value,
+                disabled: tab.disabled
+            }))
+        ).toEqual([
+            { value: 'members', disabled: false },
+            { value: 'bans', disabled: true },
+            { value: 'invites', disabled: true },
+            { value: 'requests', disabled: true },
+            { value: 'blocked', disabled: true },
+            { value: 'logs', disabled: true }
+        ]);
+    });
+
+    it('keeps the active tab only when it is enabled', () => {
+        const tabs = getGroupModerationTabs(t, {
+            myMember: {
+                permissions: ['group-audit-view']
+            }
+        });
+
+        expect(resolveGroupModerationActiveTab('members', tabs)).toBe('logs');
+        expect(resolveGroupModerationActiveTab('logs', tabs)).toBe('logs');
+        expect(
+            resolveGroupModerationActiveTab(
+                'members',
+                tabs.map((tab) => ({ ...tab, disabled: true }))
+            )
+        ).toBe('');
+    });
+
+    it('keeps the active tab when it remains enabled after permission metadata changes', () => {
+        const tabs = getGroupModerationTabs(t, {
+            myMember: {
+                permissions: ['group-bans-manage', 'group-audit-view']
+            }
+        });
+
+        expect(resolveGroupModerationActiveTab('bans', tabs)).toBe('bans');
     });
 
     it('resolves user-facing row fields from nested and fallback moderation data', () => {

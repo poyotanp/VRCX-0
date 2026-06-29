@@ -138,17 +138,51 @@ export function hasGroupPermission(group: any, permission: any) {
         );
 }
 
-export function hasGroupModerationPermission(group: any) {
-    return [
-        'group-invites-manage',
-        'group-moderates-manage',
-        'group-audit-view',
-        'group-bans-manage',
-        'group-data-manage',
+export type GroupModerationTabValue =
+    | 'members'
+    | 'bans'
+    | 'invites'
+    | 'requests'
+    | 'blocked'
+    | 'logs';
+
+export const GROUP_MODERATION_TAB_PERMISSIONS: Record<
+    GroupModerationTabValue,
+    readonly string[]
+> = Object.freeze({
+    members: [
         'group-members-manage',
         'group-members-remove',
-        'group-roles-assign',
-        'group-roles-manage',
-        'group-default-role-manage'
-    ].some((permission: any) => hasGroupPermission(group, permission));
+        'group-bans-manage'
+    ],
+    bans: ['group-bans-manage'],
+    invites: ['group-invites-manage'],
+    requests: ['group-members-manage'],
+    blocked: ['group-bans-manage'],
+    logs: ['group-audit-view']
+});
+
+export function groupModerationTabPermissions(tab: string): readonly string[] {
+    switch (tab) {
+        case 'members':
+            return GROUP_MODERATION_TAB_PERMISSIONS.members;
+        case 'bans':
+            return GROUP_MODERATION_TAB_PERMISSIONS.bans;
+        case 'invites':
+            return GROUP_MODERATION_TAB_PERMISSIONS.invites;
+        case 'requests':
+            return GROUP_MODERATION_TAB_PERMISSIONS.requests;
+        case 'blocked':
+            return GROUP_MODERATION_TAB_PERMISSIONS.blocked;
+        case 'logs':
+            return GROUP_MODERATION_TAB_PERMISSIONS.logs;
+        default:
+            return [];
+    }
+}
+
+export function hasGroupModerationPermission(group: any) {
+    return Object.values(GROUP_MODERATION_TAB_PERMISSIONS).some((permissions) =>
+        permissions.some((permission) => hasGroupPermission(group, permission))
+    );
 }

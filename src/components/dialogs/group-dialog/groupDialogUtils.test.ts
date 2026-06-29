@@ -96,10 +96,26 @@ describe('group dialog permissions', () => {
         expect(
             hasGroupModerationPermission({
                 myMember: {
-                    permissions: ['group-roles-assign']
+                    permissions: ['group-bans-manage']
                 }
             })
         ).toBe(true);
+
+        expect(
+            hasGroupModerationPermission({
+                myMember: {
+                    permissions: ['group-members-remove']
+                }
+            })
+        ).toBe(true);
+
+        expect(
+            hasGroupModerationPermission({
+                myMember: {
+                    permissions: ['group-roles-assign']
+                }
+            })
+        ).toBe(false);
 
         expect(
             hasGroupModerationPermission({
