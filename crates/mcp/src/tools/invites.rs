@@ -10,7 +10,9 @@ use super::common::{require_current_user_id, social_aggregates_result, TimeWindo
 
 #[tool_router(router = invites_tool_router, vis = "pub(crate)")]
 impl VrcxMcpServer {
-    #[tool(description = "Return invite and request-invite notification aggregates.")]
+    #[tool(
+        description = "[L1·query] List invite and request-invite counts aggregated per user (received, sent, or both) over a window — a \"wants to play together\" signal beyond co-presence."
+    )]
     async fn get_invite_history(
         &self,
         Parameters(input): Parameters<InviteHistoryParams>,

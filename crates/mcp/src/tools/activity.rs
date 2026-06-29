@@ -24,7 +24,7 @@ const ACTIVITY_CACHE_CAVEAT: &str =
 #[tool_router(router = activity_tool_router, vis = "pub(crate)")]
 impl VrcxMcpServer {
     #[tool(
-        description = "Return ranked observed co-presence (time-spent-together) facts, defaulting to current friends. Use this for \"who do I play/spend the most time with\". group_by=friend (default) ranks total minutes per person; only use friend_world to break one person's time down by world. For all-time/\"ever\"/\"so far\" questions OMIT time_window entirely — never pass a narrow window for an all-time question. Results are already ranked and limited; output includes totalRows/returnedRows/truncated and per-row isFriend."
+        description = "[L2·analyze] Ranked time-spent-together facts per person, aggregated from the local game log (reliable even inside private instances because you were there). THE tool for \"who I play/spend the most time with\". Defaults to current friends (friendsOnly=true). groupBy=friend ranks total minutes per person; groupBy=friend_world breaks one person's time down by world. For all-time/\"ever\"/\"so far\" questions OMIT timeWindow entirely — never pass a narrow window for an all-time question. Rows are pre-ranked and limited with isFriend; read the top rows, don't loop."
     )]
     async fn get_copresence_summary(
         &self,
@@ -45,7 +45,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return observed friend online activity buckets by hour or weekday. Hour/weekday buckets are computed in UTC unless you pass utcOffsetMinutes (the user's offset, e.g. 540 for UTC+9) — pass it so the buckets are already in the user's local time and need no conversion."
+        description = "[L2·analyze] One friend's (or all friends') online activity bucketed by hour-of-day or weekday, from the online/offline log. Use for \"when is X usually online\". Buckets are UTC unless you pass utcOffsetMinutes (the user's offset, e.g. 540 for UTC+9) for the user's local time. For \"best time to catch the MOST people\" prefer get_best_time_to_play."
     )]
     async fn get_friend_activity_pattern(
         &self,
@@ -77,7 +77,9 @@ impl VrcxMcpServer {
         })
     }
 
-    #[tool(description = "Search recently visited worlds from the local game log.")]
+    #[tool(
+        description = "[L1·query] List worlds the signed-in user recently visited, newest first, from the local game log (worldId, worldName, location, visitedAt, stayMinutes). Leaf lookup. For \"which worlds did I play most\" use the aggregated summarize_social_period instead of counting these rows yourself."
+    )]
     async fn search_worlds_visited(
         &self,
         Parameters(input): Parameters<SearchWorldsVisitedParams>,
@@ -90,7 +92,9 @@ impl VrcxMcpServer {
             },
         ))
     }
-    #[tool(description = "Return aggregated activity for the current VRCX-0 profile.")]
+    #[tool(
+        description = "[L2·analyze] Your own aggregated playtime for a window: total minutes, sessions, average/longest session, weekday breakdown. Use for \"how much did I play\". For trends over time prefer get_activity_timeline; for streaks/breaks prefer get_activity_streaks."
+    )]
     async fn get_my_activity(
         &self,
         Parameters(input): Parameters<MyActivityParams>,
@@ -100,7 +104,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return the signed-in user's own playtime bucketed over time: year, month, week, dayOfWeek, or hourOfDay. Use this for \"which months did I play most\", activity trends, and personal schedule / when I log on. Pass utcOffsetMinutes (e.g. 540 for UTC+9) so month/day/hour buckets are local. Omit timeWindow for all history. Rows carry minutes and sessionCount; output includes a ready-to-read summary."
+        description = "[L2·analyze] The signed-in user's own playtime bucketed over time: year, month, week, dayOfWeek, or hourOfDay, with a ready-to-read summary. Use this for \"which months/days did I play most\", activity trends, and personal schedule / when I log on. Pass utcOffsetMinutes (e.g. 540 for UTC+9) so month/day/hour buckets are local. Omit timeWindow for all history. Rows carry minutes and sessionCount."
     )]
     async fn get_activity_timeline(
         &self,
@@ -124,7 +128,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return the signed-in user's play-streak facts: longest break without playing, current break, longest daily play streak, total active days, first/last session, total minutes, and session count. Pass utcOffsetMinutes so day boundaries are local. Use this for \"longest I went without playing\" or \"how many days have I played\". Output includes a ready-to-read summary."
+        description = "[L2·analyze] The signed-in user's play-streak facts: longest break without playing, current break, longest daily play streak, total active days, first/last session, total minutes, and session count, with a ready-to-read summary. Use this for \"longest I went without playing\" or \"how many days have I played\". Pass utcOffsetMinutes so day boundaries are local."
     )]
     async fn get_activity_streaks(
         &self,
@@ -138,7 +142,7 @@ impl VrcxMcpServer {
         structured_result(activity_streaks_output(offset_minutes, streaks))
     }
     #[tool(
-        description = "Surface friends whose observed co-presence dropped sharply versus the prior equal-length window (fading relationships); defaults to the last 30 days versus the prior 30 days."
+        description = "[L2·analyze] Friends whose observed co-presence dropped sharply versus the prior equal-length window (fading relationships), ranked by drop; defaults to the last 30 days versus the prior 30 days. Report as an observation (overlap fell — could be schedule, status, or sample size), never as the other person's intent or feelings."
     )]
     async fn get_fading_friends(
         &self,
@@ -152,7 +156,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return the hour-of-day or weekday buckets where the most friends are observed coming online (best time to catch people). Buckets are computed in UTC unless you pass utcOffsetMinutes (the user's offset, e.g. 540 for UTC+9) — pass it so the buckets are already in the user's local time and need no conversion."
+        description = "[L2·analyze] The hour-of-day or weekday buckets where the most distinct friends are observed coming online (best time to catch people), across all friends. Use for \"when should I log on to find people\". Buckets are UTC unless you pass utcOffsetMinutes (e.g. 540 for UTC+9) for the user's local time. For a single named friend prefer get_friend_activity_pattern."
     )]
     async fn get_best_time_to_play(
         &self,
@@ -172,7 +176,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Fuzzy-recall people from the local game log by name fragment, time window, world, or who they shared an instance with; includes non-friends."
+        description = "[L1·query] Fuzzy-recall people from the local game log by name fragment, time window, world, or who they shared an instance with; INCLUDES non-friends/strangers (each row flags isFriend). Use for \"who was that person I met at ...\". Recall only, not prediction."
     )]
     async fn recall_encounter(
         &self,
@@ -206,7 +210,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return a structured social overview for a period (activity, top companions, new friends, fading friends, top worlds, best times) for the AI to narrate."
+        description = "[L3·bundle] One call composing several L2 analyses for a period (your activity, top companions, new friends, fading friends, top worlds, best times) into a structured bundle for you to narrate. Use for \"recap my week/month\" or \"how was my social activity\". Do NOT separately call the parts it already includes; drill into a specific L2 tool only for extra detail."
     )]
     async fn summarize_social_period(
         &self,

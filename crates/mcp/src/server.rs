@@ -28,6 +28,14 @@ Read before answering:
 - Each result carries a `caveats` array; reflect the relevant ones instead of presenting figures as exact.
 - For top/most/ranked asks, the tools already rank and limit the rows; read the top rows and answer from the aggregate instead of looping to enumerate everyone. Pass a small `limit` only to widen or narrow the ranking.
 
+Tool tiers — pick the right altitude:
+- [L1·query/resolve] leaf lookups: one source, a list of rows. Building blocks.
+- [L2·analyze] server-side aggregates: ranked/bucketed facts with a summary. Prefer these for who/when/most questions; they already did the counting, so read the top rows and don't loop.
+- [L2·advanced] large/raw output for custom analysis; a higher-tier tool usually answers the common question.
+- [L3·bundle] one call composing several L2 analyses into a ready narrative; do NOT re-call the parts it already includes.
+- [write]/[action] side effects; dry_run defaults true, confirm first.
+Pick the highest tier that answers the question; drill to L1 only for detail the aggregate did not include.
+
 Map fuzzy requests to tools, then read each tool's own description for details (compose freely):
 - Turn a name into candidate userIds when you need manual disambiguation -> find_user
 - Closest to / who I play with most -> get_copresence_summary

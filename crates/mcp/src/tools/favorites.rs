@@ -14,7 +14,7 @@ use super::common::{map_persistence_error, social_aggregates_result, structured_
 #[tool_router(router = favorites_tool_router, vis = "pub(crate)")]
 impl VrcxMcpServer {
     #[tool(
-        description = "Add or remove a VRCX-0 local favorite for a world, friend, or avatar; dry_run defaults to true."
+        description = "[write·local] Add or remove a VRCX-0 LOCAL favorite for a world, friend, or avatar — local label only, no VRChat account change, no message to anyone; dry_run defaults to true. Use get_favorites to check duplicates first."
     )]
     async fn favorite_local(
         &self,
@@ -33,7 +33,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Add a world, friend, or avatar favorite to the signed-in VRChat account; dry_run defaults to true."
+        description = "[write·account] Add a world, friend, or avatar favorite to the signed-in VRChat ACCOUNT (tags like worlds1, group_0, or avatars1 required). Changes the real account; subject to group capacity limits; gated by a setting and dry_run defaults to true. Confirm before a real write. Never invites or messages anyone."
     )]
     async fn favorite_vrchat(
         &self,
@@ -42,7 +42,9 @@ impl VrcxMcpServer {
         structured_result(self.favorite_vrchat_output(input).await?)
     }
 
-    #[tool(description = "List VRCX-0 local favorites for worlds, friends, or avatars.")]
+    #[tool(
+        description = "[L1·query] List VRCX-0 local favorites for worlds, friends, or avatars. Use before a favorite write to check duplicates."
+    )]
     async fn get_favorites(
         &self,
         Parameters(input): Parameters<GetFavoritesParams>,

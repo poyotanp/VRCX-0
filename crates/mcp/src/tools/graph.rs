@@ -18,7 +18,9 @@ use super::common::{
 
 #[tool_router(router = graph_tool_router, vis = "pub(crate)")]
 impl VrcxMcpServer {
-    #[tool(description = "Refresh stale mutual-friend graph data with throttled VRChat API reads.")]
+    #[tool(
+        description = "[action] Trigger throttled VRChat reads to refresh stale mutual-friend graph snapshots (feeds get_social_graph and get_friend_circles). Returns immediately with status; large friend lists take time; friends who opt out of Shared Connections are skipped. Use only when graph data is stale or empty."
+    )]
     async fn refresh_mutual_graph(
         &self,
         Parameters(input): Parameters<RefreshMutualGraphParams>,
@@ -28,7 +30,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return mutual-friend graph edges and connection degrees. Nodes include friends-of-friends (second-degree mutuals), not only your own friends — use each node's isFriend flag to tell them apart; never call a node a friend unless isFriend is true."
+        description = "[L2·advanced] Raw mutual-friend graph: nodes and edges with connection degree. Nodes include friends-of-friends (second-degree mutuals), not only your own friends — use each node's isFriend flag to tell them apart; never call a node a friend unless isFriend is true. Large output for custom graph analysis. For the common \"which of my friends know each other\" prefer get_friend_circles. Pair with refresh_mutual_graph if the graph is stale or empty."
     )]
     async fn get_social_graph(
         &self,
@@ -61,7 +63,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Return the signed-in user's friends grouped into mutual-friendship circles (pre-computed clusters of friends who know each other) for \"which of my friends know each other\" or \"my friend groups\". Returns ready-to-read circles plus a summary — do NOT use get_social_graph for this."
+        description = "[L2·analyze] The signed-in user's friends grouped into mutual-friendship circles (pre-computed clusters of friends who know each other) for \"which of my friends know each other\" or \"my friend groups\". Returns ready-to-read circles plus a summary. Supersedes get_social_graph for this — circles already did the clustering; do NOT use the raw graph here."
     )]
     async fn get_friend_circles(
         &self,
@@ -79,7 +81,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Infer who a given user is most often co-present with, from the local game log (instances the signed-in user attended). Ranked by shared instances. For \"who does X usually/often play with\" OMIT timeWindow so it covers all history — a narrow window will miss their regular companions. Third-party social circles are undercounted for instances you were not in."
+        description = "[L2·analyze] Infer who a given user is most often co-present with, from the local game log (instances the signed-in user attended). Ranked by shared instances. For \"who does X usually/often play with\" OMIT timeWindow so it covers all history — a narrow window will miss their regular companions. THIRD-PARTY blind spot: instances you were not in (especially private) are invisible — say the picture is partial; never conclude who they are \"closest\" to."
     )]
     async fn get_companions_of(
         &self,

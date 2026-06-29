@@ -20,7 +20,7 @@ use super::common::{
 #[tool_router(router = friends_tool_router, vis = "pub(crate)")]
 impl VrcxMcpServer {
     #[tool(
-        description = "Return observed friend relationship events (friend added/removed, friend requests, display-name and trust-level changes) for this profile."
+        description = "[L1·query] List observed friend relationship events (friend added/removed, friend requests, display-name and trust-level changes), optionally filtered to one user (usr_ id or name) and type, with cursor paging. Leaf event log. For one friend's overview prefer get_friend_profile, which folds this in."
     )]
     async fn get_friend_log(
         &self,
@@ -52,7 +52,7 @@ impl VrcxMcpServer {
     }
 
     #[tool(
-        description = "Resolve a VRChat display name (or fragment) to ranked candidate user id(s) for manual disambiguation or explicit lookup. User-targeting tools generally accept either a usr_ id or display name directly and return resolvedUser or needsDisambiguation; call find_user when you need the candidate list. Never invent or guess a usr_ id. Returns userId, displayName, matchedName, isFriend, encounterCount, lastSeen."
+        description = "[L1·resolve] Resolve a VRChat display name (or fragment) to ranked candidate user id(s) for manual disambiguation or explicit lookup. User-targeting tools generally accept either a usr_ id or display name directly and return resolvedUser or needsDisambiguation; call find_user only when you need the candidate list. Never invent or guess a usr_ id. Returns userId, displayName, matchedName, isFriend, encounterCount, lastSeen."
     )]
     async fn find_user(
         &self,
@@ -69,7 +69,9 @@ impl VrcxMcpServer {
         ))
     }
 
-    #[tool(description = "Read private local friend notes; note text is returned to the AI.")]
+    #[tool(
+        description = "[L1·query] Read your private local friend notes; note text is returned to the AI. Leaf lookup over local memos; one user or a paged list."
+    )]
     async fn get_friend_note(
         &self,
         Parameters(input): Parameters<FriendNoteParams>,
@@ -93,14 +95,18 @@ impl VrcxMcpServer {
         })
     }
 
-    #[tool(description = "Save a private local friend note; dry_run defaults to true.")]
+    #[tool(
+        description = "[write·local] Save a private local friend note (usr_ id required). Local only, no VRChat change, no message to anyone; dry_run defaults to true."
+    )]
     async fn set_friend_note(
         &self,
         Parameters(input): Parameters<SetFriendNoteParams>,
     ) -> Result<CallToolResult, String> {
         structured_result(self.set_friend_note_output(input)?)
     }
-    #[tool(description = "Return a combined local profile summary for one friend.")]
+    #[tool(
+        description = "[L3·bundle] One call composing everything local about ONE friend: current realtime state, relationship/trust history, your note, read-only moderation flags, your co-presence, their activity pattern, recent changes, favorite groups. Use for \"tell me about X\". Supersedes calling get_friend_log, get_friend_note, or get_friend_changes separately for that person."
+    )]
     async fn get_friend_profile(
         &self,
         Parameters(input): Parameters<FriendProfileParams>,
@@ -122,7 +128,9 @@ impl VrcxMcpServer {
             resolved_user: target.echo,
         })
     }
-    #[tool(description = "Return observed friend status, avatar, or bio change aggregates.")]
+    #[tool(
+        description = "[L2·analyze] Per-friend counts of observed status, avatar, or bio changes over a window (who keeps changing status, who got a new avatar). Pick one kind per call."
+    )]
     async fn get_friend_changes(
         &self,
         Parameters(input): Parameters<FriendChangesParams>,
@@ -775,30 +783,6 @@ fn friend_change_kind_name(kind: &social_aggregates::FriendChangeKind) -> &'stat
     }
 }
 
-#[cfg(test)]
-mod friend_note_tests {
-    use super::*;
-
-    fn note(user_id: &str, edited_at: &str) -> FriendNoteRow {
-        FriendNoteRow {
-            user_id: user_id.into(),
-            display_name: String::new(),
-            memo: "memo".into(),
-            edited_at: edited_at.into(),
-        }
-    }
-
-    #[test]
-    fn friend_note_cursor_round_trips() {
-        let cursor = friend_note_cursor(&note("usr_a", "2026-06-01T10:00:00Z"));
-
-        assert_eq!(
-            parse_friend_note_cursor(&cursor).unwrap(),
-            ("2026-06-01T10:00:00Z".into(), "usr_a".into())
-        );
-    }
-}
-
 fn latest_bio_from_changes(rows: &[FriendProfileChangeSummary]) -> Option<String> {
     rows.iter()
         .find(|row| row.kind == "bio")
@@ -828,4 +812,28 @@ fn fallback_friend_profile_current(
         platform: String::new(),
         current_avatar_name: String::new(),
     })
+}
+
+#[cfg(test)]
+mod friend_note_tests {
+    use super::*;
+
+    fn note(user_id: &str, edited_at: &str) -> FriendNoteRow {
+        FriendNoteRow {
+            user_id: user_id.into(),
+            display_name: String::new(),
+            memo: "memo".into(),
+            edited_at: edited_at.into(),
+        }
+    }
+
+    #[test]
+    fn friend_note_cursor_round_trips() {
+        let cursor = friend_note_cursor(&note("usr_a", "2026-06-01T10:00:00Z"));
+
+        assert_eq!(
+            parse_friend_note_cursor(&cursor).unwrap(),
+            ("2026-06-01T10:00:00Z".into(), "usr_a".into())
+        );
+    }
 }
