@@ -77,6 +77,7 @@ pub(crate) struct TurnContext {
     pub turn_id: String,
     pub locale: Option<String>,
     pub cancel: CancellationToken,
+    pub disable_thinking: bool,
 }
 
 pub(crate) async fn run_turn(ctx: TurnContext) {
@@ -240,6 +241,9 @@ fn build_context(ctx: &TurnContext) -> Vec<ChatMessage> {
         ChatMessage::system(SYSTEM_PROMPT),
         ChatMessage::system(current_time_directive(Local::now().fixed_offset())),
     ];
+    if ctx.disable_thinking {
+        working.push(ChatMessage::system("/no_think"));
+    }
     if let Some(locale) = ctx
         .locale
         .as_deref()

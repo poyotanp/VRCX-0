@@ -223,6 +223,7 @@ impl AssistantController {
             turn_id: turn_id.clone(),
             locale,
             cancel,
+            disable_thinking: assistant_config.disable_thinking,
         };
 
         let cleanup = CancelCleanup {

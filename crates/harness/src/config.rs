@@ -7,6 +7,7 @@ pub const ASSISTANT_BASE_URL_CONFIG_KEY: &str = "assistant.baseUrl";
 pub const ASSISTANT_API_KEY_CONFIG_KEY: &str = "assistant.apiKey";
 pub const ASSISTANT_MODEL_CONFIG_KEY: &str = "assistant.model";
 pub const ASSISTANT_ALLOW_WRITES_CONFIG_KEY: &str = "assistant.allowWrites";
+pub const ASSISTANT_DISABLE_THINKING_CONFIG_KEY: &str = "assistant.disableThinking";
 
 const DEFAULT_BASE_URL: &str = "https://api.openai.com/v1";
 
@@ -16,6 +17,7 @@ pub struct AssistantConfig {
     pub api_key: String,
     pub model: String,
     pub allow_writes: bool,
+    pub disable_thinking: bool,
 }
 
 impl AssistantConfig {
@@ -24,11 +26,13 @@ impl AssistantConfig {
         let api_key = config.get_string(ASSISTANT_API_KEY_CONFIG_KEY, "")?;
         let model = config.get_string(ASSISTANT_MODEL_CONFIG_KEY, "")?;
         let allow_writes = config.get_bool(ASSISTANT_ALLOW_WRITES_CONFIG_KEY, false)?;
+        let disable_thinking = config.get_bool(ASSISTANT_DISABLE_THINKING_CONFIG_KEY, true)?;
         Ok(Self {
             base_url: base_url.trim().to_string(),
             api_key: deobfuscate_api_key(api_key.trim()),
             model: model.trim().to_string(),
             allow_writes,
+            disable_thinking,
         })
     }
 
