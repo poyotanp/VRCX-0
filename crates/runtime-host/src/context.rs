@@ -11,6 +11,7 @@ use vrcx_0_application::OverlayActivityRuntime;
 use vrcx_0_application::OverlayActivitySink;
 use vrcx_0_application::OverlayActivitySnapshot;
 use vrcx_0_application::OverlayActivitySurfaceFilters;
+use vrcx_0_application::PrintCleanupQueue;
 use vrcx_0_application::RuntimeAuthScope;
 use vrcx_0_application::RuntimeBackgroundJobs;
 use vrcx_0_application::RuntimeDiagnostics;
@@ -81,6 +82,7 @@ pub struct RuntimeHostContext {
     pub tasks: TaskSupervisor,
     pub session: HostSessionRuntime,
     pub auth_scope: RuntimeAuthScope,
+    pub print_cleanup: PrintCleanupQueue,
     pub mutual_graph_fetch: MutualGraphFetchRuntime,
     pub overlay_activity: OverlayActivityRuntime,
     pub world_cache: Arc<WorldCache>,
@@ -142,6 +144,7 @@ impl RuntimeHostContext {
             tasks,
             session,
             auth_scope: RuntimeAuthScope::new(),
+            print_cleanup: PrintCleanupQueue::new(),
             mutual_graph_fetch: MutualGraphFetchRuntime::new(),
             overlay_activity,
             world_cache,

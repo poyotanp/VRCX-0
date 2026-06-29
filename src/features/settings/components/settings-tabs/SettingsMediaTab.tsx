@@ -1,10 +1,48 @@
+import { useTranslation } from 'react-i18next';
+
 import { Button } from '@/ui/shadcn/button';
+import { Input } from '@/ui/shadcn/input';
 import { Switch } from '@/ui/shadcn/switch';
 
 import { Field, SettingsGroup } from '../SettingsField';
 import { SettingsTabContent } from '../SettingsViewParts';
 
-export function SettingsMediaTab({ media }: any) {
+type SettingsMediaPrefs = {
+    screenshotHelper: boolean;
+    screenshotHelperModifyFilename: boolean;
+    screenshotHelperCopyToClipboard: boolean;
+    saveInstancePrints: boolean;
+    cropInstancePrints: boolean;
+    autoDeleteOldPrints: boolean;
+    autoDeletePrintsLimit: unknown;
+    saveInstanceStickers: boolean;
+    saveInstanceEmoji: boolean;
+    userGeneratedContentPath?: unknown;
+};
+
+type SettingsMediaState = {
+    prefs: SettingsMediaPrefs;
+    onScreenshotHelperChange: (checked: boolean) => unknown;
+    onScreenshotHelperModifyFilenameChange: (checked: boolean) => unknown;
+    onScreenshotHelperCopyToClipboardChange: (checked: boolean) => unknown;
+    onDeleteAllScreenshotMetadata: () => unknown;
+    onOpenUgcPhotosFolder: () => unknown;
+    onOpenUgcFolderSelector: () => unknown;
+    onResetUgcFolder: () => unknown;
+    onSaveInstancePrintsChange: (checked: boolean) => unknown;
+    onCropInstancePrintsChange: (checked: boolean) => unknown;
+    onAutoDeleteOldPrintsChange: (checked: boolean) => unknown;
+    onAutoDeletePrintsLimitChange: (value: unknown) => unknown;
+    onAutoDeletePrintsLimitBlur: (value: unknown) => unknown;
+    onSaveInstanceStickersChange: (checked: boolean) => unknown;
+    onSaveInstanceEmojiChange: (checked: boolean) => unknown;
+};
+
+type SettingsMediaTabProps = {
+    media: SettingsMediaState;
+};
+
+export function SettingsMediaTab({ media }: SettingsMediaTabProps) {
     const {
         prefs,
         onScreenshotHelperChange,
@@ -16,6 +54,9 @@ export function SettingsMediaTab({ media }: any) {
         onResetUgcFolder,
         onSaveInstancePrintsChange,
         onCropInstancePrintsChange,
+        onAutoDeleteOldPrintsChange,
+        onAutoDeletePrintsLimitChange,
+        onAutoDeletePrintsLimitBlur,
         onSaveInstanceStickersChange,
         onSaveInstanceEmojiChange
     } = media;
@@ -155,6 +196,43 @@ export function SettingsMediaTab({ media }: any) {
                         onCheckedChange={onCropInstancePrintsChange}
                     />
                 </Field>
+                <Field
+                    label={t(
+                        'view.settings.advanced.advanced.auto_delete_prints.enable'
+                    )}
+                    description={t(
+                        'view.settings.advanced.advanced.auto_delete_prints.description'
+                    )}
+                >
+                    <Switch
+                        checked={prefs.autoDeleteOldPrints}
+                        onCheckedChange={onAutoDeleteOldPrintsChange}
+                    />
+                </Field>
+                <Field
+                    label={t(
+                        'view.settings.advanced.advanced.auto_delete_prints.limit'
+                    )}
+                    description={t(
+                        'view.settings.advanced.advanced.auto_delete_prints.limit_description'
+                    )}
+                >
+                    <Input
+                        type="number"
+                        min={30}
+                        max={60}
+                        step={1}
+                        className="w-24"
+                        value={String(prefs.autoDeletePrintsLimit ?? 60)}
+                        disabled={!prefs.autoDeleteOldPrints}
+                        onChange={(event) =>
+                            onAutoDeletePrintsLimitChange(event.target.value)
+                        }
+                        onBlur={(event) =>
+                            onAutoDeletePrintsLimitBlur(event.target.value)
+                        }
+                    />
+                </Field>
             </SettingsGroup>
             <SettingsGroup
                 title={t(
@@ -194,4 +272,3 @@ export function SettingsMediaTab({ media }: any) {
         </SettingsTabContent>
     );
 }
-import { useTranslation } from 'react-i18next';

@@ -21,8 +21,8 @@ mod tests {
     };
     use crate::world_enrich::PendingEntryCorrection;
     use crate::{
-        HostSessionRuntime, RealtimeNotificationUpsert, RuntimeEventBus, RuntimeSnapshot,
-        RuntimeSyncEngine, TaskSupervisor, WebClient,
+        HostSessionRuntime, PrintCleanupQueue, RealtimeNotificationUpsert, RuntimeEventBus,
+        RuntimeSnapshot, RuntimeSyncEngine, TaskSupervisor, WebClient,
     };
 
     use super::super::types::{
@@ -90,6 +90,7 @@ mod tests {
             game_log_snapshot: Arc::new(Mutex::new(RuntimeSnapshot::default())),
             overlay_activity: OverlayActivityRuntime::default(),
             world_cache,
+            print_cleanup: PrintCleanupQueue::new(),
         }));
         let active_session = RealtimeSessionContext::new(
             "usr_self".into(),
@@ -174,6 +175,7 @@ mod tests {
             game_log_snapshot: Arc::new(Mutex::new(RuntimeSnapshot::default())),
             overlay_activity: overlay_activity.clone(),
             world_cache,
+            print_cleanup: PrintCleanupQueue::new(),
         }));
         let active_session = RealtimeSessionContext::new(
             "usr_self".into(),

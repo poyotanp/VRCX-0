@@ -33,11 +33,11 @@ use vrcx_0_application::{
     BackgroundPresenceAutomationState, BackgroundPresenceFactsInput, CookieSessionProbe,
     FriendProjection, GameProcessEvent, GameProcessEventSink, ImageCache, LoginSuccessRecordInput,
     LogoutRecordInput, ModerationSyncDeps, ModerationSyncRefreshInput, NonInteractiveAuthError,
-    OverlayActivitySnapshot, OverlayFavoriteGroups, ProcessMonitor, RealtimeHostRuntime,
-    RealtimeHostRuntimeDeps, RealtimeStopRequest, RegistryBackupMaintenanceMode,
-    RegistryBackupMaintenanceResult, RegistryBackupSnapshot, RuntimeBackgroundJobs,
-    RuntimeEventSink, SavedCredentialLoginStartInput, SessionHostRuntime, SocialBaselineDeps,
-    SocialFavoritesBaselineInput, SocialFriendRosterBaselineInput, WebClient,
+    OverlayActivitySnapshot, OverlayFavoriteGroups, PrintCleanupDeps, PrintCleanupTrigger,
+    ProcessMonitor, RealtimeHostRuntime, RealtimeHostRuntimeDeps, RealtimeStopRequest,
+    RegistryBackupMaintenanceMode, RegistryBackupMaintenanceResult, RegistryBackupSnapshot,
+    RuntimeBackgroundJobs, RuntimeEventSink, SavedCredentialLoginStartInput, SessionHostRuntime,
+    SocialBaselineDeps, SocialFavoritesBaselineInput, SocialFriendRosterBaselineInput, WebClient,
 };
 use vrcx_0_core::friends::FriendRecord;
 use vrcx_0_core::json::RawJson;
@@ -78,7 +78,8 @@ use background::{
 use background_ticks::{
     run_background_current_user_refresh, run_background_discord_tick,
     run_background_group_instance_refresh, run_background_moderation_refresh,
-    run_background_presence_tick, run_background_social_baseline_refresh, BackgroundTickContext,
+    run_background_presence_tick, run_background_print_cleanup,
+    run_background_social_baseline_refresh, BackgroundTickContext,
 };
 use frontend_session::{
     favorite_group_membership_from_snapshot,
@@ -95,6 +96,7 @@ const BACKGROUND_PRESENCE_AUTOMATION_JOB: &str = "backgroundPresenceAutomation";
 const BACKGROUND_DISCORD_PRESENCE_JOB: &str = "backgroundDiscordPresence";
 const BACKGROUND_FACTS_REFRESH_JOB: &str = "backgroundFactsRefresh";
 const BACKGROUND_MODERATION_REFRESH_JOB: &str = "backgroundModerationRefresh";
+const BACKGROUND_PRINT_CLEANUP_JOB: &str = "printAutoCleanup";
 const BACKGROUND_PRESENCE_CADENCE_SECONDS: u64 = 3;
 const BACKGROUND_DISCORD_CADENCE_SECONDS: u64 = 3;
 const BACKGROUND_GROUP_INSTANCE_CADENCE_SECONDS: u64 = 300;
@@ -102,6 +104,7 @@ const BACKGROUND_CURRENT_USER_CADENCE_SECONDS: u64 = 300;
 const BACKGROUND_OVERLAY_ACTIVITY_CONFIG_CADENCE_SECONDS: u64 = 5;
 const BACKGROUND_SOCIAL_BASELINE_CADENCE_SECONDS: u64 = 3_600;
 const BACKGROUND_MODERATION_CADENCE_SECONDS: u64 = 3_600;
+const BACKGROUND_PRINT_CLEANUP_CADENCE_SECONDS: u64 = 30 * 60;
 const CURRENT_USER_REFRESH_LOCAL_AUTHORITY_FIELDS: &[&str] = &[
     "friends",
     "onlineFriends",
@@ -289,6 +292,7 @@ impl RuntimeHostState {
             game_log_snapshot: runtime_context.game_log_snapshot_handle(),
             overlay_activity: runtime_context.overlay_activity.clone(),
             world_cache: Arc::clone(&runtime_context.world_cache),
+            print_cleanup: runtime_context.print_cleanup.clone(),
         }));
         let session_runtime = Arc::new(SessionHostRuntime::new(
             runtime_context.session.clone(),

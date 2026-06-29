@@ -5,6 +5,7 @@ use serde_json::Value;
 
 use crate::game_log::GameLogProjection;
 use crate::overlay_activity::OverlayActivitySnapshot;
+use crate::prints::cleanup::PrintAutoCleanupEvent;
 use crate::realtime::{
     FriendProjection, RealtimeCurrentUserProjection, RealtimeEntryCorrection,
     RealtimeInstanceClosedProjection, RealtimeInstanceQueueProjection,
@@ -205,5 +206,9 @@ impl RuntimeEventBus {
 
     pub fn emit_overlay_activity_snapshot(&self, payload: OverlayActivitySnapshot) {
         self.emit("overlayActivitySnapshot", payload);
+    }
+
+    pub fn emit_prints_auto_cleanup(&self, payload: PrintAutoCleanupEvent) {
+        self.emit("printsAutoCleanup", payload);
     }
 }

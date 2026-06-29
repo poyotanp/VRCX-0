@@ -1744,7 +1744,8 @@
                 "failed_to_open_folder": "開啟資料夾失敗",
                 "failed_to_copy_image": "複製圖片失敗",
                 "failed_to_pin_tool_to_navigation": "固定工具到導航失敗",
-                "failed_to_unpin_tool_from_navigation": "從導航取消固定工具失敗"
+                "failed_to_unpin_tool_from_navigation": "從導航取消固定工具失敗",
+                "failed_to_update_print_favorite": "更新 Print 收藏狀態失敗"
             },
             "modal": {
                 "delete_value_item": "刪除 {value} 項目",
@@ -1753,6 +1754,19 @@
             "dynamic": {
                 "no_value_loaded": "未載入{value}",
                 "refresh_this_tab_to_load_value_files": "重新整理此標籤頁以載入{value}檔案"
+            },
+            "prints_favorites": {
+                "favorite": "收藏 Print",
+                "unfavorite": "取消收藏 Print",
+                "favorite_badge": "已收藏",
+                "favorited_toast": "已收藏 Print",
+                "unfavorited_toast": "已取消收藏 Print",
+                "favorite_limit_toast": "目前自動刪除上限下最多可收藏 {max} 個 Print。",
+                "cleanup_deleted": "已自動刪除 {count} 個舊 Print。目前剩餘 {remaining} 個 Print。",
+                "warning": {
+                    "too_many_favorites": "已收藏 Print 為 {favorites} 個，超過收藏上限 {max} 個中的 {over} 個。自動刪除不會移除已收藏 Print。",
+                    "too_many_favorites_event": "已收藏 Print 佔滿列表，自動刪除無法降到設定上限以下。目前剩餘 {remaining} 個 Print。"
+                }
             }
         },
         "profile": {
@@ -2499,6 +2513,12 @@
                         "description": "設定“拍立得”和“貼紙”等內容儲存的位置",
                         "set_folder": "設定儲存資料夾",
                         "reset_override": "重設為預設"
+                    },
+                    "auto_delete_prints": {
+                        "enable": "自動刪除舊 VRChat Prints",
+                        "description": "當 Print 列表超過上限時，刪除最舊的未收藏 VRChat Print。",
+                        "limit": "最多保留",
+                        "limit_description": "允許範圍為 30-60。已收藏 Print 永遠不會被自動刪除；最多可收藏比該上限少 5 個的 Print。"
                     }
                 }
             },

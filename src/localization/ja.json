@@ -1740,7 +1740,8 @@
                 "failed_to_open_folder": "フォルダーを開けませんでした",
                 "failed_to_copy_image": "画像のコピーに失敗しました",
                 "failed_to_pin_tool_to_navigation": "ツールをナビゲーションに固定できませんでした",
-                "failed_to_unpin_tool_from_navigation": "ツールのナビゲーション固定解除に失敗しました"
+                "failed_to_unpin_tool_from_navigation": "ツールのナビゲーション固定解除に失敗しました",
+                "failed_to_update_print_favorite": "Print のお気に入り状態を更新できませんでした"
             },
             "modal": {
                 "delete_value_item": "{value} 項目を削除",
@@ -1749,6 +1750,19 @@
             "dynamic": {
                 "no_value_loaded": "{value}が読み込まれていません",
                 "refresh_this_tab_to_load_value_files": "このタブを更新して{value}ファイルを読み込みます"
+            },
+            "prints_favorites": {
+                "favorite": "Print をお気に入りに追加",
+                "unfavorite": "Print のお気に入りを解除",
+                "favorite_badge": "お気に入り",
+                "favorited_toast": "Print をお気に入りに追加しました",
+                "unfavorited_toast": "Print のお気に入りを解除しました",
+                "favorite_limit_toast": "現在の自動削除上限では最大 {max} 件の Print をお気に入りにできます。",
+                "cleanup_deleted": "古い Print を {count} 件自動削除しました。残りは {remaining} 件です。",
+                "warning": {
+                    "too_many_favorites": "お気に入りの Print が {favorites} 件あり、お気に入り上限 {max} 件を {over} 件超えています。自動削除はお気に入りの Print を削除しません。",
+                    "too_many_favorites_event": "お気に入りの Print がリストを占めているため、自動削除で設定上限以下にできませんでした。残りは {remaining} 件です。"
+                }
             }
         },
         "profile": {
@@ -2495,6 +2509,12 @@
                         "description": "プリントやステッカーを保存するフォルダを指定、または開きます。",
                         "set_folder": "フォルダを設定",
                         "reset_override": "元に戻す"
+                    },
+                    "auto_delete_prints": {
+                        "enable": "古い VRChat Prints を自動削除",
+                        "description": "Print 一覧が上限を超えたとき、最も古いお気に入り以外の VRChat Print を削除します。",
+                        "limit": "最大保持数",
+                        "limit_description": "指定できる範囲は 30-60 です。お気に入りの Print は自動削除されません。この上限より 5 件少ない数までお気に入りにできます。"
                     }
                 }
             },

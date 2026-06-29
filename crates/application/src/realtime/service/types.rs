@@ -86,6 +86,7 @@ pub struct RealtimeHostRuntimeDeps {
     pub game_log_snapshot: Arc<Mutex<RuntimeSnapshot>>,
     pub overlay_activity: OverlayActivityRuntime,
     pub world_cache: Arc<WorldCache>,
+    pub print_cleanup: PrintCleanupQueue,
 }
 
 pub struct RealtimeHostRuntime {

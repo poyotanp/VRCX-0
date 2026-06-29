@@ -102,6 +102,22 @@ impl RealtimeMessageSink for RealtimeHostRuntimeMessageSink {
             return;
         }
 
+        if crate::is_print_created_content_refresh(payload) {
+            self.runtime.deps.print_cleanup.schedule(
+                &self.runtime.deps.tasks,
+                PrintCleanupDeps {
+                    db: Arc::clone(&self.runtime.deps.db),
+                    web: Arc::clone(&self.runtime.deps.web),
+                    event_bus: self.runtime.deps.event_bus.clone(),
+                },
+                PrintCleanupTrigger {
+                    user_id: session.user_id.clone(),
+                    endpoint: session.endpoint.clone(),
+                    reason: "content-refresh".to_string(),
+                },
+            );
+        }
+
         if let Some(mut projection) = apply_instance_queue_ws_message(generation, payload) {
             self.runtime
                 .enrich_instance_queue_projection(&mut projection);

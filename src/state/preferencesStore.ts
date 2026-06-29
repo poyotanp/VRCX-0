@@ -30,6 +30,10 @@ export const DEFAULT_TABLE_PAGE_SIZE = 20;
 export const DEFAULT_TABLE_PAGE_SIZES = Object.freeze([
     10, 15, 20, 25, 50, 100
 ]);
+export const DEFAULT_PRINT_AUTO_DELETE_LIMIT = 60;
+export const PRINT_AUTO_DELETE_LIMIT_MIN = 30;
+export const PRINT_AUTO_DELETE_LIMIT_MAX = 60;
+export const PRINT_FAVORITE_LIMIT_BUFFER = 5;
 const DEFAULT_TRANSLATION_ENDPOINT =
     'https://api.openai.com/v1/chat/completions';
 const DEFAULT_TRANSLATION_MODEL = 'gpt-4o-mini';
@@ -205,6 +209,14 @@ export function normalizeTablePageSize(
     });
 }
 
+export function normalizeAutoDeletePrintsLimit(value: unknown): number {
+    return normalizeBoundedInt(value, {
+        min: PRINT_AUTO_DELETE_LIMIT_MIN,
+        max: PRINT_AUTO_DELETE_LIMIT_MAX,
+        fallback: DEFAULT_PRINT_AUTO_DELETE_LIMIT
+    });
+}
+
 export function normalizeTableLimits(value: unknown = {}): {
     maxTableSize: number;
     searchLimit: number;
@@ -264,6 +276,8 @@ export const DEFAULT_PREFERENCES: PreferenceInputSnapshot = Object.freeze({
     screenshotHelperCopyToClipboard: false,
     saveInstancePrints: false,
     cropInstancePrints: false,
+    autoDeleteOldPrints: false,
+    autoDeletePrintsLimit: DEFAULT_PRINT_AUTO_DELETE_LIMIT,
     saveInstanceStickers: false,
     saveInstanceEmoji: false,
     userGeneratedContentPath: '',
@@ -400,6 +414,10 @@ export function normalizePreferenceSnapshot(snapshot: unknown = {}) {
         ),
         saveInstancePrints: normalizeBool(next.saveInstancePrints),
         cropInstancePrints: normalizeBool(next.cropInstancePrints),
+        autoDeleteOldPrints: normalizeBool(next.autoDeleteOldPrints),
+        autoDeletePrintsLimit: normalizeAutoDeletePrintsLimit(
+            next.autoDeletePrintsLimit
+        ),
         saveInstanceStickers: normalizeBool(next.saveInstanceStickers),
         saveInstanceEmoji: normalizeBool(next.saveInstanceEmoji),
         userGeneratedContentPath: String(next.userGeneratedContentPath || ''),

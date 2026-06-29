@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 import { commands } from '@/platform/tauri/bindings';
 import type {
     BackendRuntimeSnapshot,
@@ -6,6 +8,7 @@ import type {
     GameLogProjection,
     HostSessionProjection,
     OverlayActivitySnapshot,
+    PrintAutoCleanupEvent,
     RealtimeCurrentUserProjection,
     RealtimeEntryCorrection,
     RealtimeInstanceClosedProjection,
@@ -13,9 +16,12 @@ import type {
     RealtimeNotificationProjection
 } from '@/platform/tauri/bindings';
 import { tauriClient } from '@/platform/tauri/client';
+import mediaRepository from '@/repositories/vrchatMediaRepository';
+import { printCleanupWarningMessageKey } from '@/shared/utils/printFavoriteMessages';
 import { normalizeString } from '@/shared/utils/string';
 import { normalizeVrchatEndpointDomain } from '@/shared/vrchatEndpoint';
 import { useNotificationStore } from '@/state/notificationStore';
+import { usePrintFavoriteStore } from '@/state/printFavoriteStore';
 import {
     createGroupInstancesState,
     useRuntimeStore
@@ -35,6 +41,7 @@ import {
     isHostCapabilityAvailable,
     refreshHostCapabilities
 } from './hostCapabilityService';
+import i18n from './i18nService';
 import { handleIpcEvent } from './ipcEventService';
 import { executeNotificationTts } from './notificationDeliveryService';
 import { handleRealtimeInstanceQueueProjection } from './realtimeInstanceQueueService';
@@ -61,6 +68,7 @@ type RuntimeEventName =
     | 'runtimeGroupInstancesProjection'
     | 'overlayActivitySnapshot'
     | 'notificationTts'
+    | 'printsAutoCleanup'
     | 'realtimeFriendProjection'
     | 'realtimeUserProjection'
     | 'realtimeEntryCorrection'
@@ -83,6 +91,7 @@ type RuntimeEventPayloadMap = {
     runtimeGroupInstancesProjection: RuntimeGroupInstancesProjection;
     overlayActivitySnapshot: OverlayActivitySnapshot;
     notificationTts: Parameters<typeof executeNotificationTts>[0];
+    printsAutoCleanup: PrintAutoCleanupEvent;
     realtimeFriendProjection: FriendProjection;
     realtimeUserProjection: unknown;
     realtimeEntryCorrection: RealtimeEntryCorrection;
@@ -559,6 +568,47 @@ function requestGroupInstancesRefresh(source: string): void {
     });
 }
 
+let lastPrintCleanupWarning: string | null = null;
+
+function showPrintCleanupToast(event: PrintAutoCleanupEvent): void {
+    const warningKey = printCleanupWarningMessageKey(event.warning);
+    if (warningKey) {
+        if (event.warning !== lastPrintCleanupWarning) {
+            lastPrintCleanupWarning = event.warning ?? null;
+            toast.warning(
+                i18n.t(warningKey, {
+                    remaining: event.remaining
+                })
+            );
+        }
+        return;
+    }
+
+    lastPrintCleanupWarning = null;
+    if (event.deleted > 0) {
+        toast.success(
+            i18n.t('view.tools.prints_favorites.cleanup_deleted', {
+                count: event.deleted,
+                remaining: event.remaining
+            })
+        );
+    }
+}
+
+function refreshPrintFavoritesAfterCleanup(): void {
+    mediaRepository
+        .getPrintFavorites()
+        .then((state) => {
+            usePrintFavoriteStore.getState().hydratePrintFavorites(state);
+        })
+        .catch((error: unknown) => {
+            console.warn(
+                'Failed to refresh print favorites after cleanup:',
+                error
+            );
+        });
+}
+
 function handleRuntimeEvent(
     name: RuntimeEventName,
     payload: RuntimeEventPayloadMap[RuntimeEventName]
@@ -585,6 +635,16 @@ function handleRuntimeEvent(
         ).catch((error: unknown) => {
             console.warn('Failed to execute notification TTS:', error);
         });
+        return;
+    }
+
+    if (name === 'printsAutoCleanup') {
+        const printCleanupEvent =
+            payload as RuntimeEventPayloadMap['printsAutoCleanup'];
+        runtimeStore.recordRuntimeEvent(name, payload);
+        usePrintFavoriteStore.getState().applyPrintCleanup(printCleanupEvent);
+        refreshPrintFavoritesAfterCleanup();
+        showPrintCleanupToast(printCleanupEvent);
         return;
     }
 
@@ -777,6 +837,7 @@ export async function bindRuntimeEvents(): Promise<() => void> {
         'runtimeGroupInstancesProjection',
         'overlayActivitySnapshot',
         'notificationTts',
+        'printsAutoCleanup',
         'gameClientEvent',
         'runtimeWorkerError',
         'realtimeFriendProjection',

@@ -1744,7 +1744,8 @@
                 "failed_to_open_folder": "Falha ao abrir a pasta",
                 "failed_to_copy_image": "Falha ao copiar a imagem",
                 "failed_to_pin_tool_to_navigation": "Falha ao fixar a ferramenta na navegação",
-                "failed_to_unpin_tool_from_navigation": "Falha ao desafixar a ferramenta da navegação"
+                "failed_to_unpin_tool_from_navigation": "Falha ao desafixar a ferramenta da navegação",
+                "failed_to_update_print_favorite": "Failed to update print favorite"
             },
             "modal": {
                 "delete_value_item": "Excluir item de {value}",
@@ -1753,6 +1754,19 @@
             "dynamic": {
                 "no_value_loaded": "Nenhum {value} carregado",
                 "refresh_this_tab_to_load_value_files": "Atualize esta aba para carregar os arquivos de {value}"
+            },
+            "prints_favorites": {
+                "favorite": "Favorite print",
+                "unfavorite": "Remove print favorite",
+                "favorite_badge": "Favorite",
+                "favorited_toast": "Print favorited",
+                "unfavorited_toast": "Print unfavorited",
+                "favorite_limit_toast": "You can favorite up to {max} print(s) with the current auto-delete limit.",
+                "cleanup_deleted": "Auto-deleted {count} old print(s). {remaining} print(s) remain.",
+                "warning": {
+                    "too_many_favorites": "{favorites} favorite print(s) exceed the favorite limit of {max} by {over}. Auto-delete will not remove favorite prints.",
+                    "too_many_favorites_event": "Auto-delete could not get below the configured limit because favorite prints are filling the list. {remaining} print(s) remain."
+                }
             }
         },
         "profile": {
@@ -2499,6 +2513,12 @@
                         "description": "Abra ou defina a pasta para conteúdo do VRChat, como Prints e Stickers.",
                         "set_folder": "Definir Pasta",
                         "reset_override": "Restaurar"
+                    },
+                    "auto_delete_prints": {
+                        "enable": "Auto-delete old VRChat prints",
+                        "description": "Delete the oldest non-favorite VRChat prints when your print list is above the limit.",
+                        "limit": "Keep at most",
+                        "limit_description": "Allowed range is 30-60. Favorite prints are never deleted. You can favorite up to 5 fewer than this limit."
                     }
                 }
             },

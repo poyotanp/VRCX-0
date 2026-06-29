@@ -8,6 +8,7 @@ import {
 import { normalizeTrustColors } from '@/shared/utils/trustColors';
 import {
     DEFAULT_PREFERENCES,
+    normalizeAutoDeletePrintsLimit,
     normalizeDefaultLaunchMode,
     normalizeFeedTimeDisplayMode,
     normalizeTableLimits,
@@ -70,6 +71,8 @@ export async function loadPreferenceSnapshot() {
         screenshotHelperCopyToClipboard,
         saveInstancePrints,
         cropInstancePrints,
+        autoDeleteOldPrints,
+        autoDeletePrintsLimit,
         saveInstanceStickers,
         saveInstanceEmoji,
         userGeneratedContentPath,
@@ -180,6 +183,8 @@ export async function loadPreferenceSnapshot() {
         configRepository.getBool('screenshotHelperCopyToClipboard', false),
         configRepository.getBool('saveInstancePrints', false),
         configRepository.getBool('cropInstancePrints', false),
+        configRepository.getBool('autoDeleteOldPrints', false),
+        configRepository.getInt('autoDeletePrintsLimit', 60),
         configRepository.getBool('saveInstanceStickers', false),
         configRepository.getBool('saveInstanceEmoji', false),
         configRepository.getString('userGeneratedContentPath', ''),
@@ -349,6 +354,10 @@ export async function loadPreferenceSnapshot() {
         ),
         saveInstancePrints: Boolean(saveInstancePrints),
         cropInstancePrints: Boolean(cropInstancePrints),
+        autoDeleteOldPrints: Boolean(autoDeleteOldPrints),
+        autoDeletePrintsLimit: normalizeAutoDeletePrintsLimit(
+            autoDeletePrintsLimit
+        ),
         saveInstanceStickers: Boolean(saveInstanceStickers),
         saveInstanceEmoji: Boolean(saveInstanceEmoji),
         userGeneratedContentPath: userGeneratedContentPath || '',

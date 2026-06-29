@@ -167,6 +167,11 @@ impl RuntimeHostState {
             .set_favorite_groups(OverlayFavoriteGroups::from_map(
                 social_baseline.favorite_groups,
             ));
+        let print_cleanup_trigger = PrintCleanupTrigger {
+            user_id: session.user_id.clone(),
+            endpoint: session.endpoint.clone(),
+            reason: "baseline".to_string(),
+        };
         self.realtime_runtime.start(
             session.user_id,
             session.endpoint,
@@ -175,6 +180,15 @@ impl RuntimeHostState {
             session.current_user,
             social_baseline.friends_by_id,
         )?;
+        self.runtime_context.print_cleanup.schedule(
+            &self.runtime_context.tasks,
+            PrintCleanupDeps {
+                db: Arc::clone(&self.db),
+                web: Arc::clone(&self.web),
+                event_bus: self.runtime_context.event_bus.clone(),
+            },
+            print_cleanup_trigger,
+        );
         self.backend_runtime.set_phase(BackendRuntimePhase::Running);
         if self.backend_runtime.snapshot().mode == BackendRuntimeMode::Background {
             self.start_gui_background_registry_backup_loop();

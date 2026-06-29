@@ -1748,6 +1748,14 @@ export const commands = {
     ): Promise<HttpApiExecuteResponse> {
         return await TAURI_INVOKE('app__vrchat_media_prints_get', { input });
     },
+    async appVrchatPrintsFavoritesList(): Promise<PrintFavoriteState> {
+        return await TAURI_INVOKE('app__vrchat_prints_favorites_list');
+    },
+    async appVrchatPrintsFavoriteSet(
+        input: VrchatPrintFavoriteSetInput
+    ): Promise<PrintFavoriteState> {
+        return await TAURI_INVOKE('app__vrchat_prints_favorite_set', { input });
+    },
     async appVrchatMediaRewardRedeem(
         input: VrchatMediaRewardRedeemInput
     ): Promise<HttpApiExecuteResponse> {
@@ -2953,6 +2961,13 @@ export type CapabilityStatus = {
     available: boolean;
     reason?: string | null;
 };
+export type CleanupWarning = {
+    kind: CleanupWarningKind;
+    favorites: number;
+    max: number;
+    over: number;
+};
+export type CleanupWarningKind = 'too_many_favorites';
 export type ClientConfigSnippets = {
     claudeCodeCommand: string;
     mcpRemoteJson: string;
@@ -3638,6 +3653,16 @@ export type PlayerState = {
     userId: string;
     displayName: string;
     joinTimeMs: number | null;
+};
+export type PrintAutoCleanupEvent = {
+    deleted: number;
+    remaining: number;
+    warning: string | null;
+};
+export type PrintFavoriteState = {
+    favoriteIds: string[];
+    maxFavorites: number;
+    warning: CleanupWarning | null;
 };
 export type RawJson = JsonValue;
 export type RealtimeCurrentUserProjection = {
@@ -4346,6 +4371,10 @@ export type VrchatNotificationSendInput = {
     receiverUserId?: string;
     params?: JsonValue;
     endpoint?: string;
+};
+export type VrchatPrintFavoriteSetInput = {
+    printId?: string;
+    favorite?: boolean;
 };
 export type VrchatSearchParamsInput = {
     endpoint?: string;

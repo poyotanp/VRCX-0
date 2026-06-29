@@ -2,7 +2,7 @@ use specta_typescript::{BigIntExportBehavior, Typescript};
 use tauri_specta::{collect_commands, Builder, ErrorHandlingMode};
 use vrcx_0_application::{
     BackendRuntimeTelemetry, FriendProjection, GameLogProjection, HostSessionProjection,
-    OverlayActivitySnapshot, ParsedLocation, RealtimeCurrentUserProjection,
+    OverlayActivitySnapshot, ParsedLocation, PrintAutoCleanupEvent, RealtimeCurrentUserProjection,
     RealtimeEntryCorrection, RealtimeInstanceClosedProjection, RealtimeInstanceQueueProjection,
     RealtimeNotificationProjection, RealtimeWsStatusPayload,
 };
@@ -30,6 +30,7 @@ pub fn builder() -> Builder<tauri::Wry> {
         .typ::<McpServerStatus>()
         .typ::<OverlayActivitySnapshot>()
         .typ::<ParsedLocation>()
+        .typ::<PrintAutoCleanupEvent>()
         .typ::<RealtimeCurrentUserProjection>()
         .typ::<RealtimeEntryCorrection>()
         .typ::<RealtimeInstanceClosedProjection>()
@@ -340,6 +341,8 @@ pub fn builder() -> Builder<tauri::Wry> {
             commands::vrchat::media::service::app__vrchat_media_print_get,
             commands::vrchat::media::service::app__vrchat_media_print_upload,
             commands::vrchat::media::service::app__vrchat_media_prints_get,
+            commands::vrchat::media::service::app__vrchat_prints_favorites_list,
+            commands::vrchat::media::service::app__vrchat_prints_favorite_set,
             commands::vrchat::media::service::app__vrchat_media_reward_redeem,
             commands::vrchat::media::service::app__vrchat_media_sticker_upload,
             commands::vrchat::media::service::app__vrchat_media_user_inventory_item_get,

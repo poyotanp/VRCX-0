@@ -1,4 +1,5 @@
 import { mergeCurrentUserPresenceFields } from '@/shared/utils/currentUserPresence';
+import { usePrintFavoriteStore } from '@/state/printFavoriteStore';
 
 function mergeCurrentUserMediaUpdate(nextUser: any, previousUser: any) {
     const mergedUser = mergeCurrentUserPresenceFields(nextUser, previousUser);
@@ -68,6 +69,23 @@ export function useGalleryInventoryActions({
                         (print: any) => print.id !== normalizedPrintId
                     )
                 }));
+                try {
+                    const state = await mediaRepository.setPrintFavorite(
+                        normalizedPrintId,
+                        false
+                    );
+                    usePrintFavoriteStore
+                        .getState()
+                        .hydratePrintFavorites(state);
+                } catch (favoriteError) {
+                    usePrintFavoriteStore
+                        .getState()
+                        .removeFavoritePrintId(normalizedPrintId);
+                    console.warn(
+                        'Failed to clear favorite for deleted print:',
+                        favoriteError
+                    );
+                }
                 toast.success(t('view.tools.success.print_deleted'));
             }
         } catch (error) {

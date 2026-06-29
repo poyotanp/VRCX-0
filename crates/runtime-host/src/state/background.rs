@@ -171,6 +171,11 @@ impl RuntimeHostState {
                 BACKGROUND_MODERATION_CADENCE_SECONDS,
                 "Background moderation refresh is scheduled for GUI background mode.",
             ),
+            (
+                BACKGROUND_PRINT_CLEANUP_JOB,
+                BACKGROUND_PRINT_CLEANUP_CADENCE_SECONDS,
+                "Print auto cleanup fallback is scheduled for GUI background mode.",
+            ),
         ] {
             self.runtime_context.background_jobs.register_job(
                 name,
@@ -206,6 +211,7 @@ impl RuntimeHostState {
                 let mut next_overlay_activity_config = Instant::now();
                 let mut next_social = Instant::now();
                 let mut next_moderation = Instant::now();
+                let mut next_print_cleanup = Instant::now();
                 let mut favorite_friend_groups_by_key: HashMap<String, Vec<String>> =
                     HashMap::new();
                 let mut active_scope_key =
@@ -240,6 +246,7 @@ impl RuntimeHostState {
                         next_overlay_activity_config = now;
                         next_social = now;
                         next_moderation = now;
+                        next_print_cleanup = now;
                     }
 
                     if now >= next_current_user {
@@ -314,6 +321,12 @@ impl RuntimeHostState {
                             now + Duration::from_secs(BACKGROUND_MODERATION_CADENCE_SECONDS);
                     }
 
+                    if now >= next_print_cleanup {
+                        run_background_print_cleanup(&tick_context);
+                        next_print_cleanup =
+                            now + Duration::from_secs(BACKGROUND_PRINT_CLEANUP_CADENCE_SECONDS);
+                    }
+
                     if now >= next_presence {
                         run_background_presence_tick(
                             &tick_context,
@@ -357,6 +370,10 @@ impl RuntimeHostState {
                 background_jobs.mark_completed(
                     BACKGROUND_MODERATION_REFRESH_JOB,
                     "Background moderation refresh stopped.",
+                );
+                background_jobs.mark_completed(
+                    BACKGROUND_PRINT_CLEANUP_JOB,
+                    "Print auto cleanup fallback stopped.",
                 );
             });
     }

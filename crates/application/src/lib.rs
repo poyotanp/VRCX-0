@@ -21,6 +21,7 @@ mod moderation_sync;
 mod mutual_graph_fetch;
 mod noninteractive_auth;
 mod overlay_activity;
+mod prints;
 mod process_monitor;
 mod proxy;
 mod realtime;
@@ -142,6 +143,13 @@ pub use overlay_activity::{
     OverlayActivityRuntime, OverlayActivityScope, OverlayActivitySink, OverlayActivitySnapshot,
     OverlayActivitySurface, OverlayActivitySurfaceFilters, OverlayActivityText,
     OverlayActivityTypeDefinition, OverlayFavoriteGroups,
+};
+pub use prints::{
+    cleanup::{
+        is_print_created_content_refresh, run_print_auto_cleanup, PrintAutoCleanupEvent,
+        PrintCleanupDeps, PrintCleanupQueue, PrintCleanupTrigger,
+    },
+    favorites::{favorite_state, set_print_favorite, CleanupWarningKind, PrintFavoriteState},
 };
 pub use process_monitor::{
     GameProcessEvent, GameProcessEventSink, GameProcessMonitorActions, GameProcessStatus,

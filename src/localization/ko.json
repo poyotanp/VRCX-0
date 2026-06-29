@@ -1710,7 +1710,8 @@
                 "failed_to_copy_image": "이미지를 복사하지 못했습니다.",
                 "failed_to_pin_tool_to_navigation": "도구를 탐색에 고정하지 못했습니다.",
                 "failed_to_unpin_tool_from_navigation": "탐색에서 도구를 고정 해제하지 못했습니다.",
-                "failed_to_load_value": "{value}을(를) 로드하지 못했습니다."
+                "failed_to_load_value": "{value}을(를) 로드하지 못했습니다.",
+                "failed_to_update_print_favorite": "Failed to update print favorite"
             },
             "modal": {
                 "delete_print": "인쇄물 삭제",
@@ -1724,6 +1725,19 @@
             "dynamic": {
                 "no_value_loaded": "{value}이(가) 로드되지 않았습니다.",
                 "refresh_this_tab_to_load_value_files": "{value} 파일을 로드하려면 이 탭을 새로 고치세요."
+            },
+            "prints_favorites": {
+                "favorite": "Favorite print",
+                "unfavorite": "Remove print favorite",
+                "favorite_badge": "Favorite",
+                "favorited_toast": "Print favorited",
+                "unfavorited_toast": "Print unfavorited",
+                "favorite_limit_toast": "You can favorite up to {max} print(s) with the current auto-delete limit.",
+                "cleanup_deleted": "Auto-deleted {count} old print(s). {remaining} print(s) remain.",
+                "warning": {
+                    "too_many_favorites": "{favorites} favorite print(s) exceed the favorite limit of {max} by {over}. Auto-delete will not remove favorite prints.",
+                    "too_many_favorites_event": "Auto-delete could not get below the configured limit because favorite prints are filling the list. {remaining} print(s) remain."
+                }
             }
         },
         "profile": {
@@ -2430,6 +2444,12 @@
                     },
                     "vrcx_settings": {
                         "header": "VRCX-0"
+                    },
+                    "auto_delete_prints": {
+                        "enable": "Auto-delete old VRChat prints",
+                        "description": "Delete the oldest non-favorite VRChat prints when your print list is above the limit.",
+                        "limit": "Keep at most",
+                        "limit_description": "Allowed range is 30-60. Favorite prints are never deleted. You can favorite up to 5 fewer than this limit."
                     }
                 }
             },

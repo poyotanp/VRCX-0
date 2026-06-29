@@ -1,6 +1,9 @@
 import { openUGCPhotosFolder } from '@/services/shellIntegrationService';
 import { recordViewModeUsage } from '@/services/telemetry/telemetryViewModeUsage';
-import { normalizeFeedTimeDisplayMode } from '@/state/preferencesStore';
+import {
+    normalizeAutoDeletePrintsLimit,
+    normalizeFeedTimeDisplayMode
+} from '@/state/preferencesStore';
 
 import type { createDefaultSettingsPrefs } from './settingsDefaultPrefs';
 import {
@@ -538,6 +541,30 @@ export function buildSettingsPageStateSections({
             },
             onCropInstancePrintsChange: (checked: unknown) => {
                 handleCropInstancePrintsChange(normalizeCheckedState(checked));
+            },
+            onAutoDeleteOldPrintsChange: (checked: unknown) => {
+                const enabled = normalizeCheckedState(checked);
+                saveBoolPreference(
+                    'autoDeleteOldPrints',
+                    'autoDeleteOldPrints',
+                    enabled
+                );
+            },
+            onAutoDeletePrintsLimitChange: (value: unknown) => {
+                setPrefs((current) => ({
+                    ...current,
+                    autoDeletePrintsLimit: value
+                }));
+            },
+            onAutoDeletePrintsLimitBlur: (value: unknown) => {
+                const nextValue = normalizeAutoDeletePrintsLimit(value);
+                savePreferenceValue('autoDeletePrintsLimit', nextValue, () =>
+                    setIntConfigPreference('autoDeletePrintsLimit', nextValue, {
+                        min: 30,
+                        max: 60,
+                        fallback: 60
+                    })
+                );
             },
             onSaveInstanceStickersChange: (checked: unknown) => {
                 const enabled = normalizeCheckedState(checked);

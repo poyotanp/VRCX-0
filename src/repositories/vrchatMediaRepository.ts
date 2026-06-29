@@ -4,6 +4,7 @@ import {
     queryKeys
 } from '@/lib/entityQueryCache';
 import { commands } from '@/platform/tauri/bindings';
+import type { PrintFavoriteState } from '@/platform/tauri/bindings';
 import { normalizeVrchatEndpointDomain } from '@/shared/vrchatEndpoint';
 
 import { normalizePlatformError } from '../platform/tauri/errors';
@@ -505,6 +506,30 @@ async function deletePrint(printId: unknown, options: MediaApiOptions = {}) {
     );
 }
 
+async function getPrintFavorites(): Promise<PrintFavoriteState> {
+    return commands.appVrchatPrintsFavoritesList();
+}
+
+async function setPrintFavorite(
+    printId: unknown,
+    favoriteValue: unknown
+): Promise<PrintFavoriteState> {
+    const normalizedPrintId =
+        typeof printId === 'string'
+            ? printId.trim()
+            : String(printId ?? '').trim();
+    if (!normalizedPrintId) {
+        throw new Error(
+            'MediaRepository.setPrintFavorite requires a print id.'
+        );
+    }
+
+    return commands.appVrchatPrintsFavoriteSet({
+        printId: normalizedPrintId,
+        favorite: favoriteValue === true
+    });
+}
+
 async function getInventoryItems(
     params: MediaApiParams = {},
     options: MediaApiOptions = {}
@@ -738,6 +763,8 @@ const vrchatMediaRepository = Object.freeze({
     getPrints,
     getPrint,
     deletePrint,
+    getPrintFavorites,
+    setPrintFavorite,
     getInventoryItems,
     getUserInventoryItem,
     updateInventoryItem,
@@ -761,6 +788,8 @@ export {
     getPrints,
     getPrint,
     deletePrint,
+    getPrintFavorites,
+    setPrintFavorite,
     getInventoryItems,
     getUserInventoryItem,
     updateInventoryItem,

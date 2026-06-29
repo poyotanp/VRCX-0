@@ -35,6 +35,8 @@ export function createDefaultSettingsPrefs() {
         screenshotHelperCopyToClipboard: false,
         saveInstancePrints: false,
         cropInstancePrints: false,
+        autoDeleteOldPrints: false,
+        autoDeletePrintsLimit: 60,
         saveInstanceStickers: false,
         saveInstanceEmoji: false,
         userGeneratedContentPath: '',
