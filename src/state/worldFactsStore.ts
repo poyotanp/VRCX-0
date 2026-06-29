@@ -3,6 +3,30 @@ import { create } from 'zustand';
 type WorldFactInput = Record<string, unknown> & {
     id?: unknown;
     worldId?: unknown;
+    authorId?: unknown;
+    authorName?: unknown;
+    capacity?: unknown;
+    createdAt?: unknown;
+    created_at?: unknown;
+    description?: unknown;
+    favorites?: unknown;
+    hasPersistData?: unknown;
+    heat?: unknown;
+    imageUrl?: unknown;
+    isLabs?: unknown;
+    name?: unknown;
+    occupants?: unknown;
+    platforms?: unknown;
+    popularity?: unknown;
+    publicationDate?: unknown;
+    recommendedCapacity?: unknown;
+    releaseStatus?: unknown;
+    tags?: unknown;
+    thumbnailImageUrl?: unknown;
+    updatedAt?: unknown;
+    updated_at?: unknown;
+    version?: unknown;
+    visits?: unknown;
 };
 
 type WorldFact = Record<string, unknown> & {
@@ -138,7 +162,7 @@ export const useWorldFactsStore = create<WorldFactsStoreState>((set, get) => ({
     ...initialState,
     upsertWorldFacts(worlds) {
         const list = Array.isArray(worlds) ? worlds : [worlds];
-        set((state: WorldFactsStoreState) => {
+        set((state) => {
             let changed = false;
             let worldsById = state.worldsById;
             let order = state.order;

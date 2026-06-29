@@ -8,7 +8,10 @@ import { BoopReplyDialog } from '@/features/notifications/components/Notificatio
 import { NotificationDrawerList } from '@/features/notifications/drawer/NotificationDrawerList';
 import { shouldOpenBoopReplyDialog } from '@/features/notifications/notificationResponseModel';
 import { userFacingErrorMessage } from '@/lib/errorDisplay';
-import notificationPersistenceRepository from '@/repositories/notificationPersistenceRepository';
+import notificationPersistenceRepository, {
+    type NotificationResponse,
+    type NotificationRow
+} from '@/repositories/notificationPersistenceRepository';
 import { openWorldDialog } from '@/services/dialogService';
 import {
     acceptFriendRequestNotification,
@@ -40,75 +43,71 @@ import {
     resolveCurrentInviteLocation
 } from './vrc-notification-center/notificationCenterUtils';
 
+type InviteResponseRequest = {
+    notification: NotificationRow;
+    messageType: string;
+};
+
+type InviteResponseSlotPayload = {
+    notification: NotificationRow;
+    row?: {
+        slot?: unknown;
+    };
+};
+
 export function VrcNotificationCenterHost() {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
+    const confirm = useModalStore((state) => state.confirm);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
     const currentUserLocationTag = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot?.$locationTag
+        (state) => state.auth.currentUserSnapshot?.$locationTag
     );
     const currentUserLocation = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot?.location
+        (state) => state.auth.currentUserSnapshot?.location
     );
-    const isLocalUserVrcPlusSupporter = useRuntimeStore((state: any) =>
-        Boolean(
+    const isLocalUserVrcPlusSupporter = useRuntimeStore((state) => {
+        const tags = state.auth.currentUserSnapshot?.tags;
+        return Boolean(
             state.auth.currentUserSnapshot?.$isVRCPlus ||
-            state.auth.currentUserSnapshot?.tags?.includes?.(
-                'system_supporter'
-            ) ||
+            (Array.isArray(tags) && tags.includes('system_supporter')) ||
             globalThis?.$debug?.debugVrcPlus
-        )
-    );
+        );
+    });
     const currentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const currentDestination = useRuntimeStore(
-        (state: any) => state.gameState.currentDestination
+        (state) => state.gameState.currentDestination
     );
     const groupInstancesEndpoint = useRuntimeStore(
-        (state: any) => state.groupInstances.endpoint
+        (state) => state.groupInstances.endpoint
     );
     const groupInstancesUserId = useRuntimeStore(
-        (state: any) => state.groupInstances.userId
+        (state) => state.groupInstances.userId
     );
     const groupInstances = useRuntimeStore(
-        (state: any) => state.groupInstances.instances
+        (state) => state.groupInstances.instances
     );
-    const isCenterOpen = useVrcNotificationStore(
-        (state: any) => state.isCenterOpen
-    );
-    const categories = useVrcNotificationStore(
-        (state: any) => state.categories
-    );
-    const unseenCount = useVrcNotificationStore(
-        (state: any) => state.unseenCount
-    );
-    const loadStatus = useVrcNotificationStore(
-        (state: any) => state.loadStatus
-    );
-    const detail = useVrcNotificationStore((state: any) => state.detail);
+    const isCenterOpen = useVrcNotificationStore((state) => state.isCenterOpen);
+    const categories = useVrcNotificationStore((state) => state.categories);
+    const unseenCount = useVrcNotificationStore((state) => state.unseenCount);
+    const loadStatus = useVrcNotificationStore((state) => state.loadStatus);
+    const detail = useVrcNotificationStore((state) => state.detail);
     const setCenterOpen = useVrcNotificationStore(
-        (state: any) => state.setCenterOpen
+        (state) => state.setCenterOpen
     );
     const loadForCurrentUser = useVrcNotificationStore(
-        (state: any) => state.loadForCurrentUser
+        (state) => state.loadForCurrentUser
     );
     const markNotificationSeen = useVrcNotificationStore(
-        (state: any) => state.markNotificationSeen
+        (state) => state.markNotificationSeen
     );
-    const markAllSeen = useVrcNotificationStore(
-        (state: any) => state.markAllSeen
-    );
-    const [inviteResponseRequest, setInviteResponseRequest] = useState<{
-        notification: any;
-        messageType: any;
-    } | null>(null);
-    const [boopReplyRequest, setBoopReplyRequest] = useState<any>(null);
+    const markAllSeen = useVrcNotificationStore((state) => state.markAllSeen);
+    const [inviteResponseRequest, setInviteResponseRequest] =
+        useState<InviteResponseRequest | null>(null);
+    const [boopReplyRequest, setBoopReplyRequest] =
+        useState<NotificationRow | null>(null);
     const groupInstanceRows =
         groupInstancesUserId === currentUserId &&
         groupInstancesEndpoint === endpoint
@@ -139,7 +138,7 @@ export function VrcNotificationCenterHost() {
     const canInviteFromCurrentLocation = useMemo(
         () =>
             checkCanInvite(currentInviteLocation, {
-                currentUserId,
+                currentUserId: currentUserId ?? '',
                 lastLocationStr: currentInviteLocation,
                 cachedInstances
             }),
@@ -150,7 +149,7 @@ export function VrcNotificationCenterHost() {
         if (unseenCount <= 0) {
             return;
         }
-        markAllSeen().catch((error: any) => {
+        markAllSeen().catch((error: unknown) => {
             toast.error(
                 error instanceof Error
                     ? error.message
@@ -161,7 +160,7 @@ export function VrcNotificationCenterHost() {
         });
     }
 
-    function handleOpenChange(open: any) {
+    function handleOpenChange(open: boolean) {
         if (!open) {
             setInviteResponseRequest(null);
             setBoopReplyRequest(null);
@@ -169,7 +168,7 @@ export function VrcNotificationCenterHost() {
         setCenterOpen(open);
     }
 
-    function joinQueueReady(notification: any) {
+    function joinQueueReady(notification: NotificationRow) {
         const location = String(notification?.location || '').trim();
         if (!location) {
             return;
@@ -192,7 +191,7 @@ export function VrcNotificationCenterHost() {
         await loadForCurrentUser();
     }
 
-    async function acceptFriendRequest(notification: any) {
+    async function acceptFriendRequest(notification: NotificationRow) {
         try {
             const result = await confirm({
                 title: t(
@@ -229,7 +228,7 @@ export function VrcNotificationCenterHost() {
         }
     }
 
-    async function hideNotification(notification: any) {
+    async function hideNotification(notification: NotificationRow) {
         try {
             const result = await confirm({
                 title: t(
@@ -263,7 +262,7 @@ export function VrcNotificationCenterHost() {
         }
     }
 
-    async function acceptRequestInvite(notification: any) {
+    async function acceptRequestInvite(notification: NotificationRow) {
         try {
             if (!currentInviteLocation) {
                 toast.error(
@@ -322,8 +321,8 @@ export function VrcNotificationCenterHost() {
     }
 
     function sendInviteResponseWithMessage(
-        notification: any,
-        messageType: any
+        notification: NotificationRow,
+        messageType: string
     ) {
         if (!currentUserId) {
             toast.error(
@@ -336,7 +335,10 @@ export function VrcNotificationCenterHost() {
         setInviteResponseRequest({ notification, messageType });
     }
 
-    async function sendInviteResponseSlot({ notification, row }: any) {
+    async function sendInviteResponseSlot({
+        notification,
+        row
+    }: InviteResponseSlotPayload) {
         await sendInviteResponseNotification({
             currentUserId,
             endpoint,
@@ -347,7 +349,10 @@ export function VrcNotificationCenterHost() {
         toast.success(t('view.notification.success.invite_response_sent'));
     }
 
-    async function sendBoopReply(notification: any, emojiId: any = '') {
+    async function sendBoopReply(
+        notification: NotificationRow | null,
+        emojiId: unknown = ''
+    ) {
         if (!notification) {
             return;
         }
@@ -361,7 +366,10 @@ export function VrcNotificationCenterHost() {
         toast.success(t('view.notification.success.boop_sent'));
     }
 
-    async function sendNotificationResponse(notification: any, response: any) {
+    async function sendNotificationResponse(
+        notification: NotificationRow,
+        response: NotificationResponse
+    ) {
         try {
             if (response?.type === 'link') {
                 openNotificationLink(response.data);
@@ -393,7 +401,7 @@ export function VrcNotificationCenterHost() {
         }
     }
 
-    async function deleteNotification(notification: any) {
+    async function deleteNotification(notification: NotificationRow) {
         try {
             const result = await confirm({
                 title: t(
@@ -483,7 +491,7 @@ export function VrcNotificationCenterHost() {
                                             disabled={loadStatus === 'running'}
                                             onClick={() => {
                                                 loadForCurrentUser().catch(
-                                                    (error: any) => {
+                                                    (error: unknown) => {
                                                         toast.error(
                                                             userFacingErrorMessage(
                                                                 error,
@@ -520,7 +528,7 @@ export function VrcNotificationCenterHost() {
                     </SheetHeader>
                     <NotificationDrawerList
                         categories={categories}
-                        currentUserId={currentUserId}
+                        currentUserId={currentUserId ?? undefined}
                         canInviteFromCurrentLocation={
                             canInviteFromCurrentLocation
                         }
@@ -542,7 +550,7 @@ export function VrcNotificationCenterHost() {
             </Sheet>
             <InviteMessageDialog
                 open={Boolean(inviteResponseRequest)}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open: boolean) => {
                     if (!open) {
                         setInviteResponseRequest(null);
                     }
@@ -551,25 +559,30 @@ export function VrcNotificationCenterHost() {
                 endpoint={endpoint}
                 messageType={inviteResponseRequest?.messageType || 'response'}
                 mode="respond"
-                targetLabel={
+                targetLabel={String(
                     inviteResponseRequest?.notification?.senderUsername ||
-                    inviteResponseRequest?.notification?.senderUserId ||
-                    'this user'
-                }
+                        inviteResponseRequest?.notification?.senderUserId ||
+                        'this user'
+                )}
                 allowEdit
                 allowImageUpload={false}
-                onUse={(payload: any) =>
-                    sendInviteResponseSlot({
+                onUse={(
+                    payload: Omit<InviteResponseSlotPayload, 'notification'>
+                ) => {
+                    if (!inviteResponseRequest) {
+                        return undefined;
+                    }
+                    return sendInviteResponseSlot({
                         ...payload,
-                        notification: inviteResponseRequest?.notification
-                    })
-                }
+                        notification: inviteResponseRequest.notification
+                    });
+                }}
             />
             <BoopReplyDialog
                 request={boopReplyRequest}
                 endpoint={endpoint}
                 isLocalUserVrcPlusSupporter={isLocalUserVrcPlusSupporter}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open: boolean) => {
                     if (!open) {
                         setBoopReplyRequest(null);
                     }

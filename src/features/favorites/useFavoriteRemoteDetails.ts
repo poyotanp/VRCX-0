@@ -11,7 +11,24 @@ import {
     setFavoriteRemoteDetailsPromise
 } from '@/services/favoriteRemoteDetailsCacheService';
 import { persistWorldDetailsById } from '@/services/favoriteWorldCacheService';
+import type { FavoriteEntityDetail } from '@/state/favoriteStoreTypes';
 import { useRuntimeStore } from '@/state/runtimeStore';
+
+type FavoriteRemoteDetailKind = 'avatar' | 'world';
+
+type FavoriteRemoteEntityDetail = FavoriteEntityDetail & {
+    id: string;
+};
+
+type FavoriteRemoteDetailsById = Record<string, FavoriteRemoteEntityDetail>;
+
+interface UseFavoriteRemoteDetailsOptions {
+    type: FavoriteRemoteDetailKind;
+    favoriteIds?: unknown;
+    avatarTags?: unknown;
+    enabled?: boolean;
+    refreshToken?: number;
+}
 
 function normalizeValues(values: unknown): string[] {
     return Array.from(
@@ -33,14 +50,31 @@ function normalizeEntityId(value: unknown) {
         : String(value ?? '').trim();
 }
 
-function buildCacheKey(type: any, endpoint: any, idsKey: any, tagsKey: any) {
+function normalizeOptionalString(value: unknown): string | undefined {
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+    const normalized = value.trim();
+    return normalized || undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function buildCacheKey(
+    type: FavoriteRemoteDetailKind,
+    endpoint: string,
+    idsKey: string,
+    tagsKey: string
+) {
     return [type, endpoint || '', idsKey || '', tagsKey || ''].join('::');
 }
 
 interface RemoteDetailsState {
     status: string;
     detail: string;
-    data: Record<string, unknown>;
+    data: FavoriteRemoteDetailsById;
     lastLoadedAt: string | null;
 }
 
@@ -53,7 +87,7 @@ function isRemoteDetailsState(value: unknown): value is RemoteDetailsState {
     );
 }
 
-function getCachedRemoteDetailsState(cacheKey: unknown) {
+function getCachedRemoteDetailsState(cacheKey: string) {
     const cachedState = getFavoriteRemoteDetailsCache(cacheKey);
     return isRemoteDetailsState(cachedState) ? cachedState : null;
 }
@@ -78,19 +112,67 @@ function buildInitialState(
     };
 }
 
-function mapEntitiesById(items: any): Record<string, unknown> {
-    const byId: Record<string, unknown> = {};
+function normalizeFavoriteEntityDetail(
+    value: unknown
+): FavoriteRemoteEntityDetail | null {
+    if (!isRecord(value)) {
+        return null;
+    }
+    const id = normalizeEntityId(value.id);
+    if (!id) {
+        return null;
+    }
+    const detail: FavoriteRemoteEntityDetail = {
+        ...value,
+        id
+    };
+    if (Array.isArray(value.tags)) {
+        detail.tags = normalizeValues(value.tags);
+    } else {
+        delete detail.tags;
+    }
+
+    const releaseStatus = normalizeOptionalString(value.releaseStatus);
+    if (releaseStatus) {
+        detail.releaseStatus = releaseStatus;
+    } else {
+        delete detail.releaseStatus;
+    }
+
+    const thumbnailImageUrl = normalizeOptionalString(value.thumbnailImageUrl);
+    if (thumbnailImageUrl) {
+        detail.thumbnailImageUrl = thumbnailImageUrl;
+    } else {
+        delete detail.thumbnailImageUrl;
+    }
+
+    const imageUrl = normalizeOptionalString(value.imageUrl);
+    if (imageUrl) {
+        detail.imageUrl = imageUrl;
+    } else {
+        delete detail.imageUrl;
+    }
+
+    return detail;
+}
+
+function mapEntitiesById(items: unknown): FavoriteRemoteDetailsById {
+    const byId: FavoriteRemoteDetailsById = {};
     for (const item of Array.isArray(items) ? items : []) {
-        const itemId = normalizeEntityId(item?.id);
-        if (!itemId) {
+        const detail = normalizeFavoriteEntityDetail(item);
+        if (!detail) {
             continue;
         }
-        byId[itemId] = item;
+        byId[detail.id] = detail;
     }
     return byId;
 }
 
-async function loadRemoteDetails(type: any, endpoint: any, tags: any) {
+async function loadRemoteDetails(
+    type: FavoriteRemoteDetailKind,
+    endpoint: string,
+    tags: string[]
+): Promise<FavoriteRemoteDetailsById> {
     if (type === 'avatar') {
         const avatars = await vrchatFavoriteRepository.getAllFavoriteAvatars({
             endpoint,
@@ -111,10 +193,8 @@ export function useFavoriteRemoteDetails({
     avatarTags = [],
     enabled = true,
     refreshToken = 0
-}: any) {
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
+}: UseFavoriteRemoteDetailsOptions) {
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
     const normalizedIds = useMemo(
         () => normalizeValues(favoriteIds),
         [favoriteIds]
@@ -178,14 +258,14 @@ export function useFavoriteRemoteDetails({
         if (!isPromiseLike(promise)) {
             const promiseGeneration = getFavoriteRemoteDetailsCacheGeneration();
             promise = loadRemoteDetails(type, endpoint, normalizedTags)
-                .then((data: any) => {
+                .then((data) => {
                     if (
                         promiseGeneration !==
                         getFavoriteRemoteDetailsCacheGeneration()
                     ) {
                         return null;
                     }
-                    const filtered: Record<string, unknown> = {};
+                    const filtered: FavoriteRemoteDetailsById = {};
                     for (const favoriteId of normalizedIds) {
                         if (data[favoriteId]) {
                             filtered[favoriteId] = data[favoriteId];
@@ -226,7 +306,7 @@ export function useFavoriteRemoteDetails({
                     setState(nextState);
                 }
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
                 if (
                     !active ||
                     effectGeneration !==

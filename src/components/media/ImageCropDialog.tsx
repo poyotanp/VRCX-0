@@ -256,7 +256,7 @@ export function ImageCropDialog({
                                 id="image-crop-upload-note"
                                 maxLength={noteMaxLength}
                                 value={note}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     setNote(
                                         String(event.target.value || '').slice(
                                             0,
@@ -273,7 +273,7 @@ export function ImageCropDialog({
                             <Checkbox
                                 id="image-crop-white-border"
                                 checked={cropWhiteBorder}
-                                onCheckedChange={(value: any) =>
+                                onCheckedChange={(value) =>
                                     setCropWhiteBorder(Boolean(value))
                                 }
                             />

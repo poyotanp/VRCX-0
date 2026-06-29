@@ -1,4 +1,6 @@
+import type { Table as ReactTable } from '@tanstack/react-table';
 import { RefreshCcwIcon } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { TableColumnVisibilityMenu } from '@/components/data-table/TableColumnVisibilityMenu';
@@ -7,7 +9,23 @@ import { Input } from '@/ui/shadcn/input';
 import { Spinner } from '@/ui/shadcn/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
+import type {
+    NotificationLoadStatus,
+    NotificationRow
+} from '../notificationPageTypes';
 import { NotificationTypeFilterDropdown } from './NotificationViewParts';
+
+type NotificationPageToolbarProps = {
+    activeTypes: string[];
+    loadStatus: NotificationLoadStatus;
+    notificationTypeLabel: (type: unknown) => string;
+    onActiveTypesChange: (types: string[]) => void;
+    onClearFilters: () => void;
+    onRefresh: () => void;
+    onSearchQueryChange: (value: string) => void;
+    searchQuery: string;
+    table: ReactTable<NotificationRow>;
+};
 
 export function NotificationPageToolbar({
     activeTypes,
@@ -19,7 +37,7 @@ export function NotificationPageToolbar({
     onSearchQueryChange,
     onRefresh,
     onClearFilters
-}: any) {
+}: NotificationPageToolbarProps) {
     const { t } = useTranslation();
     const refreshLabel = t('view.notification.refresh_tooltip');
 
@@ -32,7 +50,7 @@ export function NotificationPageToolbar({
             />
             <Input
                 value={searchQuery}
-                onChange={(event: any) =>
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     onSearchQueryChange(event.target.value)
                 }
                 placeholder={t('common.actions.search')}

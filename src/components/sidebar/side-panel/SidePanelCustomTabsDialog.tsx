@@ -199,7 +199,7 @@ function FavoriteSourceChecklist({
                 <Checkbox
                     id={`${item.id}-${group.key}`}
                     checked={selected.has(group.key)}
-                    onCheckedChange={(checked: any) =>
+                    onCheckedChange={(checked) =>
                         onToggleSource(group.key, Boolean(checked))
                     }
                 />
@@ -385,7 +385,7 @@ export function SidePanelCustomTabsDialog({
                             </FieldContent>
                             <Select
                                 value={draftDisplayMode}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                     setDraftDisplayMode(
                                         normalizeSidebarTabDisplayMode(value)
                                     )

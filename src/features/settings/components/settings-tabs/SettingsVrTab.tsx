@@ -133,7 +133,7 @@ export function SettingsVrTab({
                             step={1}
                             value={notificationTimeoutSeconds}
                             className="w-24"
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onNotificationTimeoutSecondsChange(
                                     event.target.value
                                 )
@@ -156,7 +156,7 @@ export function SettingsVrTab({
                             min={0}
                             max={100}
                             step={1}
-                            onValueChange={(value: any) =>
+                            onValueChange={(value) =>
                                 onNotificationOpacityChange(value?.[0])
                             }
                         />

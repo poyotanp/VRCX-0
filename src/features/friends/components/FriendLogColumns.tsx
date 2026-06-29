@@ -139,7 +139,7 @@ export function useFriendLogColumns({
                                     loadStatus === 'running' ||
                                     deletingRowKey === rowKey
                                 }
-                                onClick={(event: any) =>
+                                onClick={(event) =>
                                     handleDeleteRow(row.original, {
                                         skipConfirm: shiftHeld || event.shiftKey
                                     })

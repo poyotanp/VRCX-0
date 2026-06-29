@@ -61,11 +61,22 @@ type InstanceQueueState = Record<string, unknown> & {
     updatedAt: string | null;
 };
 
+export type VrcStatusState = Record<string, unknown> & {
+    status: string;
+    indicator: string;
+    summary: string;
+    updatedAt: string | null;
+    lastFetchedAt: string | null;
+    pollingIntervalMs: number;
+    refreshing: boolean;
+    error: string;
+};
+
 type CapabilityStatus = {
     supported: boolean;
     enabled: boolean;
     available: boolean;
-    reason: unknown;
+    reason?: string;
 };
 
 type HostCapabilitiesState = Record<string, unknown> & {
@@ -90,16 +101,37 @@ type HostCapabilitiesState = Record<string, unknown> & {
     screenshotCache: CapabilityStatus;
 };
 
-type CurrentUserSnapshotState = Record<string, unknown> & {
-    id?: unknown;
-    displayName?: unknown;
-    username?: unknown;
-    status?: unknown;
-    platform?: unknown;
-    last_platform?: unknown;
+export type CurrentUserSnapshotState = Record<string, unknown> & {
+    id?: string;
+    endpoint?: string;
+    updatedAt?: string;
+    displayName?: string;
+    username?: string;
+    status?: string;
+    developerType?: string;
+    currentAvatar?: string;
+    currentAvatarImageUrl?: string;
+    currentAvatarThumbnailImageUrl?: string;
+    currentAvatarName?: string;
+    homeLocation?: string | null;
+    location?: string;
+    $locationTag?: string;
+    tags?: string[];
+    platform?: string;
+    last_platform?: string;
+    $isVRCPlus?: boolean;
+    $previousAvatarSwapTime?: number | null;
     presence?: Record<string, unknown> & {
-        platform?: unknown;
+        platform?: string;
     };
+};
+
+type UpdateLoopRelease = Record<string, unknown> & {
+    canonicalVersion?: string;
+    currentVersion?: string;
+    latestVersion?: string;
+    publishedAt?: string;
+    title?: string;
 };
 
 type GroupInstancesState = Record<string, unknown> & {
@@ -127,6 +159,7 @@ type RuntimeStore = {
         isRunning: boolean;
         tickCount: number;
         hasAvailableUpdate: boolean;
+        latestUpdaterRelease: UpdateLoopRelease | null;
         autoDownloadState:
             | 'idle'
             | 'downloading'
@@ -171,7 +204,7 @@ type RuntimeStore = {
         updatedAt: string | null;
     };
     instanceQueue: InstanceQueueState;
-    vrcStatus: Record<string, unknown>;
+    vrcStatus: VrcStatusState;
     groupInstances: GroupInstancesState;
     systemHosts: Record<string, boolean>;
     changelogTargetVersion: string;
@@ -206,7 +239,7 @@ type RuntimeStore = {
     setNowPlayingState(patch: Record<string, unknown>): void;
     setInstanceQueueState(patch: Partial<InstanceQueueState>): void;
     clearInstanceQueueState(): void;
-    setVrcStatusState(patch: Record<string, unknown>): void;
+    setVrcStatusState(patch: Partial<VrcStatusState>): void;
     setGroupInstancesState(
         patch: Partial<RuntimeStore['groupInstances']>
     ): void;
@@ -660,7 +693,7 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
             instanceQueue: createInstanceQueueState()
         });
     },
-    setVrcStatusState(patch: Record<string, unknown>) {
+    setVrcStatusState(patch: Partial<VrcStatusState>) {
         set((state) => ({
             vrcStatus: {
                 ...state.vrcStatus,

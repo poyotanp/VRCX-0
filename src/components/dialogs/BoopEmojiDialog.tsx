@@ -57,7 +57,7 @@ export function BoopEmojiDialog({
     const navigate = useNavigate();
     const [emojiId, setEmojiId] = useState('');
     const [emojiSearch, setEmojiSearch] = useState('');
-    const [emojiRows, setEmojiRows] = useState<any[]>([]);
+    const [emojiRows, setEmojiRows] = useState<Record<string, unknown>[]>([]);
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState('');
@@ -229,7 +229,7 @@ export function BoopEmojiDialog({
                                     )}
                                     disabled={sending}
                                     className="h-9 min-w-48 flex-1"
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         setEmojiSearch(event.target.value)
                                     }
                                 />

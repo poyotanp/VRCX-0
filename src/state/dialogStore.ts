@@ -12,12 +12,20 @@ interface DialogBreadcrumb {
     [key: string]: unknown;
 }
 
+interface DialogPayload {
+    seedData?: unknown;
+    initialAction?: string;
+    initialActionNonce?: number;
+    initialNewInstanceDefaults?: unknown;
+}
+
 interface ActiveDialog {
     kind: DialogKind;
     entityId: string;
     title: string;
     description?: string;
-    payload?: unknown;
+    payload?: DialogPayload | null;
+    body?: string;
     crumb?: DialogBreadcrumb;
     [key: string]: unknown;
 }
@@ -65,6 +73,14 @@ function dialogFromBreadcrumb(crumb: DialogBreadcrumb): ActiveDialog | null {
     };
 }
 
+function isDialogBreadcrumb(value: unknown): value is DialogBreadcrumb {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeBreadcrumbs(value: unknown): DialogBreadcrumb[] {
+    return Array.isArray(value) ? value.filter(isDialogBreadcrumb) : [];
+}
+
 function isSameEntity(
     left: DialogBreadcrumb | ActiveDialog | null,
     rightKind: string,
@@ -76,31 +92,29 @@ function isSameEntity(
     );
 }
 
-export const useDialogStore = create<DialogStoreState>((set: any) => ({
+export const useDialogStore = create<DialogStoreState>((set) => ({
     ...initialState,
-    openDialog(dialog: any) {
-        set((state: any) => ({
-            activeDialog: dialog,
-            breadcrumbs: dialog?.crumb
-                ? [...state.breadcrumbs, dialog.crumb]
-                : state.breadcrumbs
-        }));
-    },
-    setDialog(dialog: any) {
-        set({ activeDialog: dialog });
-    },
-    setDialogTrail(dialog: any, breadcrumbs: any) {
-        set({
-            activeDialog: dialog,
-            breadcrumbs: Array.isArray(breadcrumbs) ? breadcrumbs : []
+    openDialog(dialog) {
+        set((state) => {
+            return {
+                activeDialog: dialog,
+                breadcrumbs: dialog?.crumb
+                    ? [...state.breadcrumbs, dialog.crumb]
+                    : state.breadcrumbs
+            };
         });
     },
-    updateEntityDialogMetadata({
-        kind,
-        entityId,
-        title = '',
-        description = ''
-    }: any = {}) {
+    setDialog(dialog) {
+        set({ activeDialog: dialog });
+    },
+    setDialogTrail(dialog, breadcrumbs) {
+        set({
+            activeDialog: dialog,
+            breadcrumbs: normalizeBreadcrumbs(breadcrumbs)
+        });
+    },
+    updateEntityDialogMetadata(patch = {}) {
+        const { kind, entityId, title = '', description = '' } = patch;
         const normalizedKind = String(kind || '').trim();
         const normalizedEntityId = String(entityId ?? '').trim();
         const normalizedTitle = String(title || '').trim();
@@ -112,51 +126,56 @@ export const useDialogStore = create<DialogStoreState>((set: any) => ({
         ) {
             return;
         }
-        set((state: any) => ({
-            activeDialog: isSameEntity(
-                state.activeDialog,
-                normalizedKind,
-                normalizedEntityId
-            )
-                ? {
-                      ...state.activeDialog,
-                      ...(normalizedTitle ? { title: normalizedTitle } : {}),
-                      ...(normalizedDescription
-                          ? { description: normalizedDescription }
-                          : {})
-                  }
-                : state.activeDialog,
-            breadcrumbs: state.breadcrumbs.map((crumb: any) =>
-                isSameEntity(crumb, normalizedKind, normalizedEntityId)
+        set((state) => {
+            const activeDialog = state.activeDialog;
+            const nextActiveDialog =
+                activeDialog &&
+                isSameEntity(activeDialog, normalizedKind, normalizedEntityId)
                     ? {
-                          ...crumb,
+                          ...activeDialog,
                           ...(normalizedTitle
-                              ? {
-                                    label: normalizedTitle,
-                                    title: normalizedTitle
-                                }
+                              ? { title: normalizedTitle }
                               : {}),
                           ...(normalizedDescription
                               ? { description: normalizedDescription }
                               : {})
                       }
-                    : crumb
-            )
-        }));
+                    : activeDialog;
+            const nextState = {
+                activeDialog: nextActiveDialog,
+                breadcrumbs: state.breadcrumbs.map((crumb) =>
+                    isSameEntity(crumb, normalizedKind, normalizedEntityId)
+                        ? {
+                              ...crumb,
+                              ...(normalizedTitle
+                                  ? {
+                                        label: normalizedTitle,
+                                        title: normalizedTitle
+                                    }
+                                  : {}),
+                              ...(normalizedDescription
+                                  ? { description: normalizedDescription }
+                                  : {})
+                          }
+                        : crumb
+                )
+            };
+            return nextState;
+        });
     },
     closeDialog() {
         set({ activeDialog: null, breadcrumbs: [] });
     },
-    setBreadcrumbs(breadcrumbs: any) {
+    setBreadcrumbs(breadcrumbs) {
         set({ breadcrumbs });
     },
-    pushBreadcrumb(crumb: any) {
-        set((state: any) => ({
+    pushBreadcrumb(crumb) {
+        set((state) => ({
             breadcrumbs: [...state.breadcrumbs, crumb]
         }));
     },
-    popToBreadcrumb(index: any) {
-        set((state: any) => ({
+    popToBreadcrumb(index) {
+        set((state) => ({
             activeDialog:
                 dialogFromBreadcrumb(state.breadcrumbs[index]) ??
                 state.activeDialog,

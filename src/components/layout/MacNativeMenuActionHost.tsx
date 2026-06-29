@@ -62,22 +62,22 @@ export function MacNativeMenuActionHost() {
     const [supportOpen, setSupportOpen] = useState(false);
     const { openDirectAccessFromClipboard } = useDirectAccessAction();
     const hostPlatform = useRuntimeStore(
-        (state: any) => state.hostCapabilities.platform
+        (state) => state.hostCapabilities.platform
     );
     const setSystemHostOpen = useRuntimeStore(
-        (state: any) => state.setSystemHostOpen
+        (state) => state.setSystemHostOpen
     );
     const sessionReady = useSessionStore(
-        (state: any) => state.sessionPhase === 'ready'
+        (state) => state.sessionPhase === 'ready'
     );
     const notificationLayout = usePreferencesStore(
-        (state: any) => state.notificationLayout
+        (state) => state.notificationLayout
     );
     const openVrcNotificationCenter = useVrcNotificationStore(
-        (state: any) => state.openCenter
+        (state) => state.openCenter
     );
-    const navbarOpen = useShellStore((state: any) => state.sidebarOpen);
-    const zoomLevel = useShellStore((state: any) => state.zoomLevel);
+    const navbarOpen = useShellStore((state) => state.sidebarOpen);
+    const zoomLevel = useShellStore((state) => state.zoomLevel);
     const { toggleSidePanelOpen: toggleFriendsSidebar } =
         useRightSidePanelVisibility(location.pathname);
     const currentZoom = normalizeZoomLevel(zoomLevel);

@@ -133,7 +133,7 @@ export function LocationDisplay({
                             variant="ghost"
                             className="hover:text-primary ml-0.5 h-auto min-w-0 p-0 text-left [font-size:inherit] [line-height:inherit] font-normal text-inherit"
                             onClick={onOpenGroup}
-                            onKeyDown={(event: any) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
                         >
                             ({groupName})
                         </Button>

@@ -1,64 +1,24 @@
 import { create } from 'zustand';
 
+import type {
+    FriendLocationProjection,
+    FriendPatchEntry,
+    FriendProfileFields,
+    FriendRecord,
+    FriendRecordInput,
+    FriendRosterBucket,
+    FriendRosterById,
+    FriendRosterInputById,
+    FriendRosterOrdering,
+    FriendRosterSeedSnapshot,
+    FriendRosterSnapshotInput,
+    FriendRosterState,
+    FriendRosterStore
+} from '@/domain/friends/friendRosterTypes';
 import {
     computeTrustLevel,
     computeUserPlatform
 } from '@/shared/utils/userTransforms';
-
-type FriendRosterBucket = 'online' | 'active' | 'offline';
-type FriendRecord = Record<string, unknown> & {
-    id?: unknown;
-    userId?: unknown;
-    displayName?: unknown;
-    username?: unknown;
-    tags?: unknown;
-    developerType?: unknown;
-    platform?: unknown;
-    last_platform?: unknown;
-    lastPlatform?: unknown;
-    location?: unknown;
-    state?: unknown;
-    stateBucket?: unknown;
-    trustLevel?: unknown;
-    $trustLevel?: unknown;
-    friendNumber?: unknown;
-    $friendNumber?: unknown;
-};
-type FriendRosterOrdering = {
-    onlineIds: string[];
-    activeIds: string[];
-    offlineIds: string[];
-    orderedFriendIds: string[];
-};
-type FriendRosterSnapshot = FriendRosterOrdering & {
-    currentUserId: string | null;
-    friendsById: Record<string, FriendRecord>;
-    detail?: string;
-};
-type FriendRosterSeedSnapshot = {
-    currentUserId: string | null;
-    friendsById: Record<string, FriendRecord>;
-    detail?: string;
-};
-type FriendPatchEntry = {
-    userId?: unknown;
-    patch?: FriendRecord;
-    stateBucket?: unknown;
-    stateBucketAuthority?: unknown;
-};
-type FriendRosterStore = FriendRosterSnapshot & {
-    loadStatus: 'idle' | 'running' | 'ready' | 'error';
-    detail: string;
-    lastLoadedAt: string | null;
-    setRosterLoading(currentUserId: unknown, detail?: string): void;
-    setRosterSeedSnapshot(snapshot: FriendRosterSeedSnapshot): void;
-    setRosterSnapshot(snapshot: FriendRosterSnapshot): void;
-    setRosterError(detail: string): void;
-    applyFriendPatch(entry: FriendPatchEntry & { detail?: string }): void;
-    applyFriendPatches(patches?: FriendPatchEntry[], detail?: string): void;
-    removeFriend(userId: unknown, detail?: string): void;
-    resetRoster(): void;
-};
 
 function normalizeUserId(value: unknown): string {
     return typeof value === 'string'
@@ -78,13 +38,214 @@ function normalizeStateBucket(value: unknown): FriendRosterBucket | '' {
     return '';
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeOptionalString(value: unknown): string | null | undefined {
+    if (typeof value === 'string') {
+        return value;
+    }
+    return value === null ? null : undefined;
+}
+
+function normalizeOptionalBoolean(value: unknown): boolean | undefined {
+    return typeof value === 'boolean' ? value : undefined;
+}
+
+function normalizeOptionalTimestamp(
+    value: unknown
+): number | string | null | undefined {
+    if (typeof value === 'number' || typeof value === 'string') {
+        return value;
+    }
+    return value === null ? null : undefined;
+}
+
+function normalizeOptionalStringArray(value: unknown): string[] | undefined {
+    return Array.isArray(value) ? value.map(String) : undefined;
+}
+
+function normalizeOptionalArray(value: unknown): unknown[] | undefined {
+    return Array.isArray(value) ? [...value] : undefined;
+}
+
+function normalizeOptionalLocationProjection(
+    value: unknown
+): FriendLocationProjection | null | undefined {
+    if (value === null) {
+        return null;
+    }
+    return isRecord(value) ? { ...value } : undefined;
+}
+
+function normalizeFriendProfileFields(
+    source: FriendRecordInput
+): FriendProfileFields {
+    const profile: FriendProfileFields = {};
+
+    const location = normalizeOptionalLocationProjection(source.$location);
+    if (location !== undefined) {
+        profile.$location = location;
+    }
+    const locationAt = normalizeOptionalTimestamp(source.$location_at);
+    if (locationAt !== undefined) {
+        profile.$location_at = locationAt;
+    }
+    const previousLocation = normalizeOptionalString(source.$previousLocation);
+    if (previousLocation !== undefined) {
+        profile.$previousLocation = previousLocation;
+    }
+    const previousLocationAt = normalizeOptionalTimestamp(
+        source.$previousLocation_at
+    );
+    if (previousLocationAt !== undefined) {
+        profile.$previousLocation_at = previousLocationAt;
+    }
+    const travelingToLocation = normalizeOptionalLocationProjection(
+        source.$travelingToLocation
+    );
+    if (travelingToLocation !== undefined) {
+        profile.$travelingToLocation = travelingToLocation;
+    }
+    const travelingToTime = normalizeOptionalString(source.$travelingToTime);
+    if (travelingToTime !== undefined) {
+        profile.$travelingToTime = travelingToTime;
+    }
+    const ageVerificationStatus = normalizeOptionalString(
+        source.ageVerificationStatus
+    );
+    if (ageVerificationStatus !== undefined) {
+        profile.ageVerificationStatus = ageVerificationStatus;
+    }
+    const ageVerified = normalizeOptionalBoolean(source.ageVerified);
+    if (ageVerified !== undefined) {
+        profile.ageVerified = ageVerified;
+    }
+    const allowAvatarCopying = normalizeOptionalBoolean(
+        source.allowAvatarCopying
+    );
+    if (allowAvatarCopying !== undefined) {
+        profile.allowAvatarCopying = allowAvatarCopying;
+    }
+    const badges = normalizeOptionalArray(source.badges);
+    if (badges !== undefined) {
+        profile.badges = badges;
+    }
+    const bannerColor = normalizeOptionalString(source.bannerColor);
+    if (bannerColor !== undefined) {
+        profile.bannerColor = bannerColor;
+    }
+    const bannerType = normalizeOptionalString(source.bannerType);
+    if (bannerType !== undefined) {
+        profile.bannerType = bannerType;
+    }
+    const bannerUrl = normalizeOptionalString(source.bannerUrl);
+    if (bannerUrl !== undefined) {
+        profile.bannerUrl = bannerUrl;
+    }
+    const bio = normalizeOptionalString(source.bio);
+    if (bio !== undefined) {
+        profile.bio = bio;
+    }
+    const bioLinks = normalizeOptionalStringArray(source.bioLinks);
+    if (bioLinks !== undefined) {
+        profile.bioLinks = bioLinks;
+    }
+    const currentAvatarAuthorId = normalizeOptionalString(
+        source.currentAvatarAuthorId
+    );
+    if (currentAvatarAuthorId !== undefined) {
+        profile.currentAvatarAuthorId = currentAvatarAuthorId;
+    }
+    const currentAvatarImageUrl = normalizeOptionalString(
+        source.currentAvatarImageUrl
+    );
+    if (currentAvatarImageUrl !== undefined) {
+        profile.currentAvatarImageUrl = currentAvatarImageUrl;
+    }
+    const currentAvatarName = normalizeOptionalString(source.currentAvatarName);
+    if (currentAvatarName !== undefined) {
+        profile.currentAvatarName = currentAvatarName;
+    }
+    const currentAvatarTags = normalizeOptionalStringArray(
+        source.currentAvatarTags
+    );
+    if (currentAvatarTags !== undefined) {
+        profile.currentAvatarTags = currentAvatarTags;
+    }
+    const currentAvatarThumbnailImageUrl = normalizeOptionalString(
+        source.currentAvatarThumbnailImageUrl
+    );
+    if (currentAvatarThumbnailImageUrl !== undefined) {
+        profile.currentAvatarThumbnailImageUrl = currentAvatarThumbnailImageUrl;
+    }
+    const discordId = normalizeOptionalString(source.discordId);
+    if (discordId !== undefined) {
+        profile.discordId = discordId;
+    }
+    const friendKey = normalizeOptionalString(source.friendKey);
+    if (friendKey !== undefined) {
+        profile.friendKey = friendKey;
+    }
+    const iconFrame = normalizeOptionalString(source.iconFrame);
+    if (iconFrame !== undefined) {
+        profile.iconFrame = iconFrame;
+    }
+    const iconUrl = normalizeOptionalString(source.iconUrl);
+    if (iconUrl !== undefined) {
+        profile.iconUrl = iconUrl;
+    }
+    const profilePicOverride = normalizeOptionalString(
+        source.profilePicOverride
+    );
+    if (profilePicOverride !== undefined) {
+        profile.profilePicOverride = profilePicOverride;
+    }
+    const profilePicOverrideThumbnail = normalizeOptionalString(
+        source.profilePicOverrideThumbnail
+    );
+    if (profilePicOverrideThumbnail !== undefined) {
+        profile.profilePicOverrideThumbnail = profilePicOverrideThumbnail;
+    }
+    const status = normalizeOptionalString(source.status);
+    if (status !== undefined) {
+        profile.status = status;
+    }
+    const statusDescription = normalizeOptionalString(source.statusDescription);
+    if (statusDescription !== undefined) {
+        profile.statusDescription = statusDescription;
+    }
+    const userIcon = normalizeOptionalString(source.userIcon);
+    if (userIcon !== undefined) {
+        profile.userIcon = userIcon;
+    }
+
+    return profile;
+}
+
+function normalizeFriendRecordMap(
+    value: FriendRosterInputById | null | undefined
+): FriendRosterInputById {
+    const friendsById: FriendRosterInputById = {};
+    if (!isRecord(value)) {
+        return friendsById;
+    }
+    for (const [userId, friend] of Object.entries(value)) {
+        if (isRecord(friend)) {
+            friendsById[userId] = { ...friend };
+        }
+    }
+    return friendsById;
+}
+
 function resolveFriendStateBucket({
     patch,
     stateBucket,
     stateBucketAuthority,
     existingEntry
 }: {
-    patch?: FriendRecord | null;
+    patch?: FriendRecordInput | null;
     stateBucket?: unknown;
     stateBucketAuthority?: unknown;
     existingEntry?: FriendRecord | null;
@@ -110,14 +271,18 @@ function resolveFriendStateBucket({
     );
 }
 
-function getDisplayName(user: FriendRecord | null | undefined): unknown {
-    return user?.displayName || user?.username || user?.id || '';
+function getDisplayName(user: FriendRecordInput | null | undefined): string {
+    return (
+        normalizeUserId(user?.displayName) ||
+        normalizeUserId(user?.username) ||
+        normalizeUserId(user?.id)
+    );
 }
 
 function createFallbackFriendUser(
     userId: string,
     existingRow?: FriendRecord | null
-): FriendRecord {
+): FriendRecordInput {
     return {
         id: userId,
         displayName: existingRow?.displayName || userId,
@@ -131,7 +296,9 @@ function createFallbackFriendUser(
     };
 }
 
-function normalizePlatformAliases(friend: FriendRecord): FriendRecord {
+function normalizePlatformAliases(
+    friend: FriendRecordInput
+): FriendRecordInput {
     const normalizedFriend = { ...friend };
     const lastPlatform = normalizeUserId(normalizedFriend.lastPlatform);
     if (lastPlatform) {
@@ -142,7 +309,7 @@ function normalizePlatformAliases(friend: FriendRecord): FriendRecord {
 }
 
 function normalizeFriendEntry(
-    friend: FriendRecord | null | undefined,
+    friend: FriendRecordInput | null | undefined,
     stateBucket: FriendRosterBucket,
     existingRow?: FriendRecord | null
 ): FriendRecord {
@@ -152,7 +319,7 @@ function normalizeFriendEntry(
     const source = normalizePlatformAliases(
         friend ?? createFallbackFriendUser(fallbackUserId, existingRow)
     );
-    const tags = Array.isArray(source.tags) ? source.tags : [];
+    const tags = Array.isArray(source.tags) ? source.tags.map(String) : [];
     const trust = computeTrustLevel(tags, String(source.developerType || ''));
     const explicitTrustLevel = String(
         source.$trustLevel || source.trustLevel || ''
@@ -178,12 +345,16 @@ function normalizeFriendEntry(
         0;
     const friendNumber = Number.parseInt(String(friendNumberSource), 10) || 0;
     const displayName =
-        getDisplayName(source) || existingRow?.displayName || source.id;
+        getDisplayName(source) ||
+        normalizeUserId(existingRow?.displayName) ||
+        normalizeUserId(source.id);
 
     return {
         ...source,
+        ...normalizeFriendProfileFields(source),
         id: normalizeUserId(source.id),
         displayName,
+        tags,
         state: stateBucket,
         stateBucket,
         friendNumber,
@@ -241,21 +412,20 @@ function compareFriendEntries(
 
 function buildBucketIds(
     friendIds: string[],
-    friendsById: Record<string, FriendRecord>,
+    friendsById: FriendRosterById,
     stateBucket: FriendRosterBucket
 ): string[] {
     return friendIds
         .filter(
-            (friendId: any) =>
-                friendsById[friendId]?.stateBucket === stateBucket
+            (friendId) => friendsById[friendId]?.stateBucket === stateBucket
         )
-        .sort((leftId: any, rightId: any) =>
+        .sort((leftId, rightId) =>
             compareFriendEntries(friendsById[leftId], friendsById[rightId])
         );
 }
 
 function buildRosterOrdering(
-    friendsById: Record<string, FriendRecord>
+    friendsById: FriendRosterById
 ): FriendRosterOrdering {
     const friendIds = Object.keys(friendsById);
     const onlineIds = buildBucketIds(friendIds, friendsById, 'online');
@@ -271,10 +441,12 @@ function buildRosterOrdering(
 }
 
 function normalizeRosterSnapshotFriends(
-    friendsById: Record<string, FriendRecord> | null | undefined
-): Record<string, FriendRecord> {
-    const normalizedFriendsById: Record<string, FriendRecord> = {};
-    for (const [rawUserId, friend] of Object.entries(friendsById || {})) {
+    friendsById: FriendRosterInputById | null | undefined
+): FriendRosterById {
+    const normalizedFriendsById: FriendRosterById = {};
+    for (const [rawUserId, friend] of Object.entries(
+        normalizeFriendRecordMap(friendsById)
+    )) {
         const normalizedUserId =
             normalizeUserId(friend?.id || friend?.userId) ||
             normalizeUserId(rawUserId);
@@ -282,16 +454,14 @@ function normalizeRosterSnapshotFriends(
             continue;
         }
         const stateBucket = resolveFriendStateBucket({
-            patch: friend,
-            existingEntry: friend
+            patch: friend
         });
         normalizedFriendsById[normalizedUserId] = normalizeFriendEntry(
             {
                 ...friend,
                 id: normalizedUserId
             },
-            stateBucket,
-            friend
+            stateBucket
         );
     }
     return normalizedFriendsById;
@@ -320,18 +490,7 @@ function friendEntryNeedsOrderingUpdate(
     return compareFriendEntries(existingEntry, nextEntry) !== 0;
 }
 
-const initialState: Pick<
-    FriendRosterStore,
-    | 'currentUserId'
-    | 'loadStatus'
-    | 'detail'
-    | 'lastLoadedAt'
-    | 'friendsById'
-    | 'orderedFriendIds'
-    | 'onlineIds'
-    | 'activeIds'
-    | 'offlineIds'
-> = {
+const initialState: FriendRosterState = {
     currentUserId: null,
     loadStatus: 'idle',
     detail: '',
@@ -343,10 +502,10 @@ const initialState: Pick<
     offlineIds: []
 };
 
-export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
+export const useFriendRosterStore = create<FriendRosterStore>((set) => ({
     ...initialState,
-    setRosterLoading(currentUserId: any, detail: any = '') {
-        set((state: any) => {
+    setRosterLoading(currentUserId: unknown, detail = '') {
+        set((state) => {
             const normalizedCurrentUserId =
                 normalizeUserId(currentUserId) || null;
             const isSameUser =
@@ -386,9 +545,9 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
         activeIds,
         offlineIds,
         detail = ''
-    }: any) {
-        const sourceFriendsById =
-            friendsById && typeof friendsById === 'object' ? friendsById : {};
+    }: FriendRosterSnapshotInput) {
+        const normalizedCurrentUserId = normalizeUserId(currentUserId) || null;
+        const sourceFriendsById = normalizeFriendRecordMap(friendsById);
         // Guard against an empty `[]` ordering blanking a populated roster.
         const hasPrecomputedOrdering =
             Array.isArray(orderedFriendIds) &&
@@ -398,24 +557,27 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
             (Object.keys(sourceFriendsById).length === 0 ||
                 orderedFriendIds.length > 0);
         if (hasPrecomputedOrdering) {
-            set({
-                currentUserId,
+            const normalizedFriendsById =
+                normalizeRosterSnapshotFriends(sourceFriendsById);
+            const nextState: FriendRosterState = {
+                currentUserId: normalizedCurrentUserId,
                 loadStatus: 'ready',
                 detail,
                 lastLoadedAt: new Date().toISOString(),
-                friendsById: sourceFriendsById,
+                friendsById: normalizedFriendsById,
                 orderedFriendIds,
                 onlineIds,
                 activeIds,
                 offlineIds
-            });
+            };
+            set(nextState);
             return;
         }
         const normalizedFriendsById =
             normalizeRosterSnapshotFriends(sourceFriendsById);
         const ordering = buildRosterOrdering(normalizedFriendsById);
-        set({
-            currentUserId,
+        const nextState: FriendRosterState = {
+            currentUserId: normalizedCurrentUserId,
             loadStatus: 'ready',
             detail,
             lastLoadedAt: new Date().toISOString(),
@@ -424,13 +586,18 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
             onlineIds: ordering.onlineIds,
             activeIds: ordering.activeIds,
             offlineIds: ordering.offlineIds
-        });
+        };
+        set(nextState);
     },
-    setRosterSeedSnapshot({ currentUserId, friendsById, detail = '' }: any) {
+    setRosterSeedSnapshot({
+        currentUserId,
+        friendsById,
+        detail = ''
+    }: FriendRosterSeedSnapshot) {
         const normalizedFriendsById =
             normalizeRosterSnapshotFriends(friendsById);
         const ordering = buildRosterOrdering(normalizedFriendsById);
-        set({
+        const nextState: FriendRosterState = {
             currentUserId: normalizeUserId(currentUserId) || null,
             loadStatus: 'running',
             detail,
@@ -440,10 +607,11 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
             onlineIds: ordering.onlineIds,
             activeIds: ordering.activeIds,
             offlineIds: ordering.offlineIds
-        });
+        };
+        set(nextState);
     },
-    setRosterError(detail: any) {
-        set((state: any) => ({
+    setRosterError(detail: string) {
+        set((state) => ({
             ...state,
             loadStatus: 'error',
             detail,
@@ -456,8 +624,8 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
         stateBucket,
         stateBucketAuthority,
         detail = ''
-    }: any) {
-        set((state: any) => {
+    }: FriendPatchEntry & { detail?: string }) {
+        set((state) => {
             const normalizedUserId = normalizeUserId(userId || patch?.id);
             if (!normalizedUserId) {
                 return state;
@@ -470,10 +638,10 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                 stateBucketAuthority,
                 existingEntry
             });
-            const mergedUser: any = {
+            const mergedUser: FriendRecordInput = {
                 ...(existingEntry ??
                     createFallbackFriendUser(normalizedUserId, existingEntry)),
-                ...(patch && typeof patch === 'object' ? patch : {}),
+                ...(isRecord(patch) ? patch : {}),
                 id: normalizedUserId
             };
             const normalizedEntry = normalizeFriendEntry(
@@ -486,7 +654,7 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                     friendNumber: 0
                 }
             );
-            const friendsById: any = {
+            const friendsById: FriendRosterById = {
                 ...state.friendsById,
                 [normalizedUserId]: normalizedEntry
             };
@@ -494,7 +662,7 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                 existingEntry,
                 normalizedEntry
             );
-            return {
+            const nextState = {
                 ...state,
                 ...(orderingDirty ? buildRosterOrdering(friendsById) : {}),
                 friendsById,
@@ -503,23 +671,23 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                 detail: detail || state.detail,
                 lastLoadedAt: new Date().toISOString()
             };
+            return nextState;
         });
     },
-    applyFriendPatches(patches: any[] = [], detail: any = '') {
-        set((state: any) => {
+    applyFriendPatches(patches: FriendPatchEntry[] = [], detail = '') {
+        set((state) => {
             if (!Array.isArray(patches) || patches.length === 0) {
                 return state;
             }
 
             let changed = false;
             let orderingDirty = false;
-            const friendsById: any = { ...state.friendsById };
+            const friendsById: FriendRosterById = { ...state.friendsById };
 
             for (const entry of patches) {
-                const patch =
-                    entry?.patch && typeof entry.patch === 'object'
-                        ? entry.patch
-                        : {};
+                const patch: FriendRecordInput = isRecord(entry?.patch)
+                    ? entry.patch
+                    : {};
                 const normalizedUserId = normalizeUserId(
                     entry?.userId || patch?.id
                 );
@@ -534,7 +702,7 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                     stateBucketAuthority: entry?.stateBucketAuthority,
                     existingEntry
                 });
-                const mergedUser: any = {
+                const mergedUser: FriendRecordInput = {
                     ...(existingEntry ??
                         createFallbackFriendUser(
                             normalizedUserId,
@@ -569,7 +737,7 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                 return state;
             }
 
-            return {
+            const nextState = {
                 ...state,
                 ...(orderingDirty ? buildRosterOrdering(friendsById) : {}),
                 friendsById,
@@ -578,25 +746,27 @@ export const useFriendRosterStore = create<FriendRosterStore>((set: any) => ({
                 detail: detail || state.detail,
                 lastLoadedAt: new Date().toISOString()
             };
+            return nextState;
         });
     },
-    removeFriend(userId: any, detail: any = '') {
-        set((state: any) => {
+    removeFriend(userId: unknown, detail = '') {
+        set((state) => {
             const normalizedUserId = normalizeUserId(userId);
             if (!normalizedUserId || !state.friendsById[normalizedUserId]) {
                 return state;
             }
 
-            const friendsById: any = { ...state.friendsById };
+            const friendsById: FriendRosterById = { ...state.friendsById };
             delete friendsById[normalizedUserId];
 
-            return {
+            const nextState = {
                 ...state,
                 ...buildRosterOrdering(friendsById),
                 friendsById,
                 detail: detail || state.detail,
                 lastLoadedAt: new Date().toISOString()
             };
+            return nextState;
         });
     },
     resetRoster() {

@@ -14,6 +14,7 @@ import {
     normalizeTablePageSize,
     normalizeTablePageSizes,
     normalizeTranslationApiType,
+    normalizeWeekStartsOn,
     normalizeWristOverlayButton,
     normalizeWristOverlayHand,
     normalizeWristOverlaySize,
@@ -355,9 +356,7 @@ export async function loadPreferenceSnapshot() {
         isAgeGatedInstancesVisible: Boolean(isAgeGatedInstancesVisible),
         hideNicknames: Boolean(hideNicknames),
         displayVRCPlusIconsAsAvatar: Boolean(displayVRCPlusIconsAsAvatar),
-        weekStartsOn: [0, 1, 6].includes(Number(weekStartsOn))
-            ? Number(weekStartsOn)
-            : 1,
+        weekStartsOn: normalizeWeekStartsOn(weekStartsOn),
         hideUserNotes: Boolean(hideUserNotes),
         hideUserMemos: Boolean(hideUserMemos),
         hideUnfriends: Boolean(hideUnfriends),

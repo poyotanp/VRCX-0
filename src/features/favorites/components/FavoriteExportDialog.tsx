@@ -124,7 +124,7 @@ function FavoriteExportDialog({
                             <Checkbox
                                 id={`favorite-export-field-${kind}-${option.value}`}
                                 checked={selectedFields.includes(option.value)}
-                                onCheckedChange={(checked: any) =>
+                                onCheckedChange={(checked) =>
                                     toggleField(option.value, Boolean(checked))
                                 }
                             />
@@ -206,7 +206,7 @@ function FavoriteExportDialog({
                     rows={16}
                     value={content}
                     className="min-h-80 resize-none font-mono text-xs"
-                    onClick={(event: any) => event.currentTarget.select()}
+                    onClick={(event) => event.currentTarget.select()}
                 />
                 <div className="flex justify-end gap-2">
                     <Button

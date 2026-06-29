@@ -19,44 +19,48 @@ import { UpdateAvailableToastHost } from './UpdateAvailableToastHost';
 
 export function SystemDialogsHost() {
     const updaterOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.updaterOpen
+        (state) => state.systemHosts.updaterOpen
     );
     const changelogOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.changelogOpen
+        (state) => state.systemHosts.changelogOpen
     );
     const keyboardShortcutsOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.keyboardShortcutsOpen
+        (state) => state.systemHosts.keyboardShortcutsOpen
     );
     const changelogTargetVersion = useRuntimeStore(
-        (state: any) => state.changelogTargetVersion
+        (state) => state.changelogTargetVersion
     );
     const registryBackupOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.registryBackupOpen
+        (state) => state.systemHosts.registryBackupOpen
     );
     const launchOptionsOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.launchOptionsOpen
+        (state) => state.systemHosts.launchOptionsOpen
     );
     const vrchatConfigOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.vrchatConfigOpen
+        (state) => state.systemHosts.vrchatConfigOpen
     );
     const databaseUpgradeOpen = useRuntimeStore(
-        (state: any) => state.databaseUpgrade.open
+        (state) => state.databaseUpgrade.open
     );
     const systemHostDatabaseUpgradeOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.databaseUpgradeOpen
+        (state) => state.systemHosts.databaseUpgradeOpen
     );
     const setSystemHostOpen = useRuntimeStore(
-        (state: any) => state.setSystemHostOpen
+        (state) => state.setSystemHostOpen
     );
     const setChangelogTargetVersion = useRuntimeStore(
-        (state: any) => state.setChangelogTargetVersion
+        (state) => state.setChangelogTargetVersion
     );
-    const hostCapabilities = useRuntimeStore(
-        (state: any) => state.hostCapabilities
-    );
+    const hostCapabilities = useRuntimeStore((state) => state.hostCapabilities);
 
     useEffect(() => {
-        const guards = [
+        type CapabilityGuard = [
+            hostKey: string,
+            open: boolean,
+            capability: keyof typeof hostCapabilities,
+            mode?: 'available' | 'supported'
+        ];
+        const guards: CapabilityGuard[] = [
             ['registryBackupOpen', registryBackupOpen, 'registryPrefs'],
             ['launchOptionsOpen', launchOptionsOpen, 'gameLaunch', 'supported'],
             ['vrchatConfigOpen', vrchatConfigOpen, 'vrchatPathDiscovery']
@@ -85,14 +89,14 @@ export function SystemDialogsHost() {
             <UpdateAvailableToastHost />
             <UpdaterDialog
                 open={Boolean(updaterOpen)}
-                onOpenChange={(open: any) =>
+                onOpenChange={(open: boolean) =>
                     setSystemHostOpen('updaterOpen', open)
                 }
             />
             <ChangelogDialog
                 open={Boolean(changelogOpen)}
                 targetVersion={changelogTargetVersion}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open: boolean) => {
                     setSystemHostOpen('changelogOpen', open);
                     if (!open) {
                         setChangelogTargetVersion('');
@@ -101,19 +105,19 @@ export function SystemDialogsHost() {
             />
             <RegistryBackupDialog
                 open={Boolean(registryBackupOpen)}
-                onOpenChange={(open: any) =>
+                onOpenChange={(open: boolean) =>
                     setSystemHostOpen('registryBackupOpen', open)
                 }
             />
             <LaunchOptionsDialog
                 open={Boolean(launchOptionsOpen)}
-                onOpenChange={(open: any) =>
+                onOpenChange={(open: boolean) =>
                     setSystemHostOpen('launchOptionsOpen', open)
                 }
             />
             <VRChatConfigDialog
                 open={Boolean(vrchatConfigOpen)}
-                onOpenChange={(open: any) =>
+                onOpenChange={(open: boolean) =>
                     setSystemHostOpen('vrchatConfigOpen', open)
                 }
             />
@@ -124,7 +128,7 @@ export function SystemDialogsHost() {
             />
             <KeyboardShortcutsDialog
                 open={Boolean(keyboardShortcutsOpen)}
-                onOpenChange={(open: any) =>
+                onOpenChange={(open: boolean) =>
                     setSystemHostOpen('keyboardShortcutsOpen', open)
                 }
             />

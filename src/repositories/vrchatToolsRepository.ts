@@ -20,10 +20,12 @@ type PageParams = {
     offset: number;
     n: number;
 };
-type PageResponse = {
-    results?: unknown[];
-    json?: unknown[];
+type PageResponse<TRow = unknown> = {
+    results?: TRow[];
+    json?: TRow[];
     hasNext?: boolean;
+    nextCursor?: string;
+    totalCount?: number;
 };
 type CalendarListParams = QueryParams & {
     n?: number;
@@ -38,24 +40,62 @@ type GroupCalendarIdentity = {
 type GroupCalendarEventIdentity = GroupCalendarIdentity & {
     eventId: string;
 };
-type GroupCalendarEventRecord = Record<string, unknown> & {
+export type GroupCalendarGroupRecord = Record<string, unknown> & {
+    id?: string;
+    name?: string;
+};
+export type GroupCalendarEventRecord = Record<string, unknown> & {
+    accessType?: string;
+    category?: string;
+    closeAfterEndMinutes?: number;
+    closeInstanceAfterEndMinutes?: number;
+    createdAt?: string;
+    deletedAt?: string | null;
+    description?: string;
+    durationInMs?: number;
+    endsAt?: string;
+    eventId?: string;
+    featured?: boolean;
+    group?: GroupCalendarGroupRecord;
+    groupId?: string;
+    guestEarlyJoinMinutes?: number;
+    hostEarlyJoinMinutes?: number;
+    id?: string;
+    imageId?: string;
+    imageUrl?: string;
+    interestedUserCount?: number;
+    isDraft?: boolean;
+    languages?: string[];
+    occurrenceKind?: string;
+    ownerId?: string;
+    platforms?: string[];
+    startsAt?: string;
+    thumbnailImageUrl?: string;
+    title?: string;
     userInterest?: Record<string, unknown>;
 };
-type InviteMessagesRecord = Record<
-    string,
-    { message?: string; [key: string]: unknown } | undefined
->;
+type GroupCalendarListResponse = PageResponse<GroupCalendarEventRecord>;
+export type InviteMessageRecord = Record<string, unknown> & {
+    canBeUpdated?: boolean;
+    id?: string;
+    message?: string;
+    messageType?: string;
+    remainingCooldownMinutes?: number;
+    slot?: number;
+    updatedAt?: string;
+};
+type InviteMessagesRecord = InviteMessageRecord[];
 type VrchatApiResult = {
     status: number;
     data: unknown;
     raw: unknown;
 };
 
-async function processAllPages(
-    fetchPage: (params: PageParams) => Promise<PageResponse | unknown[]>,
+async function processAllPages<TRow = unknown>(
+    fetchPage: (params: PageParams) => Promise<PageResponse<TRow> | TRow[]>,
     { pageSize = PAGE_SIZE }: { pageSize?: number } = {}
-) {
-    const results: unknown[] = [];
+): Promise<TRow[]> {
+    const results: TRow[] = [];
     for (let offset = 0; ; offset += pageSize) {
         const page = await fetchPage({ offset, n: pageSize });
         const rows = Array.isArray(page)
@@ -120,7 +160,10 @@ async function getGroupCalendars(
                 endpoint,
                 params
             });
-            return unwrapVrchatToolsResponse(response, 'calendar').json;
+            return unwrapVrchatToolsResponse<GroupCalendarListResponse>(
+                response,
+                'calendar'
+            ).json;
         }
     });
 }
@@ -138,7 +181,7 @@ async function getGroupCalendar(
                 endpoint,
                 groupId
             });
-            return unwrapVrchatToolsResponse(
+            return unwrapVrchatToolsResponse<GroupCalendarListResponse>(
                 response,
                 `calendar/${encodeURIComponent(groupId)}`
             ).json;
@@ -161,8 +204,10 @@ async function getFollowingGroupCalendars(
                     params
                 }
             );
-            return unwrapVrchatToolsResponse(response, 'calendar/following')
-                .json;
+            return unwrapVrchatToolsResponse<GroupCalendarListResponse>(
+                response,
+                'calendar/following'
+            ).json;
         }
     });
 }
@@ -180,8 +225,10 @@ async function getFeaturedGroupCalendars(
                 endpoint,
                 params
             });
-            return unwrapVrchatToolsResponse(response, 'calendar/featured')
-                .json;
+            return unwrapVrchatToolsResponse<GroupCalendarListResponse>(
+                response,
+                'calendar/featured'
+            ).json;
         }
     });
 }
@@ -190,7 +237,7 @@ async function getAllGroupCalendars(
     params: CalendarListParams = {},
     options: RepositoryOptions = {}
 ) {
-    return processAllPages(
+    return processAllPages<GroupCalendarEventRecord>(
         (pageParams: PageParams) =>
             getGroupCalendars({ ...params, ...pageParams }, options),
         { pageSize: params.n ?? PAGE_SIZE }
@@ -201,7 +248,7 @@ async function getAllFollowingGroupCalendars(
     params: CalendarListParams = {},
     options: RepositoryOptions = {}
 ) {
-    return processAllPages(
+    return processAllPages<GroupCalendarEventRecord>(
         (pageParams: PageParams) =>
             getFollowingGroupCalendars({ ...params, ...pageParams }, options),
         { pageSize: params.n ?? PAGE_SIZE }
@@ -212,7 +259,7 @@ async function getAllFeaturedGroupCalendars(
     params: CalendarListParams = {},
     options: RepositoryOptions = {}
 ) {
-    return processAllPages(
+    return processAllPages<GroupCalendarEventRecord>(
         (pageParams: PageParams) =>
             getFeaturedGroupCalendars({ ...params, ...pageParams }, options),
         { pageSize: params.n ?? PAGE_SIZE }
@@ -254,7 +301,7 @@ async function getGroupCalendarIcs(
                 groupId,
                 eventId
             });
-            return unwrapVrchatToolsResponse(
+            return unwrapVrchatToolsResponse<string>(
                 response,
                 `calendar/${encodeURIComponent(groupId)}/${encodeURIComponent(eventId)}.ics`
             ).json;

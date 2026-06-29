@@ -1,4 +1,18 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type HttpApiExecuteResponse,
+    type NotificationListItemOutput,
+    type NotificationListQueryInput,
+    type VrchatBoopInput,
+    type VrchatInviteResponseInput,
+    type VrchatInviteResponsePhotoInput,
+    type VrchatNotificationHideInput,
+    type VrchatNotificationIdInput,
+    type VrchatNotificationMarkSeenInput,
+    type VrchatNotificationPhotoSendInput,
+    type VrchatNotificationRespondInput,
+    type VrchatNotificationSendInput
+} from '@/platform/tauri/bindings';
 
 import configRepository from './configRepository';
 import {
@@ -9,7 +23,57 @@ import {
     unwrapErrorMessage
 } from './vrchatRequest';
 
-type NotificationRecord = Record<string, unknown>;
+export type NotificationDetails = Record<string, unknown> & {
+    displayLocation?: string;
+    groupId?: string;
+    groupName?: string;
+    imageUrl?: string;
+    inviteMessage?: string;
+    requestMessage?: string;
+    responseMessage?: string;
+    senderDisplayName?: string;
+    worldId?: string;
+    worldName?: string;
+};
+export type NotificationData = Record<string, unknown> & {
+    announcementTitle?: string;
+    groupId?: string;
+    groupName?: string;
+    senderDisplayName?: string;
+};
+export type NotificationResponse = Record<string, unknown> & {
+    data?: unknown;
+    icon?: string;
+    text?: string;
+    textKey?: string;
+    type?: string;
+};
+export type NotificationListRow = Omit<
+    NotificationListItemOutput,
+    'details' | 'data' | 'responses'
+> & {
+    details: NotificationDetails;
+    data: NotificationData;
+    responses: NotificationResponse[];
+};
+export type NotificationRow = Omit<
+    Partial<NotificationListRow>,
+    'createdAt' | 'created_at' | 'updatedAt' | 'expiresAt'
+> &
+    Record<string, unknown> & {
+        createdAt?: string | number | null;
+        created_at?: string | number | null;
+        updatedAt?: string | number | null;
+        expiresAt?: string | null;
+        displayLocation?: string;
+        groupName?: string;
+        location?: string;
+        senderDisplayName?: string;
+        senderUserIcon?: string;
+        worldName?: string;
+    };
+
+type NotificationRecord = NotificationRow;
 
 interface NotificationUserOptions {
     userId?: unknown;
@@ -73,8 +137,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object');
 }
 
+function normalizeNotificationObject(value: unknown): Record<string, unknown> {
+    return isRecord(value) ? value : {};
+}
+
+function normalizeNotificationResponses(
+    value: unknown
+): NotificationResponse[] {
+    return Array.isArray(value)
+        ? value.filter(isRecord).map((response) => ({ ...response }))
+        : [];
+}
+
+function normalizeNotificationListRow(
+    row: NotificationListItemOutput
+): NotificationListRow {
+    return {
+        ...row,
+        details: normalizeNotificationObject(row.details),
+        data: normalizeNotificationObject(row.data),
+        responses: normalizeNotificationResponses(row.responses)
+    };
+}
+
 function unwrapVrchatNotificationResponse<TJson = NotificationRecord>(
-    response: { status: number; data: unknown; raw: unknown },
+    response: HttpApiExecuteResponse,
     path: string
 ) {
     const json = parseJsonResponse(response.data);
@@ -105,7 +192,7 @@ async function queryNotifications({
 }: NotificationUserOptions & {
     search?: string;
     filters?: unknown[];
-} = {}): Promise<NotificationRecord[]> {
+} = {}): Promise<NotificationListRow[]> {
     const normalizedUserId = normalizeUserId(userId);
     if (!normalizedUserId) {
         return [];
@@ -124,15 +211,16 @@ async function queryNotifications({
         : normalizeNotificationLimit(maxTableSize, 500);
     const perTableLimit = isSearchOrFiltered ? limit : limit * 2;
     const isDefaultList = !normalizedSearch && normalizedFilters.length === 0;
-    const rows = await commands.appNotificationListQuery({
+    const query = {
         userId: normalizedUserId,
         search: normalizedSearch,
         filters: normalizedFilters,
         perTableLimit,
         limit,
         includeUnseen: isDefaultList
-    });
-    return Array.isArray(rows) ? rows.map((row) => ({ ...row })) : [];
+    } satisfies NotificationListQueryInput;
+    const rows = await commands.appNotificationListQuery(query);
+    return rows.map(normalizeNotificationListRow);
 }
 
 async function addNotificationToDatabase({
@@ -219,14 +307,15 @@ async function updateNotificationExpired({
     notification
 }: NotificationUserOptions & { notification?: NotificationRecord } = {}) {
     const normalizedUserId = normalizeUserId(userId);
-    if (!normalizedUserId || !notification?.id) {
+    const normalizedId = normalizeUserId(notification?.id);
+    if (!normalizedUserId || !normalizedId) {
         return;
     }
 
     await commands.appNotificationUpdateExpired(
         normalizedUserId,
-        notification.id as string,
-        Boolean(notification.$isExpired)
+        normalizedId,
+        Boolean(notification?.$isExpired)
     );
 }
 
@@ -272,12 +361,13 @@ async function markSeen({
     }
 
     const numericVersion = Number(version) || 0;
-    const response = await commands.appVrchatNotificationMarkSeen({
+    const input = {
         userId: normalizedUserId,
         id: normalizedId,
         version: numericVersion,
         endpoint
-    });
+    } satisfies VrchatNotificationMarkSeenInput;
+    const response = await commands.appVrchatNotificationMarkSeen(input);
     const path =
         numericVersion >= 2
             ? `notifications/${encodeURIComponent(normalizedId)}/see`
@@ -315,10 +405,12 @@ async function acceptFriendRequest({
         return null;
     }
 
-    const response = await commands.appVrchatNotificationAcceptFriendRequest({
+    const input = {
         id: normalizedId,
         endpoint
-    });
+    } satisfies VrchatNotificationIdInput;
+    const response =
+        await commands.appVrchatNotificationAcceptFriendRequest(input);
     return unwrapVrchatNotificationResponse(
         response,
         `auth/user/notifications/${encodeURIComponent(normalizedId)}/accept`
@@ -346,13 +438,14 @@ async function hideRemoteNotification({
         return null;
     }
 
-    const response = await commands.appVrchatNotificationHideRemote({
+    const input = {
         id: normalizedId,
         version: Number(version) || 0,
         type,
         senderUserId: normalizedSenderUserId,
         endpoint
-    });
+    } satisfies VrchatNotificationHideInput;
+    const response = await commands.appVrchatNotificationHideRemote(input);
     const path =
         type === 'ignoredFriendRequest' && normalizedSenderUserId
             ? `user/${encodeURIComponent(normalizedSenderUserId)}/friendRequest`
@@ -378,12 +471,13 @@ async function sendNotificationResponse({
         return null;
     }
 
-    const response = await commands.appVrchatNotificationRespond({
+    const input = {
         id: normalizedId,
         responseType: normalizedResponseType,
         responseData: responseData ?? '',
         endpoint
-    });
+    } satisfies VrchatNotificationRespondInput;
+    const response = await commands.appVrchatNotificationRespond(input);
     return unwrapVrchatNotificationResponse(
         response,
         `notifications/${encodeURIComponent(normalizedId)}/respond`
@@ -402,11 +496,12 @@ async function sendInviteResponse({
         return null;
     }
 
-    const response = await commands.appVrchatInviteResponseSend({
+    const input = {
         id: normalizedId,
         responseSlot: normalizedSlot,
         endpoint
-    });
+    } satisfies VrchatInviteResponseInput;
+    const response = await commands.appVrchatInviteResponseSend(input);
     return unwrapVrchatNotificationResponse(
         response,
         `invite/${encodeURIComponent(normalizedId)}/response`
@@ -435,12 +530,13 @@ async function sendInviteResponsePhoto({
     }
 
     const path = `invite/${encodeURIComponent(normalizedId)}/response/photo`;
-    const response = await commands.appVrchatInviteResponsePhotoSend({
+    const input = {
         id: normalizedId,
         responseSlot: normalizedSlot,
         imageData: normalizedImageData,
         endpoint
-    });
+    } satisfies VrchatInviteResponsePhotoInput;
+    const response = await commands.appVrchatInviteResponsePhotoSend(input);
     return unwrapVrchatNotificationResponse(response, path);
 }
 
@@ -457,11 +553,12 @@ async function sendInvite({
         return null;
     }
 
-    const response = await commands.appVrchatInviteSend({
+    const input = {
         receiverUserId: normalizedReceiverUserId,
         params,
         endpoint
-    });
+    } satisfies VrchatNotificationSendInput;
+    const response = await commands.appVrchatInviteSend(input);
     return unwrapVrchatNotificationResponse(
         response,
         `invite/${encodeURIComponent(normalizedReceiverUserId)}`
@@ -486,12 +583,13 @@ async function sendInvitePhoto({
         return null;
     }
 
-    const response = await commands.appVrchatInvitePhotoSend({
+    const input = {
         receiverUserId: normalizedReceiverUserId,
         params,
         imageData: normalizedImageData,
         endpoint
-    });
+    } satisfies VrchatNotificationPhotoSendInput;
+    const response = await commands.appVrchatInvitePhotoSend(input);
     return unwrapVrchatNotificationResponse(
         response,
         `invite/${encodeURIComponent(normalizedReceiverUserId)}/photo`
@@ -511,11 +609,12 @@ async function sendRequestInvite({
         return null;
     }
 
-    const response = await commands.appVrchatRequestInviteSend({
+    const input = {
         receiverUserId: normalizedReceiverUserId,
         params,
         endpoint
-    });
+    } satisfies VrchatNotificationSendInput;
+    const response = await commands.appVrchatRequestInviteSend(input);
     return unwrapVrchatNotificationResponse(
         response,
         `requestInvite/${encodeURIComponent(normalizedReceiverUserId)}`
@@ -540,12 +639,13 @@ async function sendRequestInvitePhoto({
         return null;
     }
 
-    const response = await commands.appVrchatRequestInvitePhotoSend({
+    const input = {
         receiverUserId: normalizedReceiverUserId,
         params,
         imageData: normalizedImageData,
         endpoint
-    });
+    } satisfies VrchatNotificationPhotoSendInput;
+    const response = await commands.appVrchatRequestInvitePhotoSend(input);
     return unwrapVrchatNotificationResponse(
         response,
         `requestInvite/${encodeURIComponent(normalizedReceiverUserId)}/photo`
@@ -569,11 +669,12 @@ async function sendBoop({
         typeof emojiId === 'string'
             ? emojiId.trim()
             : String(emojiId ?? '').trim();
-    const response = await commands.appVrchatBoopSend({
+    const input = {
         userId: normalizedUserId,
         emojiId: normalizedEmojiId,
         endpoint
-    });
+    } satisfies VrchatBoopInput;
+    const response = await commands.appVrchatBoopSend(input);
     return unwrapVrchatNotificationResponse(
         response,
         `users/${encodeURIComponent(normalizedUserId)}/boop`

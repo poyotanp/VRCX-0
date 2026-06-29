@@ -26,7 +26,7 @@ export function useGlobalKeyboardShortcuts() {
         location.pathname
     );
     const setSystemHostOpen = useRuntimeStore(
-        (state: any) => state.setSystemHostOpen
+        (state) => state.setSystemHostOpen
     );
 
     useEffect(() => {

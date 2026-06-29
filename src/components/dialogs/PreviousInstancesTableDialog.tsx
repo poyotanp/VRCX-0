@@ -44,13 +44,11 @@ function PreviousInstancesPanel({
 }: any) {
     const { t } = useTranslation();
 
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const [rows, setRows] = useState<any[]>([]);
     const [search, setSearch] = useState('');
     const [sortKey, setSortKey] = useState('date');

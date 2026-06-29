@@ -68,11 +68,11 @@ function DialogContent({
                     'bg-popover text-popover-foreground ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-[calc(50%+1rem)] left-1/2 z-50 grid max-h-[calc(100vh-4rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl p-4 text-sm ring-1 duration-100 outline-none sm:max-w-sm',
                     className
                 )}
-                onPointerDownOutside={(event: any) => {
+                onPointerDownOutside={(event) => {
                     preserveAppTitleBarOutsideInteraction(event);
                     onPointerDownOutside?.(event);
                 }}
-                onInteractOutside={(event: any) => {
+                onInteractOutside={(event) => {
                     preserveAppTitleBarOutsideInteraction(event);
                     onInteractOutside?.(event);
                 }}

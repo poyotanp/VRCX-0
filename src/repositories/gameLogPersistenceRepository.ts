@@ -20,7 +20,6 @@ type GameLogKind =
     | 'External'
     | string;
 
-type GameLogRow = Record<string, unknown>;
 type GameLogParams = Record<string, unknown>;
 type GameLogEntry = Record<string, unknown>;
 
@@ -35,27 +34,116 @@ type GameLogWorldCacheEntry = {
 };
 
 type PreviousInstanceGroup = {
-    created_at: unknown;
-    location: unknown;
+    created_at: string;
+    location: string;
     time: number;
-    worldName: unknown;
-    groupName: unknown;
-    events: unknown[];
+    worldName: string;
+    groupName: string;
+    events: number[];
     last_ts: number;
 };
 
 type InstancePlayerAggregate = {
-    rowId: unknown;
-    created_at: unknown;
+    rowId: number;
+    created_at: string;
     displayName: string;
     userId: string;
     time: number;
     count: number;
 };
 
+type GameLogPreviousInstanceGroupRow = {
+    created_at: string;
+    groupName: string;
+    location: string;
+    time: number;
+    worldName: string;
+};
+
+type GameLogPreviousInstanceUserRow = GameLogPreviousInstanceGroupRow & {
+    createdAtTs: number;
+    eventId: number;
+    eventType: string;
+};
+
+type GameLogPlayerEventRow = {
+    created_at: string;
+    displayName: string;
+    location?: string;
+    rowId: number;
+    time?: number;
+    type: string;
+    userId: string;
+};
+
+type GameLogPlayerDetailRow = {
+    created_at: string;
+    display_name: string;
+    time: number;
+    user_id: string;
+};
+
+type GameLogJoinLeaveRangeRow = {
+    created_at: string;
+    displayName: string;
+    type: string;
+    userId: string;
+};
+
+type GameLogOnlineSessionRow = {
+    created_at: string;
+    time: number;
+};
+
+type GameLogSessionLocationSegmentRow = {
+    created_at: string;
+    groupName: string;
+    id: number;
+    location: string;
+    time: number;
+    worldId: string;
+    worldName: string;
+};
+
+type GameLogPreviousDisplayNameRow = {
+    created_at: string;
+    displayName: string;
+};
+
+type GameLogUserStatsQueryResult = {
+    joinCount: number;
+    lastSeen: string;
+    previousDisplayNames: GameLogPreviousDisplayNameRow[];
+    timeSpent: number;
+    userId: string;
+};
+
+type GameLogQueryResultMap = {
+    previousInstancesByGroupId: GameLogPreviousInstanceGroupRow[];
+    previousInstancesByUserIdRows: GameLogPreviousInstanceUserRow[];
+    playersFromInstanceRows: GameLogPlayerEventRow[];
+    playerDetailFromInstance: GameLogPlayerDetailRow[];
+    joinLeaveRange: GameLogJoinLeaveRangeRow[];
+    onlineSessions: GameLogOnlineSessionRow[];
+    sessionsEventsForSegments: GameLogPlayerEventRow[];
+    sessionsLocationSegments: GameLogSessionLocationSegmentRow[];
+    userStats: GameLogUserStatsQueryResult;
+    worldNameByWorldId: string;
+};
+
+type GameLogArrayQueryKind = {
+    [K in keyof GameLogQueryResultMap]: GameLogQueryResultMap[K] extends unknown[]
+        ? K
+        : never;
+}[keyof GameLogQueryResultMap];
+
+type GameLogUserStatsResult = Record<string, unknown> & {
+    previousDisplayNames: Map<unknown, unknown>;
+};
+
 type GameLogInstanceDeleteInput = {
     id?: unknown;
-    location?: unknown;
+    location: string;
     events?: unknown[];
 };
 
@@ -81,11 +169,58 @@ function addGameLogEntries(
     );
 }
 
+async function queryGameLog<K extends keyof GameLogQueryResultMap>(
+    kind: K,
+    params?: GameLogParams
+): Promise<GameLogQueryResultMap[K]>;
+async function queryGameLog(
+    kind: string,
+    params?: GameLogParams
+): Promise<unknown>;
 async function queryGameLog(kind: string, params: GameLogParams = {}) {
     return commands.appGameLogQuery({
         kind,
         params
     });
+}
+
+async function queryGameLogRows<K extends GameLogArrayQueryKind>(
+    kind: K,
+    params?: GameLogParams
+): Promise<GameLogQueryResultMap[K]> {
+    const rows = await queryGameLog(kind, params);
+    return (Array.isArray(rows) ? rows : []) as GameLogQueryResultMap[K];
+}
+
+function isGameLogRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function gameLogSpreadSource(value: unknown): Record<string, unknown> {
+    if (!value) {
+        return {};
+    }
+    if (typeof value === 'object' || typeof value === 'function') {
+        return value as Record<string, unknown>;
+    }
+    return Object(value) as Record<string, unknown>;
+}
+
+function normalizeGameLogUserStats(result: unknown): GameLogUserStatsResult {
+    const resultRecord = gameLogSpreadSource(result);
+    const ref: GameLogUserStatsResult = {
+        ...resultRecord,
+        previousDisplayNames: new Map()
+    };
+    const previousDisplayNames = resultRecord.previousDisplayNames;
+    for (const row of Array.isArray(previousDisplayNames)
+        ? previousDisplayNames
+        : []) {
+        if (isGameLogRecord(row) && row.displayName && row.created_at) {
+            ref.previousDisplayNames.set(row.displayName, row.created_at);
+        }
+    }
+    return ref;
 }
 
 const GAME_LOG_WORLD_NAME_CACHE_LIMIT = 1000;
@@ -211,11 +346,11 @@ const gameLog = {
     },
 
     async getPreviousInstancesByGroupId(groupId: unknown) {
-        const data = new Map<unknown, GameLogRow>();
-        const rows = await queryGameLog('previousInstancesByGroupId', {
+        const data = new Map<string, GameLogPreviousInstanceGroupRow>();
+        const rows = await queryGameLogRows('previousInstancesByGroupId', {
             groupId
         });
-        for (const row of Array.isArray(rows) ? rows : []) {
+        for (const row of rows) {
             data.set(row.location, row);
         }
         return data;
@@ -244,25 +379,12 @@ const gameLog = {
     },
 
     async getUserStats(input: GameLogUserIdentity, inCurrentWorld: unknown) {
-        const result = (await queryGameLog('userStats', {
+        const result = await queryGameLog('userStats', {
             userId: input.id,
             displayName: input.displayName,
             inCurrentWorld
-        })) as GameLogRow;
-        const ref: GameLogRow & {
-            previousDisplayNames: Map<unknown, unknown>;
-        } = {
-            ...(result || {}),
-            previousDisplayNames: new Map()
-        };
-        for (const row of Array.isArray(result?.previousDisplayNames)
-            ? result.previousDisplayNames
-            : []) {
-            if (row.displayName && row.created_at) {
-                ref.previousDisplayNames.set(row.displayName, row.created_at);
-            }
-        }
-        return ref;
+        });
+        return normalizeGameLogUserStats(result);
     },
 
     async getAllUserStats(userIds: unknown, displayNames: unknown) {
@@ -389,10 +511,10 @@ const gameLog = {
             return data;
         }
 
-        const rows = await queryGameLog('previousInstancesByUserIdRows', {
+        const rows = await queryGameLogRows('previousInstancesByUserIdRows', {
             userId: normalizedUserId
         });
-        for (const row of Array.isArray(rows) ? rows : []) {
+        for (const row of rows) {
             const created_at_iso = row.created_at;
             const created_at_ts = row.createdAtTs;
             const location = row.location;
@@ -444,10 +566,10 @@ const gameLog = {
 
     async getPlayersFromInstance(location: unknown) {
         var players = new Map<string, InstancePlayerAggregate>();
-        const rows = await queryGameLog('playersFromInstanceRows', {
+        const rows = await queryGameLogRows('playersFromInstanceRows', {
             location
         });
-        for (const rowData of Array.isArray(rows) ? rows : []) {
+        for (const rowData of rows) {
             var time = 0;
             var count = 0;
             var rowId = rowData.rowId;
@@ -489,19 +611,19 @@ const gameLog = {
         afterDate: unknown,
         beforeDate: unknown
     ) {
-        const rows = await queryGameLog('joinLeaveRange', {
+        const rows = await queryGameLogRows('joinLeaveRange', {
             location,
             afterDate,
             beforeDate
         });
-        return Array.isArray(rows) ? rows : [];
+        return rows;
     },
 
     async getPlayerDetailFromInstance(location: unknown) {
-        const rows = await queryGameLog('playerDetailFromInstance', {
+        const rows = await queryGameLogRows('playerDetailFromInstance', {
             location
         });
-        return Array.isArray(rows) ? rows : [];
+        return rows;
     },
 
     async getPreviousDisplayNamesByUserId(ref: GameLogUserIdentity) {
@@ -553,8 +675,8 @@ const gameLog = {
             ).toISOString();
         }
 
-        const rows = await queryGameLog('onlineSessions', params);
-        return Array.isArray(rows) ? rows : [];
+        const rows = await queryGameLogRows('onlineSessions', params);
+        return rows;
     },
 
     async getCurrentUserOnlineSessionsAfter(
@@ -642,9 +764,7 @@ const gameLog = {
     },
 
     deleteGameLogInstanceByInstanceId(input: GameLogInstanceDeleteInput) {
-        return commands.appGameLogInstanceDeleteByLocation(
-            input.location as string
-        );
+        return commands.appGameLogInstanceDeleteByLocation(input.location);
     },
 
     deleteGameLogInstance(input: GameLogInstanceDeleteInput) {
@@ -656,10 +776,7 @@ const gameLog = {
         if (!eventIds.length) {
             return Promise.resolve();
         }
-        return commands.appGameLogInstanceDelete(
-            input.location as string,
-            eventIds
-        );
+        return commands.appGameLogInstanceDelete(input.location, eventIds);
     },
 
     async deleteGameLogEntry(input: GameLogEntry) {

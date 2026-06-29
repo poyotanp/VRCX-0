@@ -42,18 +42,16 @@ export function ScreenshotMetadataPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { i18n, t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const confirm = useModalStore((state) => state.confirm);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const screenshotCacheStatus = useRuntimeStore(
-        (state: any) => state.hostCapabilities.screenshotCache
+        (state) => state.hostCapabilities.screenshotCache
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const isVrcPlusSupporter = Boolean(
         currentUserSnapshot?.$isVRCPlus ||

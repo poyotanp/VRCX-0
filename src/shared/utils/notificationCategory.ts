@@ -29,7 +29,7 @@ function getNotificationCategory(type: string): NotificationCategory {
     if (FRIEND_TYPES.has(type)) return 'friend';
     if (
         GROUP_EXACT_TYPES.has(type) ||
-        GROUP_TYPES_PREFIX.some((p: any) => type.startsWith(p))
+        GROUP_TYPES_PREFIX.some((prefix) => type.startsWith(prefix))
     )
         return 'group';
     return 'other';

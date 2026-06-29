@@ -90,18 +90,21 @@ export function useUserDialogTabData({
     t
 }: any) {
     const [activeTab, setActiveTab] = useState('info');
-    const [remoteData, setRemoteData] = useState<any>(
-        emptyUserDialogRemoteData
-    );
+    const [remoteData, setRemoteData] = useState<
+        Record<string, readonly unknown[]>
+    >(emptyUserDialogRemoteData);
     const [remoteStatus, setRemoteStatus] = useState<any>(
         emptyUserDialogStatus
     );
     const [remoteErrors, setRemoteErrors] = useState<any>(
         emptyUserDialogStatus
     );
-    const [remoteTabCounts, setRemoteTabCounts] = useState<any>(
-        emptyUserDialogStatus
-    );
+    const [remoteTabCounts, setRemoteTabCounts] = useState<{
+        groups?: number;
+        worlds?: number;
+        'favorite-worlds'?: number;
+        avatars?: number;
+    }>(emptyUserDialogStatus);
     const [search, setSearch] = useState(emptyUserDialogSearch);
     const [worldSort, setWorldSort] = useState('updated');
     const [worldOrder, setWorldOrder] = useState('descending');
@@ -111,7 +114,10 @@ export function useUserDialogTabData({
     const [groupSort, setGroupSort] = useState(
         isCurrentUser ? 'inGame' : 'alphabetical'
     );
-    const [vrchatConfigConstants, setVrchatConfigConstants] = useState(null);
+    const [vrchatConfigConstants, setVrchatConfigConstants] = useState<Record<
+        string,
+        unknown
+    > | null>(null);
     const effectiveAvatarReleaseStatus =
         profile.id === currentUserId ? avatarReleaseStatus : 'all';
     const loadContextRef = useRef<any>({
@@ -365,7 +371,11 @@ export function useUserDialogTabData({
             setRemoteData((current: any) => ({
                 ...current,
                 [dataKey]: rows,
-                ...(tab === 'favorite-worlds' ? { favoriteWorldGroups } : {})
+                ...(tab === 'favorite-worlds'
+                    ? {
+                          favoriteWorldGroups: favoriteWorldGroups
+                      }
+                    : {})
             }));
             setRemoteStatus((current: any) => ({ ...current, [tab]: 'ready' }));
         } catch (error) {

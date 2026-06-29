@@ -1,14 +1,48 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type {
+    NotificationResponse,
+    NotificationRow
+} from '@/repositories/notificationPersistenceRepository';
+import type {
+    NotificationBucket,
+    NotificationCategories
+} from '@/state/vrcNotificationStore';
 import { Button } from '@/ui/shadcn/button';
 
 import {
     groupDrawerEntries,
     NOTIFICATION_LIFECYCLE_ORDER,
+    type NotificationDrawerEntry,
     type NotificationLifecycleBucket
 } from './notificationDrawerBuckets';
 import { NotificationDrawerRow } from './NotificationDrawerRow';
+
+export type NotificationDrawerHandlers = {
+    onAcceptFriendRequest(notification: NotificationRow): void | Promise<void>;
+    onAcceptRequestInvite(notification: NotificationRow): void | Promise<void>;
+    onDeleteNotification(notification: NotificationRow): void | Promise<void>;
+    onHideNotification(notification: NotificationRow): void | Promise<void>;
+    onJoinQueueReady(notification: NotificationRow): void | Promise<void>;
+    onMarkSeen(notification: NotificationRow): void | Promise<void>;
+    onSendInviteResponseWithMessage(
+        notification: NotificationRow,
+        messageType: string
+    ): void;
+    onSendNotificationResponse(
+        notification: NotificationRow,
+        response: NotificationResponse
+    ): void | Promise<void>;
+};
+
+type NotificationDrawerListProps = {
+    canInviteFromCurrentLocation: boolean;
+    categories: NotificationCategories;
+    currentUserId?: string;
+    handlers: NotificationDrawerHandlers;
+    onNavigateToTable(): void;
+};
 
 const GROUP_LABEL_KEYS: Record<NotificationLifecycleBucket, string> = {
     action: 'side_panel.notification_center.group_action',
@@ -16,13 +50,10 @@ const GROUP_LABEL_KEYS: Record<NotificationLifecycleBucket, string> = {
     system: 'side_panel.notification_center.group_system'
 };
 
-function notificationBuckets(value: unknown): Record<string, unknown>[] {
-    return value && typeof value === 'object'
-        ? Object.values(value).filter(
-              (bucket): bucket is Record<string, unknown> =>
-                  Boolean(bucket && typeof bucket === 'object')
-          )
-        : [];
+function notificationBuckets(
+    value: NotificationCategories
+): NotificationBucket[] {
+    return Object.values(value);
 }
 
 export function NotificationDrawerList({
@@ -31,17 +62,15 @@ export function NotificationDrawerList({
     canInviteFromCurrentLocation,
     handlers,
     onNavigateToTable
-}: any) {
+}: NotificationDrawerListProps) {
     const { t } = useTranslation();
     const groups = useMemo(() => {
-        const entries: any[] = [];
+        const entries: NotificationDrawerEntry[] = [];
         for (const bucket of notificationBuckets(categories)) {
-            const unseen = Array.isArray(bucket.unseen) ? bucket.unseen : [];
-            const recent = Array.isArray(bucket.recent) ? bucket.recent : [];
-            for (const notification of unseen) {
+            for (const notification of bucket.unseen) {
                 entries.push({ notification, isUnseen: true });
             }
-            for (const notification of recent) {
+            for (const notification of bucket.recent) {
                 entries.push({ notification, isUnseen: false });
             }
         }
@@ -69,7 +98,7 @@ export function NotificationDrawerList({
                                         </span>
                                         <span>({items.length})</span>
                                     </div>
-                                    {items.map((entry: any) => (
+                                    {items.map((entry) => (
                                         <NotificationDrawerRow
                                             key={`${bucket}:${entry.notification.id}`}
                                             notification={entry.notification}

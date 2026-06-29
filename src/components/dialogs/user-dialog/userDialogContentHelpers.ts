@@ -5,6 +5,7 @@ import {
     parseLocation,
     resolveFriendPresenceLocation
 } from '@/shared/utils/location';
+export { resolveCurrentInviteLocation } from '@/shared/utils/invite';
 
 import { normalizeUserId } from './userProfileFields';
 
@@ -372,23 +373,6 @@ export function pushLocationUserSource(source: any, push: any) {
         return;
     }
     push(source);
-}
-
-export function resolveCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = normalizeUserId(gameState?.currentLocation);
-    if (currentLocation === 'traveling') {
-        return normalizeUserId(gameState?.currentDestination);
-    }
-    return (
-        currentLocation ||
-        normalizeUserId(gameState?.currentDestination) ||
-        normalizeUserId(
-            currentUserSnapshot?.$locationTag || currentUserSnapshot?.location
-        )
-    );
 }
 
 export function instanceLocation(instance: any) {

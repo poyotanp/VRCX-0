@@ -12,17 +12,18 @@ import { emptyArray } from './searchResults';
 
 export function useSearchConfig() {
     const { t } = useTranslation();
-    const [worldCategories, setWorldCategories] = useState<any[]>([]);
+    const [worldCategories, setWorldCategories] = useState<unknown[]>([]);
     const [languageOptionsMap, setLanguageOptionsMap] = useState(
         () => new Map()
     );
     const [avatarProviderEnabled, setAvatarProviderEnabled] = useState(false);
-    const [avatarProviderList, setAvatarProviderList] = useState<any[]>([]);
+    const [avatarProviderList, setAvatarProviderList] = useState<string[]>([]);
     const [selectedAvatarProvider, setSelectedAvatarProvider] = useState('');
     const [isAvatarProviderDialogOpen, setIsAvatarProviderDialogOpen] =
         useState(false);
 
-    function applyAvatarProviderConfig(config: any) {
+    function applyAvatarProviderConfig(rawConfig: any) {
+        const config = rawConfig;
         setAvatarProviderEnabled(config.enabled);
         setAvatarProviderList(config.providerList);
         setSelectedAvatarProvider(config.selectedProvider || '');

@@ -6,7 +6,13 @@ import { NotificationPageToolbar } from './components/NotificationPageToolbar';
 import { BoopReplyDialog } from './components/NotificationViewParts';
 import { useVrcNotificationPageController } from './useVrcNotificationPageController';
 
-export function VrcNotificationPage({ embedded = false }: any = {}) {
+type VrcNotificationPageProps = {
+    embedded?: boolean;
+};
+
+export function VrcNotificationPage({
+    embedded = false
+}: VrcNotificationPageProps = {}) {
     const {
         actions,
         dialogs,
@@ -48,7 +54,7 @@ export function VrcNotificationPage({ embedded = false }: any = {}) {
             </PageScaffold>
             <InviteMessageDialog
                 open={Boolean(dialogs.inviteResponseRequest)}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open: boolean) => {
                     if (!open) {
                         dialogs.setInviteResponseRequest(null);
                     }
@@ -59,21 +65,25 @@ export function VrcNotificationPage({ embedded = false }: any = {}) {
                     dialogs.inviteResponseRequest?.messageType || 'response'
                 }
                 mode="respond"
-                targetLabel={
+                targetLabel={String(
                     dialogs.inviteResponseRequest?.notification
                         ?.senderUsername ||
-                    dialogs.inviteResponseRequest?.notification?.senderUserId ||
-                    'this user'
-                }
+                        dialogs.inviteResponseRequest?.notification
+                            ?.senderUserId ||
+                        'this user'
+                )}
                 allowEdit
                 allowImageUpload={runtime.isLocalUserVrcPlusSupporter}
-                onUse={(payload: any) =>
-                    actions.sendInviteResponseSlot({
+                onUse={(payload) => {
+                    const request = dialogs.inviteResponseRequest;
+                    if (!request) {
+                        return undefined;
+                    }
+                    return actions.sendInviteResponseSlot({
                         ...payload,
-                        notification:
-                            dialogs.inviteResponseRequest?.notification
-                    })
-                }
+                        notification: request.notification
+                    });
+                }}
             />
             <BoopReplyDialog
                 request={dialogs.boopReplyRequest}
@@ -81,7 +91,7 @@ export function VrcNotificationPage({ embedded = false }: any = {}) {
                 isLocalUserVrcPlusSupporter={
                     runtime.isLocalUserVrcPlusSupporter
                 }
-                onOpenChange={(open: any) => {
+                onOpenChange={(open: boolean) => {
                     if (!open) {
                         dialogs.setBoopReplyRequest(null);
                     }

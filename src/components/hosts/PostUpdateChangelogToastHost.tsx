@@ -13,13 +13,13 @@ export function PostUpdateChangelogToastHost(): null {
     const { t } = useTranslation();
     const hasCheckedRef = useRef(false);
     const backendRuntimeSnapshotHydrated = useRuntimeStore(
-        (state: any) => state.shell.backendRuntimeSnapshotHydrated
+        (state) => state.shell.backendRuntimeSnapshotHydrated
     );
     const setSystemHostOpen = useRuntimeStore(
-        (state: any) => state.setSystemHostOpen
+        (state) => state.setSystemHostOpen
     );
     const setChangelogTargetVersion = useRuntimeStore(
-        (state: any) => state.setChangelogTargetVersion
+        (state) => state.setChangelogTargetVersion
     );
 
     useEffect(() => {

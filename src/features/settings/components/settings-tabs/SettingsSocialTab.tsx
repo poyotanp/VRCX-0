@@ -60,12 +60,12 @@ export function SettingsSocialTab({ social }: any) {
                                 max={MINUTES_PER_DAY}
                                 className="w-28"
                                 value={prefs.recentActionCooldownMinutes}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     onRecentActionCooldownMinutesChange(
                                         event.target.value
                                     )
                                 }
-                                onBlur={(event: any) =>
+                                onBlur={(event) =>
                                     onRecentActionCooldownMinutesBlur(
                                         event.target.value
                                     )
@@ -109,11 +109,11 @@ export function SettingsSocialTab({ social }: any) {
                                                     checked={localFavoriteFriendsGroups.includes(
                                                         group.value
                                                     )}
-                                                    onSelect={(event: any) =>
+                                                    onSelect={(event) =>
                                                         event.preventDefault()
                                                     }
                                                     onCheckedChange={(
-                                                        checked: any
+                                                        checked
                                                     ) =>
                                                         onToggleLocalFavoriteFriendsGroup(
                                                             group.value,
@@ -138,11 +138,11 @@ export function SettingsSocialTab({ social }: any) {
                                                     checked={localFavoriteFriendsGroups.includes(
                                                         group.value
                                                     )}
-                                                    onSelect={(event: any) =>
+                                                    onSelect={(event) =>
                                                         event.preventDefault()
                                                     }
                                                     onCheckedChange={(
-                                                        checked: any
+                                                        checked
                                                     ) =>
                                                         onToggleLocalFavoriteFriendsGroup(
                                                             group.value,

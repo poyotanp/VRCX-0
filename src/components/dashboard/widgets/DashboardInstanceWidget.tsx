@@ -43,6 +43,14 @@ import { DashboardWidgetEmptyState } from './DashboardWidgetEmptyState';
 import { DashboardWidgetHeader } from './DashboardWidgetHeader';
 import { buildFavoriteIdSet, joinCompactParts } from './dashboardWidgetUtils';
 
+type CurrentInstanceSnapshotResult = Awaited<
+    ReturnType<
+        typeof playerListPersistenceRepository.getCurrentInstanceSnapshot
+    >
+>;
+type DashboardInstanceContext = CurrentInstanceSnapshotResult['context'];
+type DashboardInstancePlayer = CurrentInstanceSnapshotResult['players'][number];
+
 const ALL_COLUMNS = DASHBOARD_INSTANCE_WIDGET_COLUMN_DEFINITIONS.map(
     (column: any) => column.key
 );
@@ -412,37 +420,36 @@ export function DashboardInstanceWidget({
     configUpdater = null
 }: any) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserLocation = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot?.location || ''
+        (state) => state.auth.currentUserSnapshot?.location || ''
     );
-    const isGameRunning = useRuntimeStore((state: any) =>
+    const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
     const addGameLogEventCount = useRuntimeStore(
-        (state: any) => state.runtimeEvents.addGameLogEvent.count
+        (state) => state.runtimeEvents.addGameLogEvent.count
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const remoteFavoriteFriendIds = useFavoriteStore(
-        (state: any) => state.favoriteFriendIds
+        (state) => state.favoriteFriendIds
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
 
-    const [instanceSnapshot, setInstanceSnapshot] = useState<any>({
-        createdAt: '',
-        location: '',
-        worldId: '',
-        worldName: '',
-        time: 0,
-        groupName: '',
-        playerCount: 0,
-        source: 'none'
-    });
-    const [rows, setRows] = useState<any[]>([]);
+    const [instanceSnapshot, setInstanceSnapshot] =
+        useState<DashboardInstanceContext>({
+            createdAt: '',
+            location: '',
+            worldId: '',
+            worldName: '',
+            time: 0,
+            groupName: '',
+            playerCount: 0,
+            source: 'none'
+        });
+    const [rows, setRows] = useState<DashboardInstancePlayer[]>([]);
     const [loadStatus, setLoadStatus] = useState('idle');
     const [detail, setDetail] = useState('');
     const [clockNow, setClockNow] = useState(() => Date.now());

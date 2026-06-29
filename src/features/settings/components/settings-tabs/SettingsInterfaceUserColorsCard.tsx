@@ -180,7 +180,7 @@ export function SettingsInterfaceUserColorsCard({
                                                 prefs,
                                                 entry.key
                                             )}
-                                            onChange={(event: any) =>
+                                            onChange={(event) =>
                                                 onSaveTrustColor(
                                                     entry.key,
                                                     event.target.value
@@ -192,13 +192,13 @@ export function SettingsInterfaceUserColorsCard({
                                                 prefs,
                                                 entry.key
                                             )}
-                                            onChange={(event: any) =>
+                                            onChange={(event) =>
                                                 onTrustColorDraftChange(
                                                     entry.key,
                                                     event.target.value
                                                 )
                                             }
-                                            onBlur={(event: any) =>
+                                            onBlur={(event) =>
                                                 onSaveTrustColor(
                                                     entry.key,
                                                     event.target.value

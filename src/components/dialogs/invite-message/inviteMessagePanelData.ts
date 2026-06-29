@@ -1,5 +1,33 @@
-import vrchatToolsRepository from '@/repositories/vrchatToolsRepository';
+import vrchatToolsRepository, {
+    type InviteMessageRecord
+} from '@/repositories/vrchatToolsRepository';
 import { HOUR_MS, MINUTE_MS } from '@/shared/constants/time';
+
+export type InviteMessageMode = 'select' | 'manage' | 'respond';
+
+export type InviteMessageRow = InviteMessageRecord & {
+    message: string;
+    messageType: string;
+    slot: number;
+};
+
+export type InviteMessageUsePayload = {
+    row: InviteMessageRow;
+    messageType: string;
+    message: string;
+    imageData: string;
+};
+
+export type InviteMessageSavePayload = {
+    currentUserId?: string | null;
+    endpoint?: string;
+    messageType: string;
+    row: InviteMessageRow;
+    message: string;
+    t: Translate;
+};
+
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 export const INVITE_MESSAGE_TYPES = [
     {
@@ -18,40 +46,69 @@ export const INVITE_MESSAGE_TYPES = [
         type: 'response',
         labelKey: 'dialog.edit_invite_messages.invite_response_tab'
     }
-];
+] as const;
 
-export const validModes = new Set(['select', 'manage', 'respond']);
+export const validModes = new Set<InviteMessageMode>([
+    'select',
+    'manage',
+    'respond'
+]);
 
-export function normalizeInviteMessageRows(value: any, messageType: any) {
-    const rows = Array.isArray(value)
-        ? value
-        : Array.isArray(value?.messages)
-          ? value.messages
-          : value && typeof value === 'object'
-            ? Object.values(value).filter(
-                  (row: any) => row && typeof row === 'object'
-              )
-            : [];
-
-    return rows
-        .map((row: any, index: any) => ({
-            ...row,
-            slot: Number.parseInt(
-                row?.slot ?? row?.messageSlot ?? row?.requestSlot ?? index,
-                10
-            ),
-            message: String(row?.message || row?.text || ''),
-            messageType
-        }))
-        .filter((row: any) => Number.isFinite(row.slot))
-        .sort((left: any, right: any) => left.slot - right.slot);
+export function isInviteMessageMode(
+    value: unknown
+): value is InviteMessageMode {
+    return value === 'select' || value === 'manage' || value === 'respond';
 }
 
-export function getInviteCooldownLabel(updatedAt: any, nowMs: any) {
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function isInviteMessageRecord(value: unknown): value is InviteMessageRecord {
+    return isRecord(value);
+}
+
+function inviteMessageSourceRows(value: unknown): InviteMessageRecord[] {
+    const rows = Array.isArray(value)
+        ? value.filter(isInviteMessageRecord)
+        : isRecord(value) && Array.isArray(value.messages)
+          ? value.messages.filter(isInviteMessageRecord)
+          : isRecord(value)
+            ? Object.values(value).filter(isInviteMessageRecord)
+            : [];
+
+    return rows;
+}
+
+export function normalizeInviteMessageRows(
+    value: unknown,
+    messageType: string
+): InviteMessageRow[] {
+    const rows = inviteMessageSourceRows(value);
+    return rows
+        .map((row, index) => ({
+            ...row,
+            slot: Number.parseInt(
+                String(row.slot ?? row.messageSlot ?? row.requestSlot ?? index),
+                10
+            ),
+            message: String(row.message || row.text || ''),
+            messageType
+        }))
+        .filter((row) => Number.isFinite(row.slot))
+        .sort((left, right) => left.slot - right.slot);
+}
+
+export function getInviteCooldownLabel(updatedAt: unknown, nowMs: unknown) {
     if (!updatedAt) {
         return '';
     }
-    const updatedTime = new Date(updatedAt).getTime();
+    const updatedTime =
+        typeof updatedAt === 'string' ||
+        typeof updatedAt === 'number' ||
+        updatedAt instanceof Date
+            ? new Date(updatedAt).getTime()
+            : Number.NaN;
     if (!Number.isFinite(updatedTime)) {
         return String(updatedAt);
     }
@@ -65,15 +122,22 @@ export function getInviteCooldownLabel(updatedAt: any, nowMs: any) {
         : `${minutes}m`;
 }
 
-export function isInviteMessageOnCooldown(row: any, nowMs: any) {
+export function isInviteMessageOnCooldown(
+    row: InviteMessageRow,
+    nowMs: unknown
+) {
     return Boolean(getInviteCooldownLabel(rowUpdatedAt(row), nowMs));
 }
 
-export function rowUpdatedAt(row: any) {
-    return row?.updatedAt || row?.updated_at || '';
+export function rowUpdatedAt(row: InviteMessageRow) {
+    return row.updatedAt || row.updated_at || '';
 }
 
-export function dialogTitle(mode: any, messageType: any, t: any) {
+export function dialogTitle(
+    mode: InviteMessageMode,
+    messageType: string,
+    t: Translate
+) {
     if (mode === 'manage') {
         return t('dialog.edit_invite_messages.header');
     }
@@ -88,10 +152,10 @@ export function dialogTitle(mode: any, messageType: any, t: any) {
 }
 
 export function dialogDescription(
-    mode: any,
-    messageType: any,
-    _targetLabel: any,
-    t: any
+    mode: InviteMessageMode,
+    messageType: string,
+    _targetLabel: unknown,
+    t: Translate
 ) {
     if (mode === 'manage') {
         return t('view.tools.other.edit_invite_message_description');
@@ -102,7 +166,11 @@ export function dialogDescription(
     return t('dialog.edit_send_invite_message.description');
 }
 
-export function primaryActionLabel(mode: any, messageType: any, t: any) {
+export function primaryActionLabel(
+    mode: InviteMessageMode,
+    messageType: string,
+    t: Translate
+) {
     if (mode === 'manage') {
         return t('dialog.edit_invite_message.save');
     }
@@ -119,15 +187,15 @@ export async function saveInviteMessage({
     row,
     message,
     t
-}: any) {
-    const slot = Number.parseInt(row?.slot, 10);
+}: InviteMessageSavePayload) {
+    const slot = Number.parseInt(String(row.slot), 10);
     if (!currentUserId || !Number.isFinite(slot)) {
         throw new Error(
             t('dialog.edit_invite_messages.description.slot_must_be_number')
         );
     }
 
-    const previousMessage = String(row?.message || '');
+    const previousMessage = String(row.message || '');
     if (message === previousMessage) {
         return null;
     }

@@ -1,8 +1,17 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type AvatarCacheOutput,
+    type CacheEntityInput as IpcCacheEntityInput,
+    type LocalFavoriteGroupInput as IpcLocalFavoriteGroupInput,
+    type LocalFavoriteGroupRenameInput as IpcLocalFavoriteGroupRenameInput,
+    type LocalFavoriteInput as IpcLocalFavoriteInput,
+    type WorldSummaryOutput
+} from '@/platform/tauri/bindings';
 
 import configRepository from './configRepository';
 
 type ObjectRow = Record<string, unknown>;
+type CacheOutputRow = AvatarCacheOutput | WorldSummaryOutput;
 export type LocalFavoriteKind = 'friend' | 'avatar' | 'world';
 
 export interface FavoriteCacheEntity {
@@ -72,8 +81,12 @@ const LOCAL_FAVORITE_GROUP_CONFIG_KEYS = Object.freeze({
     world: 'localFavoriteWorldGroups'
 } satisfies Record<LocalFavoriteKind, string>);
 
-function asObjectRow(row: ObjectRow | null | undefined): ObjectRow {
-    return row ?? {};
+function isObjectRow(row: unknown): row is ObjectRow {
+    return Boolean(row && typeof row === 'object');
+}
+
+function asObjectRow(row: unknown): ObjectRow {
+    return isObjectRow(row) ? row : {};
 }
 
 function isLocalFavoriteKind(kind: unknown): kind is LocalFavoriteKind {
@@ -87,7 +100,7 @@ function getLocalFavoriteGroupConfigKey(kind: unknown): string | undefined {
 }
 
 function normalizeCacheRow(
-    row: ObjectRow | null | undefined
+    row: CacheOutputRow | ObjectRow | null | undefined
 ): FavoriteCacheEntity {
     const record = asObjectRow(row);
     return {
@@ -184,40 +197,48 @@ async function createLocalFavoriteGroup({
         throw new Error('Local favorite kind is invalid.');
     }
 
-    await commands.appLocalFavoriteGroupCreate({
+    const input = {
         kind,
         groupName: normalizedGroupName
-    });
+    } satisfies IpcLocalFavoriteGroupInput;
+
+    await commands.appLocalFavoriteGroupCreate(input);
     await configRepository.reload();
 }
 
 async function getWorldFavorites() {
-    const rows = (await commands.appFavoriteList('world')) as ObjectRow[];
-    return Array.isArray(rows) ? rows.map(normalizeWorldFavoriteRow) : [];
+    const rows: unknown = await commands.appFavoriteList('world');
+    return Array.isArray(rows)
+        ? rows.filter(isObjectRow).map(normalizeWorldFavoriteRow)
+        : [];
 }
 
 async function getAvatarFavorites() {
-    const rows = (await commands.appFavoriteList('avatar')) as ObjectRow[];
-    return Array.isArray(rows) ? rows.map(normalizeAvatarFavoriteRow) : [];
+    const rows: unknown = await commands.appFavoriteList('avatar');
+    return Array.isArray(rows)
+        ? rows.filter(isObjectRow).map(normalizeAvatarFavoriteRow)
+        : [];
 }
 
 async function getFriendFavorites() {
-    const rows = (await commands.appFavoriteList('friend')) as ObjectRow[];
-    return Array.isArray(rows) ? rows.map(normalizeFriendFavoriteRow) : [];
+    const rows: unknown = await commands.appFavoriteList('friend');
+    return Array.isArray(rows)
+        ? rows.filter(isObjectRow).map(normalizeFriendFavoriteRow)
+        : [];
 }
 
 async function getWorldCache() {
-    const rows = (await commands.appWorldCacheList()) as ObjectRow[];
+    const rows = await commands.appWorldCacheList();
     return Array.isArray(rows) ? rows.map(normalizeCacheRow) : [];
 }
 
 async function getAvatarCache() {
-    const rows = (await commands.appAvatarCacheList()) as ObjectRow[];
+    const rows = await commands.appAvatarCacheList();
     return Array.isArray(rows) ? rows.map(normalizeCacheRow) : [];
 }
 
 async function addWorldToCache(entry: CacheEntryInput) {
-    return commands.appWorldCacheUpsert({
+    const input = {
         id: entry.id,
         authorId: entry.authorId,
         authorName: entry.authorName,
@@ -229,7 +250,9 @@ async function addWorldToCache(entry: CacheEntryInput) {
         thumbnailImageUrl: entry.thumbnailImageUrl,
         updatedAt: entry.updated_at,
         version: entry.version
-    });
+    } satisfies IpcCacheEntityInput;
+
+    return commands.appWorldCacheUpsert(input);
 }
 
 async function getCachedWorldById(id: unknown) {
@@ -237,9 +260,7 @@ async function getCachedWorldById(id: unknown) {
     if (!normalizedId) {
         return null;
     }
-    const row = (await commands.appWorldCacheGet(
-        normalizedId
-    )) as ObjectRow | null;
+    const row = await commands.appWorldCacheGet(normalizedId);
     return row ? normalizeCacheRow(row) : null;
 }
 
@@ -266,11 +287,13 @@ async function addLocalFavorite({
         );
     }
 
-    return commands.appLocalFavoriteAdd({
+    const input = {
         kind,
         entityId: normalizedEntityId,
         groupName: normalizedGroupName
-    });
+    } satisfies IpcLocalFavoriteInput;
+
+    return commands.appLocalFavoriteAdd(input);
 }
 
 function addAvatarToFavorites(avatarId: unknown, groupName: unknown) {
@@ -312,11 +335,13 @@ async function removeLocalFavorite({
         );
     }
 
-    return commands.appLocalFavoriteRemove({
+    const input = {
         kind,
         entityId: normalizedEntityId,
         groupName: normalizedGroupName
-    });
+    } satisfies IpcLocalFavoriteInput;
+
+    return commands.appLocalFavoriteRemove(input);
 }
 
 async function renameLocalFavoriteGroup({
@@ -334,11 +359,13 @@ async function renameLocalFavoriteGroup({
         );
     }
 
-    const result = await commands.appLocalFavoriteGroupRename({
+    const input = {
         kind,
         groupName: normalizedGroupName,
         newGroupName: normalizedNewGroupName
-    });
+    } satisfies IpcLocalFavoriteGroupRenameInput;
+
+    const result = await commands.appLocalFavoriteGroupRename(input);
 
     await configRepository.reload();
 
@@ -358,10 +385,12 @@ async function deleteLocalFavoriteGroup({
         );
     }
 
-    const result = await commands.appLocalFavoriteGroupDelete({
+    const input = {
         kind,
         groupName: normalizedGroupName
-    });
+    } satisfies IpcLocalFavoriteGroupInput;
+
+    const result = await commands.appLocalFavoriteGroupDelete(input);
 
     await configRepository.reload();
 

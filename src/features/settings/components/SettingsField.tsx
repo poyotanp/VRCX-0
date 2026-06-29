@@ -166,7 +166,7 @@ export function SegmentedPreference({ options, value, onChange }: any) {
             variant="outline"
             size="sm"
             value={value}
-            onValueChange={(nextValue: any) => {
+            onValueChange={(nextValue) => {
                 if (nextValue) {
                     onChange?.(nextValue);
                 }

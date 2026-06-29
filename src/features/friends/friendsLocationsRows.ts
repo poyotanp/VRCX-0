@@ -1,4 +1,5 @@
 import { hasWorldIdPrefix } from '@/shared/constants/vrchatIds';
+export { resolveCurrentInviteLocation as resolveFriendsLocationsCurrentInviteLocation } from '@/shared/utils/invite';
 import {
     parseLocation,
     resolveFriendPresenceLocation
@@ -185,26 +186,6 @@ export function uniqueFriendsById(friends: any) {
 
 export function resolvePresenceLocation(friend: any) {
     return resolveFriendPresenceLocation(friend);
-}
-
-export function resolveFriendsLocationsCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = normalizeFriendsLocationId(
-        gameState?.currentLocation
-    );
-    if (currentLocation === 'traveling') {
-        return normalizeFriendsLocationId(gameState?.currentDestination);
-    }
-
-    return (
-        currentLocation ||
-        normalizeFriendsLocationId(gameState?.currentDestination) ||
-        normalizeFriendsLocationId(
-            currentUserSnapshot?.$locationTag || currentUserSnapshot?.location
-        )
-    );
 }
 
 export function isOnlineFriend(friend: any) {

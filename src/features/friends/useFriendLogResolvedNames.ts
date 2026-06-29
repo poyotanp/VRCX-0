@@ -10,30 +10,33 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 import {
     normalizeUserId,
     resolveDisplayNameCandidate,
+    type FriendLogRow,
     UNKNOWN_FRIEND_LOG_DISPLAY_NAME
 } from './friendLogRows';
 
 const GAME_LOG_LOOKUP_LIMIT = 100;
 const API_LOOKUP_LIMIT = 30;
 
-type ResolveDisplayName = (row: any) => string;
+type ResolveDisplayName = (row: FriendLogRow) => string;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
+}
 
 export function useFriendLogResolvedNames(
-    currentUserId: any,
-    rows: any[]
+    currentUserId: unknown,
+    rows: FriendLogRow[]
 ): ResolveDisplayName {
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const friendRosterLastLoadedAt = useFriendRosterStore(
-        (state: any) => state.lastLoadedAt
+        (state) => state.lastLoadedAt
     );
     const [namesById, setNamesById] = useState<Record<string, string>>({});
     const attemptedRef = useRef<Set<string>>(new Set());
 
     const resolveSyncName = useCallback(
-        (userId: string, rowDisplayName: any) => {
+        (userId: string, rowDisplayName: unknown) => {
             const own = resolveDisplayNameCandidate(rowDisplayName, userId);
             if (own) {
                 return own;
@@ -61,14 +64,14 @@ export function useFriendLogResolvedNames(
         let active = true;
         friendLogRepository
             .getFriendLogCurrent(normalizedCurrentUserId)
-            .then((entries: any) => {
+            .then((entries) => {
                 if (!active) {
                     return;
                 }
                 setNamesById((current) => {
                     let changed = false;
                     const next = { ...current };
-                    for (const entry of Array.isArray(entries) ? entries : []) {
+                    for (const entry of entries) {
                         const userId = normalizeUserId(entry?.userId);
                         const displayName = resolveDisplayNameCandidate(
                             entry?.displayName,
@@ -95,7 +98,7 @@ export function useFriendLogResolvedNames(
     useEffect(() => {
         const missing: string[] = [];
         const seen = new Set<string>();
-        for (const row of Array.isArray(rows) ? rows : []) {
+        for (const row of rows) {
             const userId = normalizeUserId(row?.userId);
             if (
                 !userId ||
@@ -131,9 +134,10 @@ export function useFriendLogResolvedNames(
                     userIds: missing
                 });
                 for (const row of Array.isArray(statsRows) ? statsRows : []) {
-                    const userId = normalizeUserId(row?.userId);
+                    const record = isRecord(row) ? row : {};
+                    const userId = normalizeUserId(record.userId);
                     const displayName = resolveDisplayNameCandidate(
-                        row?.displayName,
+                        record.displayName,
                         userId
                     );
                     if (userId && displayName) {
@@ -175,7 +179,7 @@ export function useFriendLogResolvedNames(
     }, [rows, namesById, resolveSyncName, endpoint]);
 
     return useCallback(
-        (row: any) => {
+        (row: FriendLogRow) => {
             const userId = normalizeUserId(row?.userId);
             const sync = resolveSyncName(userId, row?.displayName);
             if (sync) {

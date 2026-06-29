@@ -13,9 +13,9 @@ export function useFriendsLocationsPageController() {
     const roster = useFriendsLocationsRosterState();
     const [activeSegment, setActiveSegment] = useState('online');
     const [searchQuery, setSearchQuery] = useState('');
-    const [collapsedFavoriteGroups, setCollapsedFavoriteGroups] = useState(
-        () => new Set()
-    );
+    const [collapsedFavoriteGroups, setCollapsedFavoriteGroups] = useState<
+        Set<string>
+    >(() => new Set<string>());
     const {
         changeDensityPreference,
         changeShowSameInstanceInOnline,
@@ -69,7 +69,7 @@ export function useFriendsLocationsPageController() {
         canInviteFromCurrentLocation: derived.canInviteFromCurrentLocation,
         currentEndpoint: runtime.currentEndpoint,
         currentInviteLocation: derived.currentInviteLocation,
-        currentUserId: runtime.currentUserId,
+        currentUserId: runtime.currentUserId ?? '',
         friendsMap: derived.friendsMap,
         setCollapsedFavoriteGroups
     });

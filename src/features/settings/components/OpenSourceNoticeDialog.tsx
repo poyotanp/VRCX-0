@@ -25,9 +25,22 @@ function buildAssetUrl(relativePath: any) {
     return new URL(relativePath, window.location.href).toString();
 }
 
+type OpenSourceEntry = {
+    id?: string;
+    name?: string;
+    version?: string;
+    license?: string;
+    sourceLabel?: string;
+    projects?: string[];
+    projectUrl?: string;
+    licenseUrl?: string;
+    noticeText?: string;
+    [key: string]: unknown;
+};
+
 export function OpenSourceNoticeDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const [entries, setEntries] = useState<any[]>([]);
+    const [entries, setEntries] = useState<OpenSourceEntry[]>([]);
     const [noticePath, setNoticePath] = useState(
         'licenses/THIRD_PARTY_NOTICES.txt'
     );
@@ -129,9 +142,7 @@ export function OpenSourceNoticeDialog({ open, onOpenChange }: any) {
                     <Input
                         value={searchQuery}
                         placeholder={t('dialog.open_source.search_placeholder')}
-                        onChange={(event: any) =>
-                            setSearchQuery(event.target.value)
-                        }
+                        onChange={(event) => setSearchQuery(event.target.value)}
                     />
                     {loading ? (
                         <Empty className="min-h-24">

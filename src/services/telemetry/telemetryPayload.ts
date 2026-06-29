@@ -94,7 +94,7 @@ export function waitForInitialTelemetryContext(
             resolve();
         };
         signal?.addEventListener('abort', finish, { once: true });
-        unsubscribe = useRuntimeStore.subscribe((state: any) => {
+        unsubscribe = useRuntimeStore.subscribe((state) => {
             if (state.hostCapabilities.platform !== 'unknown') {
                 finish();
             }

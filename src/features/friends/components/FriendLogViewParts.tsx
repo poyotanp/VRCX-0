@@ -67,8 +67,8 @@ export function FriendLogTypeFilterDropdown({ value, onChange }: any) {
                         <DropdownMenuCheckboxItem
                             key={type}
                             checked={valueSet.has(type)}
-                            onSelect={(event: any) => event.preventDefault()}
-                            onCheckedChange={(checked: any) => {
+                            onSelect={(event) => event.preventDefault()}
+                            onCheckedChange={(checked) => {
                                 onChange(
                                     checked
                                         ? [...value, type]

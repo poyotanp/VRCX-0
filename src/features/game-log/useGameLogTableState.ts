@@ -42,10 +42,10 @@ export function useGameLogTableState({
     viewMode
 }: UseGameLogTableStateOptions) {
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const tablePageSizesPreference = usePreferencesStore(
-        (state: any) => state.tablePageSizes
+        (state) => state.tablePageSizes
     );
     const [persistedState] = useState(() => readPersistedGameLogState());
     const hasWrittenSortingRef = useRef(false);

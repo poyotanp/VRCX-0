@@ -31,7 +31,7 @@ const SHORTCUT_GROUPS = [
 export function KeyboardShortcutsDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
     const isMacHost = useRuntimeStore(
-        (state: any) => state.hostCapabilities.platform === 'macos'
+        (state) => state.hostCapabilities.platform === 'macos'
     );
     const modifier = isMacHost ? 'Meta' : 'Mod';
 

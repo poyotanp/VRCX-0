@@ -60,7 +60,7 @@ export function useGameLogPageController() {
             previousInstancesDialog.openPreviousInstancesForRow,
         shiftHeld
     });
-    const isGameRunning = useRuntimeStore((state: any) =>
+    const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
     const table = useReactTable({

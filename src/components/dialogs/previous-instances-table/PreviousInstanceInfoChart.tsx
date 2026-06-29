@@ -61,22 +61,20 @@ function createInfoChartTooltipElement(detailEntry: any, hour12: any) {
 export function PreviousInstanceInfoChart({ rows }: any) {
     const { t } = useTranslation();
 
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const favoriteFriendIds = useFavoriteStore(
-        (state: any) => state.favoriteFriendIds
+        (state) => state.favoriteFriendIds
     );
     const localFriendFavoritesList = useFavoriteStore(
-        (state: any) => state.localFriendFavoritesList
+        (state) => state.localFriendFavoritesList
     );
-    const shellThemeMode = useShellStore((state: any) => state.themeMode);
+    const shellThemeMode = useShellStore((state) => state.themeMode);
     const resolvedTheme = getResolvedThemeMode(shellThemeMode);
-    const hour12 = usePreferencesStore((state: any) => state.dtHour12);
+    const hour12 = usePreferencesStore((state) => state.dtHour12);
 
     const [chartElement, setChartElement] = useState<HTMLDivElement | null>(
         null

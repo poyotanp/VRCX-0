@@ -33,17 +33,15 @@ function getDatabaseUpgradeTitleKey(phase: any) {
 export function DatabaseUpgradeDialog({ open }: any) {
     const { t } = useTranslation();
 
-    const databaseUpgrade = useRuntimeStore(
-        (state: any) => state.databaseUpgrade
-    );
+    const databaseUpgrade = useRuntimeStore((state) => state.databaseUpgrade);
     const setDatabaseUpgradeState = useRuntimeStore(
-        (state: any) => state.setDatabaseUpgradeState
+        (state) => state.setDatabaseUpgradeState
     );
 
     return (
         <Dialog
             open={open}
-            onOpenChange={(nextOpen: any) => {
+            onOpenChange={(nextOpen) => {
                 if (!nextOpen && databaseUpgrade.phase === 'running') {
                     return;
                 }

@@ -27,9 +27,7 @@ function FeedExpandedRow({
     row
 }: FeedExpandedRowProps) {
     const { t } = useTranslation();
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const displayLocation = resolveFeedLocationForDisplay(row);
 
     if (row?.type === 'GPS') {

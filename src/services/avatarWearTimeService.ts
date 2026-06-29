@@ -1,7 +1,10 @@
-import { useRuntimeStore } from '@/state/runtimeStore';
+import {
+    useRuntimeStore,
+    type CurrentUserSnapshotState
+} from '@/state/runtimeStore';
 
 type AvatarSnapshot = Record<string, unknown> & {
-    id?: unknown;
+    id?: string;
     currentAvatar?: unknown;
     $previousAvatarSwapTime?: unknown;
 };
@@ -11,6 +14,11 @@ type AvatarWearSnapshotUpdateOptions = {
     nextSnapshot?: unknown;
     isGameRunning?: boolean | null;
     now?: number;
+};
+
+type RuntimeAvatarSnapshot = CurrentUserSnapshotState & {
+    currentAvatar?: string;
+    $previousAvatarSwapTime?: number | null;
 };
 
 type TimerOptions = {
@@ -108,7 +116,7 @@ function buildAvatarWearSnapshotUpdate({
 function startCurrentAvatarWearTimer({ now = Date.now() }: TimerOptions = {}) {
     const runtimeStore = useRuntimeStore.getState();
     const snapshot = runtimeStore.auth.currentUserSnapshot as
-        | AvatarSnapshot
+        | RuntimeAvatarSnapshot
         | null
         | undefined;
     if (!snapshot || typeof snapshot !== 'object') {
@@ -129,7 +137,7 @@ async function stopCurrentAvatarWearTimer(
 ): Promise<void> {
     const runtimeStore = useRuntimeStore.getState();
     const snapshot = runtimeStore.auth.currentUserSnapshot as
-        | AvatarSnapshot
+        | RuntimeAvatarSnapshot
         | null
         | undefined;
     if (!snapshot || typeof snapshot !== 'object') {

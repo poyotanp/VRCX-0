@@ -1,9 +1,10 @@
+import type { NotificationRow } from '@/repositories/notificationPersistenceRepository';
 import { getNotificationTs } from '@/shared/utils/notificationCategory';
 
 export type NotificationLifecycleBucket = 'action' | 'activity' | 'system';
 
 export type NotificationDrawerEntry = {
-    notification: any;
+    notification: NotificationRow;
     isUnseen: boolean;
 };
 
@@ -50,21 +51,21 @@ export function getNotificationLifecycleBucket(
 }
 
 export function groupDrawerEntries(
-    entries: NotificationDrawerEntry[]
+    entries: readonly NotificationDrawerEntry[]
 ): NotificationDrawerGroups {
     const groups: NotificationDrawerGroups = {
         action: [],
         activity: [],
         system: []
     };
-    for (const entry of Array.isArray(entries) ? entries : []) {
+    for (const entry of entries) {
         const bucket = getNotificationLifecycleBucket(
             entry?.notification?.type
         );
         groups[bucket].push(entry);
     }
     for (const bucket of NOTIFICATION_LIFECYCLE_ORDER) {
-        groups[bucket].sort((left: any, right: any) => {
+        groups[bucket].sort((left, right) => {
             if (bucket === 'action') {
                 const leftQueue =
                     left.notification?.type === 'group.queueReady' ? 0 : 1;

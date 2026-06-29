@@ -20,20 +20,63 @@ import {
     parseWebJson
 } from './settingsValues';
 
+type SettingsIntegrationPrefs = {
+    youtubeAPI: boolean;
+    youtubeAPIKey: string;
+    translationAPI: boolean;
+    bioLanguage: string;
+    translationAPIType: string;
+    translationAPIKey: string;
+    translationAPIEndpoint: string;
+    translationAPIModel: string;
+    translationAPIPrompt: string;
+    [key: string]: unknown;
+};
+
+type SettingsDiscordPrefs = {
+    discordActive: boolean;
+    discordInstance: boolean;
+    discordHideInvite: boolean;
+    discordJoinButton: boolean;
+    discordHideImage: boolean;
+    discordShowPlatform: boolean;
+    discordWorldIntegration: boolean;
+    discordWorldNameAsDiscordStatus: boolean;
+    [key: string]: unknown;
+};
+
+type SettingsIntegrationStatus = {
+    youtube: string;
+    translation: string;
+    models: string;
+    [key: string]: unknown;
+};
+
+type SettingsTranslationDraft = {
+    bioLanguage: string;
+    translationAPIType: string;
+    translationAPIKey: string;
+    translationAPIEndpoint: string;
+    translationAPIModel: string;
+    translationAPIPrompt: string;
+    [key: string]: unknown;
+};
+
 export function useSettingsIntegrations({ commit }: any) {
     const { t } = useTranslation();
-    const [integrationPrefs, setIntegrationPrefs] = useState<any>({
-        youtubeAPI: false,
-        youtubeAPIKey: '',
-        translationAPI: false,
-        bioLanguage: 'en',
-        translationAPIType: 'google',
-        translationAPIKey: '',
-        translationAPIEndpoint: DEFAULT_TRANSLATION_ENDPOINT,
-        translationAPIModel: DEFAULT_TRANSLATION_MODEL,
-        translationAPIPrompt: ''
-    });
-    const [discordPrefs, setDiscordPrefs] = useState<any>({
+    const [integrationPrefs, setIntegrationPrefs] =
+        useState<SettingsIntegrationPrefs>({
+            youtubeAPI: false,
+            youtubeAPIKey: '',
+            translationAPI: false,
+            bioLanguage: 'en',
+            translationAPIType: 'google',
+            translationAPIKey: '',
+            translationAPIEndpoint: DEFAULT_TRANSLATION_ENDPOINT,
+            translationAPIModel: DEFAULT_TRANSLATION_MODEL,
+            translationAPIPrompt: ''
+        });
+    const [discordPrefs, setDiscordPrefs] = useState<SettingsDiscordPrefs>({
         discordActive: false,
         discordInstance: true,
         discordHideInvite: true,
@@ -44,24 +87,26 @@ export function useSettingsIntegrations({ commit }: any) {
         discordWorldNameAsDiscordStatus: false
     });
     const [availableTranslationModels, setAvailableTranslationModels] =
-        useState<any[]>([]);
-    const [integrationStatus, setIntegrationStatus] = useState<any>({
-        youtube: 'idle',
-        translation: 'idle',
-        models: 'idle'
-    });
+        useState<string[]>([]);
+    const [integrationStatus, setIntegrationStatus] =
+        useState<SettingsIntegrationStatus>({
+            youtube: 'idle',
+            translation: 'idle',
+            models: 'idle'
+        });
     const [youtubeApiDialogOpen, setYoutubeApiDialogOpen] = useState(false);
     const [youtubeApiKeyDraft, setYoutubeApiKeyDraft] = useState('');
     const [translationApiDialogOpen, setTranslationApiDialogOpen] =
         useState(false);
-    const [translationDraft, setTranslationDraft] = useState<any>({
-        bioLanguage: 'en',
-        translationAPIType: 'google',
-        translationAPIKey: '',
-        translationAPIEndpoint: DEFAULT_TRANSLATION_ENDPOINT,
-        translationAPIModel: DEFAULT_TRANSLATION_MODEL,
-        translationAPIPrompt: ''
-    });
+    const [translationDraft, setTranslationDraft] =
+        useState<SettingsTranslationDraft>({
+            bioLanguage: 'en',
+            translationAPIType: 'google',
+            translationAPIKey: '',
+            translationAPIEndpoint: DEFAULT_TRANSLATION_ENDPOINT,
+            translationAPIModel: DEFAULT_TRANSLATION_MODEL,
+            translationAPIPrompt: ''
+        });
 
     useEffect(() => {
         let active = true;

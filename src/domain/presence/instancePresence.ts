@@ -208,7 +208,7 @@ function mergeRosterRow(
     if (!existing) {
         return incoming;
     }
-    const merged: any = { ...incoming, ...existing };
+    const merged: RosterUserRow = { ...incoming, ...existing };
     for (const [key, value] of Object.entries(incoming)) {
         if (!valuePresent(merged[key]) && valuePresent(value)) {
             merged[key] = value;
@@ -281,7 +281,7 @@ function buildInstancePresenceFact({
         userIds.push(id);
     }
 
-    return {
+    const fact = {
         endpoint: endpointText(endpoint),
         location: normalizedLocation,
         locationKey,
@@ -297,6 +297,7 @@ function buildInstancePresenceFact({
         userIds,
         playersById
     };
+    return fact;
 }
 
 function buildInstanceRosterModel({
@@ -363,7 +364,7 @@ function buildInstanceRosterModel({
     }
     const mergedOwnerRow = ownerRowId ? rowsByKey.get(ownerRowId) : null;
     const playerRows = Array.from(rowsByKey.values()).filter(
-        (row: any) => !ownerRowId || row.id !== ownerRowId
+        (row) => !ownerRowId || row.id !== ownerRowId
     );
     const rows = mergedOwnerRow ? [mergedOwnerRow, ...playerRows] : playerRows;
 
@@ -371,7 +372,7 @@ function buildInstanceRosterModel({
         ownerId,
         ownerIsGroup,
         rows,
-        friendCount: rows.filter((row: any) => row.isFriend).length,
+        friendCount: rows.filter((row) => row.isFriend).length,
         playerCount: rows.length
     };
 }

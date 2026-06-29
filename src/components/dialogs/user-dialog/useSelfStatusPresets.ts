@@ -10,7 +10,7 @@ import {
 } from './userProfileFields';
 
 export function useSelfStatusPresets({ socialStatusDraft, t }: any) {
-    const [statusPresets, setStatusPresets] = useState<any[]>([]);
+    const [statusPresets, setStatusPresets] = useState<unknown[]>([]);
 
     useEffect(() => {
         let active = true;

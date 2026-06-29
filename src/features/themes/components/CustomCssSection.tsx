@@ -80,7 +80,7 @@ export function CustomCssSection({
                             placeholder={t(
                                 'view.community_themes.override.placeholder'
                             )}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setOverrideDraft(event.target.value)
                             }
                         />

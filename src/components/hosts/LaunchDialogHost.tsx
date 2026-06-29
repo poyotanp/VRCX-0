@@ -133,7 +133,7 @@ function LaunchField({ label, value, notice = '', onCopy }: any) {
                     readOnly
                     value={value || ''}
                     className="h-8 font-mono text-xs"
-                    onClick={(event: any) => event.currentTarget.select()}
+                    onClick={(event) => event.currentTarget.select()}
                 />
                 <Button
                     type="button"
@@ -154,38 +154,36 @@ function LaunchField({ label, value, notice = '', onCopy }: any) {
 export function LaunchDialogHost() {
     const { t } = useTranslation();
 
-    const launchDialog = useLaunchStore((state: any) => state.launchDialog);
+    const launchDialog = useLaunchStore((state) => state.launchDialog);
     const setLaunchDialogOpen = useLaunchStore(
-        (state: any) => state.setLaunchDialogOpen
+        (state) => state.setLaunchDialogOpen
     );
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserLocation = useRuntimeStore(
-        (state: any) =>
+        (state) =>
             state.gameState.currentLocation ||
             state.auth.currentUserSnapshot?.$locationTag ||
             state.auth.currentUserSnapshot?.location ||
             ''
     );
-    const isGameRunning = useRuntimeStore((state: any) =>
+    const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
     const defaultLaunchMode = usePreferencesStore(
-        (state: any) => state.defaultLaunchMode
+        (state) => state.defaultLaunchMode
     );
     const groupInstancesState = useRuntimeStore(
-        (state: any) => state.groupInstances
+        (state) => state.groupInstances
     );
     const groupInstances =
         groupInstancesState.userId === currentUserId &&
         groupInstancesState.endpoint === currentEndpoint
             ? groupInstancesState.instances
             : [];
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const [details, setDetails] = useState(emptyDetails);
     const [loading, setLoading] = useState(false);
     const [busy, setBusy] = useState('');
@@ -326,7 +324,7 @@ export function LaunchDialogHost() {
     const canInviteResolvedInstance =
         Boolean(actionTag) &&
         (checkCanInvite(actionTag, {
-            currentUserId,
+            currentUserId: currentUserId || '',
             lastLocationStr: currentUserLocation,
             cachedInstances
         }) ||

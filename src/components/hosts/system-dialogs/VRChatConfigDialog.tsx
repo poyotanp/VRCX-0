@@ -128,9 +128,9 @@ function ResolutionSelect({ label, value, rows, onValueChange }: any) {
 
 export function VRChatConfigDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const loadRequestRef = useRef(0);
-    const [config, setConfig] = useState<any>({
+    const [config, setConfig] = useState<Record<string, any>>({
         picture_output_split_by_date: true
     });
     const [cacheSize, setCacheSize] = useState('');
@@ -492,7 +492,7 @@ export function VRChatConfigDialog({ open, onOpenChange }: any) {
                                         checked={Boolean(
                                             config.picture_output_split_by_date
                                         )}
-                                        onCheckedChange={(checked: any) =>
+                                        onCheckedChange={(checked) =>
                                             setConfig((current: any) => ({
                                                 ...current,
                                                 picture_output_split_by_date:
@@ -512,7 +512,7 @@ export function VRChatConfigDialog({ open, onOpenChange }: any) {
                                         checked={Boolean(
                                             config.disableRichPresence
                                         )}
-                                        onCheckedChange={(checked: any) =>
+                                        onCheckedChange={(checked) =>
                                             setConfig((current: any) => ({
                                                 ...current,
                                                 disableRichPresence:

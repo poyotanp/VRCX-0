@@ -119,10 +119,10 @@ export function FeedColumnsManagerDialog({
     const [restorePresetPromptOpen, setRestorePresetPromptOpen] =
         useState(false);
     const favoriteFriendGroups = useFavoriteStore(
-        (state: any) => state.favoriteFriendGroups
+        (state) => state.favoriteFriendGroups
     );
     const localFriendFavoriteGroups = useFavoriteStore(
-        (state: any) => state.localFriendFavoriteGroups
+        (state) => state.localFriendFavoriteGroups
     );
     const favoriteGroupOptions = useMemo(
         () =>

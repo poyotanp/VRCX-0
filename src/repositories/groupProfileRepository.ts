@@ -17,6 +17,32 @@ import {
 } from './vrchatRequest';
 
 type GroupRecord = Record<string, unknown>;
+type GroupGallerySummary = GroupRecord & {
+    createdAt?: string;
+    description?: string;
+    id: string;
+    membersOnly?: boolean;
+    name?: string;
+    roleIdsToAutoApprove?: string[];
+    roleIdsToManage?: string[];
+    roleIdsToSubmit?: string[];
+    roleIdsToView?: string[] | null;
+    updatedAt?: string;
+};
+
+type GroupGalleryFileRow = GroupRecord & {
+    approved?: boolean;
+    approvedAt?: string | null;
+    approvedByUserId?: string | null;
+    createdAt?: string;
+    fileId: string;
+    galleryId: string;
+    groupId: string;
+    id: string;
+    imageUrl?: string;
+    submittedByUserId?: string;
+};
+
 type GroupProfileRecord = GroupRecord & {
     id: string;
     name: string;
@@ -37,9 +63,111 @@ type GroupProfileRecord = GroupRecord & {
     links: string[];
     tags: string[];
     roles: GroupRecord[];
+    galleries?: GroupGallerySummary[];
     url: string;
     userInterest?: unknown;
 };
+
+type GroupUserGroupRow = GroupRecord & {
+    bannerId?: string;
+    bannerUrl?: string;
+    description?: string;
+    discriminator?: string;
+    groupId: string;
+    iconId?: string;
+    iconUrl?: string;
+    id: string;
+    isRepresenting?: boolean;
+    lastPostCreatedAt?: string | null;
+    lastPostReadAt?: string | null;
+    memberCount?: number;
+    memberVisibility?: string;
+    mutualGroup?: boolean;
+    name?: string;
+    ownerId?: string;
+    privacy?: string;
+    shortCode?: string;
+};
+
+type GroupMemberUser = GroupRecord & {
+    currentAvatarImageUrl?: string;
+    currentAvatarTags?: string[];
+    currentAvatarThumbnailImageUrl?: string;
+    displayName?: string;
+    iconUrl?: string;
+    id?: string;
+    profilePicOverride?: string;
+    thumbnailUrl?: string;
+    userIcon?: string;
+};
+
+type GroupMemberRow = GroupRecord & {
+    acceptedByDisplayName?: string | null;
+    acceptedById?: string | null;
+    bannedAt?: string | null;
+    createdAt?: string;
+    groupId: string;
+    hasJoinedFromPurchase?: boolean;
+    id: string;
+    isRepresenting?: boolean;
+    isSubscribedToAnnouncements?: boolean;
+    isSubscribedToEventAnnouncements?: boolean;
+    joinedAt?: string;
+    lastPostReadAt?: string | null;
+    mRoleIds?: string[];
+    managerNotes?: string | null;
+    membershipStatus?: string;
+    roleIds?: string[];
+    user?: GroupMemberUser;
+    userId: string;
+    visibility?: string;
+};
+
+type GroupInstanceRow = GroupRecord & {
+    active?: boolean;
+    ageGate?: boolean;
+    calendarEntryId?: string | null;
+    canRequestInvite?: boolean;
+    capacity?: number;
+    clientNumber?: string | number;
+    closedAt?: string | null;
+    contentSettings?: GroupRecord & {
+        drones?: boolean;
+        prints?: boolean;
+        stickers?: boolean;
+    };
+    disabledPropAbilities?: string[];
+    displayName?: string;
+    dominantLanguage?: string;
+    full?: boolean;
+    gameServerVersion?: string | number;
+    groupAccessType?: string;
+    hardClose?: boolean;
+    id?: string;
+    instanceId?: string;
+    instancePersistenceEnabled?: boolean;
+    languageRatio?: GroupRecord;
+    location?: string;
+};
+
+type GroupInstancesResponse = GroupRecord & {
+    fetchedAt?: string;
+    instances?: GroupInstanceRow[];
+};
+
+type GroupAuditLogRow = GroupRecord & {
+    actorDisplayName: string;
+    actorId: string;
+    created_at: string;
+    data: GroupRecord;
+    description: string;
+    eventType: string;
+    groupId: string;
+    id: string;
+    targetId: string;
+};
+
+type GroupModerationRow = GroupMemberRow;
 type VrchatApiResult = {
     status: number;
     data: unknown;
@@ -265,26 +393,26 @@ function normalizeGroupProfile(
     };
 }
 
-function responseRows(json: unknown, key = ''): unknown[] {
+function responseRows<TRow = unknown>(json: unknown, key = ''): TRow[] {
     if (Array.isArray(json)) {
-        return json;
+        return json as TRow[];
     }
 
     if (key && isRecord(json) && Array.isArray(json[key])) {
-        return json[key];
+        return json[key] as TRow[];
     }
 
     return [];
 }
 
-async function collectPages(
-    fetchPage: (page: PageRequest) => Promise<unknown[]>,
+async function collectPages<TRow = unknown>(
+    fetchPage: (page: PageRequest) => Promise<TRow[]>,
     {
         pageSize = VRCHAT_API_DEFAULT_PAGE_SIZE,
         maxPages = Number.POSITIVE_INFINITY
     }: CollectPagesOptions = {}
 ) {
-    const rows: unknown[] = [];
+    const rows: TRow[] = [];
 
     for (let page = 0; page < maxPages; page += 1) {
         const nextRows = await fetchPage({
@@ -348,7 +476,7 @@ async function fetchGroupProfile({
         );
     }
 
-    const response = unwrapVrchatGroupResponse(
+    const response = unwrapVrchatGroupResponse<GroupRecord>(
         await commands.appVrchatGroupGet({
             groupId: normalizedGroupId,
             includeRoles: Boolean(includeRoles),
@@ -370,11 +498,11 @@ async function getUserGroups({
         );
     }
 
-    const rows = await fetchCachedData<GroupRecord[]>({
+    const rows = await fetchCachedData<GroupUserGroupRow[]>({
         queryKey: queryKeys.userGroups(normalizedUserId, endpoint),
         policy: entityQueryPolicies.groupCollection,
         queryFn: async () => {
-            const response = unwrapVrchatGroupResponse<GroupRecord[]>(
+            const response = unwrapVrchatGroupResponse<GroupUserGroupRow[]>(
                 await commands.appVrchatGroupUserGroupsGet({
                     userId: normalizedUserId,
                     endpoint
@@ -496,7 +624,7 @@ async function getGroupMembers({
     sort = 'joinedAt:desc',
     roleId = '',
     force = false
-}: GroupMembersInput) {
+}: GroupMembersInput): Promise<GroupMemberRow[]> {
     const normalizedGroupId = normalizeEntityId(groupId);
     if (!normalizedGroupId) {
         throw new Error(
@@ -528,7 +656,7 @@ async function getGroupMembers({
                 }),
                 `groups/${encodeURIComponent(normalizedGroupId)}/members`
             );
-            return responseRows(response.json, 'members');
+            return responseRows<GroupMemberRow>(response.json, 'members');
         }
     });
 }
@@ -558,7 +686,7 @@ async function getGroupMembersSearch({
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/members/search`
     );
-    return responseRows(response.json, 'results');
+    return responseRows<GroupMemberRow>(response.json, 'results');
 }
 
 async function getAllGroupMembers({
@@ -612,7 +740,7 @@ async function getGroupGallery({
                 }),
                 `groups/${encodeURIComponent(normalizedGroupId)}/galleries/${encodeURIComponent(normalizedGalleryId)}`
             );
-            return responseRows(response.json, 'files');
+            return responseRows<GroupGalleryFileRow>(response.json, 'files');
         }
     });
 }
@@ -843,7 +971,7 @@ async function getGroupInstances({
         );
     }
 
-    return unwrapVrchatGroupResponse(
+    const response = unwrapVrchatGroupResponse<GroupInstancesResponse>(
         await commands.appVrchatGroupInstancesGet({
             groupId: normalizedGroupId,
             userId: normalizedUserId,
@@ -851,6 +979,7 @@ async function getGroupInstances({
         }),
         `users/${encodeURIComponent(normalizedUserId)}/instances/groups/${encodeURIComponent(normalizedGroupId)}`
     );
+    return response;
 }
 
 async function getGroupBans({
@@ -875,7 +1004,7 @@ async function getGroupBans({
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/bans`
     );
-    return responseRows(response.json, 'bans');
+    return responseRows<GroupModerationRow>(response.json, 'bans');
 }
 
 async function getAllGroupBans({ groupId, endpoint = '' }: GroupIdInput) {
@@ -906,7 +1035,7 @@ async function getGroupInvites({
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/invites`
     );
-    return responseRows(response.json, 'invites');
+    return responseRows<GroupModerationRow>(response.json, 'invites');
 }
 
 async function getAllGroupInvites({ groupId, endpoint = '' }: GroupIdInput) {
@@ -939,7 +1068,7 @@ async function getGroupJoinRequests({
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/requests`
     );
-    return responseRows(response.json, 'requests');
+    return responseRows<GroupModerationRow>(response.json, 'requests');
 }
 
 async function getAllGroupJoinRequests({
@@ -1000,7 +1129,7 @@ async function getGroupLogs({
         }),
         `groups/${encodeURIComponent(normalizedGroupId)}/auditLogs`
     );
-    return responseRows(response.json, 'results');
+    return responseRows<GroupAuditLogRow>(response.json, 'results');
 }
 
 async function getAllGroupLogs({
@@ -1111,17 +1240,14 @@ async function getUsersGroupInstances({
         );
     }
 
-    return unwrapVrchatGroupResponse<{
-        instances?: unknown[];
-        fetchedAt?: unknown;
-        [key: string]: unknown;
-    }>(
+    const response = unwrapVrchatGroupResponse<GroupInstancesResponse>(
         await commands.appVrchatGroupUserInstancesGet({
             userId: normalizedUserId,
             endpoint
         }),
         `users/${encodeURIComponent(normalizedUserId)}/instances/groups`
     );
+    return response;
 }
 
 const groupProfileRepository = Object.freeze({

@@ -61,18 +61,12 @@ export function CustomNavDialog({
     onDashboardCreated
 }: any) {
     const { t } = useTranslation();
-    const prompt = useModalStore((state: any) => state.prompt);
-    const confirm = useModalStore((state: any) => state.confirm);
-    const createDashboard = useDashboardStore(
-        (state: any) => state.createDashboard
-    );
-    const updateDashboard = useDashboardStore(
-        (state: any) => state.updateDashboard
-    );
-    const deleteDashboard = useDashboardStore(
-        (state: any) => state.deleteDashboard
-    );
-    const getDashboard = useDashboardStore((state: any) => state.getDashboard);
+    const prompt = useModalStore((state) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
+    const createDashboard = useDashboardStore((state) => state.createDashboard);
+    const updateDashboard = useDashboardStore((state) => state.updateDashboard);
+    const deleteDashboard = useDashboardStore((state) => state.deleteDashboard);
+    const getDashboard = useDashboardStore((state) => state.getDashboard);
     const [localLayout, setLocalLayout] = useState(() => cloneLayout(layout));
     const [localHiddenKeys, setLocalHiddenKeys] = useState(
         () => new Set(hiddenKeys || [])

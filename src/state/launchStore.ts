@@ -37,14 +37,9 @@ const emptyLaunchDialog: LaunchDialogState = {
     worldName: ''
 };
 
-export const useLaunchStore = create<LaunchStoreState>((set: any) => ({
+export const useLaunchStore = create<LaunchStoreState>((set) => ({
     launchDialog: emptyLaunchDialog,
-    showLaunchDialog(
-        tag: any,
-        shortName: any = '',
-        launchToken: any = '',
-        options: any = {}
-    ) {
+    showLaunchDialog(tag, shortName = '', launchToken = '', options = {}) {
         set({
             launchDialog: {
                 open: true,
@@ -57,7 +52,7 @@ export const useLaunchStore = create<LaunchStoreState>((set: any) => ({
             }
         });
         queueMicrotask(() => {
-            set((state: any) => ({
+            set((state) => ({
                 launchDialog: {
                     ...state.launchDialog,
                     loading: false
@@ -68,8 +63,8 @@ export const useLaunchStore = create<LaunchStoreState>((set: any) => ({
     closeLaunchDialog() {
         set({ launchDialog: emptyLaunchDialog });
     },
-    setLaunchDialogOpen(open: any) {
-        set((state: any) => ({
+    setLaunchDialogOpen(open) {
+        set((state) => ({
             launchDialog: open
                 ? {
                       ...state.launchDialog,

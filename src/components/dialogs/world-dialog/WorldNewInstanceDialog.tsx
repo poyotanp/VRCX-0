@@ -249,7 +249,7 @@ export function WorldNewInstanceDialog({
                     id={inputId}
                     value={form.groupId}
                     disabled={disabled}
-                    onChange={(event: any) =>
+                    onChange={(event) =>
                         patchForm({
                             groupId: event.target.value,
                             groupName: '',
@@ -301,9 +301,7 @@ export function WorldNewInstanceDialog({
                 </DialogHeader>
                 <Tabs
                     value={form.selectedTab}
-                    onValueChange={(value: any) =>
-                        patchForm({ selectedTab: value })
-                    }
+                    onValueChange={(value) => patchForm({ selectedTab: value })}
                 >
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="Normal">
@@ -322,7 +320,7 @@ export function WorldNewInstanceDialog({
                                 <Select
                                     value={form.accessType}
                                     disabled={Boolean(request?.created)}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         patchForm({ accessType: value })
                                     }
                                 >
@@ -352,7 +350,7 @@ export function WorldNewInstanceDialog({
                                 <Select
                                     value={form.region}
                                     disabled={Boolean(request?.created)}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         patchForm({ region: value })
                                     }
                                 >
@@ -395,7 +393,7 @@ export function WorldNewInstanceDialog({
                                         <Select
                                             value={form.groupAccessType}
                                             disabled={Boolean(request?.created)}
-                                            onValueChange={(value: any) =>
+                                            onValueChange={(value) =>
                                                 patchForm({
                                                     groupAccessType: value
                                                 })
@@ -439,7 +437,7 @@ export function WorldNewInstanceDialog({
                                                 disabled={Boolean(
                                                     request?.created
                                                 )}
-                                                onChange={(event: any) =>
+                                                onChange={(event) =>
                                                     patchForm({
                                                         roleIds:
                                                             event.target.value
@@ -461,7 +459,7 @@ export function WorldNewInstanceDialog({
                                                 disabled={Boolean(
                                                     request?.created
                                                 )}
-                                                onCheckedChange={(value: any) =>
+                                                onCheckedChange={(value) =>
                                                     patchForm({
                                                         queueEnabled:
                                                             Boolean(value)
@@ -486,7 +484,7 @@ export function WorldNewInstanceDialog({
                                                 disabled={Boolean(
                                                     request?.created
                                                 )}
-                                                onCheckedChange={(value: any) =>
+                                                onCheckedChange={(value) =>
                                                     patchForm({
                                                         ageGate: Boolean(value)
                                                     })
@@ -517,7 +515,7 @@ export function WorldNewInstanceDialog({
                                                 disabled={Boolean(
                                                     request?.created
                                                 )}
-                                                onChange={(event: any) =>
+                                                onChange={(event) =>
                                                     patchDisplayName(
                                                         event.target.value
                                                     )
@@ -582,7 +580,7 @@ export function WorldNewInstanceDialog({
                                 </FieldLabel>
                                 <Select
                                     value={form.accessType}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         patchForm({ accessType: value })
                                     }
                                 >
@@ -611,7 +609,7 @@ export function WorldNewInstanceDialog({
                                 </FieldLabel>
                                 <Select
                                     value={form.region}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         patchForm({ region: value })
                                     }
                                 >
@@ -643,7 +641,7 @@ export function WorldNewInstanceDialog({
                                 <Input
                                     id="world-launch-instance-name"
                                     value={form.instanceName}
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         patchForm({
                                             instanceName:
                                                 event.target.value.replace(
@@ -663,7 +661,7 @@ export function WorldNewInstanceDialog({
                                     <Input
                                         id="world-launch-user-id"
                                         value={form.legacyUserId}
-                                        onChange={(event: any) =>
+                                        onChange={(event) =>
                                             patchForm({
                                                 legacyUserId: event.target.value
                                             })
@@ -689,7 +687,7 @@ export function WorldNewInstanceDialog({
                                         </FieldLabel>
                                         <Select
                                             value={form.groupAccessType}
-                                            onValueChange={(value: any) =>
+                                            onValueChange={(value) =>
                                                 patchForm({
                                                     groupAccessType: value
                                                 })
@@ -727,7 +725,7 @@ export function WorldNewInstanceDialog({
                                     <Checkbox
                                         id="world-launch-age-gate"
                                         checked={form.ageGate}
-                                        onCheckedChange={(value: any) =>
+                                        onCheckedChange={(value) =>
                                             patchForm({
                                                 ageGate: Boolean(value)
                                             })
@@ -744,7 +742,7 @@ export function WorldNewInstanceDialog({
                                     <Checkbox
                                         id="world-launch-strict"
                                         checked={form.strict}
-                                        onCheckedChange={(value: any) =>
+                                        onCheckedChange={(value) =>
                                             patchForm({
                                                 strict: Boolean(value)
                                             })
@@ -768,7 +766,7 @@ export function WorldNewInstanceDialog({
                                 id="world-created-location"
                                 readOnly
                                 value={activeCreated.location || ''}
-                                onClick={(event: any) =>
+                                onClick={(event) =>
                                     event.currentTarget.select()
                                 }
                             />
@@ -781,7 +779,7 @@ export function WorldNewInstanceDialog({
                                 id="world-created-url"
                                 readOnly
                                 value={activeCreated.url || ''}
-                                onClick={(event: any) =>
+                                onClick={(event) =>
                                     event.currentTarget.select()
                                 }
                             />

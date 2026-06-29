@@ -46,17 +46,13 @@ export function UserActivityPanel({
     active = false
 }: any) {
     const { t } = useTranslation();
-    const locale = useShellStore((state: any) => state.locale);
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const locale = useShellStore((state) => state.locale);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const weekStartsOn = usePreferencesStore(
-        (state: any) => state.weekStartsOn
-    );
-    const themeMode = useShellStore((state: any) => state.themeMode);
+    const weekStartsOn = usePreferencesStore((state) => state.weekStartsOn);
+    const themeMode = useShellStore((state) => state.themeMode);
     const userId = profile?.id || '';
     const activityContextKey = `${currentUserId || ''}:${isCurrentUser ? 'self' : 'friend'}:${userId}`;
     const isDarkMode = getResolvedThemeMode(themeMode) === 'dark';
@@ -242,7 +238,7 @@ export function UserActivityPanel({
                         </span>
                         <Select
                             value={selectedPeriod}
-                            onValueChange={(value: any) => {
+                            onValueChange={(value) => {
                                 changePeriod(value);
                             }}
                             disabled={loading}

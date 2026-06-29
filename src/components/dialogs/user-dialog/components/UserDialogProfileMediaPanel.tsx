@@ -194,7 +194,12 @@ export function UserDialogProfileMediaPanel({
     onSetProfileMediaField
 }: any) {
     const { t } = useTranslation();
-    const [filesBySection, setFilesBySection] = useState<any>({
+    const [filesBySection, setFilesBySection] = useState<
+        Record<
+            string,
+            Awaited<ReturnType<typeof mediaRepository.getFileList>>['json']
+        >
+    >({
         gallery: [],
         icons: []
     });

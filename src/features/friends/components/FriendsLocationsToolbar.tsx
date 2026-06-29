@@ -55,7 +55,7 @@ export function FriendsLocationsToolbar({
                     </InputGroupAddon>
                     <InputGroupInput
                         value={searchQuery}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onSearchQueryChange(event.target.value)
                         }
                         placeholder={t(
@@ -111,7 +111,7 @@ export function FriendsLocationsToolbar({
                                 size="sm"
                                 spacing={1}
                                 value={density}
-                                onValueChange={(nextValue: any) => {
+                                onValueChange={(nextValue) => {
                                     if (nextValue) {
                                         onDensityChange(nextValue);
                                     }

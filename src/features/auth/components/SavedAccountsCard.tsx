@@ -109,7 +109,7 @@ export function SavedAccountsCard({
                                             }
                                         )}
                                         disabled={isDeleting || isAuthBusy}
-                                        onClick={(event: any) => {
+                                        onClick={(event) => {
                                             event.stopPropagation();
                                             onCancelAutoLogin(
                                                 t(

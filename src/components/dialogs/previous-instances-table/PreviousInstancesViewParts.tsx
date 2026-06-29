@@ -251,7 +251,7 @@ export function PreviousInstanceDetailsPanel({
     const { t } = useTranslation();
 
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const [detailsViewMode, setDetailsViewMode] = useState('players');
     const [infoData, setInfoData] = useState<any>({

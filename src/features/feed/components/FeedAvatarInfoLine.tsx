@@ -157,10 +157,10 @@ export const AvatarInfoLine = memo(function AvatarInfoLine({
 }: any) {
     const { t } = useTranslation();
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const [info, setInfo] = useState(() =>
         resolveInitialAvatarInfoLineState({

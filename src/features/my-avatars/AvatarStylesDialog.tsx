@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import type { AvatarStyleRecord } from '@/repositories/avatarProfileRepository';
 import myAvatarRepository from '@/repositories/myAvatarRepository';
 import { useRuntimeStore } from '@/state/runtimeStore';
 import { Button } from '@/ui/shadcn/button';
@@ -78,11 +79,11 @@ function arraysMatch(left: any, right: any) {
 }
 
 function applyStyleParam(
-    params: any,
-    key: any,
-    styleName: any,
-    initialStyleName: any,
-    styleIdByName: any
+    params: Record<string, unknown>,
+    key: string,
+    styleName: string,
+    initialStyleName: string,
+    styleIdByName: Map<string, string>
 ) {
     if (!styleName) {
         params[key] = '';
@@ -125,7 +126,9 @@ export function AvatarStylesDialog({
     const [primaryStyle, setPrimaryStyle] = useState('');
     const [secondaryStyle, setSecondaryStyle] = useState('');
     const [authorTags, setAuthorTags] = useState('');
-    const [availableStyles, setAvailableStyles] = useState<any[]>([]);
+    const [availableStyles, setAvailableStyles] = useState<AvatarStyleRecord[]>(
+        []
+    );
     const [loadStatus, setLoadStatus] = useState('idle');
     const [saving, setSaving] = useState(false);
 
@@ -156,14 +159,14 @@ export function AvatarStylesDialog({
         setLoadStatus('running');
         myAvatarRepository
             .getAvailableAvatarStyles({ endpoint })
-            .then((styles: any) => {
+            .then((styles) => {
                 if (!active) {
                     return;
                 }
                 setAvailableStyles(styles);
                 setLoadStatus('ready');
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
                 if (!active) {
                     return;
                 }
@@ -183,7 +186,7 @@ export function AvatarStylesDialog({
     }, [endpoint, open]);
 
     const styleIdByName = useMemo(() => {
-        const map = new Map();
+        const map = new Map<string, string>();
         for (const style of availableStyles) {
             const name = normalizeStyleName(style?.styleName);
             if (name) {
@@ -296,7 +299,7 @@ export function AvatarStylesDialog({
                         </FieldLabel>
                         <Select
                             value={primaryStyle || CLEAR_STYLE_VALUE}
-                            onValueChange={(value: any) =>
+                            onValueChange={(value) =>
                                 setPrimaryStyle(
                                     value === CLEAR_STYLE_VALUE ? '' : value
                                 )
@@ -314,7 +317,7 @@ export function AvatarStylesDialog({
                                     <SelectItem value={CLEAR_STYLE_VALUE}>
                                         {t('view.my_avatars.label.none')}
                                     </SelectItem>
-                                    {styleNames.map((styleName: any) => (
+                                    {styleNames.map((styleName) => (
                                         <SelectItem
                                             key={styleName}
                                             value={styleName}
@@ -332,7 +335,7 @@ export function AvatarStylesDialog({
                         </FieldLabel>
                         <Select
                             value={secondaryStyle || CLEAR_STYLE_VALUE}
-                            onValueChange={(value: any) =>
+                            onValueChange={(value) =>
                                 setSecondaryStyle(
                                     value === CLEAR_STYLE_VALUE ? '' : value
                                 )
@@ -350,7 +353,7 @@ export function AvatarStylesDialog({
                                     <SelectItem value={CLEAR_STYLE_VALUE}>
                                         {t('view.my_avatars.label.none')}
                                     </SelectItem>
-                                    {styleNames.map((styleName: any) => (
+                                    {styleNames.map((styleName) => (
                                         <SelectItem
                                             key={styleName}
                                             value={styleName}
@@ -369,7 +372,7 @@ export function AvatarStylesDialog({
                         <Textarea
                             id="avatar-styles-author-tags"
                             value={authorTags}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setAuthorTags(event.target.value)
                             }
                             rows={3}

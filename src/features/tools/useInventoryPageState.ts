@@ -58,20 +58,16 @@ export function useInventoryPageState() {
     const { t } = useTranslation();
     const uploadInputRef = useRef<HTMLInputElement | null>(null);
     const uploadTargetRef = useRef<string | null>(null);
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const [activeCategory, setActiveCategory] = useState('emojis');
     const [activeSubTabs, setActiveSubTabs] = useState<Record<string, string>>({
         emojis: 'custom',

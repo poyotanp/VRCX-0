@@ -28,7 +28,7 @@ export function useFriendsSidebarActions({
     prompt
 }: any) {
     const { t } = useTranslation();
-    const boopPrompt = useModalStore((state: any) => state.boopPrompt);
+    const boopPrompt = useModalStore((state) => state.boopPrompt);
 
     function openFriend(friend: any) {
         openUserDialog({

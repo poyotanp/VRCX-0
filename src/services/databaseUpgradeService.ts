@@ -1,6 +1,10 @@
 import { toast } from 'sonner';
 
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type DatabaseUpgradeStatus,
+    type LegacyVrcxMigrationStatus
+} from '@/platform/tauri/bindings';
 import configRepository from '@/repositories/configRepository';
 import databaseMaintenanceRepository from '@/repositories/databaseMaintenanceRepository';
 import i18n from '@/services/i18nService';
@@ -15,17 +19,6 @@ const DATABASE_VERSION = 17;
 const VRCX0_SCHEMA_VERSION_KEY = 'VRCX_0_databaseVersion';
 
 type DatabaseUpgradePatch = Record<string, unknown>;
-type FailedUpgrade = Record<string, unknown> & {
-    workDbPath?: unknown;
-    reason?: unknown;
-    fromVersion?: number;
-    toVersion?: number;
-};
-type LegacyMigrationStatus = Record<string, unknown> & {
-    detected: boolean;
-    available: boolean;
-    reason?: string;
-};
 
 function setUpgradeState(patch: DatabaseUpgradePatch): void {
     useRuntimeStore.getState().setDatabaseUpgradeState(patch);
@@ -36,7 +29,7 @@ function errorMessage(error: unknown): string {
 }
 
 function failedUpgradeDescription(
-    failedUpgrade: FailedUpgrade | null | undefined
+    failedUpgrade: DatabaseUpgradeStatus | null | undefined
 ): string {
     const workDbPath =
         failedUpgrade?.workDbPath ||
@@ -57,7 +50,7 @@ function failedUpgradeDescription(
 }
 
 async function blockOnFailedUpgrade(
-    failedUpgrade: FailedUpgrade | null | undefined
+    failedUpgrade: DatabaseUpgradeStatus | null | undefined
 ): Promise<boolean> {
     setUpgradeState({
         open: false,
@@ -106,8 +99,7 @@ async function runFullDatabaseUpgrade(): Promise<boolean> {
     let upgradeStarted = false;
     let upgradeCommitted = false;
     try {
-        const failedUpgrade =
-            (await commands.sqliteGetFailedUpgrade()) as FailedUpgrade | null;
+        const failedUpgrade = await commands.sqliteGetFailedUpgrade();
         if (failedUpgrade) {
             return blockOnFailedUpgrade(failedUpgrade);
         }
@@ -173,12 +165,11 @@ async function runFullDatabaseUpgrade(): Promise<boolean> {
     } catch (error) {
         console.error('Database upgrade failed:', error);
         const reason = errorMessage(error);
-        let failedUpgrade: FailedUpgrade | null = null;
+        let failedUpgrade: DatabaseUpgradeStatus | null = null;
         if (upgradeStarted && !upgradeCommitted) {
             try {
                 await commands.sqliteFailUpgrade(reason);
-                failedUpgrade =
-                    (await commands.sqliteGetFailedUpgrade()) as FailedUpgrade | null;
+                failedUpgrade = await commands.sqliteGetFailedUpgrade();
             } catch (failError) {
                 console.error(
                     'Failed to preserve database upgrade work copy:',
@@ -213,10 +204,9 @@ async function runFullDatabaseUpgrade(): Promise<boolean> {
     }
 }
 
-async function getLegacyMigrationStatus(): Promise<LegacyMigrationStatus> {
+async function getLegacyMigrationStatus(): Promise<LegacyVrcxMigrationStatus> {
     try {
-        const status = await commands.appGetLegacyVrcxMigrationStatus();
-        return status as LegacyMigrationStatus;
+        return commands.appGetLegacyVrcxMigrationStatus();
     } catch (error) {
         console.warn('Legacy VRCX migration status check failed:', error);
     }
@@ -237,8 +227,7 @@ async function getLegacyMigrationStatus(): Promise<LegacyMigrationStatus> {
 }
 
 export async function initializeDatabaseUpgradeFlow(): Promise<boolean> {
-    const failedUpgrade =
-        (await commands.sqliteGetFailedUpgrade()) as FailedUpgrade | null;
+    const failedUpgrade = await commands.sqliteGetFailedUpgrade();
     if (failedUpgrade) {
         return blockOnFailedUpgrade(failedUpgrade);
     }

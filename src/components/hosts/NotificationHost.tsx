@@ -16,15 +16,13 @@ import {
 export function NotificationHost() {
     const { t } = useTranslation();
 
-    const items = useNotificationStore((state: any) => state.items);
-    const isPanelOpen = useNotificationStore((state: any) => state.isPanelOpen);
-    const setPanelOpen = useNotificationStore(
-        (state: any) => state.setPanelOpen
-    );
+    const items = useNotificationStore((state) => state.items);
+    const isPanelOpen = useNotificationStore((state) => state.isPanelOpen);
+    const setPanelOpen = useNotificationStore((state) => state.setPanelOpen);
     const dismissNotification = useNotificationStore(
-        (state: any) => state.dismissNotification
+        (state) => state.dismissNotification
     );
-    const markAllRead = useNotificationStore((state: any) => state.markAllRead);
+    const markAllRead = useNotificationStore((state) => state.markAllRead);
     const unreadCount = items.filter((item: any) => !item.read).length;
 
     return (

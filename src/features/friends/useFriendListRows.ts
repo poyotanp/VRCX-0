@@ -14,56 +14,85 @@ import {
     buildFriendListFavoriteIdSet as buildFavoriteIdSet,
     buildFriendListUserStatsById as buildUserStatsById,
     filterFriendListRows,
+    type FriendListRow,
+    type FriendListStatsPatch,
+    type FriendListUserStatsRow,
+    type FriendMemoRow,
+    type FriendNoteRow,
     normalizeFriendListId as normalizeId
 } from './friendListRows';
+
+function isPresent<T>(value: T | null | undefined): value is T {
+    return value != null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
+}
+
+function normalizeStatsRows(value: unknown): FriendListUserStatsRow[] {
+    return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function normalizeMemoRows(value: unknown): FriendMemoRow[] {
+    return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function normalizeNoteRows(value: unknown): FriendNoteRow[] {
+    return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function readMutualOptedOut(value: unknown): boolean {
+    return isRecord(value) && value.optedOut === true;
+}
 
 export function useFriendListRows({
     activeSearchFilterIds,
     favoritesOnly,
     searchQuery
 }: {
-    activeSearchFilterIds: Set<unknown>;
+    activeSearchFilterIds: Set<string>;
     favoritesOnly: boolean;
     searchQuery: string;
 }) {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const isFavoritesLoaded = useSessionStore(
-        (state: any) => state.isFavoritesLoaded
+        (state) => state.isFavoritesLoaded
     );
-    const friendLoadStatus = useFriendRosterStore(
-        (state: any) => state.loadStatus
-    );
-    const friendDetail = useFriendRosterStore((state: any) => state.detail);
+    const friendLoadStatus = useFriendRosterStore((state) => state.loadStatus);
+    const friendDetail = useFriendRosterStore((state) => state.detail);
     const orderedFriendIds = useFriendRosterStore(
-        (state: any) => state.orderedFriendIds
+        (state) => state.orderedFriendIds
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const applyFriendPatches = useFriendRosterStore(
-        (state: any) => state.applyFriendPatches
+        (state) => state.applyFriendPatches
     );
     const remoteFavoriteFriendIds = useFavoriteStore(
-        (state: any) => state.favoriteFriendIds
+        (state) => state.favoriteFriendIds
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
     const statsHydrationRequestRef = useRef(0);
-    const [userMemoById, setUserMemoById] = useState(() => new Map());
-    const [userNoteById, setUserNoteById] = useState(() => new Map());
+    const [userMemoById, setUserMemoById] = useState(
+        () => new Map<string, string>()
+    );
+    const [userNoteById, setUserNoteById] = useState(
+        () => new Map<string, string>()
+    );
     const favoriteFriendIds = useMemo(
         () => buildFavoriteIdSet(remoteFavoriteFriendIds, localFriendFavorites),
         [localFriendFavorites, remoteFavoriteFriendIds]
     );
     const factsById = useKnownUserFacts(orderedFriendIds);
-    const rosterRows = useMemo(
+    const rosterRows = useMemo<FriendListRow[]>(
         () =>
             orderedFriendIds
-                .map((friendId: any, index: any) => {
+                .map((friendId, index) => {
                     const rosterFriend = friendsById[friendId];
                     if (!rosterFriend) {
                         return null;
@@ -88,14 +117,14 @@ export function useFriendListRows({
                         $friendNumber: index + 1
                     };
                 })
-                .filter(Boolean),
+                .filter(isPresent),
         [friendsById, orderedFriendIds, factsById]
     );
     const rosterStatsKey = useMemo(
         () =>
             rosterRows
                 .map(
-                    (friend: any) =>
+                    (friend) =>
                         `${normalizeId(friend?.id)}:${friend?.displayName || ''}`
                 )
                 .join('\u0001'),
@@ -127,22 +156,22 @@ export function useFriendListRows({
             memoPersistenceRepository.getAllUserMemos(),
             memoPersistenceRepository.getAllUserNotes(currentUserId)
         ])
-            .then(([memoRows, noteRows]: any) => {
+            .then(([memoRows, noteRows]) => {
                 if (!active) {
                     return;
                 }
-                const nextMemos = new Map();
-                for (const row of Array.isArray(memoRows) ? memoRows : []) {
+                const nextMemos = new Map<string, string>();
+                for (const row of normalizeMemoRows(memoRows)) {
                     const userId = normalizeId(row?.userId);
                     if (userId) {
-                        nextMemos.set(userId, row?.memo || '');
+                        nextMemos.set(userId, String(row?.memo || ''));
                     }
                 }
-                const nextNotes = new Map();
-                for (const row of Array.isArray(noteRows) ? noteRows : []) {
+                const nextNotes = new Map<string, string>();
+                for (const row of normalizeNoteRows(noteRows)) {
                     const userId = normalizeId(row?.userId);
                     if (userId) {
-                        nextNotes.set(userId, row?.note || '');
+                        nextNotes.set(userId, String(row?.note || ''));
                     }
                 }
                 setUserMemoById(nextMemos);
@@ -162,16 +191,16 @@ export function useFriendListRows({
         const requestId = statsHydrationRequestRef.current + 1;
         statsHydrationRequestRef.current = requestId;
         const userIds = rosterRows
-            .map((friend: any) => normalizeId(friend?.id))
+            .map((friend) => normalizeId(friend?.id))
             .filter(Boolean);
         const displayNames = rosterRows
-            .map((friend: any) => String(friend?.displayName || '').trim())
+            .map((friend) => String(friend?.displayName || '').trim())
             .filter(Boolean);
         const mutualSnapshotPromise = currentUserId
             ? mutualGraphPersistenceRepository
                   .getSnapshot(currentUserId)
-                  .then(({ snapshot, meta }: any) => {
-                      const countMap = new Map();
+                  .then(({ snapshot, meta }) => {
+                      const countMap = new Map<string, number>();
                       for (const [friendId, mutualIds] of snapshot) {
                           countMap.set(friendId, mutualIds.length);
                       }
@@ -185,12 +214,16 @@ export function useFriendListRows({
             }),
             mutualSnapshotPromise
         ])
-            .then(([statsRows, [mutualCountMap, mutualMetaMap]]: any) => {
+            .then(([statsRows, [mutualCountMap, mutualMetaMap]]) => {
                 if (!active || statsHydrationRequestRef.current !== requestId) {
                     return;
                 }
-                const statsById = buildUserStatsById(statsRows, rosterRows);
-                const patches = [];
+                const normalizedStatsRows = normalizeStatsRows(statsRows);
+                const statsById = buildUserStatsById(
+                    normalizedStatsRows,
+                    rosterRows
+                );
+                const patches: FriendListStatsPatch[] = [];
                 for (const friend of rosterRows) {
                     const friendId = normalizeId(friend?.id);
                     if (!friendId) {
@@ -199,17 +232,13 @@ export function useFriendListRows({
                     const stats = statsById.get(friendId);
                     const mutualCount =
                         Number.parseInt(
-                            mutualCountMap instanceof Map
-                                ? mutualCountMap.get(friendId)
-                                : 0,
+                            String(mutualCountMap.get(friendId) ?? 0),
                             10
                         ) || 0;
                     const mutualOptedOut = Boolean(
-                        mutualMetaMap instanceof Map
-                            ? mutualMetaMap.get(friendId)?.optedOut
-                            : false
+                        readMutualOptedOut(mutualMetaMap.get(friendId))
                     );
-                    const patch: any = {
+                    const patch: FriendListStatsPatch['patch'] = {
                         $mutualCount: mutualCount,
                         $mutualOptedOut: mutualOptedOut
                     };
@@ -223,8 +252,10 @@ export function useFriendListRows({
                             (friend.$joinCount !== patch.$joinCount ||
                                 friend.$lastSeen !== patch.$lastSeen ||
                                 friend.$timeSpent !== patch.$timeSpent)) ||
-                        (Number.parseInt(friend.$mutualCount ?? 0, 10) || 0) !==
-                            mutualCount ||
+                        (Number.parseInt(
+                            String(friend.$mutualCount ?? 0),
+                            10
+                        ) || 0) !== mutualCount ||
                         Boolean(friend.$mutualOptedOut) !== mutualOptedOut
                     ) {
                         patches.push({
@@ -239,7 +270,7 @@ export function useFriendListRows({
                     applyFriendPatches(patches);
                 }
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
                 console.warn(
                     '[FriendListPage] Failed to hydrate friend stats',
                     error

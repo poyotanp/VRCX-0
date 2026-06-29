@@ -1,3 +1,4 @@
+import type { AvatarStyleRecord } from '@/repositories/avatarProfileRepository';
 import { normalizeString } from '@/shared/utils/string';
 
 export function normalizeTagName(value: any, prefix: any) {
@@ -33,6 +34,6 @@ export function tagsKey(tags: any) {
     return (Array.isArray(tags) ? tags : []).slice().sort().join('\n');
 }
 
-export function styleName(style: any) {
+export function styleName(style: AvatarStyleRecord | null | undefined) {
     return normalizeString(style?.styleName || style?.name || style?.id);
 }

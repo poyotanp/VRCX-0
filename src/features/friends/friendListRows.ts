@@ -1,3 +1,7 @@
+import type {
+    FriendPatchEntry,
+    FriendRosterBucket
+} from '@/domain/friends/friendRosterTypes';
 import removeConfusables, { removeWhitespace } from '@/services/confusables';
 
 export const FRIEND_LIST_DEFAULT_SEARCH_FILTER_IDS = [
@@ -9,17 +13,93 @@ export const FRIEND_LIST_DEFAULT_SEARCH_FILTER_IDS = [
     'memo'
 ];
 
-export function normalizeFriendListId(value: any) {
+export type FriendListRow = Record<string, unknown> & {
+    $friendNumber?: unknown;
+    $joinCount?: number;
+    $lastSeen?: string;
+    $mutualCount?: number | string;
+    $mutualOptedOut?: boolean;
+    $timeSpent?: number;
+    $trustLevel?: unknown;
+    bio?: unknown;
+    displayName?: string;
+    friendNumber?: unknown;
+    id?: unknown;
+    memo?: unknown;
+    note?: unknown;
+    state?: FriendRosterBucket;
+    stateBucket?: FriendRosterBucket;
+    status?: unknown;
+    statusDescription?: unknown;
+    userId?: unknown;
+    username?: unknown;
+};
+
+export type FriendListUserStatsRow = {
+    displayName?: unknown;
+    joinCount?: unknown;
+    lastSeen?: unknown;
+    timeSpent?: unknown;
+    userId?: unknown;
+};
+
+export type FriendListUserStats = {
+    displayName: string;
+    joinCount: number;
+    lastSeen: string;
+    timeSpent: number;
+};
+
+export type FriendMemoRow = {
+    userId?: unknown;
+    memo?: unknown;
+};
+
+export type FriendNoteRow = {
+    userId?: unknown;
+    displayName?: unknown;
+    note?: unknown;
+    createdAt?: unknown;
+};
+
+export type FriendListStatsPatch = FriendPatchEntry & {
+    userId: string;
+    patch: {
+        $joinCount?: number;
+        $lastSeen?: string;
+        $mutualCount: number;
+        $mutualOptedOut: boolean;
+        $timeSpent?: number;
+    };
+    stateBucket: FriendRosterBucket;
+};
+
+type FriendNumberSource = {
+    $friendNumber?: unknown;
+    friendNumber?: unknown;
+};
+
+type FriendListFilterInput = {
+    rosterRows: readonly FriendListRow[];
+    favoritesOnly: boolean;
+    favoriteFriendIds: ReadonlySet<string>;
+    searchQuery: string;
+    activeSearchFilterIds: ReadonlySet<string>;
+    userMemoById: ReadonlyMap<string, string>;
+    userNoteById: ReadonlyMap<string, string>;
+};
+
+export function normalizeFriendListId(value: unknown) {
     return typeof value === 'string'
         ? value.trim()
         : String(value ?? '').trim();
 }
 
 export function buildFriendListFavoriteIdSet(
-    remoteFavoriteIds: any,
-    localFriendFavorites: any
-) {
-    const set = new Set();
+    remoteFavoriteIds: readonly unknown[] = [],
+    localFriendFavorites: Record<string, unknown> = {}
+): Set<string> {
+    const set = new Set<string>();
     for (const id of remoteFavoriteIds ?? []) {
         const normalized = normalizeFriendListId(id);
         if (normalized) {
@@ -40,12 +120,15 @@ export function buildFriendListFavoriteIdSet(
     return set;
 }
 
-export function buildFriendListUserStatsById(statsRows: any, rosterRows: any) {
-    const dataByDisplayName = new Map();
-    const friendsByDisplayName = new Map();
-    const statsById = new Map();
+export function buildFriendListUserStatsById(
+    statsRows: readonly FriendListUserStatsRow[],
+    rosterRows: readonly FriendListRow[]
+): Map<string, FriendListUserStats> {
+    const dataByDisplayName = new Map<string, string>();
+    const friendsByDisplayName = new Map<string, string>();
+    const statsById = new Map<string, FriendListUserStats>();
 
-    for (const row of Array.isArray(statsRows) ? statsRows : []) {
+    for (const row of statsRows) {
         const displayName = String(row?.displayName || '').trim();
         const userId = normalizeFriendListId(row?.userId);
         if (displayName && userId) {
@@ -53,7 +136,7 @@ export function buildFriendListUserStatsById(statsRows: any, rosterRows: any) {
         }
     }
 
-    for (const friend of Array.isArray(rosterRows) ? rosterRows : []) {
+    for (const friend of rosterRows) {
         const displayName = String(friend?.displayName || '').trim();
         const userId = normalizeFriendListId(friend?.id);
         if (displayName && userId) {
@@ -61,7 +144,7 @@ export function buildFriendListUserStatsById(statsRows: any, rosterRows: any) {
         }
     }
 
-    for (const row of Array.isArray(statsRows) ? statsRows : []) {
+    for (const row of statsRows) {
         const displayName = String(row?.displayName || '').trim();
         const userId =
             normalizeFriendListId(row?.userId) ||
@@ -72,8 +155,8 @@ export function buildFriendListUserStatsById(statsRows: any, rosterRows: any) {
         }
 
         const current = statsById.get(userId);
-        const next: any = {
-            lastSeen: row?.lastSeen || '',
+        const next: FriendListUserStats = {
+            lastSeen: String(row?.lastSeen || ''),
             timeSpent: Number(row?.timeSpent) || 0,
             joinCount: Number(row?.joinCount) || 0,
             displayName
@@ -94,22 +177,22 @@ export function buildFriendListUserStatsById(statsRows: any, rosterRows: any) {
     return statsById;
 }
 
-export function friendNumberForSort(friend: any) {
+export function friendNumberForSort(friend: FriendNumberSource) {
     return (
         Number.parseInt(
-            friend?.$friendNumber ?? friend?.friendNumber ?? 0,
+            String(friend?.$friendNumber ?? friend?.friendNumber ?? 0),
             10
         ) || 0
     );
 }
 
 export function matchesFriendListSearch(
-    friend: any,
-    searchQuery: any,
-    activeSearchFilters: any,
-    userMemoById: any,
-    userNoteById: any
-) {
+    friend: FriendListRow,
+    searchQuery: string,
+    activeSearchFilters: ReadonlySet<string>,
+    userMemoById: ReadonlyMap<string, string>,
+    userNoteById: ReadonlyMap<string, string>
+): boolean {
     if (!searchQuery) {
         return true;
     }
@@ -214,8 +297,8 @@ export function filterFriendListRows({
     activeSearchFilterIds,
     userMemoById,
     userNoteById
-}: any) {
-    return rosterRows.filter((friend: any) => {
+}: FriendListFilterInput): FriendListRow[] {
+    return rosterRows.filter((friend) => {
         if (
             favoritesOnly &&
             !favoriteFriendIds.has(normalizeFriendListId(friend?.id))

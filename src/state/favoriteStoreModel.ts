@@ -1,5 +1,7 @@
 import type {
+    FavoriteCachedGroup,
     FavoriteDetailsById,
+    FavoriteEntityDetail,
     FavoriteGroup,
     FavoriteGroupMap,
     FavoriteLimits,
@@ -29,16 +31,41 @@ export function isObjectRecord(
     return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }
 
+function copyUnknownFields(
+    source: Record<string, unknown>,
+    knownFields: ReadonlySet<string>
+): Record<string, unknown> {
+    const next: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(source)) {
+        if (!knownFields.has(key)) {
+            next[key] = value;
+        }
+    }
+    return next;
+}
+
+function normalizeLimitRecord(source: unknown): Record<string, number> {
+    if (!isObjectRecord(source)) {
+        return {};
+    }
+
+    const next: Record<string, number> = {};
+    for (const [key, value] of Object.entries(source)) {
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            next[key] = value;
+        }
+    }
+    return next;
+}
+
 export function cloneFavoriteLimits(
     limits: unknown = DEFAULT_FAVORITE_LIMITS
 ): FavoriteLimits {
     const source = isObjectRecord(limits) ? limits : {};
-    const maxFavoriteGroups = isObjectRecord(source.maxFavoriteGroups)
-        ? source.maxFavoriteGroups
-        : {};
-    const maxFavoritesPerGroup = isObjectRecord(source.maxFavoritesPerGroup)
-        ? source.maxFavoritesPerGroup
-        : {};
+    const maxFavoriteGroups = normalizeLimitRecord(source.maxFavoriteGroups);
+    const maxFavoritesPerGroup = normalizeLimitRecord(
+        source.maxFavoritesPerGroup
+    );
 
     return {
         maxFavoriteGroups: {
@@ -193,6 +220,55 @@ export function normalizeStringArray(source: unknown): string[] {
         : [];
 }
 
+function normalizeStringArrayField(value: unknown): string[] | undefined {
+    return Array.isArray(value)
+        ? value.map((entry) => normalizeFavoriteStoreId(entry)).filter(Boolean)
+        : undefined;
+}
+
+const FAVORITE_CACHED_GROUP_FIELDS = new Set([
+    'displayName',
+    'id',
+    'name',
+    'ownerDisplayName',
+    'ownerId',
+    'tags',
+    'type',
+    'visibility'
+]);
+
+const FAVORITE_RECORD_FIELDS = new Set([
+    '$groupKey',
+    'favoriteId',
+    'id',
+    'tags',
+    'type'
+]);
+
+const FAVORITE_GROUP_FIELDS = new Set([
+    'assign',
+    'capacity',
+    'count',
+    'displayName',
+    'key',
+    'name',
+    'tags',
+    'type',
+    'visibility'
+]);
+
+const FAVORITE_ENTITY_DETAIL_FIELDS = new Set([
+    'authorId',
+    'authorName',
+    'description',
+    'id',
+    'imageUrl',
+    'name',
+    'releaseStatus',
+    'tags',
+    'thumbnailImageUrl'
+]);
+
 export function normalizeFavoriteGroupMap(source: unknown): FavoriteGroupMap {
     if (!isObjectRecord(source)) {
         return {};
@@ -209,8 +285,51 @@ export function normalizeFavoriteGroupMap(source: unknown): FavoriteGroupMap {
     return next;
 }
 
-export function normalizeRecord(source: unknown): Record<string, unknown> {
-    return isObjectRecord(source) ? { ...source } : {};
+export function normalizeRecord(
+    source: unknown
+): Record<string, FavoriteCachedGroup> {
+    if (!isObjectRecord(source)) {
+        return {};
+    }
+
+    const next: Record<string, FavoriteCachedGroup> = {};
+    for (const [key, value] of Object.entries(source)) {
+        const normalizedKey = normalizeFavoriteStoreId(key);
+        if (!normalizedKey || !isObjectRecord(value)) {
+            continue;
+        }
+        const record: FavoriteCachedGroup = copyUnknownFields(
+            value,
+            FAVORITE_CACHED_GROUP_FIELDS
+        );
+        if (typeof value.displayName === 'string') {
+            record.displayName = value.displayName;
+        }
+        if (typeof value.id === 'string') {
+            record.id = value.id;
+        }
+        if (typeof value.name === 'string') {
+            record.name = value.name;
+        }
+        if (typeof value.ownerDisplayName === 'string') {
+            record.ownerDisplayName = value.ownerDisplayName;
+        }
+        if (typeof value.ownerId === 'string') {
+            record.ownerId = value.ownerId;
+        }
+        const tags = normalizeStringArrayField(value.tags);
+        if (tags) {
+            record.tags = tags;
+        }
+        if (typeof value.type === 'string') {
+            record.type = value.type;
+        }
+        if (typeof value.visibility === 'string') {
+            record.visibility = value.visibility;
+        }
+        next[normalizedKey] = record;
+    }
+    return next;
 }
 
 export function normalizeFavoriteRecordMap(
@@ -226,14 +345,68 @@ export function normalizeFavoriteRecordMap(
         if (!recordKey || !isObjectRecord(value)) {
             continue;
         }
-        next[recordKey] = { ...value };
+        const record: FavoriteRecord = copyUnknownFields(
+            value,
+            FAVORITE_RECORD_FIELDS
+        );
+        if (typeof value.id === 'string') {
+            record.id = value.id;
+        }
+        if (typeof value.type === 'string') {
+            record.type = value.type;
+        }
+        if (typeof value.favoriteId === 'string') {
+            record.favoriteId = value.favoriteId;
+        }
+        if (typeof value.$groupKey === 'string') {
+            record.$groupKey = value.$groupKey;
+        }
+        const tags = normalizeStringArrayField(value.tags);
+        if (tags) {
+            record.tags = tags;
+        }
+        next[recordKey] = record;
     }
     return next;
 }
 
 export function normalizeFavoriteGroups(source: unknown): FavoriteGroup[] {
     return Array.isArray(source)
-        ? source.filter(isObjectRecord).map((group) => ({ ...group }))
+        ? source.filter(isObjectRecord).map((group) => {
+              const groupRecord: FavoriteGroup = copyUnknownFields(
+                  group,
+                  FAVORITE_GROUP_FIELDS
+              );
+              if (typeof group.key === 'string') {
+                  groupRecord.key = group.key;
+              }
+              if (typeof group.count === 'number') {
+                  groupRecord.count = group.count;
+              }
+              if (typeof group.assign === 'boolean') {
+                  groupRecord.assign = group.assign;
+              }
+              if (typeof group.capacity === 'number') {
+                  groupRecord.capacity = group.capacity;
+              }
+              if (typeof group.displayName === 'string') {
+                  groupRecord.displayName = group.displayName;
+              }
+              if (typeof group.name === 'string') {
+                  groupRecord.name = group.name;
+              }
+              if (typeof group.type === 'string') {
+                  groupRecord.type = group.type;
+              }
+              if (typeof group.visibility === 'string') {
+                  groupRecord.visibility = group.visibility;
+              }
+              const tags = normalizeStringArrayField(group.tags);
+              if (tags) {
+                  groupRecord.tags = tags;
+              }
+              return groupRecord;
+          })
         : [];
 }
 
@@ -250,7 +423,39 @@ export function normalizeFavoriteDetailsById(
         if (!normalizedKey || !isObjectRecord(value)) {
             continue;
         }
-        next[normalizedKey] = { ...value };
+        const detail: FavoriteEntityDetail = copyUnknownFields(
+            value,
+            FAVORITE_ENTITY_DETAIL_FIELDS
+        );
+        if (typeof value.id === 'string') {
+            detail.id = value.id;
+        }
+        if (typeof value.name === 'string') {
+            detail.name = value.name;
+        }
+        if (typeof value.authorId === 'string') {
+            detail.authorId = value.authorId;
+        }
+        if (typeof value.authorName === 'string') {
+            detail.authorName = value.authorName;
+        }
+        if (typeof value.description === 'string') {
+            detail.description = value.description;
+        }
+        if (typeof value.imageUrl === 'string') {
+            detail.imageUrl = value.imageUrl;
+        }
+        if (typeof value.releaseStatus === 'string') {
+            detail.releaseStatus = value.releaseStatus;
+        }
+        if (typeof value.thumbnailImageUrl === 'string') {
+            detail.thumbnailImageUrl = value.thumbnailImageUrl;
+        }
+        const tags = normalizeStringArrayField(value.tags);
+        if (tags) {
+            detail.tags = tags;
+        }
+        next[normalizedKey] = detail;
     }
     return next;
 }

@@ -5,6 +5,30 @@ import vrchatModerationRepository from '@/repositories/vrchatModerationRepositor
 import { refreshModerationSync } from '@/services/moderationSyncService';
 import { getVrchatUserModeration } from '@/services/shellIntegrationService';
 
+export type ModerationState = {
+    block: boolean;
+    mute: boolean;
+};
+
+export type ExtendedModerationState = {
+    interactOff: boolean;
+    muteChat: boolean;
+};
+
+export type AvatarOverrideState = {
+    hideAvatar: boolean;
+    showAvatar: boolean;
+};
+
+type UserDialogModerationStateOptions = {
+    currentEndpoint?: string;
+    currentUserId?: string | null;
+    isTargetCurrentUser: boolean;
+    normalizedCurrentUserId: string;
+    normalizedUserId: string;
+    reloadToken: number;
+};
+
 export function useUserDialogModerationState({
     currentEndpoint,
     currentUserId,
@@ -12,21 +36,24 @@ export function useUserDialogModerationState({
     normalizedCurrentUserId,
     normalizedUserId,
     reloadToken
-}: any) {
-    const [moderationState, setModerationState] = useState(() => ({
-        block: false,
-        mute: false
-    }));
-    const [extendedModerationState, setExtendedModerationState] = useState(
+}: UserDialogModerationStateOptions) {
+    const [moderationState, setModerationState] = useState<ModerationState>(
         () => ({
+            block: false,
+            mute: false
+        })
+    );
+    const [extendedModerationState, setExtendedModerationState] = useState(
+        (): ExtendedModerationState => ({
             interactOff: false,
             muteChat: false
         })
     );
-    const [avatarOverrideState, setAvatarOverrideState] = useState(() => ({
-        hideAvatar: false,
-        showAvatar: false
-    }));
+    const [avatarOverrideState, setAvatarOverrideState] =
+        useState<AvatarOverrideState>(() => ({
+            hideAvatar: false,
+            showAvatar: false
+        }));
     const moderationRevisionRef = useRef(0);
 
     useEffect(() => {
@@ -52,7 +79,7 @@ export function useUserDialogModerationState({
                   userId: normalizedUserId
               });
         localModerationPromise
-            .then((entry: any) => {
+            .then((entry) => {
                 if (active && moderationRevisionRef.current === revision) {
                     setModerationState({
                         block: Boolean(entry?.block),
@@ -89,19 +116,19 @@ export function useUserDialogModerationState({
             userId: normalizedCurrentUserId,
             endpoint: currentEndpoint
         })
-            .then((response: any) => {
+            .then((response) => {
                 if (!active) {
                     return;
                 }
-                const rows = Array.isArray(response?.rows) ? response.rows : [];
+                const rows = response.rows;
                 setExtendedModerationState({
                     interactOff: rows.some(
-                        (row: any) =>
+                        (row) =>
                             row.targetUserId === normalizedUserId &&
                             row.type === 'interactOff'
                     ),
                     muteChat: rows.some(
-                        (row: any) =>
+                        (row) =>
                             row.targetUserId === normalizedUserId &&
                             row.type === 'muteChat'
                     )
@@ -142,16 +169,11 @@ export function useUserDialogModerationState({
         }
 
         getVrchatUserModeration(normalizedCurrentUserId, normalizedUserId)
-            .then((value: any) => {
+            .then((value) => {
                 if (!active) {
                     return;
                 }
-                const moderationType = Number(
-                    value?.moderationType ??
-                        value?.type ??
-                        value?.value ??
-                        value
-                );
+                const moderationType = Number(value);
                 setAvatarOverrideState({
                     hideAvatar: moderationType === 4,
                     showAvatar: moderationType === 5

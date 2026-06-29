@@ -2,14 +2,40 @@ import { toast } from 'sonner';
 
 import { recordUserProfile } from '@/domain/users/userFactAccess';
 import i18n from '@/services/i18nService';
-import { useDialogStore } from '@/state/dialogStore';
+import {
+    useDialogStore,
+    type ActiveDialog,
+    type DialogBreadcrumb
+} from '@/state/dialogStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
 let entityDialogOpenNonce = 0;
 
-type EntityDialogKind = 'user' | 'world' | 'avatar' | 'group' | string;
+type EntityDialogKind = 'user' | 'world' | 'avatar' | 'group' | (string & {});
 type DialogRecord = Record<string, unknown>;
-type EntityDialogPayload = DialogRecord | null;
+type EntityDialogPayload =
+    | (DialogRecord & {
+          seedData?: DialogRecord | null;
+          initialAction?: string;
+          initialActionNonce?: number;
+          initialNewInstanceDefaults?: DialogRecord | null;
+      })
+    | null;
+type EntityDialog = ActiveDialog & {
+    kind: EntityDialogKind;
+    openNonce?: number;
+    payload?: EntityDialogPayload;
+};
+type EntityDialogBreadcrumb = DialogBreadcrumb & {
+    key: string;
+    kind: EntityDialogKind;
+    entityId: string;
+    label: string;
+    title: string;
+    description: string;
+    payload: EntityDialogPayload;
+    openNonce: number;
+};
 
 type OpenEntityDialogOptions = {
     kind?: EntityDialogKind;
@@ -173,21 +199,21 @@ function openEntityDialog({
         normalizeEntityId(store.activeDialog?.entityId) === normalizedEntityId
     ) {
         if (kind === 'user' && payload?.initialAction) {
-            const nextPayload: any = {
+            const nextPayload: EntityDialogPayload = {
                 ...(isRecord(store.activeDialog.payload)
                     ? store.activeDialog.payload
                     : {}),
                 ...payload
             };
             entityDialogOpenNonce += 1;
-            const nextDialog: any = {
+            const nextDialog: EntityDialog = {
                 ...store.activeDialog,
                 payload: nextPayload,
                 openNonce: entityDialogOpenNonce
             };
             store.setDialogTrail(
                 nextDialog,
-                store.breadcrumbs.map((crumb: any, index: any) =>
+                store.breadcrumbs.map((crumb, index) =>
                     index === store.breadcrumbs.length - 1
                         ? {
                               ...crumb,
@@ -212,7 +238,7 @@ function openEntityDialog({
     const label = sanitizeEntityTitle(kind, normalizedEntityId, title, payload);
     entityDialogOpenNonce += 1;
     const openNonce = entityDialogOpenNonce;
-    const dialog: any = {
+    const dialog: EntityDialog = {
         kind,
         entityId: normalizedEntityId,
         title: label,
@@ -220,7 +246,7 @@ function openEntityDialog({
         payload,
         openNonce
     };
-    const crumb: any = {
+    const crumb: EntityDialogBreadcrumb = {
         key: `${kind}:${normalizedEntityId}`,
         kind,
         entityId: normalizedEntityId,

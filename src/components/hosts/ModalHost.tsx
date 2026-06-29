@@ -66,15 +66,15 @@ function renderOtpSlots(count: any, offset: any = 0) {
 export function ModalHost() {
     const { t } = useTranslation();
 
-    const alertDialog = useModalStore((state: any) => state.alertDialog);
-    const promptDialog = useModalStore((state: any) => state.promptDialog);
-    const boopDialog = useModalStore((state: any) => state.boopDialog);
-    const otpDialog = useModalStore((state: any) => state.otpDialog);
-    const imageDialog = useModalStore((state: any) => state.imageDialog);
+    const alertDialog = useModalStore((state) => state.alertDialog);
+    const promptDialog = useModalStore((state) => state.promptDialog);
+    const boopDialog = useModalStore((state) => state.boopDialog);
+    const otpDialog = useModalStore((state) => state.otpDialog);
+    const imageDialog = useModalStore((state) => state.imageDialog);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const isLocalUserVrcPlusSupporter = useRuntimeStore((state: any) =>
+    const isLocalUserVrcPlusSupporter = useRuntimeStore((state) =>
         Boolean(
             state.auth.currentUserSnapshot?.$isVRCPlus ||
             state.auth.currentUserSnapshot?.tags?.includes?.(
@@ -83,34 +83,24 @@ export function ModalHost() {
             globalThis?.$debug?.debugVrcPlus
         )
     );
-    const handleOk = useModalStore((state: any) => state.handleOk);
-    const handleCancel = useModalStore((state: any) => state.handleCancel);
-    const handleDismiss = useModalStore((state: any) => state.handleDismiss);
-    const handlePromptOk = useModalStore((state: any) => state.handlePromptOk);
+    const handleOk = useModalStore((state) => state.handleOk);
+    const handleCancel = useModalStore((state) => state.handleCancel);
+    const handleDismiss = useModalStore((state) => state.handleDismiss);
+    const handlePromptOk = useModalStore((state) => state.handlePromptOk);
     const handlePromptCancel = useModalStore(
-        (state: any) => state.handlePromptCancel
+        (state) => state.handlePromptCancel
     );
     const handlePromptDismiss = useModalStore(
-        (state: any) => state.handlePromptDismiss
+        (state) => state.handlePromptDismiss
     );
-    const handleBoopOk = useModalStore((state: any) => state.handleBoopOk);
-    const handleBoopDismiss = useModalStore(
-        (state: any) => state.handleBoopDismiss
-    );
-    const handleOtpOk = useModalStore((state: any) => state.handleOtpOk);
-    const handleOtpCancel = useModalStore(
-        (state: any) => state.handleOtpCancel
-    );
-    const handleOtpDismiss = useModalStore(
-        (state: any) => state.handleOtpDismiss
-    );
-    const closeImagePreview = useModalStore(
-        (state: any) => state.closeImagePreview
-    );
-    const updatePromptValue = useModalStore(
-        (state: any) => state.updatePromptValue
-    );
-    const updateOtpValue = useModalStore((state: any) => state.updateOtpValue);
+    const handleBoopOk = useModalStore((state) => state.handleBoopOk);
+    const handleBoopDismiss = useModalStore((state) => state.handleBoopDismiss);
+    const handleOtpOk = useModalStore((state) => state.handleOtpOk);
+    const handleOtpCancel = useModalStore((state) => state.handleOtpCancel);
+    const handleOtpDismiss = useModalStore((state) => state.handleOtpDismiss);
+    const closeImagePreview = useModalStore((state) => state.closeImagePreview);
+    const updatePromptValue = useModalStore((state) => state.updatePromptValue);
+    const updateOtpValue = useModalStore((state) => state.updateOtpValue);
     const promptValueIsValid = matchesPromptPattern(
         promptDialog.inputPattern,
         promptDialog.value
@@ -122,7 +112,7 @@ export function ModalHost() {
         <>
             <AlertDialog
                 open={alertDialog.open}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open) => {
                     if (!open) {
                         handleDismiss();
                     }
@@ -161,7 +151,7 @@ export function ModalHost() {
             </AlertDialog>
             <Dialog
                 open={promptDialog.open}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open) => {
                     if (!open) {
                         handlePromptDismiss(promptDialog.value);
                     }
@@ -177,7 +167,7 @@ export function ModalHost() {
                     {promptDialog.multiline ? (
                         <Textarea
                             value={promptDialog.value}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 updatePromptValue(event.target.value)
                             }
                             placeholder={t('dialog.tools.label.prompt_value')}
@@ -187,7 +177,7 @@ export function ModalHost() {
                         <Input
                             type={promptDialog.inputType}
                             value={promptDialog.value}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 updatePromptValue(event.target.value)
                             }
                             placeholder={t('dialog.tools.label.prompt_value')}
@@ -227,7 +217,7 @@ export function ModalHost() {
             />
             <Dialog
                 open={otpDialog.open}
-                onOpenChange={(open: any) => {
+                onOpenChange={(open) => {
                     if (!open) {
                         handleOtpDismiss(otpDialog.value);
                     }
@@ -263,12 +253,12 @@ export function ModalHost() {
                                     ? normalizeRecoveryCode
                                     : undefined
                             }
-                            onChange={(value: any) =>
+                            onChange={(value) =>
                                 updateOtpValue(
                                     getOtpInputValue(value, otpDialog.mode)
                                 )
                             }
-                            onComplete={(value: any) =>
+                            onComplete={(value) =>
                                 handleOtpOk(
                                     getOtpInputValue(value, otpDialog.mode)
                                 )

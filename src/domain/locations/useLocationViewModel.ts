@@ -19,14 +19,14 @@ function useLocationViewModel({
     hint = ''
 }: UseLocationViewModelOptions = {}) {
     const storeEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const resolvedEndpoint = endpoint || storeEndpoint;
     const key = useMemo(
         () => instancePresenceKey(resolvedEndpoint, location),
         [location, resolvedEndpoint]
     );
-    const locationHint = useLocationHintStore((state: any) =>
+    const locationHint = useLocationHintStore((state) =>
         key ? state.hintsByKey[key] || null : null
     );
 

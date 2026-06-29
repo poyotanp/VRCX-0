@@ -2,12 +2,19 @@ import { useRef, useState } from 'react';
 
 import avatarSearchProviderRepository from '@/repositories/avatarSearchProviderRepository';
 
+type AvatarProviderConfig = Awaited<
+    ReturnType<typeof avatarSearchProviderRepository.saveConfig>
+> & {
+    [key: string]: unknown;
+};
+
 export function useAvatarProviderConfig({ commit }: any) {
-    const [avatarProviderConfig, setAvatarProviderConfig] = useState<any>({
-        enabled: true,
-        providerList: [],
-        selectedProvider: ''
-    });
+    const [avatarProviderConfig, setAvatarProviderConfig] =
+        useState<AvatarProviderConfig>({
+            enabled: true,
+            providerList: [],
+            selectedProvider: ''
+        });
     const avatarProviderConfigRef = useRef(avatarProviderConfig);
     const avatarProviderSaveQueueRef = useRef<Promise<any>>(Promise.resolve());
     const avatarProviderSaveSeqRef = useRef(0);

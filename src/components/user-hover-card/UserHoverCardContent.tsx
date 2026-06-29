@@ -46,9 +46,7 @@ export function UserHoverCardContent({ userId, seed }: any) {
         trustColor,
         instanceEpoch
     } = useUserHoverCardData({ userId, seed });
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const worldDialogTarget = model.location.tag || model.location.worldId;
 
     const trustEntry = TRUST_COLOR_ENTRIES.find(

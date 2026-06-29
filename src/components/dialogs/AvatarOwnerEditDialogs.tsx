@@ -28,6 +28,10 @@ import { Textarea } from '@/ui/shadcn/textarea';
 
 export { AvatarDetailsDialog } from './AvatarDetailsDialog';
 
+type OwnAvatar = Awaited<
+    ReturnType<typeof avatarProfileRepository.getAllAvatarsByUser>
+>[number];
+
 const contentTagOptions = [
     { value: 'content_horror', label: 'Horror' },
     { value: 'content_gore', label: 'Gore' },
@@ -145,7 +149,7 @@ export function AvatarContentTagsDialog({
 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [ownAvatars, setOwnAvatars] = useState<any[]>([]);
+    const [ownAvatars, setOwnAvatars] = useState<OwnAvatar[]>([]);
     const [selectedAvatarIds, setSelectedAvatarIds] = useState<any[]>([]);
     const [selectedTagsCsv, setSelectedTagsCsv] = useState('');
     const selectedTags = contentTagsFromCsv(selectedTagsCsv);
@@ -392,7 +396,7 @@ export function AvatarContentTagsDialog({
                             value={selectedTagsCsv}
                             className="resize-none"
                             placeholder="horror,gore,violence,adult,sex"
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setSelectedTagsCsv(event.target.value)
                             }
                         />

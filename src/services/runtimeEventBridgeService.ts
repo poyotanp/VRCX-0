@@ -80,7 +80,7 @@ type RuntimeEventPayloadMap = {
     gameLogSideEffect: unknown;
     gameClientEvent: unknown;
     runtimeWorkerError: unknown;
-    runtimeGroupInstancesProjection: unknown;
+    runtimeGroupInstancesProjection: RuntimeGroupInstancesProjection;
     overlayActivitySnapshot: OverlayActivitySnapshot;
     notificationTts: Parameters<typeof executeNotificationTts>[0];
     realtimeFriendProjection: FriendProjection;
@@ -111,6 +111,23 @@ type HostCapabilitySnapshot = Record<string, unknown> & {
 };
 
 type RuntimeEventUnsubscribe = () => void;
+
+type RuntimeGroupInstance = Record<string, unknown> & {
+    id?: string;
+    instanceId?: string;
+    location?: string;
+    worldId?: string;
+};
+
+type RuntimeGroupInstancesProjection = {
+    status: string;
+    userId: string;
+    endpoint: string;
+    fetchedAt?: string | null;
+    error?: string | null;
+    instances?: RuntimeGroupInstance[];
+    groupOrder?: string[];
+};
 
 let gameLogIngestQueue: Promise<unknown> = Promise.resolve();
 let backendRuntimeHydrationPromise: Promise<void> | null = null;
@@ -377,19 +394,27 @@ function deliverBackendRealtimeProjectionEvent(
 ): void {
     useRuntimeStore.getState().recordRuntimeEvent(name, payload);
     if (name === 'realtimeFriendProjection') {
-        handleRealtimeFriendProjection(payload);
+        handleRealtimeFriendProjection(
+            payload as RuntimeEventPayloadMap['realtimeFriendProjection']
+        );
     } else if (name === 'realtimeUserProjection') {
         handleRealtimeUserCacheProjection(payload);
     } else if (name === 'realtimeNotificationProjection') {
-        Promise.resolve(handleRealtimeNotificationProjection(payload)).catch(
-            handleBackendRealtimeProjectionFailure
-        );
+        Promise.resolve(
+            handleRealtimeNotificationProjection(
+                payload as RuntimeEventPayloadMap['realtimeNotificationProjection']
+            )
+        ).catch(handleBackendRealtimeProjectionFailure);
     } else if (name === 'realtimeCurrentUserProjection') {
-        handleRealtimeCurrentUserProjection(payload);
-    } else if (name === 'realtimeInstanceClosedProjection') {
-        Promise.resolve(handleRealtimeInstanceClosedProjection(payload)).catch(
-            handleBackendRealtimeProjectionFailure
+        handleRealtimeCurrentUserProjection(
+            payload as RuntimeEventPayloadMap['realtimeCurrentUserProjection']
         );
+    } else if (name === 'realtimeInstanceClosedProjection') {
+        Promise.resolve(
+            handleRealtimeInstanceClosedProjection(
+                payload as RuntimeEventPayloadMap['realtimeInstanceClosedProjection']
+            )
+        ).catch(handleBackendRealtimeProjectionFailure);
     } else if (name === 'realtimeInstanceQueueProjection') {
         handleRealtimeInstanceQueueProjection(payload);
     }
@@ -634,7 +659,8 @@ function handleRuntimeEvent(
     }
 
     if (name === 'runtimeGroupInstancesProjection') {
-        const record = isRecord(payload) ? payload : {};
+        const record =
+            payload as RuntimeEventPayloadMap['runtimeGroupInstancesProjection'];
         const status = normalizeString(record.status) || 'ready';
         const userId = normalizeString(record.userId);
         const endpoint = normalizeString(record.endpoint);

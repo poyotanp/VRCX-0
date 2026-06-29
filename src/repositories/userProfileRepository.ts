@@ -46,6 +46,46 @@ type UserProfileRecord = UserRecord & {
     $platform: string;
 };
 
+type UserMutualCounts = {
+    friends: number;
+    groups: number;
+};
+
+type UserRepresentedGroup = Record<string, unknown> & {
+    bannerId?: string;
+    bannerUrl?: string;
+    description?: string;
+    discriminator?: string;
+    groupId: string;
+    iconId?: string;
+    iconUrl?: string;
+    isRepresenting?: boolean;
+    memberCount?: number;
+    memberVisibility?: string;
+    name?: string;
+    ownerId?: string;
+    privacy?: string;
+    shortCode?: string;
+};
+
+type UserMutualFriendRow = UserRecord & {
+    bannerColor?: string;
+    bannerType?: string;
+    bannerUrl?: string;
+    currentAvatarImageUrl?: string;
+    currentAvatarTags?: string[];
+    displayName?: string;
+    iconFrame?: string;
+    iconUrl?: string;
+    id: string;
+    imageUrl?: string;
+    nameplateEffect?: string;
+    profileEffect?: string;
+    profilePicOverride?: string;
+    status?: string;
+    statusDescription?: string;
+};
+
 interface PageRequest {
     n: number;
     offset: number;
@@ -262,7 +302,7 @@ async function getUserProfile({
         dialog,
         isFriend
     });
-    const json = unwrapVrchatUserResponse(
+    const json = unwrapVrchatUserResponse<UserRecord>(
         response,
         `users/${encodeURIComponent(normalizedUserId)}`
     ).json;
@@ -288,11 +328,14 @@ async function getMutualCounts({ userId, endpoint = '' }: UserEndpointInput) {
                 userId: normalizedUserId,
                 endpoint
             });
-            const json = unwrapVrchatUserResponse(
+            const json = unwrapVrchatUserResponse<UserMutualCounts>(
                 response,
                 `users/${encodeURIComponent(normalizedUserId)}/mutuals`
             ).json;
-            return json && typeof json === 'object' ? json : {};
+            return {
+                friends: Number(json?.friends) || 0,
+                groups: Number(json?.groups) || 0
+            };
         }
     });
 }
@@ -349,7 +392,7 @@ async function getRepresentedGroup({
                 userId: normalizedUserId,
                 endpoint
             });
-            const json = unwrapVrchatUserResponse(
+            const json = unwrapVrchatUserResponse<UserRepresentedGroup>(
                 response,
                 `users/${encodeURIComponent(normalizedUserId)}/groups/represented`
             ).json;
@@ -380,7 +423,7 @@ async function getMutualFriends({
         n,
         offset
     });
-    const json = unwrapVrchatUserResponse(
+    const json = unwrapVrchatUserResponse<UserMutualFriendRow[]>(
         response,
         `users/${encodeURIComponent(normalizedUserId)}/mutuals/friends`
     ).json;
@@ -418,7 +461,7 @@ async function updateCurrentUser({
         endpoint,
         params
     });
-    const json = unwrapVrchatUserResponse(
+    const json = unwrapVrchatUserResponse<UserRecord>(
         response,
         `users/${encodeURIComponent(normalizedUserId)}`
     ).json;

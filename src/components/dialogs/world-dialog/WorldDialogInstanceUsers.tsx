@@ -91,10 +91,10 @@ function firstDisplayName(userId: any, ...sources: any[]) {
 export function InstanceUserTiles({ instance }: any) {
     const { t } = useTranslation();
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const creatorUserId = firstText(instance?.creatorUserId);
     const knownCreatorUser = useKnownUserFact(creatorUserId, {

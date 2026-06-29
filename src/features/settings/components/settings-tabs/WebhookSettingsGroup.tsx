@@ -176,12 +176,10 @@ export function WebhookSettingsGroup({
                     placeholder={t(
                         'view.settings.notifications.notifications.webhook.url_placeholder'
                     )}
-                    onChange={(event: any) =>
+                    onChange={(event) =>
                         onWebhookUrlDraftChange(event.target.value)
                     }
-                    onBlur={(event: any) =>
-                        onWebhookUrlBlur(event.target.value)
-                    }
+                    onBlur={(event) => onWebhookUrlBlur(event.target.value)}
                 />
             </Field>
 
@@ -346,7 +344,7 @@ function WebhookPayloadFieldsDialog({
                                             field
                                         )}
                                         disabled={fieldsDisabled}
-                                        onCheckedChange={(checked: any) => {
+                                        onCheckedChange={(checked) => {
                                             handleFieldCheckedChange(
                                                 field,
                                                 Boolean(checked)

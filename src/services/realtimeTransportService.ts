@@ -120,6 +120,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object');
 }
 
+function getBackendFriendRecords(): Partial<
+    Record<string, BackendFriendRecord>
+> {
+    const records: Partial<Record<string, BackendFriendRecord>> = {};
+    for (const [userId, friend] of Object.entries(
+        useFriendRosterStore.getState().friendsById
+    )) {
+        records[userId] = { ...friend } as BackendFriendRecord;
+    }
+    return records;
+}
+
 function projectionGeneration(payload: unknown) {
     const generation = Number(isRecord(payload) ? payload.generation : null);
     return Number.isFinite(generation) && generation > 0 ? generation : null;
@@ -531,10 +543,7 @@ async function startRuntimeRealtimeTransport(context: RuntimeTransportContext) {
             context.websocket,
             runId,
             context.currentUserSnapshot,
-            useFriendRosterStore.getState().friendsById as unknown as Record<
-                string,
-                BackendFriendRecord
-            >
+            getBackendFriendRecords()
         );
         startGeneration = Number(startResult?.generation) || null;
         if (runId === runtimeTransportRunId) {
@@ -658,11 +667,7 @@ export async function startRealtimeTransport({
         typeof userId === 'string'
             ? userId.trim()
             : String(userId ?? '').trim();
-    if (
-        !normalizedUserId ||
-        !currentUserSnapshot ||
-        typeof currentUserSnapshot !== 'object'
-    ) {
+    if (!normalizedUserId || !isRecord(currentUserSnapshot)) {
         throw new Error(
             'Realtime transport bootstrap requires an authenticated user context.'
         );
@@ -685,7 +690,7 @@ export async function startRealtimeTransport({
         userId: normalizedUserId,
         endpoint,
         websocket,
-        currentUserSnapshot: currentUserSnapshot as Record<string, unknown>
+        currentUserSnapshot
     };
 
     try {
@@ -722,10 +727,7 @@ export async function syncRuntimeRealtimeFriendSnapshot({
         context.endpoint,
         context.websocket,
         runtimeTransportGeneration,
-        useFriendRosterStore.getState().friendsById as unknown as Record<
-            string,
-            BackendFriendRecord
-        >
+        getBackendFriendRecords()
     );
 }
 
@@ -739,8 +741,7 @@ export async function syncRuntimeRealtimeCurrentUserSnapshot(
         !context?.userId ||
         runtimeTransportGeneration === null ||
         !isCurrentTransportIdentity(context) ||
-        !snapshot ||
-        typeof snapshot !== 'object'
+        !isRecord(snapshot)
     ) {
         return null;
     }
@@ -750,10 +751,8 @@ export async function syncRuntimeRealtimeCurrentUserSnapshot(
         context.endpoint,
         context.websocket,
         runtimeTransportGeneration,
-        snapshot as Record<string, unknown>,
-        overlayPatch && typeof overlayPatch === 'object'
-            ? (overlayPatch as Record<string, unknown>)
-            : null
+        snapshot,
+        isRecord(overlayPatch) ? overlayPatch : null
     );
 }
 

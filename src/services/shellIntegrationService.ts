@@ -115,7 +115,7 @@ export async function setVrchatRegistryKey(
 export async function getVrchatUserModeration(
     currentUserId: string,
     userId: string
-): Promise<unknown> {
+): Promise<number> {
     return commands.appGetVrchatUserModeration(currentUserId, userId);
 }
 
@@ -123,7 +123,7 @@ export async function setVrchatUserModeration(
     currentUserId: string,
     userId: string,
     moderationType: string | number
-): Promise<any> {
+): Promise<boolean> {
     return commands.appSetVrchatUserModeration(
         currentUserId,
         userId,

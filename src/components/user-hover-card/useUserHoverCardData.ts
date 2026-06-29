@@ -22,11 +22,14 @@ type FriendRosterSeedState = {
     friendsById: Record<string, Record<string, unknown>>;
 };
 
+type UserHoverCardProfile = Awaited<
+    ReturnType<typeof userProfileRepository.getUserProfile>
+>;
+type UserHoverCardPopulation = ReturnType<typeof normalizeInstanceCounts>;
+
 export function useUserHoverCardData({ userId, seed }: any) {
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
-    const trustColor = usePreferencesStore((state: any) => state.trustColor);
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
+    const trustColor = usePreferencesStore((state) => state.trustColor);
 
     const normalizedInputUserId = normalizeId(userId);
     const shouldUseRosterSeed = !seed && Boolean(normalizedInputUserId);
@@ -41,9 +44,9 @@ export function useUserHoverCardData({ userId, seed }: any) {
 
     const isFriend = Boolean(effectiveSeed);
 
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<UserHoverCardProfile | null>(null);
     const [memo, setMemo] = useState('');
-    const [population, setPopulation] = useState<any>(null);
+    const [population, setPopulation] = useState<UserHoverCardPopulation>(null);
     const [populationLoading, setPopulationLoading] = useState(false);
     const [profileLoading, setProfileLoading] = useState(true);
 

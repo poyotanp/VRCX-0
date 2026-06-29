@@ -63,7 +63,7 @@ function GroupMenu({
                         variant="ghost"
                         className="rounded-full"
                         aria-label={t('common.actions.configure')}
-                        onClick={(event: any) => event.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <EllipsisIcon data-icon="inline-start" />
                     </Button>
@@ -96,7 +96,7 @@ function GroupMenu({
                         variant="ghost"
                         className="rounded-full"
                         aria-label={t('common.actions.configure')}
-                        onClick={(event: any) => event.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <MoreHorizontalIcon data-icon="inline-start" />
                     </Button>
@@ -161,7 +161,7 @@ function GroupMenu({
                     variant="ghost"
                     className="rounded-full"
                     aria-label={t('common.actions.configure')}
-                    onClick={(event: any) => event.stopPropagation()}
+                    onClick={(event) => event.stopPropagation()}
                 >
                     <EllipsisIcon data-icon="inline-start" />
                 </Button>
@@ -328,10 +328,10 @@ const GroupRailSection = memo(function GroupRailSection({
                         className="h-8 text-sm"
                         disabled={loading}
                         placeholder={resolvedNewGroupLabel}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onNewGroupNameChange(event.target.value)
                         }
-                        onKeyDown={(event: any) => {
+                        onKeyDown={(event) => {
                             if (event.key === 'Enter') {
                                 onConfirmCreate();
                             } else if (event.key === 'Escape') {

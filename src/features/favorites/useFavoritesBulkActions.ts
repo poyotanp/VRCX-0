@@ -54,7 +54,7 @@ export function useFavoritesBulkActions({
     setSelectedKeys(value: string[] | ((current: string[]) => string[])): void;
 }) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const moveTargets = useMemo(
         () =>
             buildFavoriteTransferTargets({

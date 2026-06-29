@@ -47,7 +47,7 @@ export function FriendSectionHeader({
     return (
         <Collapsible
             open={isOpen}
-            onOpenChange={(nextOpen: any) => {
+            onOpenChange={(nextOpen) => {
                 if (nextOpen !== isOpen) {
                     onToggle(id);
                 }

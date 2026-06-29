@@ -1,10 +1,10 @@
 import { commands } from '@/platform/tauri/bindings';
 
-async function clearCookies(): Promise<unknown> {
+async function clearCookies() {
     return commands.webClearCookies();
 }
 
-async function clearAuthCookies(): Promise<unknown> {
+async function clearAuthCookies() {
     return commands.webClearAuthCookies();
 }
 

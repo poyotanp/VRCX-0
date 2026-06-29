@@ -3,19 +3,17 @@ import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
 export function usePlayerListRuntime() {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const gameLogLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation || ''
+        (state) => state.gameState.currentLocation || ''
     );
-    const currentUserLocation = useRuntimeStore((state: any) => {
+    const currentUserLocation = useRuntimeStore((state) => {
         return (
             state.gameState.currentLocation ||
             state.auth.currentUserSnapshot?.location ||
@@ -23,28 +21,28 @@ export function usePlayerListRuntime() {
         );
     });
     const currentUserWorldId = useRuntimeStore(
-        (state: any) =>
+        (state) =>
             parseLocation(state.gameState.currentLocation || '').worldId ||
             state.auth.currentUserSnapshot?.worldId ||
             ''
     );
     const currentLocationStartedAt = useRuntimeStore(
-        (state: any) => state.gameState.currentLocationStartedAt
+        (state) => state.gameState.currentLocationStartedAt
     );
-    const isGameRunning = useRuntimeStore((state: any) =>
+    const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
     const addGameLogEventCount = useRuntimeStore(
-        (state: any) => state.runtimeEvents.addGameLogEvent.count
+        (state) => state.runtimeEvents.addGameLogEvent.count
     );
     const gameLogTailSyncedAt = useRuntimeStore(
-        (state: any) => state.updateLoop.lastGameLogSyncAt
+        (state) => state.updateLoop.lastGameLogSyncAt
     );
     const runtimePlayerRows = useRuntimeStore(
-        (state: any) => state.gameState.currentLocationPlayers
+        (state) => state.gameState.currentLocationPlayers
     );
     const gameLogDisabled = usePreferencesStore(
-        (state: any) => state.gameLogDisabled
+        (state) => state.gameLogDisabled
     );
 
     return {

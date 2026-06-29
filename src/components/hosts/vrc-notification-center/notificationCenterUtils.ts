@@ -1,6 +1,11 @@
+import type { TFunction } from 'i18next';
 import { toast } from 'sonner';
 
 import { formatDateTime } from '@/lib/dateTime';
+import type {
+    NotificationResponse,
+    NotificationRow
+} from '@/repositories/notificationPersistenceRepository';
 import {
     openAvatarDialog,
     openGroupDialog,
@@ -12,12 +17,21 @@ import {
     openExternalLink
 } from '@/services/entityMediaService';
 import { hasGroupIdPrefix } from '@/shared/constants/vrchatIds';
+export { resolveCurrentInviteLocation } from '@/shared/utils/invite';
 import { parseLocation } from '@/shared/utils/location';
 import { getNotificationTs } from '@/shared/utils/notificationCategory';
 
 export const categoryOrder = ['friend', 'group', 'other'];
 
-function normalizeWorldTarget(value: any) {
+type CachedInstanceLike = Record<string, unknown> & {
+    closedAt?: unknown;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeWorldTarget(value: unknown) {
     const text =
         typeof value === 'string' ? value.trim() : String(value ?? '').trim();
     const parsed = parseLocation(text);
@@ -27,7 +41,9 @@ function normalizeWorldTarget(value: any) {
     return parsed.worldId || text.split(':')[0] || text;
 }
 
-export function getNotificationMessage(notification: any) {
+export function getNotificationMessage(
+    notification: NotificationRow | null | undefined
+) {
     return [
         notification?.title,
         notification?.message,
@@ -36,12 +52,14 @@ export function getNotificationMessage(notification: any) {
         notification?.details?.responseMessage,
         notification?.details?.worldName
     ]
-        .map((value: any) => String(value || '').trim())
+        .map((value) => String(value || '').trim())
         .filter(Boolean)
         .join(' ');
 }
 
-export function getSenderName(notification: any) {
+export function getSenderName(
+    notification: NotificationRow | null | undefined
+) {
     return (
         notification?.senderDisplayName ||
         notification?.details?.senderDisplayName ||
@@ -56,7 +74,7 @@ export function getSenderName(notification: any) {
     );
 }
 
-export function getImageUrl(notification: any) {
+export function getImageUrl(notification: NotificationRow | null | undefined) {
     return (
         notification?.details?.imageUrl ||
         notification?.imageUrl ||
@@ -65,14 +83,21 @@ export function getImageUrl(notification: any) {
     );
 }
 
-export function getNotificationImageUrl(notification: any) {
+export function getNotificationImageUrl(
+    notification: NotificationRow | null | undefined
+) {
     const imageUrl = getImageUrl(notification);
     return imageUrl && !imageUrl.startsWith('default_')
         ? convertFileUrlToImageUrl(imageUrl, 64)
         : '';
 }
 
-export function formatNotificationTime(notification: any) {
+export function formatNotificationTime(
+    notification: NotificationRow | null | undefined
+) {
+    if (!notification) {
+        return '';
+    }
     const timestamp = getNotificationTs(notification);
     if (!timestamp) {
         return '';
@@ -85,7 +110,9 @@ export function formatNotificationTime(notification: any) {
     });
 }
 
-export function isNotificationExpired(notification: any) {
+export function isNotificationExpired(
+    notification: NotificationRow | null | undefined
+) {
     if (notification?.expired !== undefined) {
         return Boolean(notification.expired);
     }
@@ -96,7 +123,9 @@ export function isNotificationExpired(notification: any) {
     return Number.isFinite(expiresAt) && expiresAt <= Date.now();
 }
 
-export function canDeclineNotification(notification: any) {
+export function canDeclineNotification(
+    notification: NotificationRow | null | undefined
+) {
     const type = notification?.type || '';
     const link = notification?.link || '';
     return (
@@ -112,56 +141,52 @@ export function canDeclineNotification(notification: any) {
     );
 }
 
-export function shouldShowDeleteLog(notification: any) {
+export function shouldShowDeleteLog(
+    notification: NotificationRow | null | undefined
+) {
     const type = notification?.type || '';
     return type !== 'friendRequest' && type !== 'ignoredFriendRequest';
 }
 
-export function getResponseLabel(response: any) {
+export function getResponseLabel(
+    response: NotificationResponse | null | undefined
+) {
     return response?.text || response?.type || 'Respond';
 }
 
-export function resolveCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = String(gameState?.currentLocation || '').trim();
-    if (currentLocation === 'traveling') {
-        return String(gameState?.currentDestination || '').trim();
+function getCachedInstanceLocation(instance: unknown) {
+    if (!isRecord(instance)) {
+        return '';
     }
-    return (
-        currentLocation ||
-        String(gameState?.currentDestination || '').trim() ||
-        String(
-            currentUserSnapshot?.$locationTag ||
-                currentUserSnapshot?.location ||
-                ''
-        ).trim()
-    );
-}
-
-function getCachedInstanceLocation(instance: any) {
     return String(
-        instance?.location ||
-            instance?.$location ||
-            instance?.instanceLocation ||
-            instance?.instanceId ||
+        instance.location ||
+            instance.$location ||
+            instance.instanceLocation ||
+            instance.instanceId ||
             ''
     ).trim();
 }
 
-export function buildCachedInstanceMap(instances: any) {
-    const map = new Map();
+export function buildCachedInstanceMap(
+    instances: readonly unknown[] | null | undefined
+) {
+    const map = new Map<string, CachedInstanceLike>();
     for (const instance of Array.isArray(instances) ? instances : []) {
+        if (!isRecord(instance)) {
+            continue;
+        }
         const location = getCachedInstanceLocation(instance);
         if (location) {
-            map.set(location, instance?.instance || instance);
+            const entry = isRecord(instance.instance)
+                ? instance.instance
+                : instance;
+            map.set(location, entry);
         }
     }
     return map;
 }
 
-export function openNotificationLink(link: any) {
+export function openNotificationLink(link: unknown) {
     const value = String(link || '').trim();
     if (!value) {
         return false;
@@ -197,18 +222,24 @@ export function openNotificationLink(link: any) {
     return true;
 }
 
-export function openSender(notification: any, t: any) {
+export function openSender(
+    notification: NotificationRow | null | undefined,
+    t: TFunction
+) {
     const userId = String(notification?.senderUserId || '').trim();
+    const type = String(notification?.type || '');
     if (
         hasGroupIdPrefix(userId) ||
-        notification?.type?.startsWith('group.') ||
-        notification?.type === 'groupChange'
+        type.startsWith('group.') ||
+        type === 'groupChange'
     ) {
         const groupId = hasGroupIdPrefix(userId)
             ? userId
-            : notification?.data?.groupId ||
-              notification?.details?.groupId ||
-              '';
+            : String(
+                  notification?.data?.groupId ||
+                      notification?.details?.groupId ||
+                      ''
+              );
         if (groupId) {
             openGroupDialog({ groupId, title: getSenderName(notification) });
             return;

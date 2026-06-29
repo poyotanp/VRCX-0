@@ -1,28 +1,34 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type MaintenanceTableSizesOutput
+} from '@/platform/tauri/bindings';
 
 type LocalDbValue = unknown;
 
-type MaintenanceTableSizes = {
-    gps: number;
-    status: number;
-    bio: number;
-    avatar: number;
-    onlineOffline: number;
-    friendLogHistory: number;
-    notification: number;
-    location?: number;
-    joinLeave?: number;
-    portalSpawn?: number;
-    videoPlay?: number;
-    event?: number;
-    external?: number;
-    resourceLoad?: number;
-};
+type GlobalMaintenanceTableSizeKey =
+    | 'location'
+    | 'joinLeave'
+    | 'portalSpawn'
+    | 'videoPlay'
+    | 'event'
+    | 'external'
+    | 'resourceLoad';
+type MaintenanceTableSizes = Omit<
+    MaintenanceTableSizesOutput,
+    GlobalMaintenanceTableSizeKey
+> &
+    Partial<Pick<MaintenanceTableSizesOutput, GlobalMaintenanceTableSizeKey>>;
 
 type BrokenGameLogDisplayNameEntry = {
     id: LocalDbValue;
     displayName: unknown;
 };
+
+function normalizeUserId(value: unknown): string {
+    return typeof value === 'string'
+        ? value.trim()
+        : String(value ?? '').trim();
+}
 
 function runMaintenanceTask(task: string): Promise<unknown> {
     return commands.appDatabaseMaintenanceRun(task);
@@ -43,9 +49,7 @@ async function optimize(): Promise<void> {
 async function getMaxFriendLogNumber(userId: unknown): Promise<number> {
     return Number(
         (await commands.appDatabaseMaintenanceMaxFriendLogNumberGet(
-            typeof userId === 'string'
-                ? userId.trim()
-                : String(userId ?? '').trim()
+            normalizeUserId(userId)
         )) ?? 0
     );
 }
@@ -53,10 +57,9 @@ async function getMaxFriendLogNumber(userId: unknown): Promise<number> {
 async function getRuntimeTableSizes(
     userId: unknown = ''
 ): Promise<MaintenanceTableSizes> {
-    const sizes = (await commands.appDatabaseMaintenanceTableSizesGet(
-        typeof userId === 'string' ? userId.trim() : String(userId ?? '').trim()
-    )) as MaintenanceTableSizes;
-    return sizes;
+    return commands.appDatabaseMaintenanceTableSizesGet(
+        normalizeUserId(userId)
+    );
 }
 
 async function getUserTableSizes(
@@ -155,8 +158,7 @@ async function fixNegativeGPS(): Promise<void> {
 }
 
 async function getBrokenLeaveEntries(): Promise<LocalDbValue[]> {
-    const rows = await commands.appDatabaseMaintenanceBrokenLeaveEntriesGet();
-    return Array.isArray(rows) ? (rows as LocalDbValue[]) : [];
+    return commands.appDatabaseMaintenanceBrokenLeaveEntriesGet();
 }
 
 async function fixBrokenLeaveEntries(): Promise<void> {
@@ -183,11 +185,8 @@ async function getBrokenGameLogDisplayNames(): Promise<
     BrokenGameLogDisplayNameEntry[]
 > {
     const rows =
-        (await commands.appDatabaseMaintenanceBrokenGameLogDisplayNamesGet()) as Array<{
-            id?: LocalDbValue;
-            displayName?: unknown;
-        }> | null;
-    return (Array.isArray(rows) ? rows : []).map((row) => ({
+        await commands.appDatabaseMaintenanceBrokenGameLogDisplayNamesGet();
+    return rows.map((row) => ({
         id: row.id,
         displayName: row.displayName
     }));

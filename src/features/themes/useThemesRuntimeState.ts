@@ -3,36 +3,32 @@ import { useCommunityThemeStore } from '@/state/communityThemeStore';
 import { useShellStore } from '@/state/shellStore';
 
 export function useThemesRuntimeState() {
-    const themeMode = useShellStore((state: any) => state.themeMode);
-    const themeColor = useShellStore((state: any) => state.themeColor);
+    const themeMode = useShellStore((state) => state.themeMode);
+    const themeColor = useShellStore((state) => state.themeColor);
     const backgroundImageEnabled = useBackgroundImageStore(
-        (state: any) => state.enabled
+        (state) => state.enabled
     );
-    const backgroundImageMode = useBackgroundImageStore(
-        (state: any) => state.mode
-    );
+    const backgroundImageMode = useBackgroundImageStore((state) => state.mode);
     const backgroundImageCustomSource = useBackgroundImageStore(
-        (state: any) => state.customSource
+        (state) => state.customSource
     );
-    const catalog = useCommunityThemeStore((state: any) => state.catalog);
-    const enabled = useCommunityThemeStore((state: any) => state.enabled);
+    const catalog = useCommunityThemeStore((state) => state.catalog);
+    const enabled = useCommunityThemeStore((state) => state.enabled);
     const installedTheme = useCommunityThemeStore(
-        (state: any) => state.installedTheme
+        (state) => state.installedTheme
     );
     const installedThemes = useCommunityThemeStore(
-        (state: any) => state.installedThemes
+        (state) => state.installedThemes
     );
-    const localPreview = useCommunityThemeStore(
-        (state: any) => state.localPreview
-    );
+    const localPreview = useCommunityThemeStore((state) => state.localPreview);
     const localPreviewWatch = useCommunityThemeStore(
-        (state: any) => state.localPreviewWatch
+        (state) => state.localPreviewWatch
     );
     const overrideCssLength = useCommunityThemeStore(
-        (state: any) => state.overrideCssLength
+        (state) => state.overrideCssLength
     );
-    const loading = useCommunityThemeStore((state: any) => state.loading);
-    const error = useCommunityThemeStore((state: any) => state.error);
+    const loading = useCommunityThemeStore((state) => state.loading);
+    const error = useCommunityThemeStore((state) => state.error);
 
     return {
         themeMode,

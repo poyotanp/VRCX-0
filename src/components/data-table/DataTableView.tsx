@@ -159,7 +159,7 @@ export function DataTableColumnDndProvider({
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 modifiers={[restrictToHorizontalAxis]}
-                onDragEnd={(event: any) => {
+                onDragEnd={(event) => {
                     moveColumnByDrag(table, event.active?.id, event.over?.id);
                 }}
             >

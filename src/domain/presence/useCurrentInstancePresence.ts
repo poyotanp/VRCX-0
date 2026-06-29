@@ -5,17 +5,15 @@ import { useInstancePresenceStore } from '@/state/instancePresenceStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
 function useCurrentInstancePresence() {
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
     const currentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const key = useMemo(
         () => instancePresenceKey(endpoint, currentLocation),
         [currentLocation, endpoint]
     );
-    return useInstancePresenceStore((state: any) =>
+    return useInstancePresenceStore((state) =>
         key ? state.presenceByKey[key] || null : null
     );
 }

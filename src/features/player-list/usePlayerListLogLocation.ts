@@ -31,7 +31,8 @@ export function usePlayerListLogLocation({
     gameLogDisabled,
     isGameRunning
 }: any) {
-    const [logLocationSnapshot, setLogLocationSnapshot] = useState<any>(null);
+    const [logLocationSnapshot, setLogLocationSnapshot] =
+        useState<ReturnType<typeof normalizeLogLocationSnapshot>>(null);
 
     useEffect(() => {
         let active = true;

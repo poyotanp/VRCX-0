@@ -73,7 +73,7 @@ export function GalleryEmojiUploadSettings({
                 <Checkbox
                     id="gallery-emoji-animation-type"
                     checked={emojiAnimType}
-                    onCheckedChange={(value: any) =>
+                    onCheckedChange={(value) =>
                         onEmojiAnimTypeChange(Boolean(value))
                     }
                 />
@@ -93,7 +93,7 @@ export function GalleryEmojiUploadSettings({
                             min={1}
                             max={64}
                             value={emojiAnimFps}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onEmojiAnimFpsChange(event.target.value)
                             }
                         />
@@ -110,7 +110,7 @@ export function GalleryEmojiUploadSettings({
                             min={2}
                             max={64}
                             value={emojiAnimFrameCount}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onEmojiAnimFrameCountChange(event.target.value)
                             }
                         />
@@ -119,7 +119,7 @@ export function GalleryEmojiUploadSettings({
                         <Checkbox
                             id="gallery-emoji-loop-pingpong"
                             checked={emojiAnimLoopPingPong}
-                            onCheckedChange={(value: any) =>
+                            onCheckedChange={(value) =>
                                 onEmojiAnimLoopPingPongChange(Boolean(value))
                             }
                         />

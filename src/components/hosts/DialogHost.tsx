@@ -24,12 +24,10 @@ import {
 } from '@/ui/shadcn/dialog';
 
 export function DialogHost() {
-    const activeDialog = useDialogStore((state: any) => state.activeDialog);
-    const breadcrumbs = useDialogStore((state: any) => state.breadcrumbs);
-    const closeDialog = useDialogStore((state: any) => state.closeDialog);
-    const popToBreadcrumb = useDialogStore(
-        (state: any) => state.popToBreadcrumb
-    );
+    const activeDialog = useDialogStore((state) => state.activeDialog);
+    const breadcrumbs = useDialogStore((state) => state.breadcrumbs);
+    const closeDialog = useDialogStore((state) => state.closeDialog);
+    const popToBreadcrumb = useDialogStore((state) => state.popToBreadcrumb);
 
     const dialogKind = activeDialog?.kind || '';
     const dialogPayload = activeDialog?.payload || null;
@@ -61,7 +59,7 @@ export function DialogHost() {
     return (
         <Dialog
             open={Boolean(activeDialog)}
-            onOpenChange={(open: any) => !open && closeDialog()}
+            onOpenChange={(open) => !open && closeDialog()}
         >
             <DialogContent
                 showCloseButton={false}

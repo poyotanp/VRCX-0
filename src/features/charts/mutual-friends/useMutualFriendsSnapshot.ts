@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 
 import mutualGraphPersistenceRepository from '@/repositories/mutualGraphPersistenceRepository';
 
+type MutualFriendsSnapshotData = Awaited<
+    ReturnType<typeof mutualGraphPersistenceRepository.getSnapshot>
+>;
+
 export function useMutualFriendsSnapshot({
     currentUserId,
     currentUserIdRef,
@@ -9,10 +13,12 @@ export function useMutualFriendsSnapshot({
 }: any) {
     const [status, setStatus] = useState('idle');
     const [detail, setDetail] = useState('');
-    const [snapshotData, setSnapshotData] = useState<any>({
-        snapshot: new Map(),
-        meta: new Map()
-    });
+    const [snapshotData, setSnapshotData] = useState<MutualFriendsSnapshotData>(
+        {
+            snapshot: new Map(),
+            meta: new Map()
+        }
+    );
 
     useEffect(() => {
         let active = true;

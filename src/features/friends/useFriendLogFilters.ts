@@ -14,7 +14,7 @@ export function useFriendLogFilters() {
         let active = true;
         configRepository
             .getString('friendLogTableFilters', '[]')
-            .then((nextTypeFilters: any) => {
+            .then((nextTypeFilters) => {
                 if (!active) {
                     return;
                 }

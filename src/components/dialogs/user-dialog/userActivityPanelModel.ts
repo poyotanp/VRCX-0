@@ -15,35 +15,55 @@ export const OVERLAP_EXCLUDE_START_KEY =
 export const OVERLAP_EXCLUDE_END_KEY =
     USER_ACTIVITY_CONFIG_KEYS.overlapExcludeEnd;
 
+export type ActivityHeatmapData = {
+    normalizedBuckets: number[];
+    rawBuckets: number[];
+};
+
+export type TopWorldsSort = 'time' | 'count';
+
+export type UserActivityTopWorld = Record<string, unknown> & {
+    imageUrl?: string;
+    thumbnailImageUrl?: string;
+    worldId?: string;
+    worldName?: string;
+};
+
 export const VALID_ACTIVITY_PERIODS = new Set(['7', '30', '90']);
 export const USER_ACTIVITY_HOUR_LABELS = Array.from(
     { length: 24 },
-    (_: any, index: any) => `${String(index).padStart(2, '0')}:00`
+    (_, index) => `${String(index).padStart(2, '0')}:00`
 );
 export const TOP_WORLDS_LOADING_DELAY_MS = 150;
 export const OVERLAP_LOADING_DELAY_MS = 120;
 export const OVERLAP_RENDER_DELAY_MS = 80;
 
-export function getRangeDays(period: any) {
-    return Number.parseInt(period, 10) || 30;
+export function getRangeDays(period: unknown) {
+    return Number.parseInt(String(period), 10) || 30;
 }
 
-export function getDisplayDayLabels(dayLabels: any, weekStartsOn: any) {
+export function getDisplayDayLabels(
+    dayLabels: readonly string[],
+    weekStartsOn: number
+) {
     return Array.from(
         { length: 7 },
-        (_: any, index: any) => dayLabels[(weekStartsOn + index) % 7]
+        (_, index) => dayLabels[(weekStartsOn + index) % 7]
     );
 }
 
-export function normalizeActivityPeriod(period: any) {
-    return VALID_ACTIVITY_PERIODS.has(period) ? period : '30';
+export function normalizeActivityPeriod(period: unknown) {
+    const value = String(period || '');
+    return VALID_ACTIVITY_PERIODS.has(value) ? value : '30';
 }
 
-export function normalizeTopWorldsSort(sortBy: any) {
-    return ['time', 'count'].includes(sortBy) ? sortBy : 'time';
+export function normalizeTopWorldsSort(sortBy: unknown): TopWorldsSort {
+    return sortBy === 'time' || sortBy === 'count' ? sortBy : 'time';
 }
 
-export function getWorldThumbnailUrl(world: any) {
+export function getWorldThumbnailUrl(
+    world: UserActivityTopWorld | null | undefined
+) {
     const url = world?.thumbnailImageUrl || world?.imageUrl || '';
     return url ? url.replace('256', '128') : '';
 }

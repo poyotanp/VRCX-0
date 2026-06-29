@@ -123,7 +123,7 @@ export function UserSocialStatusDialog({
                                     'dialog.user.description.status_description'
                                 )}
                                 disabled={busy}
-                                onChange={(event: any) => {
+                                onChange={(event) => {
                                     setDraft((current: any) => ({
                                         ...current,
                                         statusDescription:
@@ -222,7 +222,7 @@ export function UserSocialStatusDialog({
                             spacing={2}
                             className="w-full flex-wrap"
                             aria-label={t('dialog.user.label.social_status')}
-                            onValueChange={(nextStatus: any) => {
+                            onValueChange={(nextStatus) => {
                                 if (!nextStatus) {
                                     return;
                                 }
@@ -537,7 +537,7 @@ export function UserProfileDetailsDialog({
                                     )}
                                     maxLength={32}
                                     disabled={busy}
-                                    onChange={(event: any) => {
+                                    onChange={(event) => {
                                         setDraft((current: any) => ({
                                             ...current,
                                             pronouns: event.target.value.slice(
@@ -594,7 +594,7 @@ export function UserProfileDetailsDialog({
                                             placeholder={`https://example.com/${index + 1}`}
                                             maxLength={1000}
                                             disabled={busy}
-                                            onChange={(event: any) => {
+                                            onChange={(event) => {
                                                 const nextValue =
                                                     event.target.value.slice(
                                                         0,
@@ -677,7 +677,7 @@ export function UserProfileDetailsDialog({
                                 maxLength={512}
                                 disabled={busy}
                                 className="field-sizing-fixed max-h-56 min-h-36 resize-y overflow-y-auto"
-                                onChange={(event: any) => {
+                                onChange={(event) => {
                                     setDraft((current: any) => ({
                                         ...current,
                                         bio: event.target.value.slice(0, 512)

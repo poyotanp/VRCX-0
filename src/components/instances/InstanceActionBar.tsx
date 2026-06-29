@@ -188,7 +188,7 @@ function InstanceInfoTooltip({
                             disabled={
                                 closeDisabled || Boolean(instance?.closedAt)
                             }
-                            onClick={(event: any) => {
+                            onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
                                 onClose?.();
@@ -263,19 +263,13 @@ export function InstanceActionBar({
 }: any) {
     const { t } = useTranslation();
 
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
-    const confirm = useModalStore((state: any) => state.confirm);
-    const showLaunchDialog = useLaunchStore(
-        (state: any) => state.showLaunchDialog
-    );
+    const confirm = useModalStore((state) => state.confirm);
+    const showLaunchDialog = useLaunchStore((state) => state.showLaunchDialog);
     const [busy, setBusy] = useState('');
     const [instanceInfo, setInstanceInfo] = useState(instance);
     const actionTarget = useMemo(

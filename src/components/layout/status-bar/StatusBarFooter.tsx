@@ -14,6 +14,7 @@ import {
     MIN_ZOOM_LEVEL,
     ZOOM_STEP
 } from '@/services/themeService';
+import type { VrcStatusState } from '@/state/runtimeStore';
 import { Button } from '@/ui/shadcn/button';
 import {
     Popover,
@@ -181,7 +182,14 @@ function formatMutualGraphTooltip(mutualGraph: any, t: any) {
     return t('status_bar.mutual_graph_progress');
 }
 
-function formatVrcStatusTooltip(vrcStatus: any, t: any, formatStatusDate: any) {
+function formatVrcStatusTooltip(
+    vrcStatus: Pick<
+        VrcStatusState,
+        'summary' | 'status' | 'refreshing' | 'error' | 'lastFetchedAt'
+    >,
+    t: ReturnType<typeof useTranslation>['t'],
+    formatStatusDate: (value: unknown) => string
+) {
     const status =
         vrcStatus.summary || vrcStatus.status || t('status_bar.servers_ok');
     return (
@@ -506,7 +514,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                               <Popover
                                   key={`${clock.offset}-${index}`}
                                   open={Boolean(clockPopoverOpen[index])}
-                                  onOpenChange={(open: any) =>
+                                  onOpenChange={(open) =>
                                       onSetClockPopoverValue(index, open)
                                   }
                               >
@@ -538,7 +546,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                           </label>
                                           <Select
                                               value={String(clock.offset)}
-                                              onValueChange={(offset: any) =>
+                                              onValueChange={(offset) =>
                                                   onUpdateClockTimezone(
                                                       index,
                                                       offset
@@ -654,7 +662,7 @@ export const StatusBarFooter = forwardRef(function StatusBarFooter(
                                     max={MAX_ZOOM_LEVEL}
                                     step={ZOOM_STEP}
                                     value={[zoomLevel]}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         onSetZoomLevel(value[0])
                                     }
                                 />

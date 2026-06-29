@@ -44,10 +44,10 @@ export function useFeedTableState({
     setFeedFilters
 }: UseFeedTableStateOptions) {
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const tablePageSizesPreference = usePreferencesStore(
-        (state: any) => state.tablePageSizes
+        (state) => state.tablePageSizes
     );
     const [persistedState] = useState(() => readPersistedState());
     const persistedPageSize = Number.parseInt(

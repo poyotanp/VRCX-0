@@ -87,9 +87,7 @@ export function FriendListToolbar({
                     />
                     <Input
                         value={searchQuery}
-                        onChange={(event: any) =>
-                            onSearchChange(event.target.value)
-                        }
+                        onChange={(event) => onSearchChange(event.target.value)}
                         placeholder={t('view.friend_list.search_placeholder')}
                         aria-label={t('view.friend_list.search_placeholder')}
                         className="h-9 w-64"

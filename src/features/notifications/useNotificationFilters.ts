@@ -20,7 +20,7 @@ export function useNotificationFilters() {
         let active = true;
         configRepository
             .getString(NOTIFICATION_TABLE_FILTERS_CONFIG_KEY, '[]')
-            .then((savedFilters: any) => {
+            .then((savedFilters) => {
                 if (!active) {
                     return;
                 }

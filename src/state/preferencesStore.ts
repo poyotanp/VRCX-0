@@ -39,6 +39,7 @@ export type TableDensityPreference = 'standard' | 'compact';
 export type FeedTimeDisplayModePreference = 'exact' | 'relative';
 export type TranslationApiType = 'google' | 'openai' | 'deepl';
 export type DefaultLaunchModePreference = 'vr' | 'desktop';
+export type WeekStartsOnPreference = 0 | 1 | 6;
 export type WristOverlayHandPreference = 'left' | 'right' | 'both';
 export type WristOverlaySizePreference = 'compact' | 'normal' | 'large';
 export type WristOverlayStartModePreference = 'steamvr' | 'vrchatVrMode';
@@ -130,6 +131,11 @@ function normalizeBoundedInt(
     return Math.min(max, Math.max(min, parsed));
 }
 
+export function normalizeWeekStartsOn(value: unknown): WeekStartsOnPreference {
+    const numeric = Number(value);
+    return numeric === 0 || numeric === 6 ? numeric : 1;
+}
+
 export function normalizeDefaultLaunchMode(
     value: unknown
 ): DefaultLaunchModePreference {
@@ -173,21 +179,24 @@ export function normalizeWristOverlayButton(
 }
 
 export function normalizeTablePageSizes(value: unknown): number[] {
-    const source = Array.isArray(value) ? value : DEFAULT_TABLE_PAGE_SIZES;
+    const source: readonly unknown[] = Array.isArray(value)
+        ? value
+        : DEFAULT_TABLE_PAGE_SIZES;
     const nextSizes = source
-        .map((entry: any) => Number.parseInt(String(entry), 10))
+        .map((entry) => Number.parseInt(String(entry), 10))
         .filter(
-            (entry: any) => Number.isFinite(entry) && entry > 0 && entry <= 1000
+            (entry): entry is number =>
+                Number.isFinite(entry) && entry > 0 && entry <= 1000
         );
     const normalized = Array.from(new Set(nextSizes)).sort(
-        (left: any, right: any) => left - right
+        (left, right) => left - right
     );
     return normalized.length ? normalized : [...DEFAULT_TABLE_PAGE_SIZES];
 }
 
 export function normalizeTablePageSize(
     value: unknown,
-    fallback: any = DEFAULT_TABLE_PAGE_SIZE
+    fallback: number = DEFAULT_TABLE_PAGE_SIZE
 ): number {
     return normalizeBoundedInt(value, {
         min: 1,
@@ -359,7 +368,7 @@ export function normalizePreferenceSnapshot(snapshot: unknown = {}) {
         snapshotRecord,
         'overlayActivityFilters'
     );
-    const next: any = {
+    const next: PreferenceInputSnapshot = {
         ...DEFAULT_PREFERENCES,
         ...snapshotRecord
     };
@@ -402,9 +411,7 @@ export function normalizePreferenceSnapshot(snapshot: unknown = {}) {
         displayVRCPlusIconsAsAvatar: normalizeBool(
             next.displayVRCPlusIconsAsAvatar
         ),
-        weekStartsOn: [0, 1, 6].includes(Number(next.weekStartsOn))
-            ? Number(next.weekStartsOn)
-            : 1,
+        weekStartsOn: normalizeWeekStartsOn(next.weekStartsOn),
         dtIsoFormat: normalizeBool(next.dtIsoFormat),
         dtHour12: normalizeBool(next.dtHour12),
         hideUserNotes: normalizeBool(next.hideUserNotes),

@@ -10,8 +10,8 @@ import { Sidebar, SidebarInset, SidebarProvider } from '@/ui/shadcn/sidebar';
 import { AppNavMenu } from './AppNavMenu';
 
 export function AppSidebar({ children }: any) {
-    const sidebarOpen = useShellStore((state: any) => state.sidebarOpen);
-    const navWidth = useShellStore((state: any) => state.navWidth);
+    const sidebarOpen = useShellStore((state) => state.sidebarOpen);
+    const navWidth = useShellStore((state) => state.navWidth);
     const resizeCleanupRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
@@ -111,7 +111,7 @@ export function AppSidebar({ children }: any) {
             data-vrcx-0-surface="sidebar-layout"
             className="vrcx-0-sidebar-layout relative h-full min-h-0 w-full overflow-hidden"
             style={{ '--sidebar-width': `${navWidth}px` }}
-            onOpenChange={(open: any) => {
+            onOpenChange={(open) => {
                 setNavbarCollapsedPreference(!open);
             }}
         >

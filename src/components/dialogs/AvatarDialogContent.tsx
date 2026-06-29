@@ -120,10 +120,8 @@ export function AvatarDialogContent({ avatarId, seedData = null }: any) {
                 open={ownerEditor === 'details'}
                 avatar={avatar}
                 endpoint={currentEndpoint}
-                onOpenChange={(open: any) =>
-                    setOwnerEditor(open ? 'details' : null)
-                }
-                onSavedCurrentAvatar={(nextAvatar: any) =>
+                onOpenChange={(open) => setOwnerEditor(open ? 'details' : null)}
+                onSavedCurrentAvatar={(nextAvatar) =>
                     applyCurrentAvatarUpdate(nextAvatar)
                 }
             />

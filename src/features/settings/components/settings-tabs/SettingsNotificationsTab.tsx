@@ -297,7 +297,7 @@ export function SettingsNotificationsTab({
                     <Switch
                         checked={notificationTtsTestVisible}
                         disabled={prefs.notificationTTS === 'Never'}
-                        onCheckedChange={(checked: any) =>
+                        onCheckedChange={(checked) =>
                             onNotificationTtsTestVisibleChange(checked === true)
                         }
                     />
@@ -310,7 +310,7 @@ export function SettingsNotificationsTab({
                             placeholder={t(
                                 'view.settings.notifications.notifications.text_to_speech.tts_test_placeholder'
                             )}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onNotificationTtsTestChange(event.target.value)
                             }
                         />

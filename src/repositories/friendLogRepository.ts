@@ -1,4 +1,9 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type FriendLogCurrentOutput,
+    type FriendLogHistoryEntryInput,
+    type FriendLogMutationResult as IpcFriendLogMutationResult
+} from '@/platform/tauri/bindings';
 
 import type { FriendLogHistoryEntry } from './friendLogHistoryRepository';
 
@@ -30,7 +35,7 @@ export interface FriendLogCurrentUpsertOptions {
     forceHistory?: boolean;
 }
 
-type FriendLogSourceRow = unknown[] | Record<string, unknown>;
+type FriendLogSourceRow = FriendLogCurrentOutput;
 type FriendLogMutationResult = {
     userId: string;
     targetUserId?: string;
@@ -38,10 +43,6 @@ type FriendLogMutationResult = {
     inserted?: boolean;
     historyCount: number;
 };
-
-function valueAsString(value: unknown): string {
-    return value == null ? '' : String(value);
-}
 
 function valueAsInt(value: unknown): number {
     return Number.parseInt(String(value ?? 0), 10) || 0;
@@ -54,35 +55,33 @@ function normalizeTargetUserId(value: unknown): string {
 }
 
 function normalizeFriendLogRow(row: FriendLogSourceRow): FriendLogCurrentRow {
-    if (Array.isArray(row)) {
-        return {
-            userId: valueAsString(row[0]),
-            displayName: valueAsString(row[1]),
-            trustLevel: valueAsString(row[2] ?? 'Visitor'),
-            friendNumber: valueAsInt(row[3])
-        };
-    }
-
     return {
-        userId: valueAsString(row.user_id ?? row.userId),
-        displayName: valueAsString(row.display_name ?? row.displayName),
-        trustLevel: valueAsString(
-            row.trust_level ?? row.trustLevel ?? 'Visitor'
-        ),
-        friendNumber: valueAsInt(row.friend_number ?? row.friendNumber)
+        userId: row.userId,
+        displayName: row.displayName,
+        trustLevel: row.trustLevel || 'Visitor',
+        friendNumber: row.friendNumber
+    };
+}
+
+function normalizeMutationResult(
+    result: IpcFriendLogMutationResult
+): FriendLogMutationResult {
+    return {
+        userId: result.userId,
+        targetUserId: result.targetUserId || undefined,
+        count: result.count,
+        inserted:
+            typeof result.inserted === 'boolean' ? result.inserted : undefined,
+        historyCount: result.historyCount
     };
 }
 
 async function getFriendLogCurrent(
     userId: unknown
 ): Promise<FriendLogCurrentRow[]> {
-    const rows = (await commands.appFriendLogCurrentList(
+    const rows = await commands.appFriendLogCurrentList(
         typeof userId === 'string' ? userId.trim() : String(userId ?? '').trim()
-    )) as FriendLogSourceRow[];
-
-    if (!Array.isArray(rows)) {
-        return [];
-    }
+    );
 
     return rows
         .map(normalizeFriendLogRow)
@@ -91,7 +90,7 @@ async function getFriendLogCurrent(
 
 function normalizeHistoryEntryForRuntime(
     entry: FriendLogHistoryEntry | null | undefined
-) {
+): FriendLogHistoryEntryInput {
     return {
         createdAt: entry?.created_at ?? '',
         type: entry?.type ?? '',
@@ -127,7 +126,7 @@ async function replaceFriendLogCurrent(
         ? options.addedHistoryEntries
         : [];
 
-    return commands.appFriendLogReplaceCurrent(
+    const result = await commands.appFriendLogReplaceCurrent(
         typeof userId === 'string'
             ? userId.trim()
             : String(userId ?? '').trim(),
@@ -140,7 +139,8 @@ async function replaceFriendLogCurrent(
                 normalizeHistoryEntryForRuntime
             )
         }
-    ) as Promise<FriendLogMutationResult>;
+    );
+    return normalizeMutationResult(result);
 }
 
 async function deleteFriendLogCurrentArray(
@@ -172,7 +172,7 @@ async function deleteFriendLogCurrentArray(
         ? options.historyEntries
         : [];
 
-    return commands.appFriendLogDeleteCurrentArray(
+    const result = await commands.appFriendLogDeleteCurrentArray(
         typeof userId === 'string'
             ? userId.trim()
             : String(userId ?? '').trim(),
@@ -180,7 +180,8 @@ async function deleteFriendLogCurrentArray(
         {
             historyEntries: historyEntries.map(normalizeHistoryEntryForRuntime)
         }
-    ) as Promise<FriendLogMutationResult>;
+    );
+    return normalizeMutationResult(result);
 }
 
 async function upsertFriendLogCurrent(
@@ -220,7 +221,7 @@ async function upsertFriendLogCurrent(
 
     const historyEntry = options?.historyEntry;
 
-    return commands.appFriendLogUpsertCurrent(
+    const result = await commands.appFriendLogUpsertCurrent(
         typeof userId === 'string'
             ? userId.trim()
             : String(userId ?? '').trim(),
@@ -237,7 +238,8 @@ async function upsertFriendLogCurrent(
                 : null,
             forceHistory: Boolean(options?.forceHistory)
         }
-    ) as Promise<FriendLogMutationResult>;
+    );
+    return normalizeMutationResult(result);
 }
 
 async function deleteFriendLogCurrent(userId: unknown, targetUserId: string) {

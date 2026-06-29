@@ -33,6 +33,10 @@ import {
 } from '@/ui/shadcn/select';
 import { Switch } from '@/ui/shadcn/switch';
 
+type RegistryBackup = Awaited<
+    ReturnType<typeof listVrcRegistryBackups>
+>[number];
+
 function formatBackupLabel(backup: any, t: any) {
     const dateLabel = backup.date
         ? formatDateFilter(backup.date, 'long')
@@ -47,10 +51,10 @@ function registryRestoreError(error: any, t: any) {
 
 export function RegistryBackupDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
     const refreshRequestRef = useRef(0);
-    const [backups, setBackups] = useState<any[]>([]);
+    const [backups, setBackups] = useState<RegistryBackup[]>([]);
     const [selectedKey, setSelectedKey] = useState('');
     const [loading, setLoading] = useState(false);
     const [detail, setDetail] = useState('');
@@ -284,7 +288,7 @@ export function RegistryBackupDialog({ open, onOpenChange }: any) {
                                 id="registry-auto-backup"
                                 checked={autoBackup}
                                 disabled={loading}
-                                onCheckedChange={(value: any) => {
+                                onCheckedChange={(value) => {
                                     handleAutoBackupChange(value);
                                 }}
                             />
@@ -299,7 +303,7 @@ export function RegistryBackupDialog({ open, onOpenChange }: any) {
                                 id="registry-ask-restore"
                                 checked={askRestore}
                                 disabled={loading}
-                                onCheckedChange={(value: any) => {
+                                onCheckedChange={(value) => {
                                     handleAskRestoreChange(value);
                                 }}
                             />

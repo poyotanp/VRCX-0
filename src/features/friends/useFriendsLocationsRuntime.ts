@@ -6,27 +6,25 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 const EMPTY_CURRENT_LOCATION_PLAYER_IDS = Object.freeze([]);
 
 export function useFriendsLocationsRuntime() {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const runtimeCurrentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const runtimeCurrentDestination = useRuntimeStore(
-        (state: any) => state.gameState.currentDestination
+        (state) => state.gameState.currentDestination
     );
     const currentLocationPlayerIds = useRuntimeStore(
-        (state: any) => state.gameState.currentLocationPlayerIds
+        (state) => state.gameState.currentLocationPlayerIds
     );
     const domainCurrentInstancePresence = useCurrentInstancePresence();
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
     const effectiveCurrentLocationPlayerIds =
         currentLocationPlayerIds && currentLocationPlayerIds.length

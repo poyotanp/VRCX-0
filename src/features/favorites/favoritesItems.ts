@@ -1,4 +1,5 @@
 import { convertFileUrlToImageUrl } from '@/services/entityMediaService';
+export { resolveCurrentInviteLocation } from '@/shared/utils/invite';
 
 export function normalizeFavoriteSearchValue(value: any) {
     return typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -8,26 +9,6 @@ export function normalizeFavoriteEntityId(value: any) {
     return typeof value === 'string'
         ? value.trim()
         : String(value ?? '').trim();
-}
-
-export function resolveCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = normalizeFavoriteEntityId(
-        gameState?.currentLocation
-    );
-    if (currentLocation === 'traveling') {
-        return normalizeFavoriteEntityId(gameState?.currentDestination);
-    }
-
-    return (
-        currentLocation ||
-        normalizeFavoriteEntityId(gameState?.currentDestination) ||
-        normalizeFavoriteEntityId(
-            currentUserSnapshot?.$locationTag || currentUserSnapshot?.location
-        )
-    );
 }
 
 export function sortFavoriteItems(items: any, sortValue: any) {

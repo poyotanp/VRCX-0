@@ -19,6 +19,60 @@ import {
 import { dedupeById } from './searchResults';
 import { useSearchPagination } from './useSearchPagination';
 
+type SearchUserResult = Awaited<
+    ReturnType<typeof userProfileRepository.normalize>
+>;
+type SearchWorldResult = Awaited<
+    ReturnType<typeof worldProfileRepository.normalize>
+>;
+type SearchGroupResult = {
+    bannerId: string | null;
+    bannerUrl?: string;
+    createdAt?: string;
+    description?: string;
+    discriminator?: string;
+    galleries?: unknown[];
+    iconId?: string;
+    iconUrl?: string;
+    id: string;
+    isSearchable?: boolean;
+    memberCount?: number;
+    membershipStatus?: string;
+    name?: string;
+    ownerId?: string;
+    rules?: string;
+    shortCode?: string;
+    tags?: unknown[];
+    [key: string]: unknown;
+};
+type SearchAvatarResult = {
+    id: string;
+    name?: string;
+    authorName?: string;
+    authorId?: string;
+    imageUrl?: string;
+    performance?: {
+        pc_rating?: string;
+        android_rating?: string | null;
+        ios_rating?: string | null;
+        has_impostor?: boolean;
+        [key: string]: unknown;
+    };
+    description?: string;
+    thumbnailImageUrl?: string;
+    created_at?: string;
+    updated_at?: string;
+    releaseStatus?: string;
+    version?: number;
+    tags?: unknown[];
+    unityPackages?: unknown[];
+    $tags?: unknown[];
+    $timeSpent?: number;
+    $memo?: string;
+    $isCached?: boolean;
+    [key: string]: unknown;
+};
+
 export function useSearchResults({
     activeTab,
     avatarProviderEnabled,
@@ -43,10 +97,12 @@ export function useSearchResults({
     const [worldRequest, setWorldRequest] = useState(null);
     const [groupRequest, setGroupRequest] = useState(null);
     const [avatarRequest, setAvatarRequest] = useState<any>(null);
-    const [userResults, setUserResults] = useState<any[]>([]);
-    const [worldResults, setWorldResults] = useState<any[]>([]);
-    const [groupResults, setGroupResults] = useState<any[]>([]);
-    const [avatarResults, setAvatarResults] = useState<any[]>([]);
+    const [userResults, setUserResults] = useState<SearchUserResult[]>([]);
+    const [worldResults, setWorldResults] = useState<SearchWorldResult[]>([]);
+    const [groupResults, setGroupResults] = useState<SearchGroupResult[]>([]);
+    const [avatarResults, setAvatarResults] = useState<SearchAvatarResult[]>(
+        []
+    );
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isWorldLoading, setIsWorldLoading] = useState(false);
     const [isGroupLoading, setIsGroupLoading] = useState(false);

@@ -323,12 +323,12 @@ export function CustomFontDialog({
                                     placeholder={t(
                                         'view.settings.appearance.appearance.font_family_custom_override_placeholder'
                                     )}
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         updateDraft({
                                             override: event.target.value
                                         })
                                     }
-                                    onKeyDown={(event: any) => {
+                                    onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
                                             event.preventDefault();
                                             handleSave();

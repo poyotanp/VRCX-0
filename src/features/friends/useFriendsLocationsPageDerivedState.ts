@@ -1,11 +1,23 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type {
+    FriendRecord,
+    FriendRosterById
+} from '@/domain/friends/friendRosterTypes';
 import {
     getVisibleKnownSizeRows,
     positionKnownSizeRows
 } from '@/lib/knownSizeVirtualRows';
-import { checkCanInvite } from '@/shared/utils/invite';
+import {
+    checkCanInvite,
+    type InviteLocationCurrentUserSnapshot,
+    type InviteLocationGameState
+} from '@/shared/utils/invite';
+import type {
+    FavoriteGroup,
+    FavoriteGroupMap
+} from '@/state/favoriteStoreTypes';
 
 import { FRIENDS_LOCATIONS_SEGMENTS as SEGMENTS } from './friendsLocationsConfig';
 import { getFriendsLocationsDensityConfig } from './friendsLocationsDensity';
@@ -27,6 +39,108 @@ import {
     sortActiveFriendsBySidebarPrefs,
     sortFriendsBySidebarPrefs
 } from './friendsLocationsSections';
+
+type FriendsLocationsSegment =
+    | 'online'
+    | 'favorite'
+    | 'same-instance'
+    | 'active'
+    | 'offline'
+    | string;
+
+type FriendsLocationsFavoritePreferences = {
+    isDivideByGroup: boolean;
+    selectedGroups: string[];
+    groupOrder: string[];
+};
+
+type FriendsLocationsScrollMetrics = {
+    width: number;
+    viewportHeight: number;
+    scrollTop: number;
+};
+
+type FriendsLocationsGameState = InviteLocationGameState & {
+    currentLocationPlayerIds?: unknown;
+    isGameRunning?: unknown;
+};
+
+type FriendsLocationsCurrentUserSnapshot = InviteLocationCurrentUserSnapshot &
+    Record<string, unknown>;
+
+type FriendsLocationsSection = {
+    key: string;
+    type?: 'favoriteGroup' | string;
+    groupKey?: string;
+    title: string;
+    description: string;
+    friends: FriendRecord[];
+    worldId: string;
+    groupId: string;
+    rawLocation?: string;
+    collapsed?: boolean;
+    topDivider?: boolean;
+    displayInstanceInfo?: boolean;
+};
+
+type FriendsLocationsSameInstanceGroup = {
+    location: string;
+    friends: FriendRecord[];
+};
+
+type FriendsLocationsFavoriteGroupDescriptor = {
+    key: string;
+    label: string;
+};
+
+type FriendsLocationsVirtualRow =
+    | {
+          type: 'group-header' | 'header';
+          key: string;
+          height: number;
+          section: FriendsLocationsSection;
+      }
+    | {
+          type: 'divider';
+          key: string;
+          height: number;
+      }
+    | {
+          type: 'cards';
+          key: string;
+          height: number;
+          topGap: number;
+          section: FriendsLocationsSection;
+          friends: FriendRecord[];
+      };
+
+type FriendsLocationsPageDerivedStateInput = {
+    activeIds: string[];
+    activeSegment: FriendsLocationsSegment;
+    collapsedFavoriteGroups: Set<string>;
+    currentUserId?: string | null;
+    currentUserSnapshot?: FriendsLocationsCurrentUserSnapshot | null;
+    deferredSearchQuery: string;
+    density: unknown;
+    favoriteFriendGroups: FavoriteGroup[];
+    friendsById: FriendRosterById;
+    gameState?: FriendsLocationsGameState | null;
+    groupedFavoriteFriendIdsByGroupKey: Record<string, string[]>;
+    localFriendFavoriteGroups: string[];
+    localFriendFavorites: FavoriteGroupMap;
+    offlineIds: string[];
+    onlineIds: string[];
+    remoteFavoriteFriendIds: string[];
+    rosterStatus: string;
+    scrollMetrics: FriendsLocationsScrollMetrics;
+    showSameInstanceInOnline: boolean;
+    sidebarFavoritePrefs: FriendsLocationsFavoritePreferences;
+    sidebarSortMethods: string[];
+};
+
+function isPresent<T>(value: T | null | undefined): value is T {
+    return value != null;
+}
 
 export function useFriendsLocationsPageDerivedState({
     activeIds,
@@ -50,7 +164,7 @@ export function useFriendsLocationsPageDerivedState({
     showSameInstanceInOnline,
     sidebarFavoritePrefs,
     sidebarSortMethods
-}: any) {
+}: FriendsLocationsPageDerivedStateInput) {
     const { t } = useTranslation();
     const densityConfig = useMemo(
         () => getFriendsLocationsDensityConfig(density),
@@ -83,13 +197,13 @@ export function useFriendsLocationsPageDerivedState({
     const canInviteFromCurrentLocation = useMemo(
         () =>
             checkCanInvite(currentInviteLocation, {
-                currentUserId,
+                currentUserId: currentUserId ?? '',
                 lastLocationStr: currentInviteLocation,
                 cachedInstances: new Map()
             }),
         [currentInviteLocation, currentUserId]
     );
-    const favoriteGroupLabelsByFriendId = useMemo(
+    const favoriteGroupLabelsByFriendId = useMemo<Map<string, string[]>>(
         () =>
             buildFavoriteGroupLabelsByFriendId({
                 favoriteFriendGroups,
@@ -104,32 +218,32 @@ export function useFriendsLocationsPageDerivedState({
             t
         ]
     );
-    const allFavoriteGroupKeys = useMemo(
+    const allFavoriteGroupKeys = useMemo<string[]>(
         () => [
             ...favoriteFriendGroups
-                .map((group: any) => normalizeId(group?.key))
+                .map((group) => normalizeId(group?.key))
                 .filter(Boolean),
             ...(localFriendFavoriteGroups.length
                 ? localFriendFavoriteGroups
                 : Object.keys(localFriendFavorites || {})
             )
-                .map((groupName: any) => `local:${groupName}`)
+                .map((groupName) => `local:${groupName}`)
                 .filter(Boolean)
         ],
         [favoriteFriendGroups, localFriendFavoriteGroups, localFriendFavorites]
     );
-    const selectedFavoriteGroupKeys = useMemo(() => {
+    const selectedFavoriteGroupKeys = useMemo<Set<string>>(() => {
         const configured = sidebarFavoritePrefs.selectedGroups.filter(
-            (groupKey: any) => allFavoriteGroupKeys.includes(groupKey)
+            (groupKey) => allFavoriteGroupKeys.includes(groupKey)
         );
         return new Set(configured.length ? configured : allFavoriteGroupKeys);
     }, [allFavoriteGroupKeys, sidebarFavoritePrefs.selectedGroups]);
-    const selectedFavoriteIds = useMemo(() => {
+    const selectedFavoriteIds = useMemo<Set<string>>(() => {
         if (!allFavoriteGroupKeys.length) {
             return favoriteIds;
         }
-        const ids = new Set();
-        for (const groupKey of selectedFavoriteGroupKeys as Set<string>) {
+        const ids = new Set<string>();
+        for (const groupKey of selectedFavoriteGroupKeys) {
             if (groupKey.startsWith('local:')) {
                 for (const id of localFriendFavorites?.[groupKey.slice(6)] ||
                     []) {
@@ -156,33 +270,33 @@ export function useFriendsLocationsPageDerivedState({
         localFriendFavorites,
         selectedFavoriteGroupKeys
     ]);
-    const onlineFriends = useMemo(
+    const onlineFriends = useMemo<FriendRecord[]>(
         () =>
             sortFriendsBySidebarPrefs(
-                onlineIds.map((id: any) => friendsById[id]).filter(Boolean),
+                onlineIds.map((id) => friendsById[id]).filter(isPresent),
                 sidebarSortMethods
             ),
         [friendsById, onlineIds, sidebarSortMethods]
     );
-    const activeFriends = useMemo(
+    const activeFriends = useMemo<FriendRecord[]>(
         () =>
             sortActiveFriendsBySidebarPrefs(
-                activeIds.map((id: any) => friendsById[id]).filter(Boolean),
+                activeIds.map((id) => friendsById[id]).filter(isPresent),
                 sidebarSortMethods
             ),
         [activeIds, friendsById, sidebarSortMethods]
     );
-    const offlineFriends = useMemo(
+    const offlineFriends = useMemo<FriendRecord[]>(
         () =>
             sortFriendsBySidebarPrefs(
-                offlineIds.map((id: any) => friendsById[id]).filter(Boolean),
+                offlineIds.map((id) => friendsById[id]).filter(isPresent),
                 sidebarSortMethods
             ),
         [friendsById, offlineIds, sidebarSortMethods]
     );
-    const favoriteFriends = useMemo(
+    const favoriteFriends = useMemo<FriendRecord[]>(
         () =>
-            onlineFriends.filter((friend: any) =>
+            onlineFriends.filter((friend) =>
                 selectedFavoriteIds.has(normalizeId(friend?.id))
             ),
         [onlineFriends, selectedFavoriteIds]
@@ -191,41 +305,40 @@ export function useFriendsLocationsPageDerivedState({
         .length
         ? selectedFavoriteIds
         : favoriteIds;
-    const onlineNonFavoriteFriends = useMemo(
+    const onlineNonFavoriteFriends = useMemo<FriendRecord[]>(
         () =>
             onlineFriends.filter(
-                (friend: any) =>
+                (friend) =>
                     !onlineFavoriteExclusionIds.has(normalizeId(friend?.id))
             ),
         [onlineFavoriteExclusionIds, onlineFriends]
     );
-    const sameInstanceGroups = useMemo(
+    const sameInstanceGroups = useMemo<FriendsLocationsSameInstanceGroup[]>(
         () => buildSameInstanceGroups(onlineFriends, currentLocationSnapshot),
         [currentLocationSnapshot, onlineFriends]
     );
-    const sameInstanceFriends = useMemo(
-        () => sameInstanceGroups.flatMap((group: any) => group.friends),
+    const sameInstanceFriends = useMemo<FriendRecord[]>(
+        () => sameInstanceGroups.flatMap((group) => group.friends),
         [sameInstanceGroups]
     );
-    const sameInstanceFriendIds = useMemo(
+    const sameInstanceFriendIds = useMemo<Set<string>>(
         () =>
             new Set(
                 sameInstanceFriends
-                    .map((friend: any) => normalizeId(friend?.id))
+                    .map((friend) => normalizeId(friend?.id))
                     .filter(Boolean)
             ),
         [sameInstanceFriends]
     );
-    const onlineWithoutSameInstanceFriends = useMemo(
+    const onlineWithoutSameInstanceFriends = useMemo<FriendRecord[]>(
         () =>
             onlineNonFavoriteFriends.filter(
-                (friend: any) =>
-                    !sameInstanceFriendIds.has(normalizeId(friend?.id))
+                (friend) => !sameInstanceFriendIds.has(normalizeId(friend?.id))
             ),
         [onlineNonFavoriteFriends, sameInstanceFriendIds]
     );
     const segmentOptions = SEGMENTS;
-    const segmentMap = useMemo(
+    const segmentMap = useMemo<Record<string, FriendRecord[]>>(
         () => ({
             online: onlineFriends,
             onlineNonFavorite: onlineNonFavoriteFriends,
@@ -243,14 +356,14 @@ export function useFriendsLocationsPageDerivedState({
             sameInstanceFriends
         ]
     );
-    const visibleFriends = useMemo(() => {
+    const visibleFriends = useMemo<FriendRecord[]>(() => {
         if (deferredSearchQuery.trim()) {
             return uniqueFriendsById([
                 ...favoriteFriends,
                 ...onlineFriends,
                 ...activeFriends,
                 ...offlineFriends
-            ]).filter((friend: any) =>
+            ]).filter((friend) =>
                 matchesSearch(friend, deferredSearchQuery, favoriteIds)
             );
         }
@@ -259,8 +372,8 @@ export function useFriendsLocationsPageDerivedState({
                 ? showSameInstanceInOnline
                     ? onlineNonFavoriteFriends
                     : onlineWithoutSameInstanceFriends
-                : (segmentMap[activeSegment as keyof typeof segmentMap] ?? []);
-        return source.filter((friend: any) =>
+                : (segmentMap[activeSegment] ?? []);
+        return source.filter((friend) =>
             matchesSearch(friend, deferredSearchQuery, favoriteIds)
         );
     }, [
@@ -276,7 +389,7 @@ export function useFriendsLocationsPageDerivedState({
         segmentMap,
         showSameInstanceInOnline
     ]);
-    const favoriteGroupSections = useMemo(() => {
+    const favoriteGroupSections = useMemo<FriendsLocationsSection[]>(() => {
         if (
             !sidebarFavoritePrefs.isDivideByGroup ||
             activeSegment !== 'favorite' ||
@@ -284,25 +397,25 @@ export function useFriendsLocationsPageDerivedState({
         ) {
             return [];
         }
-        const friendById = new Map(
-            favoriteFriends.map((friend: any) => [
-                normalizeId(friend?.id),
-                friend
-            ])
+        const friendById = new Map<string, FriendRecord>(
+            favoriteFriends.map((friend) => [normalizeId(friend?.id), friend])
         );
-        const seen = new Set();
-        const sections = [];
+        const seen = new Set<string>();
+        const sections: FriendsLocationsSection[] = [];
         const orderedRemoteGroups = favoriteFriendGroups
-            .map((group: any) => ({
-                key: normalizeId(group?.key),
-                label:
-                    group?.displayName || group?.name || normalizeId(group?.key)
-            }))
-            .filter(
-                (group: any) =>
-                    group.key && selectedFavoriteGroupKeys.has(group.key)
+            .map(
+                (group): FriendsLocationsFavoriteGroupDescriptor => ({
+                    key: normalizeId(group?.key),
+                    label:
+                        group?.displayName ||
+                        group?.name ||
+                        normalizeId(group?.key)
+                })
             )
-            .sort((left: any, right: any) =>
+            .filter(
+                (group) => group.key && selectedFavoriteGroupKeys.has(group.key)
+            )
+            .sort((left, right) =>
                 compareFavoriteGroups(
                     left,
                     right,
@@ -313,12 +426,14 @@ export function useFriendsLocationsPageDerivedState({
             ? localFriendFavoriteGroups
             : Object.keys(localFriendFavorites || {});
         const orderedLocalGroups = localGroupNames
-            .map((groupName: any) => ({
-                key: `local:${groupName}`,
-                label: groupName
-            }))
-            .filter((group: any) => selectedFavoriteGroupKeys.has(group.key))
-            .sort((left: any, right: any) =>
+            .map(
+                (groupName): FriendsLocationsFavoriteGroupDescriptor => ({
+                    key: `local:${groupName}`,
+                    label: groupName
+                })
+            )
+            .filter((group) => selectedFavoriteGroupKeys.has(group.key))
+            .sort((left, right) =>
                 compareFavoriteGroups(
                     left,
                     right,
@@ -329,8 +444,8 @@ export function useFriendsLocationsPageDerivedState({
             const friendsInGroup = (
                 groupedFavoriteFriendIdsByGroupKey?.[group.key] || []
             )
-                .map((id: any) => friendById.get(normalizeId(id)))
-                .filter(Boolean);
+                .map((id) => friendById.get(normalizeId(id)))
+                .filter(isPresent);
             if (!friendsInGroup.length) {
                 continue;
             }
@@ -355,8 +470,8 @@ export function useFriendsLocationsPageDerivedState({
         for (const group of orderedLocalGroups) {
             const groupName = group.key.slice(6);
             const friendsInGroup = (localFriendFavorites?.[groupName] || [])
-                .map((id: any) => friendById.get(normalizeId(id)))
-                .filter(Boolean);
+                .map((id) => friendById.get(normalizeId(id)))
+                .filter(isPresent);
             if (!friendsInGroup.length) {
                 continue;
             }
@@ -379,7 +494,7 @@ export function useFriendsLocationsPageDerivedState({
             });
         }
         const ungrouped = favoriteFriends.filter(
-            (friend: any) => !seen.has(normalizeId(friend?.id))
+            (friend) => !seen.has(normalizeId(friend?.id))
         );
         if (ungrouped.length) {
             sections.push({
@@ -413,23 +528,23 @@ export function useFriendsLocationsPageDerivedState({
         sidebarSortMethods,
         t
     ]);
-    const visibleSections = useMemo(() => {
+    const visibleSections = useMemo<FriendsLocationsSection[]>(() => {
         if (favoriteGroupSections.length) {
             return favoriteGroupSections;
         }
         if (!deferredSearchQuery.trim() && activeSegment === 'same-instance') {
             const filteredSameGroups = sameInstanceGroups
-                .map((group: any) => ({
+                .map((group) => ({
                     ...group,
-                    friends: group.friends.filter((friend: any) =>
+                    friends: group.friends.filter((friend) =>
                         visibleFriends.some(
-                            (visibleFriend: any) =>
+                            (visibleFriend) =>
                                 normalizeId(visibleFriend?.id) ===
                                 normalizeId(friend?.id)
                         )
                     )
                 }))
-                .filter((group: any) => group.friends.length > 0);
+                .filter((group) => group.friends.length > 0);
             return buildSameInstanceSections({
                 sameInstanceGroups: filteredSameGroups,
                 displayInstanceInfo: false,
@@ -452,7 +567,7 @@ export function useFriendsLocationsPageDerivedState({
                 t
             });
             const otherFriends = onlineWithoutSameInstanceFriends.filter(
-                (friend: any) =>
+                (friend) =>
                     matchesSearch(friend, deferredSearchQuery, favoriteIds)
             );
             return [
@@ -495,7 +610,7 @@ export function useFriendsLocationsPageDerivedState({
     const hasVisibleSections = useMemo(
         () =>
             visibleSections.some(
-                (section: any) =>
+                (section) =>
                     Array.isArray(section.friends) && section.friends.length > 0
             ),
         [visibleSections]
@@ -521,8 +636,8 @@ export function useFriendsLocationsPageDerivedState({
     const cardGridRowHeight = densityConfig.rowHeight;
     const cardRowHeight = cardGridRowHeight + cardGridGap;
     const sectionHeaderGap = cardGridGap;
-    const virtualRows = useMemo(() => {
-        const rows = [];
+    const virtualRows = useMemo<FriendsLocationsVirtualRow[]>(() => {
+        const rows: FriendsLocationsVirtualRow[] = [];
         for (const section of visibleSections) {
             const friends = Array.isArray(section.friends)
                 ? section.friends

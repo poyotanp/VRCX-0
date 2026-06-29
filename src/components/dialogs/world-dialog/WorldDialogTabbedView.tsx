@@ -39,6 +39,40 @@ import {
     sameLocationTag
 } from './WorldDialogViewParts';
 
+type WorldWorldScreenshots = Array<{
+    path: string;
+    folderPath: string;
+    fileName: string;
+    sizeBytes: number;
+    modifiedAt: number;
+    createdAt: number;
+    width: number;
+    height: number;
+    worldId: string;
+    worldName: string | null;
+    capturedAt: string | null;
+    metadata: {
+        application: string;
+        version: number;
+        author: {
+            id: string;
+            displayName?: string;
+        };
+        world: {
+            id: string;
+            name?: string;
+            instanceId: string;
+        };
+        players: Array<{
+            id: string;
+            displayName: string;
+        }>;
+        sourceFile: string;
+        timestamp?: string;
+    };
+    error: string | null;
+}>;
+
 let lastWorldDialogTab = 'instances';
 
 function resolveWorldDialogTab(
@@ -224,7 +258,8 @@ export function WorldDialogTabbedView({
     const [instanceDetailsByLocation, setInstanceDetailsByLocation] =
         useState<any>({});
     const [creatorGroupsById, setCreatorGroupsById] = useState<any>({});
-    const [worldScreenshots, setWorldScreenshots] = useState<any[]>([]);
+    const [worldScreenshots, setWorldScreenshots] =
+        useState<WorldWorldScreenshots>([]);
     const [worldScreenshotsStatus, setWorldScreenshotsStatus] =
         useState('idle');
     const [worldScreenshotsError, setWorldScreenshotsError] = useState('');
@@ -513,10 +548,11 @@ export function WorldDialogTabbedView({
                     }))
                     .catch((): null => null)
             )
-        ).then((entries: any) => {
+        ).then((rawEntries: any) => {
             if (!active) {
                 return;
             }
+            const entries = rawEntries;
             recordLocationHintsFromInstances({
                 endpoint: currentEndpoint,
                 instances: entries
@@ -577,10 +613,11 @@ export function WorldDialogTabbedView({
                     .then((groupProfile: any) => [groupId, groupProfile])
                     .catch((): null => null)
             )
-        ).then((entries: any) => {
+        ).then((rawEntries: any) => {
             if (!active) {
                 return;
             }
+            const entries = rawEntries;
             setCreatorGroupsById((current: any) => {
                 const next: any = { ...current };
                 let changed = false;

@@ -157,10 +157,10 @@ export function ScreenshotMetadataToolbar({
                         placeholder={t(
                             'dialog.screenshot_metadata.search_placeholder'
                         )}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onSearchQueryChange(event.target.value)
                         }
-                        onKeyDown={(event: any) => {
+                        onKeyDown={(event) => {
                             if (event.key === 'Enter') {
                                 event.preventDefault();
                                 onSearch();

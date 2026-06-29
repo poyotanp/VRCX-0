@@ -33,7 +33,8 @@ import { MINUTES_PER_DAY } from '@/shared/constants/time';
 import { useFavoriteStore } from '@/state/favoriteStore';
 import {
     DEFAULT_PREFERENCES,
-    usePreferencesStore
+    usePreferencesStore,
+    type PreferencesSnapshot
 } from '@/state/preferencesStore';
 import { useShellStore } from '@/state/shellStore';
 
@@ -48,21 +49,25 @@ import { useSettingsEffects } from './useSettingsEffects';
 import { useSettingsIntegrations } from './useSettingsIntegrations';
 
 const FEED_FILTER_OPTIONS = feedFiltersOptions();
-const SETTINGS_PREFERENCE_KEYS = Object.keys(DEFAULT_PREFERENCES);
+const SETTINGS_PREFERENCE_KEYS = Object.keys(DEFAULT_PREFERENCES) as Array<
+    keyof PreferencesSnapshot
+>;
 
 export function useSettingsPageState() {
-    const locale = useShellStore((state: any) => state.locale);
-    const zoomLevel = useShellStore((state: any) => state.zoomLevel);
-    const sidebarOpen = useShellStore((state: any) => state.sidebarOpen);
+    const locale = useShellStore((state) => state.locale);
+    const zoomLevel = useShellStore((state) => state.zoomLevel);
+    const sidebarOpen = useShellStore((state) => state.sidebarOpen);
     const favoriteFriendGroups = useFavoriteStore(
-        (state: any) => state.favoriteFriendGroups
+        (state) => state.favoriteFriendGroups
     );
     const localFriendFavoriteGroups = useFavoriteStore(
-        (state: any) => state.localFriendFavoriteGroups
+        (state) => state.localFriendFavoriteGroups
     );
     const preferenceState = usePreferencesStore(
-        useShallow((state: any) => {
-            const snapshot: any = {
+        useShallow((state) => {
+            const snapshot: Record<string, unknown> & {
+                preferencesHydrated: boolean;
+            } = {
                 preferencesHydrated: state.preferencesHydrated
             };
             for (const key of SETTINGS_PREFERENCE_KEYS) {

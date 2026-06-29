@@ -103,8 +103,8 @@ export function AvatarActionsDropdown({
                     size="icon-xs"
                     aria-label={t('view.my_avatars.action.open_avatar_actions')}
                     disabled={isUpdating}
-                    onPointerDown={(event: any) => event.stopPropagation()}
-                    onClick={(event: any) => event.stopPropagation()}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => event.stopPropagation()}
                 >
                     {isUpdating ? (
                         <Spinner data-icon="inline-start" />
@@ -181,7 +181,7 @@ export function MyAvatarFilterPopover({
                             size="sm"
                             spacing={1}
                             value={releaseStatusFilter}
-                            onValueChange={(nextValue: any) => {
+                            onValueChange={(nextValue) => {
                                 if (nextValue) {
                                     onReleaseStatusChange(nextValue);
                                 }
@@ -216,7 +216,7 @@ export function MyAvatarFilterPopover({
                             size="sm"
                             spacing={1}
                             value={platformFilter}
-                            onValueChange={(nextValue: any) => {
+                            onValueChange={(nextValue) => {
                                 if (nextValue) {
                                     onPlatformChange(nextValue);
                                 }
@@ -328,7 +328,7 @@ export function GridSettingsMenu({ gridDensity, onGridDensityChange }: any) {
                             size="sm"
                             spacing={1}
                             value={gridDensity}
-                            onValueChange={(nextValue: any) => {
+                            onValueChange={(nextValue) => {
                                 if (nextValue) {
                                     onGridDensityChange(nextValue);
                                 }

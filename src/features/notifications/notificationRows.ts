@@ -1,13 +1,39 @@
+import type {
+    NotificationResponse,
+    NotificationRow
+} from '@/repositories/notificationPersistenceRepository';
 import { convertFileUrlToImageUrl } from '@/services/entityMediaService';
 import { HOUR_MS, MINUTE_MS } from '@/shared/constants/time';
 import { hasGroupIdPrefix } from '@/shared/constants/vrchatIds';
 import { parseLocation } from '@/shared/utils/location';
+export { resolveCurrentInviteLocation } from '@/shared/utils/invite';
 
-export function getNotificationCreatedAt(notification: any) {
+type FileImageLike = {
+    versions?: { file?: { url?: string | null } | null }[] | null;
+    url?: string | null;
+    imageUrl?: string | null;
+};
+type CachedInstanceLike = Record<string, unknown> & {
+    closedAt?: unknown;
+    instance?: CachedInstanceLike;
+    instanceId?: string;
+    location?: string;
+};
+type InviteMessageRow = Record<string, unknown> & {
+    message: string;
+    messageType: string;
+    slot: number;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+export function getNotificationCreatedAt(notification: NotificationRow) {
     return notification?.createdAt || notification?.created_at || '';
 }
 
-export function getNotificationMessage(notification: any) {
+export function getNotificationMessage(notification: NotificationRow): string {
     const generatedInviteMessage = notification.details?.worldName
         ? `This is a generated invite to ${notification.details.worldName}`
         : '';
@@ -22,15 +48,15 @@ export function getNotificationMessage(notification: any) {
         notification.details?.requestMessage,
         notification.details?.responseMessage
     ]
-        .map((value: any) => String(value || '').trim())
+        .map((value) => String(value || '').trim())
         .filter(Boolean)
         .join(notification.title && notification.message ? ', ' : ' ');
 }
 
 export function getNotificationGroupLabel(
-    notification: any,
-    includeLinkText: any = false
-) {
+    notification: NotificationRow,
+    includeLinkText = false
+): string {
     return (
         notification.data?.groupName ||
         notification.details?.groupName ||
@@ -40,7 +66,9 @@ export function getNotificationGroupLabel(
     );
 }
 
-export function getNotificationGroupColumnLabel(notification: any) {
+export function getNotificationGroupColumnLabel(
+    notification: NotificationRow
+): string {
     const isGroupLink =
         notification?.link?.startsWith('group:') ||
         notification?.link?.startsWith('event:');
@@ -57,7 +85,7 @@ export function getNotificationGroupColumnLabel(notification: any) {
     return explicitGroupLabel;
 }
 
-export function getNotificationSenderLabel(notification: any) {
+export function getNotificationSenderLabel(notification: NotificationRow) {
     return (
         notification?.senderDisplayName ||
         notification?.details?.senderDisplayName ||
@@ -68,7 +96,10 @@ export function getNotificationSenderLabel(notification: any) {
     );
 }
 
-export function matchesNotificationSearch(notification: any, search: any) {
+export function matchesNotificationSearch(
+    notification: NotificationRow,
+    search: unknown
+): boolean {
     const query = String(search || '')
         .trim()
         .toLowerCase();
@@ -91,19 +122,24 @@ export function matchesNotificationSearch(notification: any, search: any) {
         notification.details?.requestMessage,
         notification.details?.responseMessage,
         notification.data?.groupName
-    ].some((value: any) =>
+    ].some((value) =>
         String(value || '')
             .toLowerCase()
             .includes(query)
     );
 }
 
-export function filterNotificationRows(rows: any, filters: any, search: any) {
+export function filterNotificationRows(
+    rows: readonly NotificationRow[] | null | undefined,
+    filters: readonly string[] | null | undefined,
+    search: unknown
+): NotificationRow[] {
     const activeFilters = Array.isArray(filters) ? filters : [];
-    return (Array.isArray(rows) ? rows : []).filter((notification: any) => {
+    const inputRows = Array.isArray(rows) ? rows : [];
+    return inputRows.filter((notification) => {
         if (
             activeFilters.length &&
-            !activeFilters.includes(notification.type)
+            !activeFilters.includes(String(notification.type || ''))
         ) {
             return false;
         }
@@ -111,32 +147,15 @@ export function filterNotificationRows(rows: any, filters: any, search: any) {
     });
 }
 
-export function normalizeWorldTarget(value: any) {
+export function normalizeWorldTarget(value: unknown): string {
     const text =
         typeof value === 'string' ? value.trim() : String(value ?? '').trim();
     return parseLocation(text).worldId || text.split(':')[0] || text;
 }
 
-export function resolveCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = String(gameState?.currentLocation || '').trim();
-    if (currentLocation === 'traveling') {
-        return String(gameState?.currentDestination || '').trim();
-    }
-    return (
-        currentLocation ||
-        String(gameState?.currentDestination || '').trim() ||
-        String(
-            currentUserSnapshot?.$locationTag ||
-                currentUserSnapshot?.location ||
-                ''
-        ).trim()
-    );
-}
-
-export function canDeclineNotification(notification: any) {
+export function canDeclineNotification(
+    notification: NotificationRow | null | undefined
+): boolean {
     const type = notification?.type || '';
     const link = notification?.link || '';
     return (
@@ -152,64 +171,91 @@ export function canDeclineNotification(notification: any) {
     );
 }
 
-export function getResponseLabel(response: any) {
+export function getResponseLabel(response?: NotificationResponse | null) {
     return response?.text || response?.type || 'Respond';
 }
 
-export function getFileImageUrl(file: any) {
+export function getFileImageUrl(file: FileImageLike | null | undefined) {
     const versions = Array.isArray(file?.versions) ? file.versions : [];
     const version = versions.at(-1);
     const url = version?.file?.url || file?.url || file?.imageUrl || '';
     return url ? convertFileUrlToImageUrl(url, 128) : '';
 }
 
-export function getCachedInstanceLocation(instance: any) {
+export function getCachedInstanceLocation(instance: unknown) {
+    if (!isRecord(instance)) {
+        return '';
+    }
+    const nestedInstance = isRecord(instance.instance)
+        ? instance.instance
+        : null;
     return String(
-        instance?.location ||
-            instance?.instance?.location ||
-            instance?.instanceId ||
+        instance.location ||
+            nestedInstance?.location ||
+            instance.instanceId ||
             ''
     ).trim();
 }
 
-export function buildCachedInstanceMap(instances: any) {
-    const map = new Map();
+export function buildCachedInstanceMap(
+    instances: readonly unknown[] | null | undefined
+) {
+    const map = new Map<string, CachedInstanceLike>();
     for (const instance of Array.isArray(instances) ? instances : []) {
+        if (!isRecord(instance)) {
+            continue;
+        }
         const location = getCachedInstanceLocation(instance);
         if (location) {
-            map.set(location, instance?.instance || instance);
+            const nestedInstance = isRecord(instance.instance)
+                ? instance.instance
+                : null;
+            map.set(location, nestedInstance || instance);
         }
     }
     return map;
 }
 
-export function normalizeInviteMessageRows(value: any, messageType: any) {
-    const rows = Array.isArray(value)
-        ? value
-        : Array.isArray(value?.messages)
-          ? value.messages
-          : value && typeof value === 'object'
-            ? Object.values(value).filter(
-                  (row: any) => row && typeof row === 'object'
-              )
-            : [];
+function getInviteMessageSourceRows(value: unknown): Record<string, unknown>[] {
+    if (Array.isArray(value)) {
+        return value.filter(isRecord);
+    }
+    if (!isRecord(value)) {
+        return [];
+    }
+    if (Array.isArray(value.messages)) {
+        return value.messages.filter(isRecord);
+    }
+    return Object.values(value).filter(isRecord);
+}
+
+export function normalizeInviteMessageRows(
+    value: unknown,
+    messageType: string
+): InviteMessageRow[] {
+    const rows = getInviteMessageSourceRows(value);
 
     return rows
-        .map((row: any, index: any) => ({
+        .map((row, index) => ({
             ...row,
-            slot: Number.parseInt(row?.slot ?? index, 10),
+            slot: Number.parseInt(String(row.slot ?? index), 10),
             message: String(row?.message || row?.text || ''),
             messageType
         }))
-        .filter((row: any) => Number.isFinite(row.slot))
-        .sort((left: any, right: any) => left.slot - right.slot);
+        .filter((row) => Number.isFinite(row.slot))
+        .sort((left, right) => left.slot - right.slot);
 }
 
-export function getInviteCooldownLabel(updatedAt: any, nowMs: any) {
+export function getInviteCooldownLabel(updatedAt: unknown, nowMs: unknown) {
     if (!updatedAt) {
         return '';
     }
-    const updatedTime = new Date(updatedAt).getTime();
+    const updatedTime =
+        typeof updatedAt === 'string' ||
+        typeof updatedAt === 'number' ||
+        updatedAt instanceof Date
+            ? new Date(updatedAt).getTime()
+            : Number.NaN;
     if (!Number.isFinite(updatedTime)) {
         return String(updatedAt);
     }

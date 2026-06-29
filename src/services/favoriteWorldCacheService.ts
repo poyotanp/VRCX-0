@@ -3,6 +3,12 @@ import favoritePersistenceRepository, {
 } from '@/repositories/favoritePersistenceRepository';
 import { useFavoriteStore } from '@/state/favoriteStore';
 
+type WorldCacheSource = Record<string, unknown>;
+
+function isRecord(value: unknown): value is WorldCacheSource {
+    return Boolean(value && typeof value === 'object');
+}
+
 function normalizeEntityId(value: unknown) {
     return typeof value === 'string'
         ? value.trim()
@@ -13,26 +19,29 @@ function normalizeString(value: unknown) {
     return typeof value === 'string' ? value : String(value ?? '');
 }
 
-function normalizeReleaseStatus(world: any) {
-    return normalizeEntityId(world?.releaseStatus).toLowerCase();
+function normalizeReleaseStatus(world: unknown) {
+    return normalizeEntityId(
+        isRecord(world) ? world.releaseStatus : undefined
+    ).toLowerCase();
 }
 
-function hasCompleteWorldSnapshot(world: any) {
-    const name = normalizeString(world?.name).trim();
+function hasCompleteWorldSnapshot(world: unknown) {
+    const source = isRecord(world) ? world : {};
+    const name = normalizeString(source.name).trim();
     const imageUrl =
-        normalizeString(world?.thumbnailImageUrl).trim() ||
-        normalizeString(world?.imageUrl).trim();
+        normalizeString(source.thumbnailImageUrl).trim() ||
+        normalizeString(source.imageUrl).trim();
     return Boolean(name && imageUrl);
 }
 
-function canUpsertWorldSnapshot(world: any) {
+function canUpsertWorldSnapshot(world: unknown) {
     return (
         normalizeReleaseStatus(world) === 'public' &&
         hasCompleteWorldSnapshot(world)
     );
 }
 
-function canInsertMissingWorldSnapshot(world: any) {
+function canInsertMissingWorldSnapshot(world: unknown) {
     return (
         normalizeReleaseStatus(world) === 'private' &&
         hasCompleteWorldSnapshot(world)
@@ -40,10 +49,10 @@ function canInsertMissingWorldSnapshot(world: any) {
 }
 
 function buildWorldCacheEntry(
-    world: any,
+    world: unknown,
     fallbackWorldId?: unknown
 ): FavoriteCacheEntity | null {
-    if (!world || typeof world !== 'object') {
+    if (!isRecord(world)) {
         return null;
     }
 
@@ -75,7 +84,10 @@ function buildWorldCacheEntry(
     };
 }
 
-export async function cacheWorldDetails(world: any, fallbackWorldId?: unknown) {
+export async function cacheWorldDetails(
+    world: unknown,
+    fallbackWorldId?: unknown
+) {
     const entry = buildWorldCacheEntry(world, fallbackWorldId);
     if (!entry) {
         return false;
@@ -95,9 +107,13 @@ export async function cacheWorldDetails(world: any, fallbackWorldId?: unknown) {
     return true;
 }
 
-export async function cacheWorldDetailsById(worldsById: any) {
+export async function cacheWorldDetailsById(worldsById: unknown) {
+    if (!isRecord(worldsById)) {
+        return;
+    }
+
     await Promise.all(
-        Object.entries(worldsById || {}).map(([worldId, world]) =>
+        Object.entries(worldsById).map(([worldId, world]) =>
             cacheWorldDetails(world, worldId)
         )
     );
@@ -111,8 +127,8 @@ function isFavoriteWorldId(id: string) {
     );
 }
 
-export async function cacheFavoriteWorldDetails(world: any) {
-    const id = normalizeEntityId(world?.id);
+export async function cacheFavoriteWorldDetails(world: unknown) {
+    const id = normalizeEntityId(isRecord(world) ? world.id : undefined);
     if (!id) {
         return false;
     }
@@ -128,14 +144,14 @@ function reportWorldCacheError(error: unknown) {
     console.warn('Failed to cache favorite world details:', error);
 }
 
-export function persistWorldDetails(world: any, fallbackWorldId?: unknown) {
+export function persistWorldDetails(world: unknown, fallbackWorldId?: unknown) {
     void cacheWorldDetails(world, fallbackWorldId).catch(reportWorldCacheError);
 }
 
-export function persistWorldDetailsById(worldsById: any) {
+export function persistWorldDetailsById(worldsById: unknown) {
     void cacheWorldDetailsById(worldsById).catch(reportWorldCacheError);
 }
 
-export function persistFavoriteWorldDetails(world: any) {
+export function persistFavoriteWorldDetails(world: unknown) {
     void cacheFavoriteWorldDetails(world).catch(reportWorldCacheError);
 }

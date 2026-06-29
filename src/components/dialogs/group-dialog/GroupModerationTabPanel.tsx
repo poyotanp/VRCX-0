@@ -104,9 +104,7 @@ export function GroupModerationTabPanel({
                 <div className="flex items-center gap-2">
                     <Input
                         value={search}
-                        onChange={(event: any) =>
-                            onSearchChange(event.target.value)
-                        }
+                        onChange={(event) => onSearchChange(event.target.value)}
                         placeholder={t('dialog.group.dynamic.search_value', {
                             value: tab.label.toLowerCase()
                         })}
@@ -114,7 +112,7 @@ export function GroupModerationTabPanel({
                     />
                     <Select
                         value={String(pageSize)}
-                        onValueChange={(value: any) =>
+                        onValueChange={(value) =>
                             onPageSizeChange(Number.parseInt(value, 10) || 25)
                         }
                     >

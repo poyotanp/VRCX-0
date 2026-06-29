@@ -38,7 +38,7 @@ import {
 export function useVrchatLogController() {
     const { t } = useTranslation();
     const vrchatPathStatus = useRuntimeStore(
-        (state: any) => state.hostCapabilities.vrchatPathDiscovery
+        (state) => state.hostCapabilities.vrchatPathDiscovery
     );
     const mountedRef = useRef(true);
     const requestRef = useRef(0);

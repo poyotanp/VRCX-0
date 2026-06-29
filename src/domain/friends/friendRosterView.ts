@@ -1,11 +1,18 @@
 import { normalizeUserId, type UserFact } from '@/domain/users/userFacts';
 
+import type { FriendRecord } from './friendRosterTypes';
+
+type FriendRosterViewUser = (FriendRecord | UserFact) & { id?: unknown };
+type FriendRosterViewRow = FriendRosterViewUser & {
+    isFavorite: boolean;
+};
+
 interface FriendRosterViewInput {
     orderedFriendIds?: string[];
     onlineIds?: string[];
     activeIds?: string[];
     offlineIds?: string[];
-    usersById?: Record<string, UserFact | undefined>;
+    usersById?: Record<string, FriendRosterViewUser | undefined>;
     favoriteIds?: Set<string> | string[];
 }
 
@@ -23,13 +30,13 @@ function buildFriendRosterView({
 }: FriendRosterViewInput = {}) {
     const favorites = toSet(favoriteIds);
     const rows = orderedFriendIds
-        .map((id: any) => normalizeUserId(id))
+        .map((id) => normalizeUserId(id))
         .filter(Boolean)
-        .map((id: any) => usersById[id])
-        .filter(Boolean)
-        .map((user: any) => ({
+        .map((id) => usersById[id])
+        .filter((user): user is FriendRosterViewUser => Boolean(user))
+        .map<FriendRosterViewRow>((user) => ({
             ...user,
-            isFavorite: favorites.has(user.id)
+            isFavorite: favorites.has(normalizeUserId(user.id))
         }));
 
     return {
@@ -38,8 +45,9 @@ function buildFriendRosterView({
         activeIds,
         offlineIds,
         favoriteIds: rows
-            .filter((row: any) => row.isFavorite)
-            .map((row: any) => row.id)
+            .filter((row) => row.isFavorite)
+            .map((row) => normalizeUserId(row.id))
+            .filter(Boolean)
     };
 }
 

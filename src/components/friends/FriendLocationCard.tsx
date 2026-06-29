@@ -288,7 +288,7 @@ export function FriendLocationCard({
     const { t } = useTranslation();
 
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const avatarUrl = userImage(friend, true);
     const tone = resolveStatusTone(friend, currentUserSnapshot);
@@ -437,7 +437,7 @@ export function FriendLocationCard({
                                 {showLocationInfo ? (
                                     <div
                                         className="text-muted-foreground min-w-0 text-left text-xs leading-4"
-                                        onClick={(event: any) =>
+                                        onClick={(event) =>
                                             event.stopPropagation()
                                         }
                                     >
@@ -466,7 +466,7 @@ export function FriendLocationCard({
                                 {showLocationInfo ? (
                                     <div
                                         className="text-muted-foreground w-full min-w-0 text-left text-xs leading-4"
-                                        onClick={(event: any) =>
+                                        onClick={(event) =>
                                             event.stopPropagation()
                                         }
                                     >

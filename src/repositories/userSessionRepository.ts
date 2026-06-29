@@ -1,9 +1,9 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type UserTableContextOutput
+} from '@/platform/tauri/bindings';
 
-export interface UserTableContext {
-    userId: string;
-    userPrefix: string;
-}
+export type UserTableContext = UserTableContextOutput;
 
 export interface UserSessionRepository {
     normalizeUserTablePrefix(userId: unknown): string;
@@ -50,9 +50,9 @@ async function ensureUserTables(userId: unknown): Promise<UserTableContext> {
     }
 
     const promise = (async () => {
-        const context = (await commands.appUserTablesEnsure(
+        const context = await commands.appUserTablesEnsure(
             normalizeUserId(userId)
-        )) as UserTableContext;
+        );
 
         return {
             userId: context.userId || normalizeUserId(userId),
@@ -81,9 +81,7 @@ async function initUserTablesUncached(
     userId: unknown
 ): Promise<UserTableContext> {
     const userPrefix = normalizeUserTablePrefix(userId);
-    const context = (await commands.appUserTablesEnsure(
-        normalizeUserId(userId)
-    )) as UserTableContext;
+    const context = await commands.appUserTablesEnsure(normalizeUserId(userId));
 
     return {
         userId: context.userId || normalizeUserId(userId),

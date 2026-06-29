@@ -55,7 +55,7 @@ function TileActionsMenu({ actions, label }: any) {
                                 action.destructive ? 'destructive' : 'default'
                             }
                             disabled={action.disabled}
-                            onSelect={(event: any) => {
+                            onSelect={(event) => {
                                 event.preventDefault();
                                 action.onSelect?.();
                             }}

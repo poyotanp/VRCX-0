@@ -126,7 +126,7 @@ function getAppToasterPortalContainer() {
 }
 
 export function AppToaster(props: any) {
-    const themeMode = useShellStore((state: any) => state.themeMode);
+    const themeMode = useShellStore((state) => state.themeMode);
     const theme = resolveSonnerTheme(themeMode);
     const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
         null

@@ -1,5 +1,11 @@
 import { ImageIcon, PencilIcon, RefreshCcwIcon, SendIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import {
+    useEffect,
+    useRef,
+    useState,
+    type ChangeEvent,
+    type MouseEvent
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -27,21 +33,51 @@ import { Textarea } from '@/ui/shadcn/textarea';
 
 import {
     getInviteCooldownLabel,
+    isInviteMessageMode,
     isInviteMessageOnCooldown,
     normalizeInviteMessageRows,
     primaryActionLabel,
     rowUpdatedAt,
     saveInviteMessage,
-    validModes
+    type InviteMessageMode,
+    type InviteMessageRow,
+    type InviteMessageSavePayload,
+    type InviteMessageUsePayload
 } from './inviteMessagePanelData';
 
 export {
     dialogDescription,
     dialogTitle,
     getInviteCooldownLabel,
+    isInviteMessageMode,
     INVITE_MESSAGE_TYPES,
     normalizeInviteMessageRows
 } from './inviteMessagePanelData';
+
+export type {
+    InviteMessageMode,
+    InviteMessageRow,
+    InviteMessageSavePayload,
+    InviteMessageUsePayload
+} from './inviteMessagePanelData';
+
+type InviteMessagePanelProps = {
+    currentUserId?: string | null;
+    endpoint?: string | null;
+    messageType?: string | null;
+    mode?: InviteMessageMode | string | null;
+    targetLabel?: string | null;
+    allowEdit?: boolean;
+    allowImageUpload?: boolean;
+    onUse?:
+        | ((
+              payload: InviteMessageUsePayload
+          ) => boolean | void | Promise<boolean | void>)
+        | null;
+    onSave?: ((payload: InviteMessageSavePayload) => unknown) | null;
+    onClose?: (() => void) | null;
+};
+
 export function InviteMessagePanel({
     currentUserId,
     endpoint,
@@ -53,17 +89,17 @@ export function InviteMessagePanel({
     onUse,
     onSave,
     onClose
-}: any) {
+}: InviteMessagePanelProps) {
     const { t } = useTranslation();
 
-    const resolvedMode = validModes.has(mode) ? mode : 'select';
+    const resolvedMode = isInviteMessageMode(mode) ? mode : 'select';
     const resolvedMessageType = messageType || 'message';
-    const [rows, setRows] = useState<any[]>([]);
+    const [rows, setRows] = useState<InviteMessageRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState('');
-    const [confirmRow, setConfirmRow] = useState<any>(null);
-    const [editingRow, setEditingRow] = useState<any>(null);
+    const [confirmRow, setConfirmRow] = useState<InviteMessageRow | null>(null);
+    const [editingRow, setEditingRow] = useState<InviteMessageRow | null>(null);
     const [editMessage, setEditMessage] = useState('');
     const [imageData, setImageData] = useState('');
     const [imageName, setImageName] = useState('');
@@ -90,7 +126,7 @@ export function InviteMessagePanel({
         try {
             const response = await vrchatToolsRepository.getInviteMessages(
                 { currentUserId, messageType: resolvedMessageType },
-                { endpoint }
+                { endpoint: endpoint ?? '' }
             );
             if (requestIdRef.current !== requestId) {
                 return;
@@ -135,7 +171,7 @@ export function InviteMessagePanel({
         return () => window.clearInterval(intervalId);
     }, []);
 
-    async function handleImageChange(event: any) {
+    async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0] || null;
         event.target.value = '';
         if (!file) {
@@ -165,7 +201,7 @@ export function InviteMessagePanel({
         }
     }
 
-    function beginEdit(row: any) {
+    function beginEdit(row: InviteMessageRow) {
         if (!allowEdit) {
             return;
         }
@@ -182,11 +218,11 @@ export function InviteMessagePanel({
         setEditMessage(row?.message || '');
     }
 
-    async function saveMessage(row: any, message: any) {
+    async function saveMessage(row: InviteMessageRow, message: string) {
         const save = onSave || saveInviteMessage;
         await save({
             currentUserId,
-            endpoint,
+            endpoint: endpoint ?? '',
             messageType: resolvedMessageType,
             row,
             message,
@@ -227,7 +263,10 @@ export function InviteMessagePanel({
         }
     }
 
-    async function useRow(row: any, message: any = row?.message || '') {
+    async function useRow(
+        row: InviteMessageRow,
+        message: string = row.message || ''
+    ) {
         if (!row || sending) {
             return;
         }
@@ -294,7 +333,7 @@ export function InviteMessagePanel({
                         accept={IMAGE_UPLOAD_ACCEPT}
                         className="max-w-sm"
                         disabled={sending}
-                        onChange={(event: any) => {
+                        onChange={(event) => {
                             handleImageChange(event);
                         }}
                     />
@@ -362,7 +401,7 @@ export function InviteMessagePanel({
                                 </TableCell>
                             </TableRow>
                         ) : rows.length ? (
-                            rows.map((row: any) => {
+                            rows.map((row) => {
                                 const cooldownLabel = getInviteCooldownLabel(
                                     rowUpdatedAt(row),
                                     nowMs
@@ -406,7 +445,7 @@ export function InviteMessagePanel({
                                                                 editDisabled
                                                             }
                                                             onClick={(
-                                                                event: any
+                                                                event: MouseEvent<HTMLButtonElement>
                                                             ) => {
                                                                 event.stopPropagation();
                                                                 beginEdit(row);
@@ -423,7 +462,7 @@ export function InviteMessagePanel({
                                                             size="sm"
                                                             disabled={sending}
                                                             onClick={(
-                                                                event: any
+                                                                event: MouseEvent<HTMLButtonElement>
                                                             ) => {
                                                                 event.stopPropagation();
                                                                 useRow(row);
@@ -484,9 +523,7 @@ export function InviteMessagePanel({
                         maxLength={64}
                         rows={2}
                         disabled={sending}
-                        onChange={(event: any) =>
-                            setEditMessage(event.target.value)
-                        }
+                        onChange={(event) => setEditMessage(event.target.value)}
                     />
                     <div className="flex items-center justify-between gap-3">
                         <span className="text-muted-foreground text-xs">
@@ -586,7 +623,7 @@ export function InviteMessagePanel({
                     type="button"
                     variant="secondary"
                     disabled={sending}
-                    onClick={onClose}
+                    onClick={onClose ?? undefined}
                 >
                     {t('common.actions.close')}
                 </Button>

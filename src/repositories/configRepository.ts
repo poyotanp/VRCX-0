@@ -6,13 +6,6 @@ import { asString, safeJsonParse, safeJsonStringify } from './baseRepository';
 type ConfigEntries = Array<[string, unknown]>;
 type ConfigObject = Record<string, unknown> | unknown[] | null;
 
-interface ConfigRow {
-    key?: unknown;
-    value?: unknown;
-    [key: string]: unknown;
-    [index: number]: unknown;
-}
-
 class ConfigRepository {
     #cache = new Map<string, string>();
     #ready = false;
@@ -45,18 +38,10 @@ class ConfigRepository {
 
         await commands.appConfigSetValues([]);
 
-        const rows = (await commands.appConfigListValues()) as ConfigRow[];
-        if (Array.isArray(rows)) {
-            for (const row of rows) {
-                if (Array.isArray(row) && row[0] != null && row[1] != null) {
-                    this.#cache.set(String(row[0]), String(row[1]));
-                } else if (row && typeof row === 'object') {
-                    const key = row.key ?? row[0];
-                    const value = row.value ?? row[1];
-                    if (key != null && value != null) {
-                        this.#cache.set(String(key), String(value));
-                    }
-                }
+        const rows = await commands.appConfigListValues();
+        for (const row of rows) {
+            if (row.key && row.value != null) {
+                this.#cache.set(row.key, row.value);
             }
         }
 

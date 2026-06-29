@@ -160,18 +160,16 @@ function useAppNavNotifications({
     sessionPhase,
     t
 }: any) {
-    const notifiedMenus = useShellStore((state: any) => state.notifiedMenus);
-    const removeNavNotification = useShellStore(
-        (state: any) => state.removeNotify
-    );
+    const notifiedMenus = useShellStore((state) => state.notifiedMenus);
+    const removeNavNotification = useShellStore((state) => state.removeNotify);
     const vrcUnseenNotificationCount = useVrcNotificationStore(
-        (state: any) => state.unseenCount
+        (state) => state.unseenCount
     );
     const markAllVrcNotificationsSeen = useVrcNotificationStore(
-        (state: any) => state.markAllSeen
+        (state) => state.markAllSeen
     );
     const loadVrcNotifications = useVrcNotificationStore(
-        (state: any) => state.loadForCurrentUser
+        (state) => state.loadForCurrentUser
     );
     const notifiedKeys = new Set(notifiedMenus);
     if (vrcUnseenNotificationCount > 0) {
@@ -220,16 +218,12 @@ function useAppNavNotifications({
 }
 
 function useAppNavDashboardActions({ location, navigate, t }: any) {
-    const createDashboard = useDashboardStore(
-        (state: any) => state.createDashboard
-    );
-    const deleteDashboard = useDashboardStore(
-        (state: any) => state.deleteDashboard
-    );
+    const createDashboard = useDashboardStore((state) => state.createDashboard);
+    const deleteDashboard = useDashboardStore((state) => state.deleteDashboard);
     const setEditingDashboardId = useDashboardStore(
-        (state: any) => state.setEditingDashboardId
+        (state) => state.setEditingDashboardId
     );
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const [isCreatingDashboard, setIsCreatingDashboard] = useState(false);
 
     async function createDashboardFromNav() {
@@ -349,37 +343,35 @@ export function AppNavMenu({ isCollapsed }: any) {
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useTranslation();
-    const sidebarOpen = useShellStore((state: any) => state.sidebarOpen);
-    const themeMode = useShellStore((state: any) => state.themeMode);
+    const sidebarOpen = useShellStore((state) => state.sidebarOpen);
+    const themeMode = useShellStore((state) => state.themeMode);
     const communityThemeEnabled = useCommunityThemeStore(
-        (state: any) => state.enabled
+        (state) => state.enabled
     );
     const installedCommunityTheme = useCommunityThemeStore(
-        (state: any) => state.installedTheme
+        (state) => state.installedTheme
     );
     const localCommunityThemePreview = useCommunityThemeStore(
-        (state: any) => state.localPreview
+        (state) => state.localPreview
     );
     const backgroundImageEnabled = useBackgroundImageStore(
-        (state: any) => state.enabled
+        (state) => state.enabled
     );
-    const dashboards = useDashboardStore((state: any) => state.dashboards);
+    const dashboards = useDashboardStore((state) => state.dashboards);
     const ensureDashboardsLoaded = useDashboardStore(
-        (state: any) => state.ensureLoaded
+        (state) => state.ensureLoaded
     );
-    const sessionPhase = useSessionStore((state: any) => state.sessionPhase);
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const sessionPhase = useSessionStore((state) => state.sessionPhase);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const notificationLayout = usePreferencesStore(
-        (state: any) => state.notificationLayout
+        (state) => state.notificationLayout
     );
     const [customNavDialogOpen, setCustomNavDialogOpen] = useState(false);
     const showNewDashboardButton = usePreferencesStore(
-        (state: any) => state.showNewDashboardButton
+        (state) => state.showNewDashboardButton
     );
     const {
         defaultNavLayout,

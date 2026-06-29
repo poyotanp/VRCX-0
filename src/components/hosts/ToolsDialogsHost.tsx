@@ -21,37 +21,37 @@ import {
 
 export function ToolsDialogsHost() {
     const presenceScheduleOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.presenceScheduleOpen
+        (state) => state.systemHosts.presenceScheduleOpen
     );
     const appLauncherOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.appLauncherOpen
+        (state) => state.systemHosts.appLauncherOpen
     );
     const presenceRoomRulesOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.presenceRoomRulesOpen
+        (state) => state.systemHosts.presenceRoomRulesOpen
     );
     const presenceInviteRequestsOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.presenceInviteRequestsOpen
+        (state) => state.systemHosts.presenceInviteRequestsOpen
     );
     const groupCalendarOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.groupCalendarOpen
+        (state) => state.systemHosts.groupCalendarOpen
     );
     const exportDiscordNamesOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.exportDiscordNamesOpen
+        (state) => state.systemHosts.exportDiscordNamesOpen
     );
     const noteExportOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.noteExportOpen
+        (state) => state.systemHosts.noteExportOpen
     );
     const exportFriendsListOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.exportFriendsListOpen
+        (state) => state.systemHosts.exportFriendsListOpen
     );
     const exportAvatarsListOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.exportAvatarsListOpen
+        (state) => state.systemHosts.exportAvatarsListOpen
     );
     const editInviteMessagesOpen = useRuntimeStore(
-        (state: any) => state.systemHosts.editInviteMessagesOpen
+        (state) => state.systemHosts.editInviteMessagesOpen
     );
     const setSystemHostOpen = useRuntimeStore(
-        (state: any) => state.setSystemHostOpen
+        (state) => state.setSystemHostOpen
     );
 
     return (
@@ -112,7 +112,7 @@ export function ToolsDialogsHost() {
             />
             <InviteMessageTemplatesDialog
                 open={Boolean(editInviteMessagesOpen)}
-                onOpenChange={(open: any) =>
+                onOpenChange={(open) =>
                     setSystemHostOpen('editInviteMessagesOpen', open)
                 }
                 currentUserId={getCurrentUserId()}

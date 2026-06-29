@@ -33,27 +33,26 @@ function resolveActionFriendId(friend: FeedFriendActionTarget) {
 
 export function useFeedFriendActions(): FeedFriendActions {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const runtimeCurrentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const runtimeCurrentDestination = useRuntimeStore(
-        (state: any) => state.gameState.currentDestination
+        (state) => state.gameState.currentDestination
     );
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
-    const confirm = useModalStore((state: any) => state.confirm);
-    const boopPrompt = useModalStore((state: any) => state.boopPrompt);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
+    const confirm = useModalStore((state) => state.confirm);
+    const boopPrompt = useModalStore((state) => state.boopPrompt);
+    const normalizedCurrentUserId = normalizeId(currentUserId);
     const friendsMap = useMemo(
         () => new Map(Object.entries(friendsById || {})),
         [friendsById]
@@ -78,11 +77,11 @@ export function useFeedFriendActions(): FeedFriendActions {
     const canInviteFromCurrentLocation = useMemo(
         () =>
             checkCanInvite(currentInviteLocation, {
-                currentUserId,
+                currentUserId: normalizedCurrentUserId,
                 lastLocationStr: currentInviteLocation,
                 cachedInstances: new Map()
             }),
-        [currentInviteLocation, currentUserId]
+        [currentInviteLocation, normalizedCurrentUserId]
     );
     const canSendInviteFromFeed = Boolean(
         isGameRunning && currentInviteLocation && canInviteFromCurrentLocation
@@ -101,12 +100,12 @@ export function useFeedFriendActions(): FeedFriendActions {
                 return false;
             }
             return checkCanInviteSelf(normalizedLocation, {
-                currentUserId,
+                currentUserId: normalizedCurrentUserId,
                 cachedInstances: new Map(),
                 friends: friendsMap
             });
         },
-        [currentUserId, friendsMap]
+        [friendsMap, normalizedCurrentUserId]
     );
 
     const launchFeedFriendLocation = useCallback(
@@ -178,7 +177,7 @@ export function useFeedFriendActions(): FeedFriendActions {
     const sendFeedFriendInvite = useCallback(
         async (friend: FeedFriendActionTarget) => {
             const friendId = resolveActionFriendId(friend);
-            if (!friendId || friendId === normalizeId(currentUserId)) {
+            if (!friendId || friendId === normalizedCurrentUserId) {
                 return;
             }
             if (!currentInviteLocation) {
@@ -242,7 +241,7 @@ export function useFeedFriendActions(): FeedFriendActions {
             confirm,
             currentEndpoint,
             currentInviteLocation,
-            currentUserId,
+            normalizedCurrentUserId,
             t
         ]
     );
@@ -250,7 +249,7 @@ export function useFeedFriendActions(): FeedFriendActions {
     const requestFeedFriendInvite = useCallback(
         async (friend: FeedFriendActionTarget) => {
             const friendId = resolveActionFriendId(friend);
-            if (!friendId || friendId === normalizeId(currentUserId)) {
+            if (!friendId || friendId === normalizedCurrentUserId) {
                 return;
             }
             if (!canRequestInviteFromFeedFriend(friend, currentUserSnapshot)) {
@@ -287,27 +286,34 @@ export function useFeedFriendActions(): FeedFriendActions {
                 );
             }
         },
-        [confirm, currentEndpoint, currentUserId, currentUserSnapshot, t]
+        [
+            confirm,
+            currentEndpoint,
+            currentUserSnapshot,
+            normalizedCurrentUserId,
+            t
+        ]
     );
 
     const sendFeedFriendBoop = useCallback(
         async (friend: FeedFriendActionTarget) => {
             const friendId = resolveActionFriendId(friend);
-            if (!friendId || friendId === normalizeId(currentUserId)) {
+            if (!friendId || friendId === normalizedCurrentUserId) {
                 return;
             }
             try {
                 const result = await boopPrompt({
                     endpoint: currentEndpoint,
                     targetLabel:
-                        friend?.displayName || friend?.username || friendId
+                        normalizeId(friend?.displayName || friend?.username) ||
+                        friendId
                 });
                 if (!result.ok) {
                     return;
                 }
                 await sendBoopToUser({
                     userId: friendId,
-                    emojiId: result.value,
+                    emojiId: normalizeId(result.value),
                     endpoint: currentEndpoint
                 });
                 toast.success(t('view.feed.success.boop_sent'));
@@ -319,7 +325,7 @@ export function useFeedFriendActions(): FeedFriendActions {
                 );
             }
         },
-        [boopPrompt, currentEndpoint, currentUserId, t]
+        [boopPrompt, currentEndpoint, normalizedCurrentUserId, t]
     );
 
     const openFeedNewInstance = useCallback(

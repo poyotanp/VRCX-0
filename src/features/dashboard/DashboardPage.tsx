@@ -139,7 +139,7 @@ export function DashboardPage() {
                 <div className="bg-card flex items-center gap-2 rounded-md border px-3 py-2">
                     <Input
                         value={editor.editName}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             editor.setEditName(event.target.value)
                         }
                         placeholder={t('view.dashboard.label.dashboard_name')}

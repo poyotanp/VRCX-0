@@ -90,10 +90,7 @@ function getAuthenticatedRuntimeContext(): AuthenticatedRuntimeContext | null {
         userId: runtimeState.auth.currentUserId,
         endpoint: runtimeState.auth.currentUserEndpoint,
         websocket: runtimeState.auth.currentUserWebsocket,
-        currentUserSnapshot: runtimeState.auth.currentUserSnapshot as Record<
-            string,
-            unknown
-        >
+        currentUserSnapshot: runtimeState.auth.currentUserSnapshot
     };
 }
 

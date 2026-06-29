@@ -143,7 +143,7 @@ function GameLogSessionDateFilter({
                     size="icon-xs"
                     variant={active ? 'secondary' : 'ghost'}
                     aria-label={label}
-                    onMouseDown={(event: any) => event.preventDefault()}
+                    onMouseDown={(event) => event.preventDefault()}
                 >
                     <CalendarRangeIcon data-icon="icon" />
                 </InputGroupButton>
@@ -189,7 +189,7 @@ function GameLogSearchInput({
                             type="button"
                             size="icon-xs"
                             aria-label={t('common.actions.clear')}
-                            onMouseDown={(event: any) => event.preventDefault()}
+                            onMouseDown={(event) => event.preventDefault()}
                             onClick={onClear}
                         >
                             <XIcon data-icon="icon" />

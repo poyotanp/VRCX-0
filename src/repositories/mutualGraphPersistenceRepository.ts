@@ -1,4 +1,8 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type MutualGraphMetaInput as IpcMutualGraphMetaInput,
+    type MutualGraphSnapshotEntryInput
+} from '@/platform/tauri/bindings';
 
 import { normalizeUserTablePrefix } from './userSessionRepository';
 import {
@@ -13,8 +17,8 @@ type MutualGraphMeta = {
     lastFetchedAt: string | null;
     optedOut: boolean;
 };
-type MutualGraphMetaInput = Partial<MutualGraphMeta>;
-type MutualGraphMetaMap = Map<string, MutualGraphMetaInput>;
+type MutualGraphMetaPatch = Partial<MutualGraphMeta>;
+type MutualGraphMetaMap = Map<string, MutualGraphMetaPatch>;
 type MutualGraphOptions = {
     friendId?: unknown;
     offset?: number;
@@ -66,32 +70,24 @@ async function getSnapshot(userId: unknown): Promise<{
 }> {
     await ensureTables(userId);
     const {
-        friendIds = [],
-        links = [],
-        meta: metaRows = []
-    } = (await commands.appMutualGraphSnapshotGet(
+        friendIds,
+        links,
+        meta: metaRows
+    } = await commands.appMutualGraphSnapshotGet(
         typeof userId === 'string' ? userId.trim() : String(userId ?? '').trim()
-    )) as {
-        friendIds?: unknown[];
-        links?: Array<{ friendId?: unknown; mutualId?: unknown }>;
-        meta?: Array<{
-            friendId?: unknown;
-            lastFetchedAt?: unknown;
-            optedOut?: unknown;
-        }>;
-    };
+    );
 
-    const snapshot = new Map();
-    const meta = new Map();
+    const snapshot = new Map<string, string[]>();
+    const meta = new Map<string, MutualGraphMeta>();
 
-    for (const friendId of friendIds ?? []) {
+    for (const friendId of friendIds) {
         const normalizedFriendId = String(friendId || '');
         if (normalizedFriendId && !snapshot.has(normalizedFriendId)) {
             snapshot.set(normalizedFriendId, []);
         }
     }
 
-    for (const row of links ?? []) {
+    for (const row of links) {
         const friendId = row.friendId;
         const mutualId = row.mutualId;
         if (!friendId || !mutualId) {
@@ -104,7 +100,7 @@ async function getSnapshot(userId: unknown): Promise<{
         snapshot.set(normalizedFriendId, links);
     }
 
-    for (const row of metaRows ?? []) {
+    for (const row of metaRows) {
         const friendId = row.friendId;
         if (!friendId) {
             continue;
@@ -151,8 +147,7 @@ async function getMutualFriends({
 
 async function saveSnapshot(userId: unknown, entries: MutualGraphEntryMap) {
     const pairs = entries instanceof Map ? entries : new Map();
-    const normalizedEntries: Array<{ friendId: string; mutualIds: string[] }> =
-        [];
+    const normalizedEntries: MutualGraphSnapshotEntryInput[] = [];
     pairs.forEach((mutualIds, friendId) => {
         if (!friendId) {
             return;
@@ -203,7 +198,7 @@ async function updateMutualsForFriend(
 async function upsertMeta(
     userId: unknown,
     friendId: unknown,
-    { lastFetchedAt, optedOut }: MutualGraphMetaInput = {}
+    { lastFetchedAt, optedOut }: MutualGraphMetaPatch = {}
 ) {
     const normalizedFriendId =
         typeof friendId === 'string'
@@ -231,11 +226,7 @@ async function bulkUpsertMeta(userId: unknown, entries: MutualGraphMetaMap) {
     }
 
     const now = new Date().toISOString();
-    const rows: Array<{
-        friendId: string;
-        lastFetchedAt: string;
-        optedOut: boolean;
-    }> = [];
+    const rows: IpcMutualGraphMetaInput[] = [];
     entries.forEach((entry, friendId) => {
         if (friendId) {
             rows.push({

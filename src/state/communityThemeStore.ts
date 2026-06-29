@@ -79,79 +79,77 @@ export function resolveCommunityThemeBaseMode(
     return 'dark';
 }
 
-export const useCommunityThemeStore = create<CommunityThemeStore>(
-    (set: any) => ({
-        catalogUrl: '',
-        catalog: [],
+export const useCommunityThemeStore = create<CommunityThemeStore>((set) => ({
+    catalogUrl: '',
+    catalog: [],
+    enabled: false,
+    installedTheme: null,
+    installedThemes: [],
+    localPreview: null,
+    localPreviewWatch: {
         enabled: false,
-        installedTheme: null,
-        installedThemes: [],
-        localPreview: null,
-        localPreviewWatch: {
-            enabled: false,
-            folderPath: '',
-            error: null
-        },
-        overrideCssLength: 0,
-        loading: false,
-        error: null,
-        setCatalog(catalogUrl, catalog) {
-            set({ catalogUrl, catalog: Array.isArray(catalog) ? catalog : [] });
-        },
-        hydrate({
+        folderPath: '',
+        error: null
+    },
+    overrideCssLength: 0,
+    loading: false,
+    error: null,
+    setCatalog(catalogUrl, catalog) {
+        set({ catalogUrl, catalog: Array.isArray(catalog) ? catalog : [] });
+    },
+    hydrate({
+        catalogUrl,
+        enabled,
+        installedTheme,
+        installedThemes,
+        overrideCssLength,
+        localPreview
+    }) {
+        set({
             catalogUrl,
-            enabled,
+            enabled: Boolean(enabled && installedTheme),
             installedTheme,
-            installedThemes,
-            overrideCssLength,
-            localPreview
-        }) {
-            set({
-                catalogUrl,
-                enabled: Boolean(enabled && installedTheme),
-                installedTheme,
-                installedThemes: Array.isArray(installedThemes)
-                    ? installedThemes
-                    : installedTheme
-                      ? [installedTheme]
-                      : [],
-                localPreview: localPreview ?? null,
-                localPreviewWatch: {
-                    enabled: false,
-                    folderPath: '',
-                    error: null
-                },
-                overrideCssLength: Math.max(0, Number(overrideCssLength) || 0)
-            });
-        },
-        setInstalledState({ enabled, installedTheme, installedThemes }) {
-            set({
-                enabled: Boolean(enabled && installedTheme),
-                installedTheme,
-                ...(installedThemes
-                    ? { installedThemes: installedThemes.filter(Boolean) }
-                    : {})
-            });
-        },
-        setLocalPreview(localPreview) {
-            set({ localPreview });
-        },
-        setLocalPreviewWatch(localPreviewWatch) {
-            set((state: CommunityThemeStore) => ({
-                localPreviewWatch: {
-                    ...state.localPreviewWatch,
-                    ...localPreviewWatch
-                }
-            }));
-        },
-        setOverrideCssLength(length) {
-            set({ overrideCssLength: Math.max(0, Number(length) || 0) });
-        },
-        setLoading(loading) {
-            set({ loading: Boolean(loading) });
-        },
-        setError(error) {
-            set({ error });
-        }
-    })
-);
+            installedThemes: Array.isArray(installedThemes)
+                ? installedThemes
+                : installedTheme
+                  ? [installedTheme]
+                  : [],
+            localPreview: localPreview ?? null,
+            localPreviewWatch: {
+                enabled: false,
+                folderPath: '',
+                error: null
+            },
+            overrideCssLength: Math.max(0, Number(overrideCssLength) || 0)
+        });
+    },
+    setInstalledState({ enabled, installedTheme, installedThemes }) {
+        set({
+            enabled: Boolean(enabled && installedTheme),
+            installedTheme,
+            ...(installedThemes
+                ? { installedThemes: installedThemes.filter(Boolean) }
+                : {})
+        });
+    },
+    setLocalPreview(localPreview) {
+        set({ localPreview });
+    },
+    setLocalPreviewWatch(localPreviewWatch) {
+        set((state) => ({
+            localPreviewWatch: {
+                ...state.localPreviewWatch,
+                ...localPreviewWatch
+            }
+        }));
+    },
+    setOverrideCssLength(length) {
+        set({ overrideCssLength: Math.max(0, Number(length) || 0) });
+    },
+    setLoading(loading) {
+        set({ loading: Boolean(loading) });
+    },
+    setError(error) {
+        set({ error });
+    }
+}));

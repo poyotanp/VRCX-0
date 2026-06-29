@@ -8,10 +8,10 @@ interface FriendLogStoreState {
     bumpRevision: () => void;
 }
 
-export const useFriendLogStore = create<FriendLogStoreState>((set: any) => ({
+export const useFriendLogStore = create<FriendLogStoreState>((set) => ({
     revision: 0,
     bumpRevision() {
-        set((state: any) => ({ revision: state.revision + 1 }));
+        set((state) => ({ revision: state.revision + 1 }));
     }
 }));
 

@@ -32,10 +32,10 @@ export function useModerationTableState({
     const hasWrittenPageSizeRef = useRef(false);
     const hasWrittenTableStateRef = useRef(false);
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const tablePageSizesPreference = usePreferencesStore(
-        (state: any) => state.tablePageSizes
+        (state) => state.tablePageSizes
     );
     const [pageSizes, setPageSizes] = useState(MODERATION_DEFAULT_PAGE_SIZES);
     const [sorting, setSorting] = useState(() =>

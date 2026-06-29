@@ -322,7 +322,7 @@ function EntityMemoTextarea({
                     placeholder={placeholder}
                     disabled={saving}
                     className="mt-1 min-h-0 resize-none text-xs"
-                    onChange={(event: any) => setDraft(event.target.value)}
+                    onChange={(event) => setDraft(event.target.value)}
                     onBlur={() => {
                         saveDraft();
                     }}
@@ -377,7 +377,7 @@ function EntityActionItem({
         <DropdownMenuItem
             disabled={disabled}
             variant={destructive ? 'destructive' : 'default'}
-            onSelect={(event: any) => {
+            onSelect={(event) => {
                 if (disabled) {
                     event.preventDefault();
                     return;

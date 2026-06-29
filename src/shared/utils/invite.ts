@@ -21,11 +21,47 @@ export interface CheckCanInviteSelfDeps {
     friends?: Map<string, unknown> | Set<string> | null;
 }
 
+export interface InviteLocationGameState {
+    currentLocation?: unknown;
+    currentDestination?: unknown;
+    isGameRunning?: unknown;
+}
+
+export interface InviteLocationCurrentUserSnapshot {
+    $locationTag?: unknown;
+    location?: unknown;
+}
+
+function normalizeInviteLocationValue(value: unknown): string {
+    return typeof value === 'string'
+        ? value.trim()
+        : String(value ?? '').trim();
+}
+
 function locationCacheKey(parsed: ParsedInviteLocation): string {
     if (!parsed.worldId || !parsed.instanceId) {
         return '';
     }
     return `${parsed.worldId}:${parsed.instanceId}`;
+}
+
+function resolveCurrentInviteLocation(
+    gameState: InviteLocationGameState | null | undefined,
+    currentUserSnapshot: InviteLocationCurrentUserSnapshot | null | undefined
+): string {
+    const currentLocation = normalizeInviteLocationValue(
+        gameState?.currentLocation
+    );
+    if (currentLocation === 'traveling') {
+        return normalizeInviteLocationValue(gameState?.currentDestination);
+    }
+    return (
+        currentLocation ||
+        normalizeInviteLocationValue(gameState?.currentDestination) ||
+        normalizeInviteLocationValue(
+            currentUserSnapshot?.$locationTag || currentUserSnapshot?.location
+        )
+    );
 }
 
 function getCachedInstance(
@@ -119,4 +155,4 @@ function checkCanInviteSelf(
     return true;
 }
 
-export { checkCanInvite, checkCanInviteSelf };
+export { checkCanInvite, checkCanInviteSelf, resolveCurrentInviteLocation };

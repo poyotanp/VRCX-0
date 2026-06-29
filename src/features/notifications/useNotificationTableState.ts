@@ -27,13 +27,13 @@ export function useNotificationTableState({
     deferredSearchQuery: string;
 }) {
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const tablePageSizePreference = usePreferencesStore(
-        (state: any) => state.tablePageSize
+        (state) => state.tablePageSize
     );
     const tablePageSizesPreference = usePreferencesStore(
-        (state: any) => state.tablePageSizes
+        (state) => state.tablePageSizes
     );
 
     const [persistedState] = useState(() => readPersistedState());

@@ -37,20 +37,31 @@ import {
     truncateExportMemo
 } from './toolsDialogUtils';
 
+type NoteExportRow = {
+    id: string;
+    name: string;
+    memo: string;
+    ref: Record<string, unknown>;
+};
+
+function asObjectRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === 'object'
+        ? (value as Record<string, unknown>)
+        : null;
+}
+
 export function NoteExportDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const orderedFriendIds = useFriendRosterStore(
-        (state: any) => state.orderedFriendIds
+        (state) => state.orderedFriendIds
     );
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const cancelRef = useRef(false);
     const refreshRequestRef = useRef(0);
-    const [rows, setRows] = useState<any[]>([]);
+    const [rows, setRows] = useState<NoteExportRow[]>([]);
     const [loading, setLoading] = useState(false);
-    const [progress, setProgress] = useState<any>({ done: 0, total: 0 });
+    const [progress, setProgress] = useState({ done: 0, total: 0 });
     const [errors, setErrors] = useState('');
 
     async function refreshRows() {
@@ -60,19 +71,20 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
         setErrors('');
         try {
             const memosById = await getUserMemoMap();
-            const nextRows = [];
+            const nextRows: NoteExportRow[] = [];
             for (const userId of getFriendIds(orderedFriendIds)) {
                 const friend = friendsById[userId];
+                const ref = asObjectRecord(friend?.ref) || friend;
                 const memo = normalizeExportMemo(
                     memosById.get(userId) || friend?.memo || ''
                 );
-                const vrchatNote = friend?.ref?.note ?? friend?.note ?? '';
+                const vrchatNote = ref.note ?? friend?.note ?? '';
                 if (memo && friend && vrchatNote !== truncateExportMemo(memo)) {
                     nextRows.push({
                         id: userId,
                         name: friend.displayName || friend.name || userId,
                         memo,
-                        ref: friend.ref || friend
+                        ref
                     });
                 }
             }
@@ -132,8 +144,8 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
                         },
                         { endpoint: getEndpoint() }
                     );
-                    setRows((current: any) =>
-                        current.filter((item: any) => item.id !== row.id)
+                    setRows((current) =>
+                        current.filter((item) => item.id !== row.id)
                     );
                     setProgress({ done: index + 1, total: snapshot.length });
                     if (index < snapshot.length - 1) {
@@ -141,7 +153,7 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
                     }
                 } catch (error) {
                     setErrors(
-                        (current: any) =>
+                        (current) =>
                             `${current}Name: ${row.name}\n${userFacingErrorMessage(error, t('dialog.note_export.failed_to_update_local_note'))}\n\n`
                     );
                     break;
@@ -160,7 +172,7 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
                     <DialogTitle>{t('dialog.note_export.header')}</DialogTitle>
                     <DialogDescription asChild>
                         <div className="flex flex-col gap-1">
-                            {Array.from({ length: 8 }, (_: any, index: any) => (
+                            {Array.from({ length: 8 }, (_, index) => (
                                 <span
                                     key={`note-export-description-${index + 1}`}
                                 >
@@ -248,7 +260,7 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
                         </TableHeader>
                         <TableBody>
                             {rows.length ? (
-                                rows.map((row: any) => (
+                                rows.map((row) => (
                                     <TableRow key={row.id}>
                                         <TableCell>
                                             {userImage(row.ref, true, '64') ? (
@@ -309,21 +321,19 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
                                                 maxLength={256}
                                                 rows={2}
                                                 disabled={loading}
-                                                onChange={(event: any) =>
-                                                    setRows((current: any) =>
-                                                        current.map(
-                                                            (item: any) =>
-                                                                item.id ===
-                                                                row.id
-                                                                    ? {
-                                                                          ...item,
-                                                                          memo: normalizeExportMemo(
-                                                                              event
-                                                                                  .target
-                                                                                  .value
-                                                                          )
-                                                                      }
-                                                                    : item
+                                                onChange={(event) =>
+                                                    setRows((current) =>
+                                                        current.map((item) =>
+                                                            item.id === row.id
+                                                                ? {
+                                                                      ...item,
+                                                                      memo: normalizeExportMemo(
+                                                                          event
+                                                                              .target
+                                                                              .value
+                                                                      )
+                                                                  }
+                                                                : item
                                                         )
                                                     )
                                                 }
@@ -336,9 +346,9 @@ export function NoteExportDialog({ open, onOpenChange }: any) {
                                                 variant="ghost"
                                                 disabled={loading}
                                                 onClick={() =>
-                                                    setRows((current: any) =>
+                                                    setRows((current) =>
                                                         current.filter(
-                                                            (item: any) =>
+                                                            (item) =>
                                                                 item.id !==
                                                                 row.id
                                                         )

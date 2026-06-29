@@ -8,7 +8,10 @@ import {
     styleName,
     tagsKey
 } from '@/components/dialogs/avatarDetailsModel';
-import avatarProfileRepository from '@/repositories/avatarProfileRepository';
+import avatarProfileRepository, {
+    type AvatarProfileRecord,
+    type AvatarStyleRecord
+} from '@/repositories/avatarProfileRepository';
 import { normalizeString } from '@/shared/utils/string';
 import { Button } from '@/ui/shadcn/button';
 import {
@@ -43,13 +46,32 @@ function hasOwn(object: any, key: any) {
     return Object.prototype.hasOwnProperty.call(object, key);
 }
 
+type AvatarDetailsSaveParams = Record<string, unknown> & {
+    id: string;
+    name?: string;
+    description?: string;
+    primaryStyle?: string;
+    secondaryStyle?: string;
+    tags?: string[];
+};
+
+type AvatarDetailsDialogProps = {
+    open: boolean;
+    avatar?: Partial<AvatarProfileRecord> | null;
+    endpoint?: string;
+    onOpenChange(open: boolean): void;
+    onSavedCurrentAvatar?(
+        avatar: AvatarProfileRecord | Record<string, unknown>
+    ): void;
+};
+
 export function AvatarDetailsDialog({
     open,
     avatar,
     endpoint,
     onOpenChange,
     onSavedCurrentAvatar
-}: any) {
+}: AvatarDetailsDialogProps) {
     const { t } = useTranslation();
 
     const avatarId = normalizeString(avatar?.id);
@@ -71,13 +93,13 @@ export function AvatarDetailsDialog({
     const [description, setDescription] = useState('');
     const [saving, setSaving] = useState(false);
     const [loadStatus, setLoadStatus] = useState('idle');
-    const [styles, setStyles] = useState<any[]>([]);
+    const [styles, setStyles] = useState<AvatarStyleRecord[]>([]);
     const [primaryStyle, setPrimaryStyle] = useState('');
     const [secondaryStyle, setSecondaryStyle] = useState('');
     const [authorTags, setAuthorTags] = useState('');
 
     const stylesByName = useMemo(() => {
-        const map = new Map();
+        const map = new Map<string, string>();
         for (const style of styles) {
             const nameValue = styleName(style);
             const idValue = normalizeString(style?.id);
@@ -139,13 +161,13 @@ export function AvatarDetailsDialog({
         setLoadStatus('running');
         avatarProfileRepository
             .getAvatarStyles({ endpoint })
-            .then((rows: any) => {
+            .then((rows) => {
                 if (active) {
-                    setStyles(Array.isArray(rows) ? rows : []);
+                    setStyles(rows);
                     setLoadStatus('ready');
                 }
             })
-            .catch((error: any) => {
+            .catch((error: unknown) => {
                 if (active) {
                     setStyles([]);
                     setLoadStatus('error');
@@ -169,7 +191,7 @@ export function AvatarDetailsDialog({
             return;
         }
 
-        const params: any = { id: avatarId };
+        const params: AvatarDetailsSaveParams = { id: avatarId };
         const nextAuthorTags = authorTagsFromCsv(authorTags);
         const authorTagsChanged =
             tagsKey(initialAuthorTags) !== tagsKey(nextAuthorTags);
@@ -192,7 +214,7 @@ export function AvatarDetailsDialog({
         }
         if (authorTagsChanged) {
             const remainingTags = initialTags.filter(
-                (tag: any) =>
+                (tag) =>
                     typeof tag === 'string' && !tag.startsWith('author_tag_')
             );
             params.tags = [...remainingTags, ...nextAuthorTags];
@@ -203,7 +225,7 @@ export function AvatarDetailsDialog({
             return;
         }
 
-        const fallbackAvatar: any = {
+        const fallbackAvatar: AvatarProfileRecord | Record<string, unknown> = {
             ...avatar,
             ...(hasOwn(params, 'name') ? { name } : {}),
             ...(hasOwn(params, 'description') ? { description } : {}),
@@ -272,9 +294,7 @@ export function AvatarDetailsDialog({
                             id="avatar-details-name"
                             value={name}
                             disabled={saving}
-                            onChange={(event: any) =>
-                                setName(event.target.value)
-                            }
+                            onChange={(event) => setName(event.target.value)}
                         />
                     </Field>
                     <Field>
@@ -287,7 +307,7 @@ export function AvatarDetailsDialog({
                             value={description}
                             disabled={saving}
                             className="resize-none"
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setDescription(event.target.value)
                             }
                         />
@@ -300,7 +320,7 @@ export function AvatarDetailsDialog({
                             <Select
                                 value={primaryStyle || noneValue}
                                 disabled={controlsDisabled}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                     setPrimaryStyle(
                                         value === noneValue ? '' : value
                                     )
@@ -318,16 +338,14 @@ export function AvatarDetailsDialog({
                                         <SelectItem value={noneValue}>
                                             {t('dialog.avatar.label.none')}
                                         </SelectItem>
-                                        {styleNames.map(
-                                            (styleNameValue: any) => (
-                                                <SelectItem
-                                                    key={styleNameValue}
-                                                    value={styleNameValue}
-                                                >
-                                                    {styleNameValue}
-                                                </SelectItem>
-                                            )
-                                        )}
+                                        {styleNames.map((styleNameValue) => (
+                                            <SelectItem
+                                                key={styleNameValue}
+                                                value={styleNameValue}
+                                            >
+                                                {styleNameValue}
+                                            </SelectItem>
+                                        ))}
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -339,7 +357,7 @@ export function AvatarDetailsDialog({
                             <Select
                                 value={secondaryStyle || noneValue}
                                 disabled={controlsDisabled}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                     setSecondaryStyle(
                                         value === noneValue ? '' : value
                                     )
@@ -357,16 +375,14 @@ export function AvatarDetailsDialog({
                                         <SelectItem value={noneValue}>
                                             {t('dialog.avatar.label.none')}
                                         </SelectItem>
-                                        {styleNames.map(
-                                            (styleNameValue: any) => (
-                                                <SelectItem
-                                                    key={styleNameValue}
-                                                    value={styleNameValue}
-                                                >
-                                                    {styleNameValue}
-                                                </SelectItem>
-                                            )
-                                        )}
+                                        {styleNames.map((styleNameValue) => (
+                                            <SelectItem
+                                                key={styleNameValue}
+                                                value={styleNameValue}
+                                            >
+                                                {styleNameValue}
+                                            </SelectItem>
+                                        ))}
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -383,7 +399,7 @@ export function AvatarDetailsDialog({
                             value={authorTags}
                             disabled={saving}
                             placeholder="tag_one,tag_two"
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setAuthorTags(event.target.value)
                             }
                         />

@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 
 import memoPersistenceRepository from '@/repositories/memoPersistenceRepository';
+import type { GroupCalendarEventRecord } from '@/repositories/vrchatToolsRepository';
 import { formatCsvField } from '@/shared/utils/csv';
 import { windowDelay } from '@/shared/utils/delays';
 import { useRuntimeStore } from '@/state/runtimeStore';
@@ -107,11 +108,11 @@ export function truncateExportMemo(value: any) {
     return normalizeExportMemo(value).slice(0, 256);
 }
 
-export function getEventGroupId(event: any) {
+export function getEventGroupId(event: GroupCalendarEventRecord | null) {
     return event?.ownerId || event?.groupId || event?.group?.id || '';
 }
 
-export function getEventId(event: any) {
+export function getEventId(event: GroupCalendarEventRecord | null) {
     return event?.id || event?.eventId || '';
 }
 

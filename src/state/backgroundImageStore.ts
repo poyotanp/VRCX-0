@@ -33,44 +33,36 @@ interface BackgroundImageStore {
     setError(error: string | null): void;
 }
 
-export const useBackgroundImageStore = create<BackgroundImageStore>(
-    (set: any) => ({
-        mode: 'off',
-        enabled: false,
-        providerId: 'nasa-epic',
-        customSource: null,
-        snapshot: null,
-        loading: false,
-        error: null,
-        hydrate({ mode, enabled, providerId, customSource, snapshot }) {
-            set({
-                mode,
-                enabled: Boolean(enabled),
-                providerId,
-                customSource,
-                snapshot
-            });
-        },
-        setStateSnapshot({
+export const useBackgroundImageStore = create<BackgroundImageStore>((set) => ({
+    mode: 'off',
+    enabled: false,
+    providerId: 'nasa-epic',
+    customSource: null,
+    snapshot: null,
+    loading: false,
+    error: null,
+    hydrate({ mode, enabled, providerId, customSource, snapshot }) {
+        set({
             mode,
-            enabled,
+            enabled: Boolean(enabled),
             providerId,
             customSource,
             snapshot
-        }) {
-            set({
-                mode,
-                enabled: Boolean(enabled),
-                providerId,
-                customSource,
-                snapshot
-            });
-        },
-        setLoading(loading) {
-            set({ loading: Boolean(loading) });
-        },
-        setError(error) {
-            set({ error });
-        }
-    })
-);
+        });
+    },
+    setStateSnapshot({ mode, enabled, providerId, customSource, snapshot }) {
+        set({
+            mode,
+            enabled: Boolean(enabled),
+            providerId,
+            customSource,
+            snapshot
+        });
+    },
+    setLoading(loading) {
+        set({ loading: Boolean(loading) });
+    },
+    setError(error) {
+        set({ error });
+    }
+}));

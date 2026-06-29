@@ -27,9 +27,9 @@ export function GroupModerationToolsDialog({
     endpoint
 }: any) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const [activeTab, setActiveTab] = useState('members');
-    const [rowsByTab, setRowsByTab] = useState<any>({});
+    const [rowsByTab, setRowsByTab] = useState<Record<string, unknown[]>>({});
     const [statusByTab, setStatusByTab] = useState<any>({});
     const [errorsByTab, setErrorsByTab] = useState<any>({});
     const [search, setSearch] = useState('');

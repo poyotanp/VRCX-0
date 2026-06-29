@@ -1,11 +1,24 @@
-import { useState, type MutableRefObject } from 'react';
+import {
+    useState,
+    type Dispatch,
+    type MutableRefObject,
+    type SetStateAction
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import friendLogHistoryRepository from '@/repositories/friendLogHistoryRepository';
 import { useModalStore } from '@/state/modalStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
-import { getFriendLogRowKey, normalizeUserId } from './friendLogRows';
+import {
+    getFriendLogRowKey,
+    normalizeUserId,
+    type FriendLogRow
+} from './friendLogRows';
+
+type DeleteFriendLogRowOptions = {
+    skipConfirm?: boolean;
+};
 
 export function useFriendLogRowActions({
     currentUserId,
@@ -20,15 +33,15 @@ export function useFriendLogRowActions({
     rowsOwnerUserId: string;
     rowsOwnerUserIdRef: MutableRefObject<string>;
     setDetail(value: string): void;
-    setRows(updater: any): void;
+    setRows: Dispatch<SetStateAction<FriendLogRow[]>>;
 }) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const [deletingRowKey, setDeletingRowKey] = useState('');
 
     async function handleDeleteRow(
-        row: any,
-        { skipConfirm = false }: any = {}
+        row: FriendLogRow,
+        { skipConfirm = false }: DeleteFriendLogRowOptions = {}
     ) {
         const ownerUserId = normalizeUserId(currentUserId);
         if (
@@ -88,9 +101,9 @@ export function useFriendLogRowActions({
                 );
                 return;
             }
-            setRows((currentRows: any) =>
+            setRows((currentRows) =>
                 currentRows.filter(
-                    (currentRow: any) =>
+                    (currentRow) =>
                         getFriendLogRowKey(currentRow, ownerUserId) !== rowKey
                 )
             );

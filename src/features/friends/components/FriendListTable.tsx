@@ -94,7 +94,7 @@ export function FriendListTable({
                                                                 )
                                                         }
                                                     )}
-                                                    onKeyDown={(event: any) => {
+                                                    onKeyDown={(event) => {
                                                         if (
                                                             event.key !==
                                                                 'Enter' &&

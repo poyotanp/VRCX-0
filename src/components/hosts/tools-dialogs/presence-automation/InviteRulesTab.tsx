@@ -56,7 +56,7 @@ export function InviteRulesTab({
                         aria-label={t(
                             `${I18N_ROOT}.auto_send_invites_for_request_invite`
                         )}
-                        onCheckedChange={(checked: any) => {
+                        onCheckedChange={(checked) => {
                             onSaveValue(
                                 'autoAcceptInviteRequests',
                                 checked
@@ -90,7 +90,7 @@ export function InviteRulesTab({
                                 values.autoAcceptInviteRequests
                             )}
                             disabled={loading || !autoAcceptEnabled}
-                            onValueChange={(value: any) => {
+                            onValueChange={(value) => {
                                 onSaveValue('autoAcceptInviteRequests', value);
                             }}
                         >
@@ -130,7 +130,7 @@ export function InviteRulesTab({
                                 !autoAcceptEnabled ||
                                 !selectedFavoritesOnly
                             }
-                            onChange={(next: any) => {
+                            onChange={(next) => {
                                 onSaveValue(
                                     'autoAcceptInviteGroups',
                                     next,

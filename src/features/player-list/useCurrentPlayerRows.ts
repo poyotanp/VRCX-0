@@ -4,6 +4,14 @@ import { userFacingErrorMessage } from '@/lib/errorDisplay';
 import playerListPersistenceRepository from '@/repositories/playerListPersistenceRepository';
 import { recordGameRuntimePresence } from '@/services/domainIngestionService';
 
+type CurrentInstanceSnapshotResult = Awaited<
+    ReturnType<
+        typeof playerListPersistenceRepository.getCurrentInstanceSnapshot
+    >
+>;
+type CurrentPlayerContext = CurrentInstanceSnapshotResult['context'];
+type CurrentPlayerRow = CurrentInstanceSnapshotResult['players'][number];
+
 function createRuntimeContext({
     playerListLocation,
     playerListWorldId,
@@ -36,7 +44,7 @@ export function useCurrentPlayerRows({
 }: any) {
     const [loadStatus, setLoadStatus] = useState('idle');
     const [detail, setDetail] = useState('');
-    const [context, setContext] = useState<any>({
+    const [context, setContext] = useState<CurrentPlayerContext>({
         createdAt: '',
         groupName: '',
         location: '',
@@ -46,7 +54,7 @@ export function useCurrentPlayerRows({
         worldId: '',
         worldName: ''
     });
-    const [playerRows, setPlayerRows] = useState<any[]>([]);
+    const [playerRows, setPlayerRows] = useState<CurrentPlayerRow[]>([]);
 
     useEffect(() => {
         let active = true;

@@ -78,7 +78,7 @@ export function TranslationApiDialog({
                     >
                         <Select
                             value={translationDraft.bioLanguage || 'en'}
-                            onValueChange={(value: any) =>
+                            onValueChange={(value) =>
                                 setTranslationDraftValue('bioLanguage', value)
                             }
                         >
@@ -105,7 +105,7 @@ export function TranslationApiDialog({
                     >
                         <Select
                             value={translationDraft.translationAPIType}
-                            onValueChange={(value: any) =>
+                            onValueChange={(value) =>
                                 setTranslationDraftValue(
                                     'translationAPIType',
                                     value
@@ -149,7 +149,7 @@ export function TranslationApiDialog({
                                     }
                                     name="translationApiEndpoint"
                                     placeholder={DEFAULT_TRANSLATION_ENDPOINT}
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         setTranslationDraftValue(
                                             'translationAPIEndpoint',
                                             event.target.value
@@ -169,7 +169,7 @@ export function TranslationApiDialog({
                                                 translationDraft.translationAPIModel ||
                                                 availableTranslationModels[0]
                                             }
-                                            onValueChange={(value: any) =>
+                                            onValueChange={(value) =>
                                                 setTranslationDraftValue(
                                                     'translationAPIModel',
                                                     value
@@ -207,7 +207,7 @@ export function TranslationApiDialog({
                                             placeholder={
                                                 DEFAULT_TRANSLATION_MODEL
                                             }
-                                            onChange={(event: any) =>
+                                            onChange={(event) =>
                                                 setTranslationDraftValue(
                                                     'translationAPIModel',
                                                     event.target.value
@@ -252,7 +252,7 @@ export function TranslationApiDialog({
                                     value={
                                         translationDraft.translationAPIPrompt
                                     }
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         setTranslationDraftValue(
                                             'translationAPIPrompt',
                                             event.target.value
@@ -273,7 +273,7 @@ export function TranslationApiDialog({
                             name="translationApiKey"
                             value={translationDraft.translationAPIKey}
                             placeholder={apiKeyPlaceholder}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setTranslationDraftValue(
                                     'translationAPIKey',
                                     event.target.value

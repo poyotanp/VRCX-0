@@ -53,6 +53,10 @@ import {
     updateArrayValue
 } from './toolsDialogUtils';
 
+type GroupCalendarEvent = Awaited<
+    ReturnType<typeof vrchatToolsRepository.getAllGroupCalendars>
+>[number];
+
 function getLocalTimeZone() {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
@@ -123,9 +127,7 @@ function GroupCalendarDayButton({
 
 export function GroupCalendarDialog({ open, onOpenChange }: any) {
     const { t, i18n } = useTranslation();
-    const weekStartsOn = usePreferencesStore(
-        (state: any) => state.weekStartsOn
-    );
+    const weekStartsOn = usePreferencesStore((state) => state.weekStartsOn);
     const calendarTimeZone = useMemo(() => getLocalTimeZone(), []);
     const calendarLocale = useMemo(
         () => calendarLocaleForLanguage(i18n.resolvedLanguage || i18n.language),
@@ -140,8 +142,8 @@ export function GroupCalendarDialog({ open, onOpenChange }: any) {
     const [showFeaturedEvents, setShowFeaturedEvents] = useState(false);
     const [viewMode, setViewMode] = useState('timeline');
     const [search, setSearch] = useState('');
-    const [events, setEvents] = useState<any[]>([]);
-    const [followingIds, setFollowingIds] = useState<any[]>([]);
+    const [events, setEvents] = useState<GroupCalendarEvent[]>([]);
+    const [followingIds, setFollowingIds] = useState<string[]>([]);
     const [groupNames, setGroupNames] = useState<any>({});
     const [groupProfiles, setGroupProfiles] = useState<any>({});
     const [collapsedGroups, setCollapsedGroups] = useState<any>({});
@@ -421,7 +423,7 @@ export function GroupCalendarDialog({ open, onOpenChange }: any) {
                         type="date"
                         value={selectedDate}
                         className="w-auto"
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             selectDateKey(
                                 event.target.value ||
                                     selectedDateKey(new Date())
@@ -432,7 +434,7 @@ export function GroupCalendarDialog({ open, onOpenChange }: any) {
                         <Switch
                             id="group-calendar-featured-events"
                             checked={showFeaturedEvents}
-                            onCheckedChange={(checked: any) => {
+                            onCheckedChange={(checked) => {
                                 toggleFeatured(checked);
                             }}
                         />
@@ -456,7 +458,7 @@ export function GroupCalendarDialog({ open, onOpenChange }: any) {
                         variant="outline"
                         size="sm"
                         value={viewMode}
-                        onValueChange={(nextValue: any) => {
+                        onValueChange={(nextValue) => {
                             if (nextValue) {
                                 setViewMode(nextValue);
                             }
@@ -558,9 +560,7 @@ export function GroupCalendarDialog({ open, onOpenChange }: any) {
                             placeholder={t(
                                 'dialog.group_calendar.search_placeholder'
                             )}
-                            onChange={(event: any) =>
-                                setSearch(event.target.value)
-                            }
+                            onChange={(event) => setSearch(event.target.value)}
                         />
                         <ScrollArea className="h-[55vh] rounded-md border p-4">
                             {eventsByGroup.length ? (

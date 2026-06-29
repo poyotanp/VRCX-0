@@ -155,9 +155,7 @@ export function GroupEventCard({
     onToggleFollow
 }: any) {
     const { t } = useTranslation();
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const groupId = getEventGroupId(event);
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [bannerError, setBannerError] = useState(false);

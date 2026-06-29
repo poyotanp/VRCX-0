@@ -44,12 +44,12 @@ const AppShellLayout = lazy(() =>
 );
 
 function RequireAuth() {
-    const sessionPhase = useSessionStore((state: any) => state.sessionPhase);
+    const sessionPhase = useSessionStore((state) => state.sessionPhase);
     const isSessionReady = sessionPhase === 'ready';
     const isSessionPending =
         sessionPhase === 'authenticating' || sessionPhase === 'bootstrapping';
     const backendRuntimeReady = useRuntimeStore(
-        (state: any) =>
+        (state) =>
             state.shell.backendRuntimeSnapshotHydrated &&
             !state.shell.backendRuntimeSessionHydrating
     );
@@ -65,12 +65,12 @@ function RequireAuth() {
 }
 
 function RedirectIfAuthenticated() {
-    const sessionPhase = useSessionStore((state: any) => state.sessionPhase);
+    const sessionPhase = useSessionStore((state) => state.sessionPhase);
     const isSessionReady = sessionPhase === 'ready';
     const isSessionPending =
         sessionPhase === 'authenticating' || sessionPhase === 'bootstrapping';
     const backendRuntimeReady = useRuntimeStore(
-        (state: any) =>
+        (state) =>
             state.shell.backendRuntimeSnapshotHydrated &&
             !state.shell.backendRuntimeSessionHydrating
     );
@@ -95,7 +95,7 @@ function AppShellRoute() {
 
 function AppRouterContent() {
     const isMacHost = useRuntimeStore(
-        (state: any) => state.hostCapabilities.platform === 'macos'
+        (state) => state.hostCapabilities.platform === 'macos'
     );
     const { pathname } = useLocation();
     useGlobalKeyboardShortcuts();

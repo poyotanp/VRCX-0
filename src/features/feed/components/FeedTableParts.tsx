@@ -95,15 +95,13 @@ function FeedUserLink({
     const { t } = useTranslation();
     const userId = resolveFeedUserId(row);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const friend = useFriendRosterStore((state: any) =>
+    const friend = useFriendRosterStore((state) =>
         userId ? state.friendsById[userId] || null : null
     );
     const knownUser = useKnownUserFact(userId, { endpoint: currentEndpoint });
@@ -339,9 +337,9 @@ function FeedUserAvatarButton({
 }) {
     const userId = resolveFeedUserId(row);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const friend = useFriendRosterStore((state: any) =>
+    const friend = useFriendRosterStore((state) =>
         userId ? state.friendsById[userId] || null : null
     );
     const knownUser = useKnownUserFact(userId, { endpoint: currentEndpoint });

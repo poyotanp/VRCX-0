@@ -85,7 +85,7 @@ function ResizableTableHeadContent({ header, dragHandleProps }: any) {
                         header.column.getIsResizing() ? 'bg-primary' : ''
                     )}
                     onMouseDown={header.getResizeHandler()}
-                    onKeyDown={(event: any) =>
+                    onKeyDown={(event) =>
                         resizeHeaderFromKeyboard(event, header)
                     }
                     onTouchStart={header.getResizeHandler()}

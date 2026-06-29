@@ -41,7 +41,7 @@ export function FriendLogPageToolbar({
                         </InputGroupAddon>
                         <InputGroupInput
                             value={searchQuery}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onSearchQueryChange(event.target.value)
                             }
                             placeholder={t(

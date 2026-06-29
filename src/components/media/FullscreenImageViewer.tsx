@@ -177,7 +177,7 @@ export function FullscreenImageViewer({
     return (
         <Dialog
             open={open}
-            onOpenChange={(nextOpen: any) => {
+            onOpenChange={(nextOpen) => {
                 if (!nextOpen) {
                     onClose();
                 }
@@ -186,8 +186,8 @@ export function FullscreenImageViewer({
             <DialogContent
                 showCloseButton={false}
                 onClick={onClose}
-                onOpenAutoFocus={(event: any) => event.preventDefault()}
-                onCloseAutoFocus={(event: any) => event.preventDefault()}
+                onOpenAutoFocus={(event) => event.preventDefault()}
+                onCloseAutoFocus={(event) => event.preventDefault()}
                 className="bg-background/90 fixed inset-x-0 top-8 bottom-0 left-0 h-auto max-h-none w-screen max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-none border-0 p-4 shadow-none ring-0 sm:max-w-none sm:p-10"
             >
                 <DialogTitle className="sr-only">{resolvedTitle}</DialogTitle>
@@ -199,7 +199,7 @@ export function FullscreenImageViewer({
                 >
                     <div
                         className="bg-background/80 absolute top-3 right-3 left-3 z-20 flex max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-end gap-2 rounded-lg border px-2 py-1 shadow-sm backdrop-blur sm:left-auto sm:max-w-none"
-                        onClick={(event: any) => event.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -364,9 +364,7 @@ export function FullscreenImageViewer({
                             {imageLoading ? (
                                 <div
                                     className="text-muted-foreground flex flex-col items-center gap-3 text-sm"
-                                    onClick={(event: any) =>
-                                        event.stopPropagation()
-                                    }
+                                    onClick={(event) => event.stopPropagation()}
                                 >
                                     <Spinner className="size-6" />
                                     <span>{t('message.image.loading')}</span>
@@ -375,9 +373,7 @@ export function FullscreenImageViewer({
                             {imageLoadError ? (
                                 <div
                                     className="text-muted-foreground text-sm"
-                                    onClick={(event: any) =>
-                                        event.stopPropagation()
-                                    }
+                                    onClick={(event) => event.stopPropagation()}
                                 >
                                     {t('message.image.load_failed')}
                                 </div>
@@ -399,12 +395,8 @@ export function FullscreenImageViewer({
                                     setImageLoading(false);
                                     setImageLoadError(true);
                                 }}
-                                onClick={(event: any) =>
-                                    event.stopPropagation()
-                                }
-                                onDragStart={(event: any) =>
-                                    event.preventDefault()
-                                }
+                                onClick={(event) => event.stopPropagation()}
+                                onDragStart={(event) => event.preventDefault()}
                                 onPointerDown={handlePointerDown}
                                 onPointerMove={handlePointerMove}
                                 onPointerUp={handlePointerUp}

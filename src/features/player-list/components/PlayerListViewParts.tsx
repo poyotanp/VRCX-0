@@ -325,7 +325,7 @@ export function PlayerListRows({
             )}
             tabIndex={0}
             aria-label={`Open ${row.original?.displayName || row.original?.userId || 'player'}`}
-            onKeyDown={(event: any) => {
+            onKeyDown={(event) => {
                 if (event.key !== 'Enter' && event.key !== ' ') {
                     return;
                 }

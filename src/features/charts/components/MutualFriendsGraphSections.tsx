@@ -100,7 +100,7 @@ function MutualFriendsNodePicker({
                 <Input
                     autoFocus
                     value={nodeSearchQuery}
-                    onChange={(event: any) =>
+                    onChange={(event) =>
                         onNodeSearchQueryChange(event.target.value)
                     }
                     placeholder={t(
@@ -210,7 +210,7 @@ function MutualFriendsSettingsSheet({
                                 max={control.limits.max}
                                 step={control.step}
                                 value={[layoutSettings[control.key]]}
-                                onValueChange={([value]: any) =>
+                                onValueChange={([value]) =>
                                     setLayoutSetting(control.key, value)
                                 }
                             />
@@ -232,7 +232,7 @@ function MutualFriendsSettingsSheet({
                         </div>
                         <Input
                             value={excludeSearchQuery}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onExcludeSearchQueryChange(event.target.value)
                             }
                             placeholder={t(

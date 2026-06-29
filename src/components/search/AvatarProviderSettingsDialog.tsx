@@ -141,7 +141,7 @@ export function AvatarProviderSettingsDialog({
                                     id={`avatar-provider-${index}`}
                                     value={provider}
                                     disabled={isSaving}
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         updateProvider(
                                             index,
                                             event.target.value

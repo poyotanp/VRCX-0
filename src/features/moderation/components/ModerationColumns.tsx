@@ -38,9 +38,7 @@ export function useModerationColumns({
     shiftHeld
 }: ModerationColumnsOptions) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const getModerationTypeLabel = (type: any) =>
         resolveModerationTypeLabel(type, t);
 

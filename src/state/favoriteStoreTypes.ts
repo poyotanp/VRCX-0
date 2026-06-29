@@ -1,22 +1,55 @@
 export type FavoriteKind = 'friend' | 'avatar' | 'world';
+export type RemoteFavoriteKind = FavoriteKind | 'vrcPlusWorld' | (string & {});
+export type FavoriteVisibility =
+    | 'public'
+    | 'private'
+    | 'friends'
+    | (string & {});
 export type FavoriteLoadStatus = 'idle' | 'running' | 'ready' | 'error';
 export type FavoriteLimits = {
-    maxFavoriteGroups: Record<string, unknown>;
-    maxFavoritesPerGroup: Record<string, unknown>;
+    maxFavoriteGroups: Record<string, number>;
+    maxFavoritesPerGroup: Record<string, number>;
 };
 export type FavoriteRecord = Record<string, unknown> & {
     id?: string;
-    type?: string;
+    type?: RemoteFavoriteKind;
     favoriteId?: string;
-    tags?: unknown[];
+    tags?: string[];
     $groupKey?: string;
 };
 export type FavoriteGroup = Record<string, unknown> & {
-    key?: unknown;
+    assign?: boolean;
+    capacity?: number;
     count?: number;
+    displayName?: string;
+    key?: string;
+    name?: string;
+    type?: RemoteFavoriteKind;
+    visibility?: FavoriteVisibility;
 };
 export type FavoriteGroupMap = Record<string, string[]>;
-export type FavoriteDetailsById = Record<string, Record<string, unknown>>;
+export type FavoriteCachedGroup = Record<string, unknown> & {
+    displayName?: string;
+    id?: string;
+    name?: string;
+    ownerDisplayName?: string;
+    ownerId?: string;
+    tags?: string[];
+    type?: RemoteFavoriteKind;
+    visibility?: FavoriteVisibility;
+};
+export type FavoriteEntityDetail = Record<string, unknown> & {
+    id?: string;
+    name?: string;
+    authorId?: string;
+    authorName?: string;
+    description?: string;
+    imageUrl?: string;
+    releaseStatus?: string;
+    tags?: string[];
+    thumbnailImageUrl?: string;
+};
+export type FavoriteDetailsById = Record<string, FavoriteEntityDetail>;
 export type FavoriteSnapshot = Partial<
     Record<keyof FavoriteStoreState, unknown>
 > &
@@ -29,7 +62,7 @@ export type LocalFavoriteGroupAction = {
 };
 export type LocalFavoriteAction = LocalFavoriteGroupAction & {
     entityId?: unknown;
-    entity?: unknown;
+    entity?: FavoriteEntityDetail | Record<string, unknown> | null;
 };
 export type RenameLocalFavoriteGroupAction = LocalFavoriteGroupAction & {
     newGroupName?: unknown;
@@ -55,7 +88,7 @@ export type FavoriteStoreState = {
     groupedFavoriteFriendIdsByGroupKey: Record<string, string[]>;
     favoriteWorldIds: string[];
     favoriteAvatarIds: string[];
-    cachedFavoriteGroupsById: Record<string, unknown>;
+    cachedFavoriteGroupsById: Record<string, FavoriteCachedGroup>;
     favoriteFriendGroups: FavoriteGroup[];
     favoriteWorldGroups: FavoriteGroup[];
     favoriteAvatarGroups: FavoriteGroup[];

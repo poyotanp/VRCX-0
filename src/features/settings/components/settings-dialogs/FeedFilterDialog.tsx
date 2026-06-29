@@ -73,7 +73,7 @@ export function FeedFilterDialog({
                                         ]?.[setting.key] ||
                                         setting.options[0]?.label
                                     }
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         updateSharedFeedFilter(
                                             feedFilterMode,
                                             setting.key,

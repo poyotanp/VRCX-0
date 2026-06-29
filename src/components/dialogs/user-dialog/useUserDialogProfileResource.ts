@@ -555,7 +555,7 @@ export function useUserDialogProfileResource({
                 : normalizedLocalSnapshot,
         [baseProfile, normalizedLocalSnapshot, normalizedUserId]
     );
-    const friendPresenceSource = useFriendRosterStore((state: any) =>
+    const friendPresenceSource = useFriendRosterStore((state) =>
         isFriend && !isTargetCurrentUser
             ? state.friendsById[normalizedUserId] || null
             : null

@@ -73,7 +73,7 @@ export function TableLimitsDialog({
                             min={TABLE_MAX_SIZE_MIN}
                             max={TABLE_MAX_SIZE_MAX}
                             value={tableLimitsDraft.maxTableSize}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setTableLimitsDraft((current: any) => ({
                                     ...current,
                                     maxTableSize: event.target.value
@@ -121,7 +121,7 @@ export function TableLimitsDialog({
                             min={SEARCH_LIMIT_MIN}
                             max={SEARCH_LIMIT_MAX}
                             value={tableLimitsDraft.searchLimit}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setTableLimitsDraft((current: any) => ({
                                     ...current,
                                     searchLimit: event.target.value

@@ -46,6 +46,25 @@ import {
 
 const GAME_LOG_WIDGET_MAX_ROWS = 200;
 
+type DashboardGameLogRow = {
+    created_at?: string;
+    displayName?: string;
+    location?: string;
+    rowId?: number;
+    time?: number;
+    type?: string;
+    userId?: string;
+    resourceUrl?: string;
+    videoId?: string;
+    videoName?: string;
+    videoUrl?: string;
+    groupName?: string;
+    worldId?: string;
+    worldName?: string;
+    data?: string;
+    [key: string]: unknown;
+};
+
 function openGameLogWidgetUser(row: any) {
     const userId = normalizeString(row?.userId);
     if (!userId) {
@@ -216,20 +235,18 @@ export function DashboardGameLogWidget({
     configUpdater = null
 }: any) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const addGameLogEventCount = useRuntimeStore(
-        (state: any) => state.runtimeEvents.addGameLogEvent.count
+        (state) => state.runtimeEvents.addGameLogEvent.count
     );
     const remoteFavoriteFriendIds = useFavoriteStore(
-        (state: any) => state.favoriteFriendIds
+        (state) => state.favoriteFriendIds
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
 
-    const [rows, setRows] = useState<any[]>([]);
+    const [rows, setRows] = useState<DashboardGameLogRow[]>([]);
     const [loadStatus, setLoadStatus] = useState('idle');
     const [detail, setDetail] = useState('');
 

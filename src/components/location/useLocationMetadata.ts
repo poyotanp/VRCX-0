@@ -368,17 +368,15 @@ export function useLocationMetadataBatch(
     { endpoint = '' }: any = {}
 ) {
     const storeEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = endpoint || storeEndpoint;
     const groupInstancesState = useRuntimeStore(
-        (state: any) => state.groupInstances
+        (state) => state.groupInstances
     );
     const locationHintsByKey = useLocationHintStore(
-        (state: any) => state.hintsByKey
+        (state) => state.hintsByKey
     );
     const groupInstances =
         groupInstancesState.userId === currentUserId &&

@@ -1,18 +1,50 @@
+import type { FriendRecordInput } from '@/domain/friends/friendRosterTypes';
 import { isUserId } from '@/shared/constants/vrchatIds';
+export { resolveCurrentInviteLocation as resolveFeedCurrentInviteLocation } from '@/shared/utils/invite';
+import type {
+    FavoriteGroupMap,
+    FavoriteRecord
+} from '@/state/favoriteStoreTypes';
 
 export const UNKNOWN_FEED_USER_DISPLAY_NAME = 'Unknown';
 
-export function normalizeFeedId(value: any) {
+type FeedRecord = Record<string, unknown>;
+type FeedRowLike = FeedRecord | null | undefined;
+type FriendLike = FriendRecordInput | FeedRecord | null | undefined;
+type CurrentUserSnapshotLike =
+    | (FeedRecord & {
+          activeFriends?: unknown;
+          offlineFriends?: unknown;
+          onlineFriends?: unknown;
+      })
+    | null
+    | undefined;
+function isRecord(value: unknown): value is FeedRecord {
+    return Boolean(value && typeof value === 'object');
+}
+
+function recordValue(value: unknown, key: string): unknown {
+    return isRecord(value) ? value[key] : undefined;
+}
+
+function recordListIncludes(value: unknown, target: string): boolean {
+    return (
+        Array.isArray(value) &&
+        value.some((entry) => normalizeFeedId(entry) === target)
+    );
+}
+
+export function normalizeFeedId(value: unknown) {
     return typeof value === 'string'
         ? value.trim()
         : String(value ?? '').trim();
 }
 
-export function isUserIdLike(value: any) {
+export function isUserIdLike(value: unknown) {
     return isUserId(normalizeFeedId(value));
 }
 
-export function resolveDisplayNameCandidate(value: any, userId: any) {
+export function resolveDisplayNameCandidate(value: unknown, userId: unknown) {
     const normalized = normalizeFeedId(value);
     if (
         !normalized ||
@@ -25,23 +57,28 @@ export function resolveDisplayNameCandidate(value: any, userId: any) {
     return normalized;
 }
 
-export function resolveFeedUserId(row: any) {
+export function resolveFeedUserId(row: FeedRowLike) {
+    const user = recordValue(row, 'user');
     const directUserId = normalizeFeedId(
-        row?.userId ||
-            row?.senderUserId ||
-            row?.sender_user_id ||
-            row?.receiverUserId ||
-            row?.receiver_user_id ||
-            row?.targetUserId ||
-            row?.target_user_id ||
-            row?.user?.id ||
-            row?.user?.userId
+        recordValue(row, 'userId') ||
+            recordValue(row, 'senderUserId') ||
+            recordValue(row, 'sender_user_id') ||
+            recordValue(row, 'receiverUserId') ||
+            recordValue(row, 'receiver_user_id') ||
+            recordValue(row, 'targetUserId') ||
+            recordValue(row, 'target_user_id') ||
+            recordValue(user, 'id') ||
+            recordValue(user, 'userId')
     );
     if (directUserId) {
         return directUserId;
     }
 
-    for (const candidate of [row?.displayName, row?.username, row?.name]) {
+    for (const candidate of [
+        recordValue(row, 'displayName'),
+        recordValue(row, 'username'),
+        recordValue(row, 'name')
+    ]) {
         const normalized = normalizeFeedId(candidate);
         if (isUserIdLike(normalized)) {
             return normalized;
@@ -52,17 +89,17 @@ export function resolveFeedUserId(row: any) {
 }
 
 export function resolveFeedUserDisplayName(
-    row: any,
-    friend: any,
-    cachedDisplayName: any = ''
+    row: FeedRowLike,
+    friend: FriendLike,
+    cachedDisplayName: unknown = ''
 ) {
     const userId = resolveFeedUserId(row);
     const rowDisplayName = resolveDisplayNameCandidate(
-        row?.displayName,
+        recordValue(row, 'displayName'),
         userId
     );
     const friendDisplayName = resolveDisplayNameCandidate(
-        friend?.displayName || friend?.username,
+        recordValue(friend, 'displayName') || recordValue(friend, 'username'),
         userId
     );
     const logDisplayName = resolveDisplayNameCandidate(
@@ -78,7 +115,7 @@ export function resolveFeedUserDisplayName(
     return logDisplayName || UNKNOWN_FEED_USER_DISPLAY_NAME;
 }
 
-export function normalizePresenceState(value: any) {
+export function normalizePresenceState(value: unknown) {
     const state = normalizeFeedId(value).toLowerCase();
     if (state === 'offline:offline' || state.startsWith('offline ')) {
         return 'offline';
@@ -92,9 +129,9 @@ export function normalizePresenceState(value: any) {
     return state;
 }
 
-export function resolveFeedLocationForDisplay(row: any) {
-    const type = normalizeFeedId(row?.type);
-    const location = normalizeFeedId(row?.location);
+export function resolveFeedLocationForDisplay(row: FeedRowLike) {
+    const type = normalizeFeedId(recordValue(row, 'type'));
+    const location = normalizeFeedId(recordValue(row, 'location'));
     if (type === 'Online' && normalizePresenceState(location) === 'offline') {
         return '';
     }
@@ -102,12 +139,14 @@ export function resolveFeedLocationForDisplay(row: any) {
 }
 
 export function resolveFeedFriendStateBucket(
-    friend: any,
-    currentUserSnapshot: any
+    friend: FriendLike,
+    currentUserSnapshot: CurrentUserSnapshotLike
 ) {
-    const friendId = normalizeFeedId(friend?.id || friend?.userId);
+    const friendId = normalizeFeedId(
+        recordValue(friend, 'id') || recordValue(friend, 'userId')
+    );
     const explicitState = normalizePresenceState(
-        friend?.stateBucket || friend?.state
+        recordValue(friend, 'stateBucket') || recordValue(friend, 'state')
     );
     if (
         explicitState === 'online' ||
@@ -119,51 +158,48 @@ export function resolveFeedFriendStateBucket(
     if (!friendId) {
         return '';
     }
-    if ((currentUserSnapshot?.onlineFriends || []).includes(friendId)) {
+    if (
+        recordListIncludes(
+            recordValue(currentUserSnapshot, 'onlineFriends'),
+            friendId
+        )
+    ) {
         return 'online';
     }
-    if ((currentUserSnapshot?.activeFriends || []).includes(friendId)) {
+    if (
+        recordListIncludes(
+            recordValue(currentUserSnapshot, 'activeFriends'),
+            friendId
+        )
+    ) {
         return 'active';
     }
-    if ((currentUserSnapshot?.offlineFriends || []).includes(friendId)) {
+    if (
+        recordListIncludes(
+            recordValue(currentUserSnapshot, 'offlineFriends'),
+            friendId
+        )
+    ) {
         return 'offline';
     }
     return '';
 }
 
 export function canRequestInviteFromFeedFriend(
-    friend: any,
-    currentUserSnapshot: any
+    friend: FriendLike,
+    currentUserSnapshot: CurrentUserSnapshotLike
 ) {
     return (
         resolveFeedFriendStateBucket(friend, currentUserSnapshot) === 'online'
     );
 }
 
-export function resolveFeedCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = normalizeFeedId(gameState?.currentLocation);
-    if (currentLocation === 'traveling') {
-        return normalizeFeedId(gameState?.currentDestination);
-    }
-
-    return (
-        currentLocation ||
-        normalizeFeedId(gameState?.currentDestination) ||
-        normalizeFeedId(
-            currentUserSnapshot?.$locationTag || currentUserSnapshot?.location
-        )
-    );
-}
-
 export function buildFeedFavoriteIdSet(
-    remoteFavoritesById: any,
-    localFriendFavorites: any,
-    selectedFavoriteGroupIds: any[] = []
+    remoteFavoritesById: Record<string, FavoriteRecord> | null | undefined,
+    localFriendFavorites: FavoriteGroupMap | null | undefined,
+    selectedFavoriteGroupIds: unknown[] = []
 ) {
-    const ids = new Set();
+    const ids = new Set<string>();
     const remoteFavorites =
         remoteFavoritesById && typeof remoteFavoritesById === 'object'
             ? Object.values(remoteFavoritesById).filter(
@@ -175,7 +211,7 @@ export function buildFeedFavoriteIdSet(
         ? selectedFavoriteGroupIds
         : [];
     const hasRemoteGroupFilter = selectedGroups.some(
-        (groupKey: any) => !String(groupKey || '').startsWith('local:')
+        (groupKey) => !String(groupKey || '').startsWith('local:')
     );
 
     for (const favorite of remoteFavorites) {
@@ -208,7 +244,7 @@ export function buildFeedFavoriteIdSet(
     return ids;
 }
 
-export function toIsoRangeStart(value: any) {
+export function toIsoRangeStart(value: unknown) {
     if (!value) {
         return '';
     }
@@ -217,7 +253,7 @@ export function toIsoRangeStart(value: any) {
     return Number.isNaN(date.valueOf()) ? '' : date.toISOString();
 }
 
-export function toIsoRangeEnd(value: any) {
+export function toIsoRangeEnd(value: unknown) {
     if (!value) {
         return '';
     }
@@ -226,39 +262,44 @@ export function toIsoRangeEnd(value: any) {
     return Number.isNaN(date.valueOf()) ? '' : date.toISOString();
 }
 
-export function getFeedRowId(row: any) {
-    if (row?.id != null) {
-        return `id:${row.id}`;
+export function getFeedRowId(row: FeedRowLike) {
+    if (recordValue(row, 'id') != null) {
+        return `id:${recordValue(row, 'id')}`;
     }
-    const rowId = row?.rowId ?? row?.row_id;
+    const rowId = recordValue(row, 'rowId') ?? recordValue(row, 'row_id');
     if (rowId != null) {
-        const sourceRank = row?.sourceRank ?? row?.source_rank;
+        const sourceRank =
+            recordValue(row, 'sourceRank') ?? recordValue(row, 'source_rank');
         if (sourceRank != null) {
-            return `row:${row?.type ?? ''}:${sourceRank}:${rowId}`;
+            return `row:${recordValue(row, 'type') ?? ''}:${sourceRank}:${rowId}`;
         }
-        return `row:${row?.type ?? ''}:${rowId}`;
+        return `row:${recordValue(row, 'type') ?? ''}:${rowId}`;
     }
-    const type = row?.type ?? '';
-    const createdAt = row?.created_at ?? row?.createdAt ?? '';
-    const userId = row?.userId ?? row?.senderUserId ?? '';
-    const location = row?.location ?? row?.details?.location ?? '';
-    const message = row?.message ?? '';
+    const details = recordValue(row, 'details');
+    const type = recordValue(row, 'type') ?? '';
+    const createdAt =
+        recordValue(row, 'created_at') ?? recordValue(row, 'createdAt') ?? '';
+    const userId =
+        recordValue(row, 'userId') ?? recordValue(row, 'senderUserId') ?? '';
+    const location =
+        recordValue(row, 'location') ?? recordValue(details, 'location') ?? '';
+    const message = recordValue(row, 'message') ?? '';
     return `${type}:${createdAt}:${userId}:${location}:${message}`;
 }
 
-export function parseDateInput(value: any) {
+export function parseDateInput(value: unknown) {
     const normalizedValue = normalizeFeedId(value);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
         return undefined;
     }
     const [year, month, day] = normalizedValue
         .split('-')
-        .map((part: any) => Number.parseInt(part, 10));
+        .map((part) => Number.parseInt(part, 10));
     const date = new Date(year, month - 1, day);
     return Number.isNaN(date.valueOf()) ? undefined : date;
 }
 
-export function toDateInputValue(date: any) {
+export function toDateInputValue(date: unknown) {
     if (!(date instanceof Date) || Number.isNaN(date.valueOf())) {
         return '';
     }
@@ -268,8 +309,9 @@ export function toDateInputValue(date: any) {
     return `${year}-${month}-${day}`;
 }
 
-export function resolveFeedStatusMeta(status: any) {
-    switch (status) {
+export function resolveFeedStatusMeta(status: unknown) {
+    const normalizedStatus = normalizeFeedId(status);
+    switch (normalizedStatus) {
         case 'active':
             return { label: 'Online', className: 'bg-[var(--status-online)]' };
         case 'join me':
@@ -281,6 +323,6 @@ export function resolveFeedStatusMeta(status: any) {
         case 'busy':
             return { label: 'Busy', className: 'bg-[var(--status-busy)]' };
         default:
-            return { label: status || 'Offline', className: '' };
+            return { label: normalizedStatus || 'Offline', className: '' };
     }
 }

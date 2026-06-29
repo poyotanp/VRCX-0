@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -16,10 +16,40 @@ import {
     dialogDescription,
     dialogTitle,
     getInviteCooldownLabel,
-    normalizeInviteMessageRows
+    isInviteMessageMode,
+    normalizeInviteMessageRows,
+    type InviteMessageMode,
+    type InviteMessageSavePayload,
+    type InviteMessageUsePayload
 } from './invite-message/InviteMessagePanel';
 
-const validModes = new Set(['select', 'manage', 'respond']);
+type InviteMessageDialogProps = {
+    open?: boolean;
+    onOpenChange?: ((open: boolean) => void) | null;
+    currentUserId?: string | null;
+    endpoint?: string | null;
+    messageType?: string | null;
+    mode?: InviteMessageMode | string | null;
+    targetLabel?: string | null;
+    allowEdit?: boolean;
+    allowImageUpload?: boolean;
+    onUse?:
+        | ((
+              payload: InviteMessageUsePayload
+          ) => boolean | void | Promise<boolean | void>)
+        | null;
+    onSave?: ((payload: InviteMessageSavePayload) => unknown) | null;
+    onClose?: (() => void) | null;
+    title?: ReactNode;
+    description?: ReactNode;
+};
+
+type InviteMessageTemplatesDialogProps = {
+    open?: boolean;
+    onOpenChange?: ((open: boolean) => void) | null;
+    currentUserId?: string | null;
+    endpoint?: string | null;
+};
 
 function InviteMessageDialog({
     open,
@@ -36,9 +66,9 @@ function InviteMessageDialog({
     onClose,
     title,
     description
-}: any) {
+}: InviteMessageDialogProps) {
     const { t } = useTranslation();
-    const resolvedMode = validModes.has(mode) ? mode : 'select';
+    const resolvedMode = isInviteMessageMode(mode) ? mode : 'select';
     const resolvedMessageType = messageType || 'message';
 
     function close() {
@@ -49,7 +79,7 @@ function InviteMessageDialog({
     return (
         <Dialog
             open={Boolean(open)}
-            onOpenChange={(nextOpen: any) => {
+            onOpenChange={(nextOpen) => {
                 if (nextOpen) {
                     onOpenChange?.(true);
                 } else {
@@ -97,7 +127,7 @@ function InviteMessageTemplatesDialog({
     onOpenChange,
     currentUserId,
     endpoint
-}: any) {
+}: InviteMessageTemplatesDialogProps) {
     const { t } = useTranslation();
 
     const [activeType, setActiveType] = useState('message');
@@ -113,7 +143,7 @@ function InviteMessageTemplatesDialog({
     }
 
     return (
-        <Dialog open={Boolean(open)} onOpenChange={onOpenChange}>
+        <Dialog open={Boolean(open)} onOpenChange={onOpenChange ?? undefined}>
             <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-[min(92vw,64rem)]">
                 <DialogHeader>
                     <DialogTitle>
@@ -130,7 +160,7 @@ function InviteMessageTemplatesDialog({
                         className="min-h-0"
                     >
                         <TabsList className="flex-wrap">
-                            {INVITE_MESSAGE_TYPES.map((entry: any) => (
+                            {INVITE_MESSAGE_TYPES.map((entry) => (
                                 <TabsTrigger
                                     key={entry.type}
                                     value={entry.type}

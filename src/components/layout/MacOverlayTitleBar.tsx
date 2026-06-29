@@ -88,30 +88,28 @@ export function MacOverlayTitleBar() {
     const [quickSearchOpen, setQuickSearchOpen] = useState(false);
     const { openDirectAccessFromClipboard } = useDirectAccessAction();
     const isSessionReady = useSessionStore(
-        (state: any) => state.sessionPhase === 'ready'
+        (state) => state.sessionPhase === 'ready'
     );
     const notificationLayout = usePreferencesStore(
-        (state: any) => state.notificationLayout
+        (state) => state.notificationLayout
     );
     const vrcUnseenNotificationCount = useVrcNotificationStore(
-        (state: any) => state.unseenCount
+        (state) => state.unseenCount
     );
     const isVrcNotificationCenterOpen = useVrcNotificationStore(
-        (state: any) => state.isCenterOpen
+        (state) => state.isCenterOpen
     );
     const setVrcNotificationCenterOpen = useVrcNotificationStore(
-        (state: any) => state.setCenterOpen
+        (state) => state.setCenterOpen
     );
     const markAllVrcNotificationsSeen = useVrcNotificationStore(
-        (state: any) => state.markAllSeen
+        (state) => state.markAllSeen
     );
-    const removeNavNotification = useShellStore(
-        (state: any) => state.removeNotify
-    );
-    const hasAvailableUpdate = useRuntimeStore((state: any) =>
+    const removeNavNotification = useShellStore((state) => state.removeNotify);
+    const hasAvailableUpdate = useRuntimeStore((state) =>
         Boolean(state.updateLoop.hasAvailableUpdate)
     );
-    const navbarOpen = useShellStore((state: any) => state.sidebarOpen);
+    const navbarOpen = useShellStore((state) => state.sidebarOpen);
     const {
         sidePanelOpen: rightSidebarOpen,
         toggleSidePanelOpen: toggleRightSidebar

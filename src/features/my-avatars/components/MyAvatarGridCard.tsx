@@ -178,7 +178,7 @@ export function MyAvatarGridCard({
 }) {
     const { t } = useTranslation();
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const currentAvatarId = currentUserSnapshot?.currentAvatar || '';
 
@@ -375,12 +375,10 @@ export function MyAvatarGridCard({
                                     'view.my_avatars.action.open_avatar_actions'
                                 )}
                                 disabled={isUpdating}
-                                onPointerDown={(event: any) =>
+                                onPointerDown={(event) =>
                                     event.stopPropagation()
                                 }
-                                onClick={(event: any) =>
-                                    event.stopPropagation()
-                                }
+                                onClick={(event) => event.stopPropagation()}
                             >
                                 {isUpdating ? (
                                     <Spinner data-icon="inline-start" />

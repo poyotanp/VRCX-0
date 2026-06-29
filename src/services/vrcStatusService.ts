@@ -10,20 +10,38 @@ const POLL_EXECUTOR_TICK_MS = FOCUS_REFRESH_MS;
 const VRC_STATUS_REFRESH_JOB = 'vrcStatusRefresh';
 
 type VrcStatusStatus = Record<string, unknown> & {
-    description?: unknown;
-    indicator?: unknown;
+    description?: string;
+    indicator?: string;
 };
 type VrcStatusPage = Record<string, unknown> & {
-    updated_at?: unknown;
+    id?: string;
+    name?: string;
+    url?: string;
+    time_zone?: string;
+    updated_at?: string;
 };
 type VrcStatusComponent = Record<string, unknown> & {
-    name?: unknown;
-    status?: unknown;
+    id?: string;
+    name?: string;
+    status?: string;
+    created_at?: string;
+    updated_at?: string;
+    position?: number;
+    description?: string | null;
+    showcase?: boolean;
+    start_date?: string | null;
+    group_id?: string | null;
+    page_id?: string;
+    group?: boolean;
+    only_show_if_degraded?: boolean;
+    components?: unknown[];
 };
 type VrcStatusResponse = Record<string, unknown> & {
     status?: VrcStatusStatus;
     page?: VrcStatusPage;
-    components?: unknown;
+    components?: VrcStatusComponent[];
+    incidents?: unknown[];
+    scheduled_maintenances?: unknown[];
 };
 
 function hasStatusIssue(indicator: unknown, description: unknown): boolean {
@@ -98,16 +116,13 @@ async function fetchSummaryIssue(): Promise<{
     summary: string;
 }> {
     const data = await getJson('summary.json');
-    const components = Array.isArray(data?.components)
-        ? (data.components as VrcStatusComponent[])
-        : [];
+    const components = Array.isArray(data?.components) ? data.components : [];
     const issueComponents = components.filter(
-        (component: any) =>
-            component?.status && component.status !== 'operational'
+        (component) => component?.status && component.status !== 'operational'
     );
     return {
         indicator: issueComponents.reduce(
-            (current: string, component: any) =>
+            (current, component) =>
                 strongerStatusIndicator(
                     current,
                     componentStatusIndicator(component.status)
@@ -115,7 +130,7 @@ async function fetchSummaryIssue(): Promise<{
             ''
         ),
         summary: issueComponents
-            .map((component: any) => component.name)
+            .map((component) => component.name)
             .filter(Boolean)
             .join(', ')
     };
@@ -132,13 +147,15 @@ async function runVrcStatusRefresh(): Promise<void> {
         const description = data?.status?.description || '';
         const indicator = data?.status?.indicator || '';
         const updatedAt = data?.page?.updated_at || null;
-        const summaryIssue = await fetchSummaryIssue().catch((error: any) => {
-            console.warn('Failed to fetch VRChat status summary:', error);
-            return {
-                indicator: '',
-                summary: ''
-            };
-        });
+        const summaryIssue = await fetchSummaryIssue().catch(
+            (error: unknown) => {
+                console.warn('Failed to fetch VRChat status summary:', error);
+                return {
+                    indicator: '',
+                    summary: ''
+                };
+            }
+        );
         const effectiveIndicator = strongerStatusIndicator(
             indicator,
             summaryIssue.indicator
@@ -202,7 +219,7 @@ async function deferNextVrcStatusRefresh(): Promise<void> {
             name: VRC_STATUS_REFRESH_JOB,
             delaySeconds: pollingCadenceSeconds(interval)
         })
-        .catch((error: any) => {
+        .catch((error: unknown) => {
             console.warn('Failed to defer VRC status refresh:', error);
         });
 }
@@ -215,7 +232,7 @@ async function claimVrcStatusRefreshDue(): Promise<boolean> {
             cadenceSeconds: pollingCadenceSeconds(interval),
             initialDelaySeconds: 0
         })
-        .catch((error: any) => {
+        .catch((error: unknown) => {
             console.warn('Failed to claim VRC status refresh schedule:', error);
             return true;
         });

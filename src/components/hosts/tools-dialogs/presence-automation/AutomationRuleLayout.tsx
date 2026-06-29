@@ -253,7 +253,7 @@ export function CompactCheckList({
                             id={id}
                             checked={values.includes(option.value)}
                             disabled={disabled}
-                            onCheckedChange={(checked: any) =>
+                            onCheckedChange={(checked) =>
                                 onChange(
                                     updateArrayValue(
                                         values,

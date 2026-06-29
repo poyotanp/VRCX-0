@@ -4,10 +4,10 @@ import {
 } from './friendsLocationsRows';
 
 export function buildFriendsLocationsFavoriteIdSet(
-    remoteFavoriteIds: any,
-    localFriendFavorites: any
-) {
-    const ids = new Set();
+    remoteFavoriteIds: readonly unknown[] = [],
+    localFriendFavorites: Record<string, readonly unknown[]> = {}
+): Set<string> {
+    const ids = new Set<string>();
 
     for (const id of remoteFavoriteIds ?? []) {
         const normalized = normalizeFriendsLocationId(id);
@@ -33,10 +33,10 @@ export function buildFriendsLocationsFavoriteIdSet(
 }
 
 export function matchesFriendLocationSearch(
-    friend: any,
-    searchQuery: any,
-    favoriteIds: any
-) {
+    friend: Record<string, unknown> | null | undefined,
+    searchQuery: string,
+    favoriteIds: ReadonlySet<string>
+): boolean {
     if (!searchQuery) {
         return true;
     }

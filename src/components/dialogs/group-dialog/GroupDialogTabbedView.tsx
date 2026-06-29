@@ -141,14 +141,16 @@ export function GroupDialogTabbedView({
         prompt
     } = useGroupDialogTabbedRuntimeState();
     const [activeTab, setActiveTab] = useState('overview');
-    const [remoteData, setRemoteData] = useState<any>({
+    const [remoteData, setRemoteData] = useState<Record<string, unknown[]>>({
         posts: [],
         members: [],
         photos: []
     });
     const [remoteStatus, setRemoteStatus] = useState<any>({});
     const [remoteErrors, setRemoteErrors] = useState<any>({});
-    const [groupEvents, setGroupEvents] = useState<any[]>([]);
+    const [groupEvents, setGroupEvents] = useState<Record<string, unknown>[]>(
+        []
+    );
     const [groupEventsStatus, setGroupEventsStatus] = useState('idle');
     const [groupEventsError, setGroupEventsError] = useState('');
     const [search, setSearch] = useState<any>({ posts: '', members: '' });
@@ -332,7 +334,10 @@ export function GroupDialogTabbedView({
             if (!isCurrentLoadContext(loadContext)) {
                 return;
             }
-            setRemoteData((current: any) => ({ ...current, [tab]: rows }));
+            setRemoteData((current: any) => ({
+                ...current,
+                [tab]: rows
+            }));
             setRemoteStatus((current: any) => ({ ...current, [tab]: 'ready' }));
         } catch (error) {
             if (!isCurrentLoadContext(loadContext)) {
@@ -501,7 +506,10 @@ export function GroupDialogTabbedView({
             if (!isCurrentLoadContext(loadContext)) {
                 return;
             }
-            setRemoteData((current: any) => ({ ...current, members: rows }));
+            setRemoteData((current: any) => ({
+                ...current,
+                members: rows
+            }));
             setRemoteStatus((current: any) => ({
                 ...current,
                 members: 'ready'

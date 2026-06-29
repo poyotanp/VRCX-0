@@ -148,7 +148,7 @@ export function UserDialogTabbedView({
     const { copyUserText, openDiscordProfile } =
         useUserDialogClipboardActions();
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
 
     useEffect(() => {

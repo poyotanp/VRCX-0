@@ -5,10 +5,10 @@ export function useNotificationTypeLabel() {
     const { t } = useTranslation();
 
     return useCallback(
-        (type: any) => {
-            const fallback = type || 'unknown';
+        (type: unknown) => {
+            const fallback = String(type || 'unknown');
             const key = `view.notification.filters.${fallback}`;
-            const label = t(key);
+            const label = String(t(key));
             return label && label !== key ? label : fallback;
         },
         [t]

@@ -11,14 +11,18 @@ import {
     TagIcon,
     UserIcon,
     UsersIcon,
-    XIcon
+    XIcon,
+    type LucideIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { DataTableSortButton } from '@/components/data-table/DataTableSortButton';
 import { BoopEmojiDialog } from '@/components/dialogs/BoopEmojiDialog';
 import { Location } from '@/components/Location';
-import { NOTIFICATION_TYPES } from '@/repositories/notificationPersistenceRepository';
+import {
+    NOTIFICATION_TYPES,
+    type NotificationResponse
+} from '@/repositories/notificationPersistenceRepository';
 import { Button } from '@/ui/shadcn/button';
 import {
     DropdownMenu,
@@ -28,9 +32,13 @@ import {
     DropdownMenuTrigger
 } from '@/ui/shadcn/dropdown-menu';
 
+import type { NotificationRow } from '../notificationPageTypes';
 import { sanitizeNotificationFilters } from '../notificationTableState';
 
-export function getResponseIcon(response: any, notificationType: any) {
+export function getResponseIcon(
+    response: NotificationResponse | null | undefined,
+    notificationType: unknown
+): LucideIcon {
     if (response?.type === 'link') {
         return ExternalLinkIcon;
     }
@@ -50,7 +58,7 @@ export function getResponseIcon(response: any, notificationType: any) {
     }
 }
 
-function getNotificationLinkScheme(link: any) {
+function getNotificationLinkScheme(link: unknown) {
     const value = String(link || '').trim();
     const separatorIndex = value.indexOf(':');
     if (separatorIndex <= 0) {
@@ -59,7 +67,7 @@ function getNotificationLinkScheme(link: any) {
     return value.slice(0, separatorIndex).toLowerCase();
 }
 
-export function getNotificationLinkIcon(link: any) {
+export function getNotificationLinkIcon(link: unknown): LucideIcon {
     switch (getNotificationLinkScheme(link)) {
         case 'user':
             return UserIcon;
@@ -76,7 +84,7 @@ export function getNotificationLinkIcon(link: any) {
     }
 }
 
-export function notificationLinkIsInternal(link: any) {
+export function notificationLinkIsInternal(link: unknown) {
     return ['user', 'group', 'event', 'world', 'avatar'].includes(
         getNotificationLinkScheme(link)
     );
@@ -88,7 +96,11 @@ export function NotificationLocationLink({
     location,
     worldName = '',
     groupName = ''
-}: any) {
+}: {
+    groupName?: string;
+    location: unknown;
+    worldName?: string;
+}) {
     const value = String(location || '').trim();
     if (!value) {
         return null;
@@ -109,11 +121,15 @@ export function NotificationLocationLink({
 export function NotificationTypeFilterDropdown({
     value,
     onChange,
-    getTypeLabel = (type: any) => type
-}: any) {
+    getTypeLabel = (type: unknown) => String(type)
+}: {
+    getTypeLabel?: (type: string) => string;
+    onChange: (value: string[]) => void;
+    value: string[];
+}) {
     const { t } = useTranslation();
 
-    const activeTypes = Array.isArray(value) ? value : [];
+    const activeTypes = value;
     const filterLabel = t('view.notification.filter_placeholder');
     const label = activeTypes.length
         ? `${filterLabel} (${activeTypes.length})`
@@ -135,15 +151,15 @@ export function NotificationTypeFilterDropdown({
                 className="max-h-96 w-80 overflow-y-auto"
             >
                 <DropdownMenuGroup>
-                    {NOTIFICATION_TYPES.map((type: any) => (
+                    {NOTIFICATION_TYPES.map((type) => (
                         <DropdownMenuCheckboxItem
                             key={type}
                             checked={activeTypes.includes(type)}
-                            onCheckedChange={(checked: any) => {
+                            onCheckedChange={(checked) => {
                                 const nextTypes = checked
                                     ? [...activeTypes, type]
                                     : activeTypes.filter(
-                                          (entry: any) => entry !== type
+                                          (entry) => entry !== type
                                       );
                                 onChange(
                                     sanitizeNotificationFilters(
@@ -152,7 +168,7 @@ export function NotificationTypeFilterDropdown({
                                     )
                                 );
                             }}
-                            onSelect={(event: any) => event.preventDefault()}
+                            onSelect={(event) => event.preventDefault()}
                         >
                             {getTypeLabel(type)}
                         </DropdownMenuCheckboxItem>
@@ -169,7 +185,16 @@ export function BoopReplyDialog({
     isLocalUserVrcPlusSupporter,
     onOpenChange,
     onSend
-}: any) {
+}: {
+    endpoint?: string;
+    isLocalUserVrcPlusSupporter: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSend: (
+        notification: NotificationRow | null,
+        emojiId: string
+    ) => void | Promise<void>;
+    request: NotificationRow | null;
+}) {
     const open = Boolean(request);
     const notification = request || null;
     const displayName = notification?.senderUsername || 'this user';

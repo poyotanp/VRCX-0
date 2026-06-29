@@ -1,12 +1,7 @@
-import { commands } from '@/platform/tauri/bindings';
-
-interface LocalModerationRow {
-    userId?: unknown;
-    updatedAt?: unknown;
-    displayName?: unknown;
-    block?: unknown;
-    mute?: unknown;
-}
+import {
+    commands,
+    type LocalModerationOutput
+} from '@/platform/tauri/bindings';
 
 interface LocalModerationQueryInput {
     ownerUserId?: unknown;
@@ -25,41 +20,34 @@ async function getAllLocalModerations(ownerUserId: unknown) {
         return [];
     }
 
-    const rows = (await commands.appLocalModerationList(
-        normalizedOwnerUserId
-    )) as LocalModerationRow[];
-    return Array.isArray(rows)
-        ? rows.map((row) => ({
-              userId: row.userId,
-              updatedAt: row.updatedAt,
-              displayName: row.displayName,
-              block: Boolean(row.block),
-              mute: Boolean(row.mute)
-          }))
-        : [];
-}
-
-async function getLocalModerationRow(ownerUserId: unknown, userId: unknown) {
-    const normalizedOwnerUserId = normalizeUserId(ownerUserId);
-    const normalizedUserId = normalizeUserId(userId);
-    if (!normalizedOwnerUserId || !normalizedUserId) {
-        return {};
-    }
-
-    const row = (await commands.appLocalModerationGet(
-        normalizedOwnerUserId,
-        normalizedUserId
-    )) as LocalModerationRow | null;
-    if (!row) {
-        return {};
-    }
-    return {
+    const rows = await commands.appLocalModerationList(normalizedOwnerUserId);
+    return rows.map((row) => ({
         userId: row.userId,
         updatedAt: row.updatedAt,
         displayName: row.displayName,
-        block: Boolean(row.block),
-        mute: Boolean(row.mute)
-    };
+        block: row.block,
+        mute: row.mute
+    }));
+}
+
+async function getLocalModerationRow(
+    ownerUserId: unknown,
+    userId: unknown
+): Promise<LocalModerationOutput | null> {
+    const normalizedOwnerUserId = normalizeUserId(ownerUserId);
+    const normalizedUserId = normalizeUserId(userId);
+    if (!normalizedOwnerUserId || !normalizedUserId) {
+        return null;
+    }
+
+    const row = await commands.appLocalModerationGet(
+        normalizedOwnerUserId,
+        normalizedUserId
+    );
+    if (!row) {
+        return null;
+    }
+    return row;
 }
 
 async function getLocalModeration({

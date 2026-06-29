@@ -45,7 +45,7 @@ export function LoginProxySettingsDialog({
                                 disabled={isSaving}
                                 placeholder="127.0.0.1:7890"
                                 value={proxyInput}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     onProxyInputChange(event.target.value)
                                 }
                             />

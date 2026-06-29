@@ -27,7 +27,7 @@ export function DeleteSavedAccountDialog({
     return (
         <AlertDialog
             open={Boolean(deleteTarget)}
-            onOpenChange={(open: any) => onOpenChange(open)}
+            onOpenChange={(open) => onOpenChange(open)}
         >
             <AlertDialogContent>
                 <AlertDialogHeader>

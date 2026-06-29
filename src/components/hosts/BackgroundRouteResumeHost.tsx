@@ -25,10 +25,10 @@ export function BackgroundRouteResumeHost(): null {
     const location = useLocation();
     const consumedRef = useRef(false);
     const sessionReady = useSessionStore(
-        (state: any) => state.sessionPhase === 'ready'
+        (state) => state.sessionPhase === 'ready'
     );
     const canResume = useRuntimeStore(
-        (state: any) =>
+        (state) =>
             state.shell.backendRuntimeSnapshotHydrated &&
             !state.shell.backendRuntimeSessionHydrating
     );

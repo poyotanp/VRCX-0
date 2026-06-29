@@ -33,12 +33,12 @@ export function useFriendListPageController() {
         filteredRows: rows.filteredRows
     });
     const userLoad = useFriendListUserLoadDialog();
-    const [mutualProgress, setMutualProgress] = useState<any>({
+    const [mutualProgress, setMutualProgress] = useState({
         current: 0,
         total: 0
     });
     const randomUserColours = usePreferencesStore(
-        (state: any) => state.randomUserColours
+        (state) => state.randomUserColours
     );
     const actions = useFriendListRowActions({
         cancelUserLoadRef: userLoad.cancelUserLoadRef,

@@ -42,7 +42,7 @@ export function DashboardAddRowControl({ onAddRow }: any) {
                             size="icon"
                             className="h-10 w-16 border-2 border-dashed"
                             aria-label={t('dashboard.actions.add_full_row')}
-                            onClick={(event: any) => {
+                            onClick={(event) => {
                                 event.stopPropagation();
                                 addRow(1);
                             }}
@@ -62,7 +62,7 @@ export function DashboardAddRowControl({ onAddRow }: any) {
                             size="icon"
                             className="h-10 w-16 gap-1 border-2 border-dashed"
                             aria-label={t('dashboard.actions.add_split_row')}
-                            onClick={(event: any) => {
+                            onClick={(event) => {
                                 event.stopPropagation();
                                 addRow(2);
                             }}
@@ -83,7 +83,7 @@ export function DashboardAddRowControl({ onAddRow }: any) {
                             size="icon"
                             className="h-10 w-16 gap-1 border-2 border-dashed"
                             aria-label={t('dashboard.actions.add_vertical_row')}
-                            onClick={(event: any) => {
+                            onClick={(event) => {
                                 event.stopPropagation();
                                 addRow(2, 'vertical');
                             }}

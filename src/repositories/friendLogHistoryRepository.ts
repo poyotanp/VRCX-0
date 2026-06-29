@@ -1,4 +1,8 @@
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type FriendLogHistoryEntryInput,
+    type FriendLogHistoryOutput
+} from '@/platform/tauri/bindings';
 
 const FRIEND_LOG_TYPES = Object.freeze([
     'Friend',
@@ -40,7 +44,7 @@ export interface FriendLogHistoryOptions {
     types?: unknown[];
 }
 
-type FriendLogHistorySourceRow = unknown[] | Record<string, unknown>;
+type FriendLogHistorySourceRow = FriendLogHistoryOutput;
 
 function valueAsString(value: unknown): string {
     return value == null ? '' : String(value);
@@ -50,49 +54,27 @@ function valueAsInt(value: unknown): number {
     return Number.parseInt(String(value ?? 0), 10) || 0;
 }
 
+function isFriendLogType(value: string): value is FriendLogType {
+    return FRIEND_LOG_TYPES.some((type) => type === value);
+}
+
 function normalizeFriendLogHistoryRow(
     row: FriendLogHistorySourceRow
 ): FriendLogHistoryRow {
-    if (Array.isArray(row)) {
-        const normalizedRow: FriendLogHistoryRow = {
-            rowId: valueAsInt(row[0]),
-            created_at: valueAsString(row[1]),
-            type: valueAsString(row[2]),
-            userId: valueAsString(row[3]),
-            displayName: valueAsString(row[4]),
-            friendNumber: valueAsInt(row[8])
-        };
-
-        if (normalizedRow.type === 'DisplayName') {
-            normalizedRow.previousDisplayName = valueAsString(row[5]);
-        } else if (normalizedRow.type === 'TrustLevel') {
-            normalizedRow.trustLevel = valueAsString(row[6]);
-            normalizedRow.previousTrustLevel = valueAsString(row[7]);
-        }
-
-        return normalizedRow;
-    }
-
     const normalizedRow: FriendLogHistoryRow = {
-        rowId: valueAsInt(row.id ?? row.rowId),
-        created_at: valueAsString(row.created_at ?? row.createdAt),
+        rowId: row.rowId,
+        created_at: row.createdAt,
         type: valueAsString(row.type),
-        userId: valueAsString(row.user_id ?? row.userId),
-        displayName: valueAsString(row.display_name ?? row.displayName),
-        friendNumber: valueAsInt(row.friend_number ?? row.friendNumber)
+        userId: row.userId,
+        displayName: row.displayName,
+        friendNumber: row.friendNumber
     };
 
     if (normalizedRow.type === 'DisplayName') {
-        normalizedRow.previousDisplayName = valueAsString(
-            row.previous_display_name ?? row.previousDisplayName
-        );
+        normalizedRow.previousDisplayName = row.previousDisplayName;
     } else if (normalizedRow.type === 'TrustLevel') {
-        normalizedRow.trustLevel = valueAsString(
-            row.trust_level ?? row.trustLevel
-        );
-        normalizedRow.previousTrustLevel = valueAsString(
-            row.previous_trust_level ?? row.previousTrustLevel
-        );
+        normalizedRow.trustLevel = row.trustLevel;
+        normalizedRow.previousTrustLevel = row.previousTrustLevel;
     }
 
     return normalizedRow;
@@ -100,7 +82,7 @@ function normalizeFriendLogHistoryRow(
 
 function normalizeFriendLogHistoryEntryForRuntime(
     entry: FriendLogHistoryEntry | null | undefined
-) {
+): FriendLogHistoryEntryInput {
     return {
         rowId: valueAsInt(entry?.rowId),
         createdAt: entry?.created_at ?? '',
@@ -136,20 +118,15 @@ async function getFriendLogHistory(
               )
               .filter(
                   (entry): entry is FriendLogType =>
-                      Boolean(entry) &&
-                      FRIEND_LOG_TYPES.includes(entry as FriendLogType)
+                      Boolean(entry) && isFriendLogType(entry)
               )
         : [];
 
-    const rows = (await commands.appFriendLogHistoryQuery({
+    const rows = await commands.appFriendLogHistoryQuery({
         userId: normalizedUserId,
         targetUserId: normalizedTargetUserId,
         types: normalizedTypes
-    })) as FriendLogHistorySourceRow[];
-
-    if (!Array.isArray(rows)) {
-        return [];
-    }
+    });
 
     return rows
         .map(normalizeFriendLogHistoryRow)

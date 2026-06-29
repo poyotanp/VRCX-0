@@ -1,8 +1,33 @@
+import type { FavoriteStore } from '@/state/favoriteStore';
+
 import { normalizeFavoriteEntityId as normalizeEntityId } from './favoritesItems';
 import type { FavoriteKind } from './favoritesTypes';
 
-const EMPTY_ARRAY: unknown[] = [];
-const EMPTY_OBJECT: Record<string, unknown> = {};
+const EMPTY_ARRAY: [] = [];
+const EMPTY_OBJECT: Record<string, never> = {};
+
+type FavoritesCollectionsStoreSlice = Pick<
+    FavoriteStore,
+    | 'detail'
+    | 'favoriteAvatarGroups'
+    | 'favoriteAvatarIds'
+    | 'favoriteFriendGroups'
+    | 'favoriteWorldGroups'
+    | 'favoriteWorldIds'
+    | 'favoritesSortOrder'
+    | 'groupedFavoriteFriendIdsByGroupKey'
+    | 'localAvatarDetailsById'
+    | 'localAvatarFavoriteGroups'
+    | 'localAvatarFavorites'
+    | 'localFriendFavoriteGroups'
+    | 'localFriendFavorites'
+    | 'localWorldDetailsById'
+    | 'localWorldFavoriteGroups'
+    | 'localWorldFavorites'
+    | 'remoteFavoritesById'
+> & {
+    loadStatus: string;
+};
 
 type FavoriteAvatarTagSource = {
     tags?: unknown[];
@@ -73,7 +98,7 @@ export function buildFavoriteAvatarTags({
 }
 
 export function selectFavoritesCollectionsState(kind: FavoriteKind) {
-    return (state: any) => {
+    return (state: FavoritesCollectionsStoreSlice) => {
         const isFriend = kind === 'friend';
         const isAvatar = kind === 'avatar';
         const isWorld = kind === 'world';

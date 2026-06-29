@@ -3,8 +3,14 @@ import { useEffect, useState } from 'react';
 import vrchatModerationRepository from '@/repositories/vrchatModerationRepository';
 import { normalizeString } from '@/shared/utils/string';
 
+type LocalModerationRow = Awaited<
+    ReturnType<typeof vrchatModerationRepository.getAllLocalModerations>
+>[number];
+
 export function usePlayerListModeration(currentUserId: any) {
-    const [moderationByUserId, setModerationByUserId] = useState<any>({});
+    const [moderationByUserId, setModerationByUserId] = useState<
+        Record<string, LocalModerationRow>
+    >({});
 
     useEffect(() => {
         let active = true;

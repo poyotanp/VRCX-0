@@ -5,6 +5,10 @@ type FavoriteImportRow = {
     id: string;
     [key: string]: unknown;
 };
+type FavoriteImportOpenOptions = {
+    type?: unknown;
+    input?: unknown;
+};
 type FavoriteImportStore = {
     open: boolean;
     type: FavoriteImportType;
@@ -19,7 +23,7 @@ type FavoriteImportStore = {
     remoteGroupName: string;
     localGroupName: string;
     sessionId: number;
-    openDialog(options?: { type?: unknown; input?: unknown }): void;
+    openDialog(options?: FavoriteImportOpenOptions): void;
     closeDialog(): void;
     cancelActiveWork(): void;
     setInput(input: unknown): void;
@@ -79,106 +83,116 @@ function normalizeType(value: unknown): FavoriteImportType {
         : 'avatar';
 }
 
-export const useFavoriteImportStore = create<FavoriteImportStore>(
-    (set: any) => ({
-        ...initialState,
-        openDialog({ type, input = '' }: any = {}) {
-            set((state: any) => ({
+function isFavoriteImportRow(value: unknown): value is FavoriteImportRow {
+    return Boolean(
+        value &&
+        typeof value === 'object' &&
+        typeof Reflect.get(value, 'id') === 'string'
+    );
+}
+
+function normalizeRows(value: unknown): FavoriteImportRow[] {
+    return Array.isArray(value) ? value.filter(isFavoriteImportRow) : [];
+}
+
+export const useFavoriteImportStore = create<FavoriteImportStore>((set) => ({
+    ...initialState,
+    openDialog({ type, input = '' }: FavoriteImportOpenOptions = {}) {
+        set((state) => {
+            return {
                 ...initialState,
                 open: true,
                 type: normalizeType(type),
                 input: typeof input === 'string' ? input : String(input ?? ''),
                 sessionId: state.sessionId + 1
-            }));
-        },
-        closeDialog() {
-            set((state: any) => ({
-                ...state,
-                open: false,
-                loading: false
-            }));
-        },
-        cancelActiveWork() {
-            set((state: any) => ({
-                ...state,
-                loading: false,
-                progress: 0,
-                progressTotal: 0,
-                importProgress: 0,
-                importProgressTotal: 0,
-                sessionId: state.sessionId + 1
-            }));
-        },
-        setInput(input: any) {
-            set({
-                input: typeof input === 'string' ? input : String(input ?? '')
-            });
-        },
-        setLoading(loading: any) {
-            set({ loading: Boolean(loading) });
-        },
-        setProgress(progress: any, progressTotal: any) {
-            set({ progress, progressTotal });
-        },
-        setImportProgress(importProgress: any, importProgressTotal: any) {
-            set({ importProgress, importProgressTotal });
-        },
-        setErrors(errors: any) {
-            set({
-                errors:
-                    typeof errors === 'string' ? errors : String(errors ?? '')
-            });
-        },
-        appendError(error: any) {
-            const text =
-                typeof error === 'string' ? error : String(error ?? '');
-            if (!text) {
-                return;
-            }
-            set((state: any) => ({
-                errors: `${state.errors || ''}${text}${text.endsWith('\n') ? '' : '\n'}`
-            }));
-        },
-        setRows(rows: any) {
-            set({ rows: Array.isArray(rows) ? rows : [] });
-        },
-        addRow(row: any) {
-            if (!row?.id) {
-                return;
-            }
-            set((state: any) => {
-                if (state.rows.some((entry: any) => entry.id === row.id)) {
-                    return state;
-                }
-                return { rows: [...state.rows, row] };
-            });
-        },
-        removeRow(id: any) {
-            set((state: any) => ({
-                rows: state.rows.filter((row: any) => row.id !== id)
-            }));
-        },
-        clearRows() {
-            set({ rows: [] });
-        },
-        setRemoteGroupName(remoteGroupName: any) {
-            set({
-                remoteGroupName,
-                localGroupName: remoteGroupName ? '' : ''
-            });
-        },
-        setLocalGroupName(localGroupName: any) {
-            set({
-                localGroupName,
-                remoteGroupName: localGroupName ? '' : ''
-            });
-        },
-        resetImportState() {
-            set((state: any) => ({
-                ...initialState,
-                open: state.open,
-                type: state.type
-            }));
+            };
+        });
+    },
+    closeDialog() {
+        set((state) => ({
+            ...state,
+            open: false,
+            loading: false
+        }));
+    },
+    cancelActiveWork() {
+        set((state) => ({
+            ...state,
+            loading: false,
+            progress: 0,
+            progressTotal: 0,
+            importProgress: 0,
+            importProgressTotal: 0,
+            sessionId: state.sessionId + 1
+        }));
+    },
+    setInput(input) {
+        set({
+            input: typeof input === 'string' ? input : String(input ?? '')
+        });
+    },
+    setLoading(loading) {
+        set({ loading: Boolean(loading) });
+    },
+    setProgress(progress, progressTotal) {
+        set({ progress, progressTotal });
+    },
+    setImportProgress(importProgress, importProgressTotal) {
+        set({ importProgress, importProgressTotal });
+    },
+    setErrors(errors) {
+        set({
+            errors: typeof errors === 'string' ? errors : String(errors ?? '')
+        });
+    },
+    appendError(error) {
+        const text = typeof error === 'string' ? error : String(error ?? '');
+        if (!text) {
+            return;
         }
-    })
-);
+        set((state) => ({
+            errors: `${state.errors || ''}${text}${text.endsWith('\n') ? '' : '\n'}`
+        }));
+    },
+    setRows(rows) {
+        set({ rows: normalizeRows(rows) });
+    },
+    addRow(row) {
+        if (!row?.id) {
+            return;
+        }
+        set((state) => {
+            if (state.rows.some((entry) => entry.id === row.id)) {
+                return state;
+            }
+            return { rows: [...state.rows, row] };
+        });
+    },
+    removeRow(id) {
+        set((state) => ({
+            rows: state.rows.filter((row) => row.id !== id)
+        }));
+    },
+    clearRows() {
+        set({ rows: [] });
+    },
+    setRemoteGroupName(remoteGroupName) {
+        set({
+            remoteGroupName,
+            localGroupName: remoteGroupName ? '' : ''
+        });
+    },
+    setLocalGroupName(localGroupName) {
+        set({
+            localGroupName,
+            remoteGroupName: localGroupName ? '' : ''
+        });
+    },
+    resetImportState() {
+        set((state) => ({
+            ...initialState,
+            open: state.open,
+            type: state.type
+        }));
+    }
+}));

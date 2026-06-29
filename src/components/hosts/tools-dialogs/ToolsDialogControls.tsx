@@ -31,7 +31,7 @@ export function ToolTextarea({ value, rows = 15 }: any) {
             rows={rows}
             value={value}
             className="font-mono text-xs"
-            onClick={(event: any) => event.currentTarget.select()}
+            onClick={(event) => event.currentTarget.select()}
         />
     );
 }
@@ -54,9 +54,7 @@ export function CheckRow({
                 id={id}
                 checked={checked}
                 disabled={disabled}
-                onCheckedChange={(value: any) =>
-                    onCheckedChange(Boolean(value))
-                }
+                onCheckedChange={(value) => onCheckedChange(Boolean(value))}
             />
             <FieldContent>
                 <FieldLabel htmlFor={id}>{label}</FieldLabel>
@@ -163,7 +161,7 @@ export function StatusEditor({
                             placeholder={t(
                                 'view.settings.general.automation.status_description_placeholder'
                             )}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onDescChange(event.target.value)
                             }
                         />

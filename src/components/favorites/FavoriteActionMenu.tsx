@@ -309,7 +309,7 @@ export function FavoriteActionMenu({
                 kind,
                 entityId: normalizedEntityId,
                 groupName,
-                entity
+                entity: isRecord(entity) ? entity : null
             });
             toast.success(t('view.favorite.label.local_favorite_added'));
         } catch (error) {

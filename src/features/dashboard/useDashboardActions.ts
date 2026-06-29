@@ -10,18 +10,12 @@ import { cloneDashboardRows } from './dashboardConfig';
 export function useDashboardActions({ dashboard, dashboards }: any) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const createDashboard = useDashboardStore(
-        (state: any) => state.createDashboard
-    );
-    const updateDashboard = useDashboardStore(
-        (state: any) => state.updateDashboard
-    );
-    const deleteDashboard = useDashboardStore(
-        (state: any) => state.deleteDashboard
-    );
+    const confirm = useModalStore((state) => state.confirm);
+    const createDashboard = useDashboardStore((state) => state.createDashboard);
+    const updateDashboard = useDashboardStore((state) => state.updateDashboard);
+    const deleteDashboard = useDashboardStore((state) => state.deleteDashboard);
     const setEditingDashboardId = useDashboardStore(
-        (state: any) => state.setEditingDashboardId
+        (state) => state.setEditingDashboardId
     );
 
     async function saveDashboard(dashboardId: any, nextDashboard: any) {

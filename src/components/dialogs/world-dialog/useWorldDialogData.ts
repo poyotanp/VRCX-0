@@ -17,6 +17,44 @@ import {
 } from './worldDialogHelpers';
 import { normalizeEntityId } from './worldInstances';
 
+type WorldDialogNewInstanceGroups = Awaited<
+    ReturnType<typeof groupProfileRepository.getUserGroups>
+>;
+
+type WorldPreviousInstances = Array<{
+    created_at: string;
+    groupName: string;
+    id: number;
+    location: string;
+    time: number;
+    worldName: string;
+}>;
+
+type WorldDialogFileAnalysisPlatform = {
+    created_at: string;
+    encryptionKey: string;
+    fileSize: number;
+    success: boolean;
+    uncompressedSize: number;
+    worldSignature: string;
+    _fileSize: string;
+    _uncompressedSize: string;
+};
+
+type WorldWorldSideData = {
+    cache: {
+        inCache: boolean;
+        cacheSize: string;
+        cacheLocked: boolean;
+        cachePath: string;
+    };
+    fileAnalysis: {
+        android?: WorldDialogFileAnalysisPlatform;
+        standalonewindows?: WorldDialogFileAnalysisPlatform;
+        ios?: WorldDialogFileAnalysisPlatform;
+    };
+};
+
 export function useWorldDialogData({
     normalizedWorldId,
     profileWorldId,
@@ -35,12 +73,14 @@ export function useWorldDialogData({
     );
     const [detail, setDetail] = useState('');
     const [memo, setMemo] = useState('');
-    const [previousInstances, setPreviousInstances] = useState<any[]>([]);
+    const [previousInstances, setPreviousInstances] =
+        useState<WorldPreviousInstances>([]);
     const [hasPersistData, setHasPersistData] = useState(false);
-    const [worldSideData, setWorldSideData] = useState(() =>
+    const [worldSideData, setWorldSideData] = useState<WorldWorldSideData>(() =>
         defaultWorldSideData()
     );
-    const [newInstanceGroups, setNewInstanceGroups] = useState<any[]>([]);
+    const [newInstanceGroups, setNewInstanceGroups] =
+        useState<WorldDialogNewInstanceGroups>([]);
 
     useEffect(() => {
         setWorld(seedData ? worldProfileRepository.normalize(seedData) : null);

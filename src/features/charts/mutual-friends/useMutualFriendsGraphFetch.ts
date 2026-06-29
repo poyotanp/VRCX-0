@@ -20,27 +20,21 @@ export function useMutualFriendsGraphFetch({
 }: any) {
     const { t } = useTranslation();
     const lastHandledRunRef = useRef(0);
-    const statusRunId = useRuntimeStore(
-        (state: any) => state.mutualGraph.runId
-    );
-    const statusName = useRuntimeStore(
-        (state: any) => state.mutualGraph.status
-    );
+    const statusRunId = useRuntimeStore((state) => state.mutualGraph.runId);
+    const statusName = useRuntimeStore((state) => state.mutualGraph.status);
     const statusOwnerUserId = useRuntimeStore(
-        (state: any) => state.mutualGraph.ownerUserId
+        (state) => state.mutualGraph.ownerUserId
     );
     const processedFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.processedFriends
+        (state) => state.mutualGraph.processedFriends
     );
     const totalFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.totalFriends
+        (state) => state.mutualGraph.totalFriends
     );
     const cancelRequested = useRuntimeStore(
-        (state: any) => state.mutualGraph.cancelRequested
+        (state) => state.mutualGraph.cancelRequested
     );
-    const lastError = useRuntimeStore(
-        (state: any) => state.mutualGraph.lastError
-    );
+    const lastError = useRuntimeStore((state) => state.mutualGraph.lastError);
 
     useEffect(() => {
         refreshMutualGraphFetchStatus().catch(() => {});

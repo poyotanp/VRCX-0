@@ -205,7 +205,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                             </>
                         }
                         onSelect={() => setSelectedRuleId(rule.id)}
-                        onEnabledChange={(checked: any) =>
+                        onEnabledChange={(checked) =>
                             update(rule.id, (current: any) => ({
                                 ...current,
                                 enabled: checked
@@ -241,7 +241,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                             <Input
                                 value={selectedRule.label || ''}
                                 disabled={disabled}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     update(selectedRule.id, (current: any) => ({
                                         ...current,
                                         label: event.target.value
@@ -259,7 +259,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                                     'high'
                                 )}
                                 disabled={disabled}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                     update(selectedRule.id, (current: any) => ({
                                         ...current,
                                         priority: priorityNumberFromValue(
@@ -294,7 +294,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                                 type="time"
                                 value={selectedTimeWindow.start}
                                 disabled={disabled}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     update(selectedRule.id, (current: any) =>
                                         updateTimeWindow(current, {
                                             start: event.target.value
@@ -309,7 +309,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                                 type="time"
                                 value={selectedTimeWindow.end}
                                 disabled={disabled}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     update(selectedRule.id, (current: any) =>
                                         updateTimeWindow(current, {
                                             end: event.target.value
@@ -332,7 +332,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                             disabled={disabled}
                             value={(selectedTimeWindow.days || []).map(String)}
                             className="flex flex-wrap"
-                            onValueChange={(values: any) =>
+                            onValueChange={(values) =>
                                 update(selectedRule.id, (current: any) =>
                                     updateTimeWindow(current, {
                                         days: values.map((value: any) =>
@@ -375,7 +375,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                                 aria-label={t(
                                     `${I18N_ROOT}.only_when_game_running`
                                 )}
-                                onCheckedChange={(checked: any) =>
+                                onCheckedChange={(checked) =>
                                     update(selectedRule.id, (current: any) =>
                                         setGameRunningCondition(
                                             current,
@@ -410,7 +410,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                                 aria-label={t(
                                     `${I18N_ROOT}.restore_previous_status`
                                 )}
-                                onCheckedChange={(checked: any) =>
+                                onCheckedChange={(checked) =>
                                     update(selectedRule.id, (current: any) => ({
                                         ...current,
                                         restorePreviousState: checked
@@ -430,14 +430,14 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                         statusDescription={
                             selectedRule.actions?.statusDescription || ''
                         }
-                        onStatusChange={(value: any) =>
+                        onStatusChange={(value) =>
                             update(selectedRule.id, (current: any) =>
                                 value === 'no-change'
                                     ? removeAction(current, 'status')
                                     : updateAction(current, { status: value })
                             )
                         }
-                        onStatusDescriptionEnabledChange={(checked: any) =>
+                        onStatusDescriptionEnabledChange={(checked) =>
                             update(selectedRule.id, (current: any) =>
                                 checked
                                     ? updateAction(current, {
@@ -446,7 +446,7 @@ export function TimeRulesTab({ rules, disabled, onRulesChange }: any) {
                                     : removeAction(current, 'statusDescription')
                             )
                         }
-                        onStatusDescriptionChange={(value: any) =>
+                        onStatusDescriptionChange={(value) =>
                             update(selectedRule.id, (current: any) =>
                                 updateAction(current, {
                                     statusDescription: value

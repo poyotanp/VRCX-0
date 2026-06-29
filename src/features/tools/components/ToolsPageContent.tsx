@@ -145,10 +145,10 @@ function ToolItem({
                     variant="secondary"
                     className="absolute top-2 right-2 size-7"
                     aria-label={editQuickAccessLabel}
-                    onPointerDown={(event: any) => {
+                    onPointerDown={(event) => {
                         event.stopPropagation();
                     }}
-                    onClick={(event: any) => {
+                    onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
                         if (isEditRemoveAction) {
@@ -169,7 +169,7 @@ function ToolItem({
                             variant="ghost"
                             className="text-muted-foreground absolute top-2 right-2 size-7"
                             aria-label={actionsLabel}
-                            onClick={(event: any) => {
+                            onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
                             }}

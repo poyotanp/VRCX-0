@@ -108,8 +108,8 @@ function validateImageFile(file: any, t: any) {
 
 export function useGalleryActions(deps: any) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
     const actionDeps = {
         ...deps,
         FILE_TABS,

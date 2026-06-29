@@ -53,7 +53,7 @@ function GroupHeaderRow({ row, onToggleGroup }: any) {
     return (
         <Collapsible
             open={isOpen}
-            onOpenChange={(nextOpen: any) => {
+            onOpenChange={(nextOpen) => {
                 if (nextOpen !== isOpen) {
                     onToggleGroup(row.groupId);
                 }
@@ -222,9 +222,7 @@ function GroupInstanceRow({ instance, currentUserId, friendsMap }: any) {
         128
     );
     const location = resolveLocation(instance);
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
     const userCount =
         instance?.userCount ??
         instance?.n_users ??
@@ -381,23 +379,21 @@ function GroupInstanceRow({ instance, currentUserId, friendsMap }: any) {
 
 export function GroupsSidebar() {
     const groupInstancesState = useRuntimeStore(
-        (state: any) => state.groupInstances
+        (state) => state.groupInstances
     );
-    const groupOrder = useRuntimeStore((state: any) =>
+    const groupOrder = useRuntimeStore((state) =>
         state.groupInstances.userId === state.auth.currentUserId &&
         state.groupInstances.endpoint === state.auth.currentUserEndpoint
             ? state.groupInstances.groupOrder
             : EMPTY_GROUP_ORDER
     );
-    const status = useRuntimeStore((state: any) => state.groupInstances.status);
-    const error = useRuntimeStore((state: any) => state.groupInstances.error);
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const status = useRuntimeStore((state) => state.groupInstances.status);
+    const error = useRuntimeStore((state) => state.groupInstances.error);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const instances =
         groupInstancesState.userId === currentUserId &&
         groupInstancesState.endpoint === currentEndpoint
@@ -405,10 +401,10 @@ export function GroupsSidebar() {
             : [];
     const [collapsedGroups, setCollapsedGroups] = useState(() => new Set());
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const showAgeGatedInstancesPreference = usePreferencesStore(
-        (state: any) => state.isAgeGatedInstancesVisible
+        (state) => state.isAgeGatedInstancesVisible
     );
     const showAgeGatedInstances =
         preferencesHydrated && showAgeGatedInstancesPreference;

@@ -253,7 +253,7 @@ export function SettingsInterfaceAppearanceCard({
                         step={1}
                         className="w-28"
                         value={zoomInput}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onZoomInputChange(event.target.value)
                         }
                         onBlur={onZoomBlur}

@@ -1,6 +1,8 @@
 import { convertFileSrc } from '@/platform/tauri/assets';
-import { commands } from '@/platform/tauri/bindings';
-import type { BackgroundImageFilesResolveInput } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type BackgroundImageFilesResolveInput
+} from '@/platform/tauri/bindings';
 
 import type {
     BackgroundImageCustomSource,
@@ -14,11 +16,6 @@ export const BACKGROUND_IMAGE_SUPPORTED_EXTENSIONS = [
     'png',
     'webp'
 ] as const;
-
-type ResolveInput = {
-    paths?: string[];
-    folderPath?: string | null;
-};
 
 function currentLocalDate(): string {
     const date = new Date();
@@ -156,13 +153,11 @@ export async function pickBackgroundImageFiles(
 async function resolveCustomSourceFiles(
     source: BackgroundImageCustomSource
 ): Promise<string[]> {
-    const input: ResolveInput =
+    const input: BackgroundImageFilesResolveInput =
         source.kind === 'folder'
-            ? { folderPath: source.folderPath }
-            : { paths: source.paths };
-    const files = await commands.appBackgroundImageFilesResolve(
-        input as BackgroundImageFilesResolveInput
-    );
+            ? { paths: null, folderPath: source.folderPath }
+            : { paths: source.paths, folderPath: null };
+    const files = await commands.appBackgroundImageFilesResolve(input);
     return uniquePaths(files);
 }
 
@@ -204,8 +199,9 @@ export async function resolveBackgroundImageFolderFiles(
     folderPath: string
 ): Promise<string[]> {
     return commands.appBackgroundImageFilesResolve({
+        paths: null,
         folderPath
-    } as BackgroundImageFilesResolveInput);
+    });
 }
 
 export async function resolveBackgroundImageCustomSnapshot(

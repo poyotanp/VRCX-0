@@ -114,7 +114,7 @@ export function PresenceRuleActionFields({
                                 'view.settings.general.automation.status_description_placeholder'
                             )}
                             aria-label={t(`${I18N_ROOT}.signature`)}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onStatusDescriptionChange(event.target.value)
                             }
                         />

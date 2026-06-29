@@ -67,13 +67,13 @@ export function AvatarProviderDialog({
                                             id={`settings-avatar-provider-${index}`}
                                             name={`avatarProvider${index}`}
                                             value={provider}
-                                            onChange={(event: any) =>
+                                            onChange={(event) =>
                                                 updateAvatarProvider(
                                                     index,
                                                     event.target.value
                                                 )
                                             }
-                                            onBlur={(event: any) =>
+                                            onBlur={(event) =>
                                                 saveAvatarProviderField(
                                                     index,
                                                     event.target.value

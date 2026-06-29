@@ -1,3 +1,4 @@
+import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -5,6 +6,42 @@ import { updateModerationSync } from '@/services/moderationSyncService';
 import { setVrchatUserModeration } from '@/services/shellIntegrationService';
 
 import { normalizeUserId } from './userProfileFields';
+import type {
+    AvatarOverrideState,
+    ExtendedModerationState,
+    ModerationState
+} from './useUserDialogModerationState';
+
+type ModerationType = 'block' | 'mute';
+type ExtendedModerationType = 'interactOff' | 'muteChat';
+type AvatarOverrideType = 'hideAvatar' | 'showAvatar';
+type UserModerationProfile = Record<string, unknown> & {
+    $isModerator?: boolean;
+    displayName?: string;
+    id?: unknown;
+};
+type ConfirmResult = {
+    ok: boolean;
+};
+type ConfirmFn = (options: Record<string, unknown>) => Promise<ConfirmResult>;
+type UserModerationActionsOptions = {
+    actionStatusRef: MutableRefObject<string>;
+    avatarOverrideState: AvatarOverrideState;
+    confirm: ConfirmFn;
+    currentEndpoint?: string;
+    currentUserId?: string;
+    isCurrentUser: boolean;
+    moderationRevisionRef: MutableRefObject<number>;
+    moderationState: ModerationState;
+    normalizedCurrentUserId: string;
+    profile?: UserModerationProfile | null;
+    setActionStatus(value: string): void;
+    setAvatarOverrideState: Dispatch<SetStateAction<AvatarOverrideState>>;
+    setExtendedModerationState: Dispatch<
+        SetStateAction<ExtendedModerationState>
+    >;
+    setModerationState: Dispatch<SetStateAction<ModerationState>>;
+};
 
 export function useUserModerationActions({
     actionStatusRef,
@@ -21,10 +58,10 @@ export function useUserModerationActions({
     setAvatarOverrideState,
     setExtendedModerationState,
     setModerationState
-}: any) {
+}: UserModerationActionsOptions) {
     const { t } = useTranslation();
 
-    async function setUserModeration(type: any, enabled: any) {
+    async function setUserModeration(type: ModerationType, enabled: boolean) {
         const rosterUserId = normalizeUserId(profile?.id);
         if (
             !rosterUserId ||
@@ -63,7 +100,7 @@ export function useUserModerationActions({
         }
 
         try {
-            const nextModerationState: any = {
+            const nextModerationState: ModerationState = {
                 ...moderationState,
                 [type]: enabled
             };
@@ -100,7 +137,10 @@ export function useUserModerationActions({
         }
     }
 
-    async function setExtendedUserModeration(type: any, enabled: any) {
+    async function setExtendedUserModeration(
+        type: ExtendedModerationType,
+        enabled: boolean
+    ) {
         const rosterUserId = normalizeUserId(profile?.id);
         if (
             !rosterUserId ||
@@ -110,7 +150,7 @@ export function useUserModerationActions({
             return;
         }
 
-        const labelMap: any = {
+        const labelMap: Record<ExtendedModerationType, string> = {
             interactOff: enabled
                 ? t('dialog.user.actions.moderation_disable_avatar_interaction')
                 : t('dialog.user.actions.moderation_enable_avatar_interaction'),
@@ -152,7 +192,7 @@ export function useUserModerationActions({
                 type,
                 enabled
             });
-            setExtendedModerationState((current: any) => ({
+            setExtendedModerationState((current) => ({
                 ...current,
                 [type]: enabled
             }));
@@ -175,7 +215,7 @@ export function useUserModerationActions({
         }
     }
 
-    async function setAvatarOverrideModeration(type: any) {
+    async function setAvatarOverrideModeration(type: AvatarOverrideType) {
         const rosterUserId = normalizeUserId(profile?.id);
         if (
             !rosterUserId ||

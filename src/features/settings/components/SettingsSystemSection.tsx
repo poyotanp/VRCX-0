@@ -6,7 +6,7 @@ import { SettingsSystemTab } from './settings-tabs/SettingsSystemTab';
 
 export function SettingsSystemSection({ system }: any) {
     const hostPlatform = useRuntimeStore(
-        (state: any) => state.hostCapabilities.platform
+        (state) => state.hostCapabilities.platform
     );
     const {
         prefs,

@@ -5,7 +5,7 @@ import { useKnownUserFacts } from '@/domain/users/useKnownUser';
 import avatarCacheRepository from '@/repositories/avatarCacheRepository';
 import { useFavoriteStore } from '@/state/favoriteStore';
 import { useFriendRosterStore } from '@/state/friendRosterStore';
-import { useWorldFactsStore } from '@/state/worldFactsStore';
+import { useWorldFactsStore, type WorldFact } from '@/state/worldFactsStore';
 
 import {
     buildFavoriteAvatarTags,
@@ -17,7 +17,7 @@ import { useFavoriteRemoteDetails } from './useFavoriteRemoteDetails';
 import { useRemoteAvatarCacheFallbacks } from './useRemoteAvatarCacheFallbacks';
 import { useRemoteWorldCacheFallbacks } from './useRemoteWorldCacheFallbacks';
 
-const EMPTY_WORLD_FACTS: Record<string, unknown> = {};
+const EMPTY_WORLD_FACTS: Record<string, WorldFact> = {};
 
 export function useFavoritesCollectionsState({
     currentEndpoint,
@@ -33,12 +33,12 @@ export function useFavoritesCollectionsState({
         [kind]
     );
     const favoriteState = useFavoriteStore(useShallow(favoriteSelector));
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
-    const worldFactsById = useWorldFactsStore((state: any) =>
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
+    const worldFactsById = useWorldFactsStore((state) =>
         kind === 'world' ? state.worldsById : EMPTY_WORLD_FACTS
     );
     const [avatarHistoryLoading, setAvatarHistoryLoading] = useState(false);
-    const [avatarHistory, setAvatarHistory] = useState<any[]>([]);
+    const [avatarHistory, setAvatarHistory] = useState<unknown[]>([]);
     const [remoteDetailsRefreshToken, setRemoteDetailsRefreshToken] =
         useState(0);
     const friendsMap = useMemo(
@@ -114,9 +114,9 @@ export function useFavoritesCollectionsState({
         setAvatarHistoryLoading(true);
         avatarCacheRepository
             .getAvatarHistory(currentUserId, 100)
-            .then((rows: any) => {
+            .then((rows) => {
                 if (active) {
-                    setAvatarHistory(Array.isArray(rows) ? rows : []);
+                    setAvatarHistory(rows);
                 }
             })
             .catch(() => {

@@ -77,10 +77,10 @@ function enqueueConfigWrite(queueRef: any, key: any, write: any, onError: any) {
 function usePresenceOptions() {
     const { t } = useTranslation();
     const favoriteFriendGroups = useFavoriteStore(
-        (state: any) => state.favoriteFriendGroups
+        (state) => state.favoriteFriendGroups
     );
     const localFriendFavoriteGroups = useFavoriteStore(
-        (state: any) => state.localFriendFavoriteGroups
+        (state) => state.localFriendFavoriteGroups
     );
 
     const groupOptions = useMemo(
@@ -102,7 +102,7 @@ function usePresenceOptions() {
 export function PresenceScheduleDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
     const writeQueuesRef = useRef(new Map());
-    const [timeRules, setTimeRules] = useState<any[]>([]);
+    const [timeRules, setTimeRules] = useState<Record<string, unknown>[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -191,7 +191,9 @@ export function PresenceRoomRulesDialog({ open, onOpenChange }: any) {
     const writeQueuesRef = useRef(new Map());
     const { groupOptions, instanceOptions } = usePresenceOptions();
     const [values, setValues] = useState(DEFAULT_CONTEXT_VALUES);
-    const [contextRules, setContextRules] = useState<any[]>([]);
+    const [contextRules, setContextRules] = useState<Record<string, unknown>[]>(
+        []
+    );
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {

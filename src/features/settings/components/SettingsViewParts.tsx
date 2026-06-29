@@ -183,10 +183,10 @@ export function TablePageSizesDialog({ open, onOpenChange, onSaved }: any) {
                                 placeholder={t(
                                     'view.settings.appearance.appearance.table_page_sizes'
                                 )}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     setInput(event.target.value)
                                 }
-                                onKeyDown={(event: any) => {
+                                onKeyDown={(event) => {
                                     if (event.key === 'Enter') {
                                         event.preventDefault();
                                         addPageSize();

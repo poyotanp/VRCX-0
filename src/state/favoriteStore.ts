@@ -103,7 +103,7 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
             snapshot.favoriteAvatarGroups
         );
 
-        set({
+        const nextState: Partial<FavoriteStore> = {
             currentUserId:
                 normalizeFavoriteStoreId(snapshot.currentUserId) || null,
             loadStatus: 'ready',
@@ -167,7 +167,8 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
             localAvatarDetailsById: normalizeFavoriteDetailsById(
                 snapshot.localAvatarDetailsById
             )
-        });
+        };
+        set(nextState);
     },
     setFavoritesError(detail) {
         set((state) => ({
@@ -537,7 +538,7 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
                 state.favoritesSortOrder
             );
 
-            return {
+            const nextState = {
                 ...state,
                 remoteFavoritesById,
                 ...remoteCollections,
@@ -554,13 +555,14 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
                     remoteFavoritesById
                 )
             };
+            return nextState;
         });
     },
     addRemoteFavorite(json) {
         set((state) => {
             const ref = createDefaultFavoriteCachedRef(
                 isObjectRecord(json) ? json : {}
-            ) as FavoriteRecord;
+            );
             if (!ref.id || !ref.favoriteId) {
                 return state;
             }
@@ -579,7 +581,7 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
                 [ref.favoriteId, ...state.favoritesSortOrder]
             );
 
-            return {
+            const nextState = {
                 ...state,
                 remoteFavoritesById,
                 ...remoteCollections,
@@ -596,6 +598,7 @@ export const useFavoriteStore = create<FavoriteStore>((set, get) => ({
                     remoteFavoritesById
                 )
             };
+            return nextState;
         });
     },
     getRemoteFavoriteByObjectId(objectId) {

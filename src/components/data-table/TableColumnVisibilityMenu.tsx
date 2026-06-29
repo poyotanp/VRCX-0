@@ -76,7 +76,7 @@ export function TableColumnVisibilityMenu({
                 </DropdownMenuLabel>
                 <DropdownMenuGroup>
                     <DropdownMenuItem
-                        onSelect={(event: any) => {
+                        onSelect={(event) => {
                             event.preventDefault();
                             resetTableLayout(table, onResetLayout);
                         }}
@@ -85,7 +85,7 @@ export function TableColumnVisibilityMenu({
                     </DropdownMenuItem>
                     {showColumnOrderLock ? (
                         <DropdownMenuItem
-                            onSelect={(event: any) => {
+                            onSelect={(event) => {
                                 event.preventDefault();
                                 setColumnOrderLocked(table, !columnOrderLocked);
                             }}
@@ -102,14 +102,12 @@ export function TableColumnVisibilityMenu({
                                 <DropdownMenuCheckboxItem
                                     key={column.id}
                                     checked={column.getIsVisible()}
-                                    onCheckedChange={(checked: any) =>
+                                    onCheckedChange={(checked) =>
                                         column.toggleVisibility(
                                             checked === true
                                         )
                                     }
-                                    onSelect={(event: any) =>
-                                        event.preventDefault()
-                                    }
+                                    onSelect={(event) => event.preventDefault()}
                                 >
                                     <span className="min-w-0 flex-1 truncate">
                                         {resolveColumnLabel(column)}
@@ -160,12 +158,10 @@ export function TableColumnHeaderContextMenu({
                             <ContextMenuCheckboxItem
                                 key={column.id}
                                 checked={column.getIsVisible()}
-                                onCheckedChange={(checked: any) =>
+                                onCheckedChange={(checked) =>
                                     column.toggleVisibility(checked === true)
                                 }
-                                onSelect={(event: any) =>
-                                    event.preventDefault()
-                                }
+                                onSelect={(event) => event.preventDefault()}
                             >
                                 <span className="min-w-0 flex-1 truncate">
                                     {resolveColumnLabel(column)}
@@ -182,15 +178,13 @@ export function TableColumnHeaderContextMenu({
                         {showColumnOrderLock ? (
                             <ContextMenuCheckboxItem
                                 checked={columnOrderLocked}
-                                onCheckedChange={(checked: any) =>
+                                onCheckedChange={(checked) =>
                                     setColumnOrderLocked(
                                         table,
                                         checked === true
                                     )
                                 }
-                                onSelect={(event: any) =>
-                                    event.preventDefault()
-                                }
+                                onSelect={(event) => event.preventDefault()}
                             >
                                 {renderColumnLockLabel(columnOrderLocked, t)}
                             </ContextMenuCheckboxItem>

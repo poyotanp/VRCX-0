@@ -2,7 +2,9 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-import notificationPersistenceRepository from '@/repositories/notificationPersistenceRepository';
+import notificationPersistenceRepository, {
+    type NotificationResponse
+} from '@/repositories/notificationPersistenceRepository';
 import {
     openAvatarDialog,
     openGroupDialog,
@@ -31,6 +33,16 @@ import type {
 } from './notificationPageTypes';
 import { normalizeWorldTarget } from './notificationRows';
 
+type DialogParams = Record<string, unknown>;
+type ConfirmationOptions = {
+    skipConfirm?: boolean;
+};
+type InviteResponseSlotPayload = {
+    imageData?: unknown;
+    notification: NotificationRow;
+    row?: { slot?: unknown } | null;
+};
+
 export function useNotificationActions({
     canInviteFromCurrentLocation,
     currentInviteLocation,
@@ -49,18 +61,16 @@ export function useNotificationActions({
     setInviteResponseRequest: (request: NotificationDialogRequest) => void;
 }) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
-    const openUser = useCallback((params: any) => {
+    const confirm = useModalStore((state) => state.confirm);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
+    const openUser = useCallback((params: DialogParams) => {
         openUserDialog(params);
     }, []);
-    const openGroup = useCallback((params: any) => {
+    const openGroup = useCallback((params: DialogParams) => {
         openGroupDialog(params);
     }, []);
 
-    const openNotificationLink = useCallback((link: any) => {
+    const openNotificationLink = useCallback((link: unknown) => {
         const value = String(link || '').trim();
         if (!value) return;
         if (value.startsWith('user:')) {
@@ -94,7 +104,7 @@ export function useNotificationActions({
     }, []);
 
     const openNotificationTypeTarget = useCallback(
-        (notification: any) => {
+        (notification: NotificationRow) => {
             if (
                 (notification.type === 'group.queueReady' ||
                     notification.type === 'instance.closed') &&
@@ -117,7 +127,7 @@ export function useNotificationActions({
     );
 
     const notificationTypeIsClickable = useCallback(
-        (notification: any) =>
+        (notification: NotificationRow) =>
             Boolean(
                 notification.link ||
                 ((notification.type === 'group.queueReady' ||
@@ -128,7 +138,7 @@ export function useNotificationActions({
     );
 
     const openNotificationImagePreview = useCallback(
-        (notification: any) => {
+        (notification: NotificationRow) => {
             const imageUrl =
                 notification.details?.imageUrl || notification.imageUrl || '';
             if (!imageUrl || imageUrl.startsWith('default_')) {
@@ -147,7 +157,7 @@ export function useNotificationActions({
     );
 
     const markSeen = useCallback(
-        async (notification: any) => {
+        async (notification: NotificationRow) => {
             try {
                 await notificationPersistenceRepository.markSeen({
                     endpoint,
@@ -170,7 +180,10 @@ export function useNotificationActions({
     );
 
     const deleteNotification = useCallback(
-        async (notification: any, { skipConfirm = false }: any = {}) => {
+        async (
+            notification: NotificationRow,
+            { skipConfirm = false }: ConfirmationOptions = {}
+        ) => {
             try {
                 if (!skipConfirm) {
                     const result = await confirm({
@@ -215,7 +228,7 @@ export function useNotificationActions({
     );
 
     const acceptFriendRequest = useCallback(
-        async (notification: any) => {
+        async (notification: NotificationRow) => {
             try {
                 const result = await confirm({
                     description: t(
@@ -255,7 +268,10 @@ export function useNotificationActions({
     );
 
     const hideNotification = useCallback(
-        async (notification: any, { skipConfirm = false }: any = {}) => {
+        async (
+            notification: NotificationRow,
+            { skipConfirm = false }: ConfirmationOptions = {}
+        ) => {
             try {
                 if (!skipConfirm) {
                     const result = await confirm({
@@ -298,7 +314,7 @@ export function useNotificationActions({
     );
 
     const acceptRequestInvite = useCallback(
-        async (notification: any) => {
+        async (notification: NotificationRow) => {
             try {
                 if (!currentInviteLocation) {
                     toast.error(
@@ -366,7 +382,7 @@ export function useNotificationActions({
     );
 
     const sendInviteResponseWithMessage = useCallback(
-        (notification: any, messageType: any) => {
+        (notification: NotificationRow, messageType: string) => {
             if (!currentUserId) {
                 toast.error(
                     t(
@@ -384,7 +400,7 @@ export function useNotificationActions({
     );
 
     const sendInviteResponseSlot = useCallback(
-        async ({ imageData, notification, row }: any) => {
+        async ({ imageData, notification, row }: InviteResponseSlotPayload) => {
             if (!currentUserId) {
                 throw new Error(
                     'Cannot send invite response: no current user session is available.'
@@ -409,7 +425,7 @@ export function useNotificationActions({
     );
 
     const sendBoopReply = useCallback(
-        async (notification: any, emojiId: any = '') => {
+        async (notification: NotificationRow | null, emojiId: unknown = '') => {
             await sendBoopReplyNotification({
                 currentUserId,
                 emojiId,
@@ -423,7 +439,10 @@ export function useNotificationActions({
     );
 
     const sendNotificationResponse = useCallback(
-        async (notification: any, response: any) => {
+        async (
+            notification: NotificationRow,
+            response: NotificationResponse
+        ) => {
             try {
                 const responseType = String(response?.type || '').toLowerCase();
                 if (response?.type === 'link') {

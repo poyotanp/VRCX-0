@@ -15,11 +15,9 @@ type ModerationRowsOptions = {
 export function useModerationRows({
     refreshKey = ''
 }: ModerationRowsOptions = {}) {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const [rows, setRows] = useState<ModerationRow[]>([]);
     const [loadStatus, setLoadStatus] = useState<ModerationLoadStatus>('idle');

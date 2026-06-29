@@ -18,6 +18,84 @@ import {
 type MediaApiRecord = Record<string, unknown>;
 type MediaApiParams = QueryParams;
 
+type MediaFileVersion = Record<string, unknown> & {
+    created_at?: string;
+    status?: string;
+    version?: number;
+};
+
+type MediaFileRecord = MediaApiRecord & {
+    animationStyle?: string;
+    extension?: string;
+    id: string;
+    maskTag?: string;
+    mimeType?: string;
+    modifiedThumbnailFileName?: string;
+    name?: string;
+    ownerId?: string;
+    tags?: string[];
+    versions?: MediaFileVersion[];
+};
+
+type MediaPrintFiles = MediaApiRecord & {
+    fileId?: string;
+    image?: string;
+};
+
+type MediaPrintRecord = MediaApiRecord & {
+    authorId?: string;
+    authorName?: string;
+    createdAt?: string;
+    files?: MediaPrintFiles;
+    id: string;
+    note?: string;
+    ownerId?: string;
+    timestamp?: string;
+    worldId?: string;
+    worldName?: string;
+};
+
+type InventoryAttribution = MediaApiRecord & {
+    creator?: {
+        customName?: string;
+        userId?: string;
+        [key: string]: unknown;
+    } | null;
+};
+
+type InventoryAttribute = MediaApiRecord & {
+    defaultValue?: unknown;
+    validator?: MediaApiRecord;
+};
+
+type InventoryItemRecord = MediaApiRecord & {
+    acquisition?: string;
+    attribution?: InventoryAttribution | null;
+    collections?: unknown[];
+    created_at?: string;
+    defaultAttributes?: Record<string, InventoryAttribute>;
+    description?: string;
+    equipSlot?: string;
+    equipSlots?: string[];
+    expiryDate?: string | null;
+    flags?: string[];
+    holderId?: string;
+    id: string;
+    imageUrl?: string;
+    isArchived?: boolean;
+    isSeen?: boolean;
+    itemType?: string;
+    itemTypeLabel?: string;
+    last_equipped?: string | null;
+    metadata?: MediaApiRecord;
+    name?: string;
+};
+
+type InventoryItemsResponse = {
+    data: InventoryItemRecord[];
+    totalCount: number;
+};
+
 interface MediaApiOptions {
     endpoint?: string;
     force?: boolean;
@@ -60,6 +138,22 @@ function resolveMediaEndpoint(endpoint: unknown = '') {
 
 function unwrapMediaResponse(
     response: { status: number; data: unknown; raw: unknown },
+    options?: {
+        params?: MediaApiParams;
+        extra?: MediaApiRecord;
+        fallbackMessage?: string;
+    }
+): VrchatRequestResponse<MediaApiRecord>;
+function unwrapMediaResponse<TJson>(
+    response: { status: number; data: unknown; raw: unknown },
+    options?: {
+        params?: MediaApiParams;
+        extra?: MediaApiRecord;
+        fallbackMessage?: string;
+    }
+): VrchatRequestResponse<TJson>;
+function unwrapMediaResponse<TJson = MediaApiRecord>(
+    response: { status: number; data: unknown; raw: unknown },
     {
         params = {},
         extra = {},
@@ -69,8 +163,8 @@ function unwrapMediaResponse(
         extra?: MediaApiRecord;
         fallbackMessage?: string;
     } = {}
-): VrchatRequestResponse<MediaApiRecord> {
-    const json = parseJsonResponse(response.data) as MediaApiRecord;
+): VrchatRequestResponse<TJson> {
+    const json = parseJsonResponse(response.data);
     if (
         response.status >= 400 ||
         (json && typeof json === 'object' && 'error' in json)
@@ -83,7 +177,7 @@ function unwrapMediaResponse(
     }
 
     return {
-        json,
+        json: json as TJson,
         params,
         ...extra,
         status: response.status,
@@ -93,14 +187,30 @@ function unwrapMediaResponse(
 
 async function executeMediaCommand(
     command: () => Promise<{ status: number; data: unknown; raw: unknown }>,
+    options?: {
+        params?: MediaApiParams;
+        extra?: MediaApiRecord;
+        fallbackMessage?: string;
+    }
+): Promise<VrchatRequestResponse<MediaApiRecord>>;
+async function executeMediaCommand<TJson>(
+    command: () => Promise<{ status: number; data: unknown; raw: unknown }>,
+    options?: {
+        params?: MediaApiParams;
+        extra?: MediaApiRecord;
+        fallbackMessage?: string;
+    }
+): Promise<VrchatRequestResponse<TJson>>;
+async function executeMediaCommand<TJson = MediaApiRecord>(
+    command: () => Promise<{ status: number; data: unknown; raw: unknown }>,
     options: {
         params?: MediaApiParams;
         extra?: MediaApiRecord;
         fallbackMessage?: string;
     } = {}
-): Promise<VrchatRequestResponse<MediaApiRecord>> {
+): Promise<VrchatRequestResponse<TJson>> {
     try {
-        return unwrapMediaResponse(await command(), options);
+        return unwrapMediaResponse<TJson>(await command(), options);
     } catch (error) {
         throw normalizePlatformError(
             error,
@@ -117,9 +227,9 @@ function resolveLegacyBlobSize(blob: LegacyImageUploadOptions['blob']) {
 async function getFiles(
     params: MediaApiParams = {},
     options: MediaApiOptions = {}
-) {
+): Promise<VrchatRequestResponse<MediaFileRecord[]>> {
     const normalizedParams = normalizeParams(params);
-    return executeMediaCommand(
+    return executeMediaCommand<MediaFileRecord[]>(
         () =>
             commands.appVrchatMediaFilesGet({
                 endpoint: resolveMediaEndpoint(options.endpoint),
@@ -322,7 +432,7 @@ async function uploadAssetImage(
 async function getPrints(
     { userId, n = 100 }: { userId?: unknown; n?: number } = {},
     options: MediaApiOptions = {}
-) {
+): Promise<VrchatRequestResponse<MediaPrintRecord[]>> {
     const normalizedUserId =
         typeof userId === 'string'
             ? userId.trim()
@@ -331,7 +441,7 @@ async function getPrints(
         throw new Error('MediaRepository.getPrints requires a user id.');
     }
 
-    return executeMediaCommand(
+    return executeMediaCommand<MediaPrintRecord[]>(
         () =>
             commands.appVrchatMediaPrintsGet({
                 endpoint: resolveMediaEndpoint(options.endpoint),
@@ -398,9 +508,9 @@ async function deletePrint(printId: unknown, options: MediaApiOptions = {}) {
 async function getInventoryItems(
     params: MediaApiParams = {},
     options: MediaApiOptions = {}
-) {
+): Promise<VrchatRequestResponse<InventoryItemsResponse>> {
     const normalizedParams = normalizeParams(params);
-    return executeMediaCommand(
+    return executeMediaCommand<InventoryItemsResponse>(
         () =>
             commands.appVrchatMediaInventoryItemsGet({
                 endpoint: resolveMediaEndpoint(options.endpoint),

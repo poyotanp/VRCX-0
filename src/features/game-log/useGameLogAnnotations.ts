@@ -18,9 +18,9 @@ export function useGameLogAnnotations({
     sessions: GameLogSession[];
 }) {
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
-    const friendIdSignature = useFriendRosterStore((state: any) =>
+    const friendIdSignature = useFriendRosterStore((state) =>
         Object.keys(state.friendsById || {}).join(',')
     );
     const favoriteIdSet = useMemo(

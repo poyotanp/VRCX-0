@@ -4,8 +4,10 @@ import {
     queryKeys
 } from '@/lib/entityQueryCache';
 import { commands } from '@/platform/tauri/bindings';
+import { normalizeString } from '@/shared/utils/string';
 
 import avatarCacheRepository from './avatarCacheRepository';
+import type { AvatarStyleRecord } from './avatarProfileRepository';
 import userSessionRepository from './userSessionRepository';
 import {
     createRequestError,
@@ -209,12 +211,13 @@ async function getMyAvatars({
     ]);
 
     return avatars.map((avatar: AvatarRecord) => {
+        const avatarId = normalizeString(avatar.id);
         const nextAvatar: MyAvatarRecord = {
             ...avatar,
-            $tags: (tagsMap.get(avatar.id) || [])
+            $tags: (tagsMap.get(avatarId) || [])
                 .map(normalizeAvatarTagEntry)
                 .filter((entry): entry is AvatarTagEntry => Boolean(entry)),
-            $timeSpent: avatarTimeSpentMap.get(avatar.id) || 0
+            $timeSpent: avatarTimeSpentMap.get(avatarId) || 0
         };
 
         if (
@@ -329,13 +332,13 @@ async function createImpostor({ avatarId, endpoint = '' }: AvatarIdInput = {}) {
 async function getAvailableAvatarStyles({
     endpoint = '',
     force = false
-}: AvatarStylesInput = {}) {
+}: AvatarStylesInput = {}): Promise<AvatarStyleRecord[]> {
     return fetchCachedData({
         queryKey: queryKeys.avatarStyles(endpoint),
         policy: entityQueryPolicies.avatarStyles,
         force,
         queryFn: async () => {
-            const response = unwrapVrchatAvatarResponse(
+            const response = unwrapVrchatAvatarResponse<AvatarStyleRecord[]>(
                 await commands.appVrchatAvatarStylesGet({ endpoint }),
                 'avatarStyles'
             );

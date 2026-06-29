@@ -5,7 +5,17 @@ import {
     queryKeys,
     setCachedQueryData
 } from '@/lib/entityQueryCache';
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type HttpApiExecuteResponse,
+    type VrchatAvatarEndpointInput,
+    type VrchatAvatarFileInput,
+    type VrchatAvatarIdInput as IpcVrchatAvatarIdInput,
+    type VrchatAvatarImpostorCreateInput,
+    type VrchatAvatarListByUserInput,
+    type VrchatAvatarModerationInput as IpcVrchatAvatarModerationInput,
+    type VrchatAvatarSaveInput
+} from '@/platform/tauri/bindings';
 import { storeAvatarImage } from '@/shared/utils/avatar';
 import { extractFileId } from '@/shared/utils/fileUtils';
 import { normalizeVrchatEndpointDomain } from '@/shared/vrchatEndpoint';
@@ -25,22 +35,67 @@ import {
 
 type AvatarRecord = Record<string, unknown>;
 type CachedAvatarImage = ReturnType<typeof storeAvatarImage>;
-type AvatarProfileRecord = AvatarRecord & {
+type AvatarLocalTag = { tag: string; color?: string | null };
+export type AvatarStyleRecord = AvatarRecord & {
+    id?: string;
+    name?: string;
+    styleName?: string;
+};
+export type AvatarStyleSelection = Record<string, unknown> & {
+    primary?: string;
+    secondary?: string;
+};
+export type AvatarProfileRecord = AvatarRecord & {
     id: string;
     name: string;
     description: string;
     authorId: string;
     authorName: string;
+    created_at: unknown;
+    updated_at: unknown;
+    featured?: boolean;
+    listingDate?: string | null;
+    pendingUpload?: boolean;
     releaseStatus: string;
+    searchable?: boolean;
     thumbnailImageUrl: string;
     imageUrl: string;
     version: number;
     tags: string[];
+    styles?: AvatarStyleSelection;
     unityPackages: AvatarRecord[];
-    $tags: Array<{ tag: string; color: string | null }>;
+    $tags: AvatarLocalTag[];
     $timeSpent: number;
     $memo: string;
     $isCached: boolean;
+};
+
+export type AvatarGalleryFile = AvatarRecord & {
+    id?: string;
+    fileId?: string;
+    order?: number | string;
+};
+type AvatarFileVersion = AvatarRecord & {
+    created_at?: string;
+    status?: string;
+    version?: number;
+};
+type AvatarFileRecord = AvatarRecord & {
+    extension?: string;
+    id?: string;
+    mimeType?: string;
+    name?: string;
+    ownerId?: string;
+    tags?: string[];
+    versions?: AvatarFileVersion[];
+};
+type AvatarModerationRecord = AvatarRecord & {
+    avatarModerationType?: string;
+    created?: string | number;
+    targetAvatarId?: string;
+};
+type AvatarModerationDeleteRecord = AvatarRecord & {
+    OK?: string;
 };
 
 interface AvatarProfileExtras extends AvatarRecord {
@@ -95,12 +150,6 @@ interface AvatarModerationInput extends AvatarIdInput {
 
 const cachedAvatarNames = new Map<string, CachedAvatarImage>();
 
-type VrchatApiResult = {
-    status: number;
-    data: unknown;
-    raw: unknown;
-};
-
 function normalizeEntityId(value: unknown): string {
     return typeof value === 'string'
         ? value.trim()
@@ -109,6 +158,17 @@ function normalizeEntityId(value: unknown): string {
 
 function normalizeString(value: unknown): string {
     return typeof value === 'string' ? value.trim() : '';
+}
+
+function avatarIdInput(
+    avatarId: string,
+    endpoint: string
+): IpcVrchatAvatarIdInput {
+    return { avatarId, endpoint };
+}
+
+function avatarEndpointInput(endpoint: string): VrchatAvatarEndpointInput {
+    return { endpoint };
 }
 
 function normalizeMemoString(value: unknown): string {
@@ -134,7 +194,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function unwrapVrchatAvatarResponse<TJson = unknown>(
-    response: VrchatApiResult,
+    response: HttpApiExecuteResponse,
     path: string
 ) {
     const json = parseJsonResponse(response.data);
@@ -158,9 +218,7 @@ function unwrapVrchatAvatarResponse<TJson = unknown>(
     };
 }
 
-function normalizeLocalTags(
-    values: unknown
-): Array<{ tag: string; color: string | null }> {
+function normalizeLocalTags(values: unknown): AvatarLocalTag[] {
     if (!Array.isArray(values)) {
         return [];
     }
@@ -192,7 +250,7 @@ function parseInteger(value: unknown): number {
 }
 
 function normalizeFileResponse(json: unknown): {
-    versions: Array<{ created_at?: string }>;
+    versions: AvatarFileVersion[];
     name?: string;
     ownerId?: string;
 } {
@@ -354,7 +412,7 @@ async function getAvatarProfile({
     dialog = false,
     allowLocalFallback = true,
     currentUserId = ''
-}: AvatarProfileInput) {
+}: AvatarProfileInput): Promise<AvatarProfileRecord> {
     const normalizedAvatarId = normalizeEntityId(avatarId);
     if (!normalizedAvatarId) {
         throw new Error(
@@ -377,10 +435,9 @@ async function getAvatarProfile({
                 force,
                 queryFn: async () => {
                     const response = unwrapVrchatAvatarResponse<AvatarRecord>(
-                        await commands.appVrchatAvatarGet({
-                            avatarId: normalizedAvatarId,
-                            endpoint
-                        }),
+                        await commands.appVrchatAvatarGet(
+                            avatarIdInput(normalizedAvatarId, endpoint)
+                        ),
                         `avatars/${encodeURIComponent(normalizedAvatarId)}`
                     );
                     return response.json;
@@ -408,7 +465,7 @@ async function getAvatarGallery({
     avatarId?: unknown;
     endpoint?: string;
     force?: boolean;
-}) {
+}): Promise<AvatarGalleryFile[]> {
     const normalizedAvatarId = normalizeEntityId(avatarId);
     if (!normalizedAvatarId) {
         throw new Error(
@@ -422,12 +479,11 @@ async function getAvatarGallery({
         force,
         queryFn: async () => {
             const response = unwrapVrchatAvatarResponse<
-                AvatarRecord[] | { files?: AvatarRecord[] }
+                AvatarGalleryFile[] | { files?: AvatarGalleryFile[] }
             >(
-                await commands.appVrchatAvatarGalleryGet({
-                    avatarId: normalizedAvatarId,
-                    endpoint
-                }),
+                await commands.appVrchatAvatarGalleryGet(
+                    avatarIdInput(normalizedAvatarId, endpoint)
+                ),
                 'files'
             );
             return Array.isArray(response.json)
@@ -437,7 +493,7 @@ async function getAvatarGallery({
                   : [];
         }
     });
-    return rows.slice().sort((a: AvatarRecord, b: AvatarRecord) => {
+    return rows.slice().sort((a, b) => {
         if (!a?.order && !b?.order) {
             return 0;
         }
@@ -454,7 +510,7 @@ async function getAvatarsByUser({
     sort = 'updated',
     order = 'descending',
     releaseStatus = 'all'
-}: AvatarListOptions = {}) {
+}: AvatarListOptions = {}): Promise<AvatarProfileRecord[]> {
     const normalizedUserId = normalizeEntityId(userId);
     if (!normalizedUserId) {
         throw new Error(
@@ -462,17 +518,18 @@ async function getAvatarsByUser({
         );
     }
 
+    const input = {
+        endpoint,
+        userId: normalizedUserId,
+        user,
+        n,
+        offset,
+        sort,
+        order,
+        releaseStatus
+    } satisfies VrchatAvatarListByUserInput;
     const response = unwrapVrchatAvatarResponse<AvatarRecord[]>(
-        await commands.appVrchatAvatarListByUserGet({
-            endpoint,
-            userId: normalizedUserId,
-            user,
-            n,
-            offset,
-            sort,
-            order,
-            releaseStatus
-        }),
+        await commands.appVrchatAvatarListByUserGet(input),
         'avatars'
     );
     return Array.isArray(response.json)
@@ -487,7 +544,9 @@ async function getAllAvatarsByUser({
     sort = 'updated',
     order = 'descending',
     releaseStatus = 'all'
-}: Omit<AvatarListOptions, 'n' | 'offset'> = {}) {
+}: Omit<AvatarListOptions, 'n' | 'offset'> = {}): Promise<
+    AvatarProfileRecord[]
+> {
     return collectPages(({ n, offset }) =>
         getAvatarsByUser({
             userId,
@@ -511,10 +570,9 @@ async function selectAvatar({ avatarId, endpoint = '' }: AvatarIdInput) {
     }
 
     const response = unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarSelect({
-            avatarId: normalizedAvatarId,
-            endpoint
-        }),
+        await commands.appVrchatAvatarSelect(
+            avatarIdInput(normalizedAvatarId, endpoint)
+        ),
         `avatars/${encodeURIComponent(normalizedAvatarId)}/select`
     );
     if (response.json && typeof response.json === 'object') {
@@ -538,10 +596,9 @@ async function selectFallbackAvatar({
     }
 
     const response = unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarSelectFallback({
-            avatarId: normalizedAvatarId,
-            endpoint
-        }),
+        await commands.appVrchatAvatarSelectFallback(
+            avatarIdInput(normalizedAvatarId, endpoint)
+        ),
         `avatars/${encodeURIComponent(normalizedAvatarId)}/selectfallback`
     );
     if (response.json && typeof response.json === 'object') {
@@ -565,12 +622,13 @@ async function saveAvatar({
         );
     }
 
+    const input = {
+        avatarId: normalizedAvatarId,
+        endpoint,
+        params
+    } satisfies VrchatAvatarSaveInput;
     const response = unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarSave({
-            avatarId: normalizedAvatarId,
-            endpoint,
-            params
-        }),
+        await commands.appVrchatAvatarSave(input),
         `avatars/${encodeURIComponent(normalizedAvatarId)}`
     );
     if (response.json && typeof response.json === 'object') {
@@ -585,14 +643,16 @@ async function saveAvatar({
 async function getAvatarStyles({
     endpoint = '',
     force = false
-}: AvatarStylesInput = {}) {
+}: AvatarStylesInput = {}): Promise<AvatarStyleRecord[]> {
     return fetchCachedData({
         queryKey: queryKeys.avatarStyles(endpoint),
         policy: entityQueryPolicies.avatarStyles,
         force,
         queryFn: async () => {
-            const response = unwrapVrchatAvatarResponse(
-                await commands.appVrchatAvatarStylesGet({ endpoint }),
+            const response = unwrapVrchatAvatarResponse<AvatarStyleRecord[]>(
+                await commands.appVrchatAvatarStylesGet(
+                    avatarEndpointInput(endpoint)
+                ),
                 'avatarStyles'
             );
             return Array.isArray(response.json) ? response.json : [];
@@ -609,10 +669,9 @@ async function deleteAvatar({ avatarId, endpoint = '' }: AvatarIdInput) {
     }
 
     const response = unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarDelete({
-            avatarId: normalizedAvatarId,
-            endpoint
-        }),
+        await commands.appVrchatAvatarDelete(
+            avatarIdInput(normalizedAvatarId, endpoint)
+        ),
         `avatars/${encodeURIComponent(normalizedAvatarId)}`
     );
     await Promise.allSettled([
@@ -632,12 +691,13 @@ async function createImposter({ avatarId, endpoint = '' }: AvatarIdInput) {
         );
     }
 
+    const input = {
+        avatarId: normalizedAvatarId,
+        endpoint,
+        emptyBody: true
+    } satisfies VrchatAvatarImpostorCreateInput;
     return unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarImpostorCreate({
-            avatarId: normalizedAvatarId,
-            endpoint,
-            emptyBody: true
-        }),
+        await commands.appVrchatAvatarImpostorCreate(input),
         `avatars/${encodeURIComponent(normalizedAvatarId)}/impostor/enqueue`
     );
 }
@@ -651,10 +711,9 @@ async function deleteImposter({ avatarId, endpoint = '' }: AvatarIdInput) {
     }
 
     return unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarImpostorDelete({
-            avatarId: normalizedAvatarId,
-            endpoint
-        }),
+        await commands.appVrchatAvatarImpostorDelete(
+            avatarIdInput(normalizedAvatarId, endpoint)
+        ),
         `avatars/${encodeURIComponent(normalizedAvatarId)}/impostor`
     );
 }
@@ -662,8 +721,10 @@ async function deleteImposter({ avatarId, endpoint = '' }: AvatarIdInput) {
 async function getAvatarModerations({
     endpoint = ''
 }: AvatarRequestOptions = {}) {
-    return unwrapVrchatAvatarResponse(
-        await commands.appVrchatAvatarModerationsGet({ endpoint }),
+    return unwrapVrchatAvatarResponse<AvatarModerationRecord[]>(
+        await commands.appVrchatAvatarModerationsGet(
+            avatarEndpointInput(endpoint)
+        ),
         'auth/user/avatarmoderations'
     );
 }
@@ -681,12 +742,13 @@ async function sendAvatarModeration({
         );
     }
 
-    return unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarModerationSend({
-            avatarId: normalizedAvatarId,
-            type: normalizedType,
-            endpoint
-        }),
+    const input = {
+        avatarId: normalizedAvatarId,
+        type: normalizedType,
+        endpoint
+    } satisfies IpcVrchatAvatarModerationInput;
+    return unwrapVrchatAvatarResponse<AvatarModerationRecord>(
+        await commands.appVrchatAvatarModerationSend(input),
         'auth/user/avatarmoderations'
     );
 }
@@ -704,12 +766,13 @@ async function deleteAvatarModeration({
         );
     }
 
-    return unwrapVrchatAvatarResponse<AvatarRecord>(
-        await commands.appVrchatAvatarModerationDelete({
-            avatarId: normalizedAvatarId,
-            type: normalizedType,
-            endpoint
-        }),
+    const input = {
+        avatarId: normalizedAvatarId,
+        type: normalizedType,
+        endpoint
+    } satisfies IpcVrchatAvatarModerationInput;
+    return unwrapVrchatAvatarResponse<AvatarModerationDeleteRecord>(
+        await commands.appVrchatAvatarModerationDelete(input),
         'auth/user/avatarmoderations'
     );
 }
@@ -735,14 +798,15 @@ async function getAvatarNameFromImageUrl(
         const response = await fetchCachedData({
             queryKey: queryKeys.file(fileId, endpoint),
             policy: entityQueryPolicies.fileObject,
-            queryFn: async () =>
-                unwrapVrchatAvatarResponse(
+            queryFn: async () => {
+                return unwrapVrchatAvatarResponse<AvatarFileRecord>(
                     await commands.appVrchatAvatarFileGet({
                         fileId,
                         endpoint
-                    }),
+                    } satisfies VrchatAvatarFileInput),
                     `file/${encodeURIComponent(fileId)}`
-                )
+                );
+            }
         });
         const nextInfo = storeAvatarImage(
             {

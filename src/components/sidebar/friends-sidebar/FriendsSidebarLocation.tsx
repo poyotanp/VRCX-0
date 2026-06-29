@@ -30,7 +30,7 @@ import {
 } from './friendsSidebarModel';
 
 export function FriendInstanceTimer({ epoch, traveling = false }: any) {
-    const timeUnitLabels = useShellStore((state: any) => state.timeUnitLabels);
+    const timeUnitLabels = useShellStore((state) => state.timeUnitLabels);
     const [now, setNow] = useState(() => Date.now());
     const normalizedEpoch = timestampMsFromValue(epoch);
     const text = normalizedEpoch

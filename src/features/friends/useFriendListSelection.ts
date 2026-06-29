@@ -1,32 +1,39 @@
 import { useEffect, useState } from 'react';
 
-import { normalizeFriendListId as normalizeId } from './friendListRows';
+import {
+    type FriendListRow,
+    normalizeFriendListId as normalizeId
+} from './friendListRows';
 
 export function useFriendListSelection({
     filteredRows
 }: {
-    filteredRows: any[];
+    filteredRows: FriendListRow[];
 }) {
     const [bulkUnfriendMode, setBulkUnfriendMode] = useState(false);
-    const [selectedFriendIds, setSelectedFriendIds] = useState(() => new Set());
-    const [deletingFriendIds, setDeletingFriendIds] = useState(() => new Set());
+    const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(
+        () => new Set<string>()
+    );
+    const [deletingFriendIds, setDeletingFriendIds] = useState<Set<string>>(
+        () => new Set<string>()
+    );
     const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
     useEffect(() => {
         if (!bulkUnfriendMode) {
-            setSelectedFriendIds(new Set());
+            setSelectedFriendIds(new Set<string>());
         }
     }, [bulkUnfriendMode]);
 
     useEffect(() => {
         const visibleFriendIds = new Set(
             filteredRows
-                .map((friend: any) => normalizeId(friend?.id))
+                .map((friend) => normalizeId(friend?.id))
                 .filter(Boolean)
         );
-        setSelectedFriendIds((current: any) => {
+        setSelectedFriendIds((current) => {
             const next = new Set(
-                [...current].filter((friendId: any) =>
+                [...current].filter((friendId) =>
                     visibleFriendIds.has(friendId)
                 )
             );

@@ -27,16 +27,16 @@ function clampUpdateProgress(value: unknown) {
 export function TitleBarUpdateButton({ onClick }: { onClick: () => void }) {
     const { t } = useTranslation();
     const latestUpdaterRelease = useRuntimeStore(
-        (state: any) => state.updateLoop.latestUpdaterRelease
+        (state) => state.updateLoop.latestUpdaterRelease
     );
     const autoDownloadState = useRuntimeStore(
-        (state: any) => state.updateLoop.autoDownloadState
+        (state) => state.updateLoop.autoDownloadState
     );
     const downloadedVersion = useRuntimeStore(
-        (state: any) => state.updateLoop.downloadedVersion
+        (state) => state.updateLoop.downloadedVersion
     );
     const downloadProgress = useRuntimeStore(
-        (state: any) => state.updateLoop.downloadProgress
+        (state) => state.updateLoop.downloadProgress
     );
     const latestVersion = latestUpdaterRelease?.canonicalVersion || '';
     const hasMatchingDownloadedVersion =

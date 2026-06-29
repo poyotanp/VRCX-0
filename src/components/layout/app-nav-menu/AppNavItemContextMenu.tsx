@@ -41,7 +41,7 @@ function DashboardEntryAction({
             variant="ghost"
             size="icon"
             className="text-sidebar-foreground hover:bg-sidebar-accent absolute top-1 right-1 flex size-5 items-center justify-center rounded-md opacity-0 group-hover/menu-sub-item:opacity-100 focus:opacity-100"
-            onClick={(event: any) => {
+            onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
             }}
@@ -52,7 +52,7 @@ function DashboardEntryAction({
         <SidebarMenuAction
             type="button"
             showOnHover
-            onClick={(event: any) => {
+            onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
             }}

@@ -12,17 +12,15 @@ export function SettingsInterfaceThemesCard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const backgroundImageEnabled = useBackgroundImageStore(
-        (state: any) => state.enabled
+        (state) => state.enabled
     );
     const communityThemeEnabled = useCommunityThemeStore(
-        (state: any) => state.enabled
+        (state) => state.enabled
     );
     const installedTheme = useCommunityThemeStore(
-        (state: any) => state.installedTheme
+        (state) => state.installedTheme
     );
-    const localPreview = useCommunityThemeStore(
-        (state: any) => state.localPreview
-    );
+    const localPreview = useCommunityThemeStore((state) => state.localPreview);
 
     const sourceLabel = localPreview
         ? localPreview.themeName

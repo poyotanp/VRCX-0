@@ -24,15 +24,29 @@ import { useFriendRosterStore } from '@/state/friendRosterStore';
 import { useModalStore } from '@/state/modalStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
-import { normalizeFriendListId as normalizeId } from './friendListRows';
+import {
+    type FriendListRow,
+    normalizeFriendListId as normalizeId
+} from './friendListRows';
+import type { FriendUserLoadProgress } from './useFriendListUserLoadDialog';
 
 const FRIEND_PROFILE_LOAD_CONCURRENCY = 3;
 const FRIEND_PROFILE_LOAD_MAX_RETRIES = 4;
 const FRIEND_PROFILE_LOAD_BASE_DELAY_MS = 500;
 
-function isRateLimitedError(error: any) {
+type MutualProgress = {
+    current: number;
+    total: number;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object');
+}
+
+function isRateLimitedError(error: unknown) {
     return (
-        error?.status === 429 || String(error?.message || '').includes('429')
+        (isRecord(error) && error.status === 429) ||
+        (error instanceof Error && error.message.includes('429'))
     );
 }
 
@@ -51,47 +65,45 @@ export function useFriendListRowActions({
     setUserLoadProgress
 }: {
     cancelUserLoadRef: MutableRefObject<boolean>;
-    filteredRows: any[];
+    filteredRows: FriendListRow[];
     isLoadingUserDetails: boolean;
     resetTableLayout(): void;
-    rosterRows: any[];
-    selectedFriendIds: Set<unknown>;
-    setDeletingFriendIds: Dispatch<SetStateAction<Set<unknown>>>;
+    rosterRows: FriendListRow[];
+    selectedFriendIds: Set<string>;
+    setDeletingFriendIds: Dispatch<SetStateAction<Set<string>>>;
     setIsBulkDeleting(value: boolean): void;
     setIsLoadingUserDetails(value: boolean): void;
-    setMutualProgress(value: any): void;
-    setSelectedFriendIds: Dispatch<SetStateAction<Set<unknown>>>;
-    setUserLoadProgress(value: any): void;
+    setMutualProgress(value: MutualProgress): void;
+    setSelectedFriendIds: Dispatch<SetStateAction<Set<string>>>;
+    setUserLoadProgress: Dispatch<SetStateAction<FriendUserLoadProgress>>;
 }) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const applyFriendPatch = useFriendRosterStore(
-        (state: any) => state.applyFriendPatch
+        (state) => state.applyFriendPatch
     );
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const mutualGraphRunId = useRuntimeStore(
-        (state: any) => state.mutualGraph.runId
+        (state) => state.mutualGraph.runId
     );
     const mutualGraphStatus = useRuntimeStore(
-        (state: any) => state.mutualGraph.status
+        (state) => state.mutualGraph.status
     );
     const mutualGraphOwnerUserId = useRuntimeStore(
-        (state: any) => state.mutualGraph.ownerUserId
+        (state) => state.mutualGraph.ownerUserId
     );
     const mutualGraphProcessedFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.processedFriends
+        (state) => state.mutualGraph.processedFriends
     );
     const mutualGraphTotalFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.totalFriends
+        (state) => state.mutualGraph.totalFriends
     );
     const handledMutualGraphRunRef = useRef(0);
     const isMutualFetching =
@@ -125,7 +137,7 @@ export function useFriendListRowActions({
 
         if (mutualGraphStatus === 'completed') {
             handledMutualGraphRunRef.current = mutualGraphRunId;
-            applyCachedMutualFriendStats(currentUserId).catch((error: any) => {
+            applyCachedMutualFriendStats(currentUserId).catch((error) => {
                 console.warn(
                     '[FriendListPage] Failed to apply mutual graph cache',
                     error
@@ -145,12 +157,12 @@ export function useFriendListRowActions({
         t
     ]);
 
-    function setFriendDeleting(userId: any, isDeleting: any) {
+    function setFriendDeleting(userId: unknown, isDeleting: boolean) {
         const normalizedUserId = normalizeId(userId);
         if (!normalizedUserId) {
             return;
         }
-        setDeletingFriendIds((current: any) => {
+        setDeletingFriendIds((current) => {
             const next = new Set(current);
             if (isDeleting) {
                 next.add(normalizedUserId);
@@ -161,12 +173,12 @@ export function useFriendListRowActions({
         });
     }
 
-    function toggleSelectedFriend(userId: any) {
+    function toggleSelectedFriend(userId: unknown) {
         const normalizedUserId = normalizeId(userId);
         if (!normalizedUserId) {
             return;
         }
-        setSelectedFriendIds((current: any) => {
+        setSelectedFriendIds((current) => {
             const next = new Set(current);
             if (next.has(normalizedUserId)) {
                 next.delete(normalizedUserId);
@@ -177,7 +189,7 @@ export function useFriendListRowActions({
         });
     }
 
-    async function deleteFriendById(userId: any) {
+    async function deleteFriendById(userId: unknown) {
         const normalizedUserId = normalizeId(userId);
         const friend = friendsById[normalizedUserId];
         if (!normalizedUserId || !friend || !currentUserId) {
@@ -195,7 +207,7 @@ export function useFriendListRowActions({
                 currentUserId
             });
             if (!result.stale) {
-                setSelectedFriendIds((current: any) => {
+                setSelectedFriendIds((current) => {
                     const next = new Set(current);
                     next.delete(normalizedUserId);
                     return next;
@@ -227,7 +239,7 @@ export function useFriendListRowActions({
         }
     }
 
-    async function confirmDeleteFriend(friend: any) {
+    async function confirmDeleteFriend(friend: FriendListRow) {
         const normalizedUserId = normalizeId(friend?.id);
         if (!normalizedUserId) {
             return;
@@ -246,7 +258,7 @@ export function useFriendListRowActions({
     }
 
     async function bulkUnfriendSelected() {
-        const selectedRows = filteredRows.filter((friend: any) =>
+        const selectedRows = filteredRows.filter((friend) =>
             selectedFriendIds.has(normalizeId(friend?.id))
         );
         if (!selectedRows.length) {
@@ -257,7 +269,7 @@ export function useFriendListRowActions({
                 value: selectedRows.length
             }),
             description: selectedRows
-                .map((friend: any) => friend.displayName || friend.id)
+                .map((friend) => friend.displayName || normalizeId(friend.id))
                 .slice(0, 30)
                 .join('\n'),
             confirmText: t('view.friends.modal.unfriend'),
@@ -296,7 +308,7 @@ export function useFriendListRowActions({
             return;
         }
         const rowsToFetch = rosterRows.filter(
-            (friend: any) => normalizeId(friend?.id) && !friend?.date_joined
+            (friend) => normalizeId(friend?.id) && !friend?.date_joined
         );
         if (!rowsToFetch.length) {
             toast.success(
@@ -362,7 +374,7 @@ export function useFriendListRowActions({
                             error
                         );
                     } finally {
-                        setUserLoadProgress((current: any) => ({
+                        setUserLoadProgress((current) => ({
                             ...current,
                             current: Math.min(
                                 current.total,
@@ -398,7 +410,7 @@ export function useFriendListRowActions({
         } finally {
             setIsLoadingUserDetails(false);
             if (!cancelUserLoadRef.current) {
-                setUserLoadProgress((current: any) => ({
+                setUserLoadProgress((current) => ({
                     ...current,
                     open: false
                 }));
@@ -442,7 +454,7 @@ export function useFriendListRowActions({
             );
             return;
         }
-        const friendSnapshot = rosterRows.filter((friend: any) =>
+        const friendSnapshot = rosterRows.filter((friend) =>
             normalizeId(friend?.id)
         );
         if (!friendSnapshot.length) {
@@ -461,7 +473,7 @@ export function useFriendListRowActions({
             await startMutualGraphFetch({
                 ownerUserId: currentUserId,
                 endpoint: currentEndpoint,
-                friendIds: friendSnapshot.map((friend: any) =>
+                friendIds: friendSnapshot.map((friend) =>
                     normalizeId(friend?.id)
                 )
             });
@@ -478,7 +490,7 @@ export function useFriendListRowActions({
         }
     }
 
-    function openFriendDetails(friend: any) {
+    function openFriendDetails(friend: FriendListRow) {
         openUserDialog({
             userId: friend?.id,
             title: friend?.displayName || friend?.username || undefined

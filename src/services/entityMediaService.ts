@@ -10,15 +10,6 @@ import { useShellStore } from '@/state/shellStore';
 
 type LooseRecord = Record<string, unknown>;
 
-type ImageUser = LooseRecord & {
-    userIcon?: string;
-    profilePicOverrideThumbnail?: string;
-    profilePicOverride?: string;
-    thumbnailUrl?: string;
-    currentAvatarThumbnailImageUrl?: string;
-    currentAvatarImageUrl?: string;
-};
-
 export function convertFileUrlToImageUrl(
     url: string | null | undefined,
     resolution: string | number = 128,
@@ -32,7 +23,7 @@ export function convertFileUrlToImageUrl(
 }
 
 export function userImage(
-    user: ImageUser | null | undefined,
+    user: LooseRecord | null | undefined,
     isIcon = false,
     resolution: string | number = '128',
     isUserDialogIcon = false,

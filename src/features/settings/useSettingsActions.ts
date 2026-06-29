@@ -65,16 +65,14 @@ import { useSettingsPreferenceActions } from './useSettingsPreferenceActions';
 
 export function useSettingsActions(deps: any) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
     const auth = {
         currentUserId,

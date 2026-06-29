@@ -20,7 +20,7 @@ type ModerationPageToolbarProps = {
     searchQuery: string;
     onSearchQueryChange: (value: string) => void;
     detail: string;
-    currentUserId: string;
+    currentUserId: string | null;
     loadStatus: ModerationLoadStatus;
     onRefresh: () => void;
     table: any;
@@ -52,7 +52,7 @@ export function ModerationPageToolbar({
                 />
                 <Input
                     value={searchQuery}
-                    onChange={(event: any) =>
+                    onChange={(event) =>
                         onSearchQueryChange(event.target.value)
                     }
                     placeholder={t('common.actions.search')}

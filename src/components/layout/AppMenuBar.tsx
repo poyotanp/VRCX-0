@@ -114,17 +114,15 @@ export function AppMenuBar({
     const [openSourceNoticeOpen, setOpenSourceNoticeOpen] = useState(false);
     const [supportOpen, setSupportOpen] = useState(false);
     const [quickAccessKeys, setQuickAccessKeys] = useState<string[]>([]);
-    const zoomLevel = useShellStore((state: any) => state.zoomLevel);
-    const navbarOpen = useShellStore((state: any) => state.sidebarOpen);
+    const zoomLevel = useShellStore((state) => state.zoomLevel);
+    const navbarOpen = useShellStore((state) => state.sidebarOpen);
     const notificationLayout = usePreferencesStore(
-        (state: any) => state.notificationLayout
+        (state) => state.notificationLayout
     );
     const setSystemHostOpen = useRuntimeStore(
-        (state: any) => state.setSystemHostOpen
+        (state) => state.setSystemHostOpen
     );
-    const hostCapabilities = useRuntimeStore(
-        (state: any) => state.hostCapabilities
-    );
+    const hostCapabilities = useRuntimeStore((state) => state.hostCapabilities);
     const currentZoom = normalizeZoomLevel(zoomLevel);
     // oxlint-disable-next-line no-undef
     const appVersion = formatReleaseDisplayVersion(VERSION || '') || '-';

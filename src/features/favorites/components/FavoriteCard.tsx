@@ -68,21 +68,20 @@ const FavoriteCard = memo(function FavoriteCard({
     onAvatarSelect
 }: any) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const runtimeCurrentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const runtimeCurrentDestination = useRuntimeStore(
-        (state: any) => state.gameState.currentDestination
+        (state) => state.gameState.currentDestination
     );
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
+    const normalizedCurrentUserId = normalizeEntityId(currentUserId);
     const gameState = useMemo(
         () => ({
             currentLocation: runtimeCurrentLocation,
@@ -98,11 +97,11 @@ const FavoriteCard = memo(function FavoriteCard({
     const canInviteFromCurrentLocation = useMemo(
         () =>
             checkCanInvite(currentInviteLocation, {
-                currentUserId,
+                currentUserId: normalizedCurrentUserId,
                 lastLocationStr: currentInviteLocation,
                 cachedInstances: new Map()
             }),
-        [currentInviteLocation, currentUserId]
+        [currentInviteLocation, normalizedCurrentUserId]
     );
     const canSendInvite = Boolean(
         isGameRunning && currentInviteLocation && canInviteFromCurrentLocation
@@ -154,7 +153,7 @@ const FavoriteCard = memo(function FavoriteCard({
         parsedFriendLocation.instanceId
     );
     const isCurrentUser = Boolean(
-        item.id && item.id === normalizeEntityId(currentUserId)
+        item.id && item.id === normalizedCurrentUserId
     );
     const isFriendOnline = Boolean(
         item.seedData?.state === 'online' ||
@@ -281,7 +280,7 @@ const FavoriteCard = memo(function FavoriteCard({
                 {friendShowsLocation ? (
                     <div
                         className="text-muted-foreground truncate text-xs"
-                        onClick={(event: any) => event.stopPropagation()}
+                        onClick={(event) => event.stopPropagation()}
                     >
                         <Location
                             location={friendLocation}
@@ -318,7 +317,7 @@ const FavoriteCard = memo(function FavoriteCard({
                     checked={selected}
                     onClick={stopCardInteraction}
                     onKeyDown={stopCardInteraction}
-                    onCheckedChange={(checked: any) =>
+                    onCheckedChange={(checked) =>
                         onToggleSelect?.(item.key, Boolean(checked))
                     }
                 />

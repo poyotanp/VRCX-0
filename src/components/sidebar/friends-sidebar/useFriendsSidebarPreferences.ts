@@ -22,7 +22,7 @@ const defaultGroupState: any = {
 
 export function useFriendsSidebarPreferences() {
     const [openGroups, setOpenGroups] = useState(defaultGroupState);
-    const [statusPresets, setStatusPresets] = useState<any[]>([]);
+    const [statusPresets, setStatusPresets] = useState<unknown[]>([]);
 
     useEffect(() => {
         let active = true;

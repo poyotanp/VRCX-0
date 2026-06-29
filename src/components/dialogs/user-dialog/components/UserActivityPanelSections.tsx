@@ -55,7 +55,7 @@ export function UserActivityOverlapSection({
                     <div className="flex shrink-0 items-center gap-1.5">
                         <Switch
                             checked={excludeHoursEnabled}
-                            onCheckedChange={(value: any) => {
+                            onCheckedChange={(value) => {
                                 changeExcludeHours(value);
                             }}
                             className="scale-75"
@@ -65,7 +65,7 @@ export function UserActivityOverlapSection({
                         </span>
                         <Select
                             value={excludeStartHour}
-                            onValueChange={(value: any) => {
+                            onValueChange={(value) => {
                                 changeExcludeRange('start', value);
                             }}
                         >
@@ -93,7 +93,7 @@ export function UserActivityOverlapSection({
                         <span className="text-muted-foreground text-xs">-</span>
                         <Select
                             value={excludeEndHour}
-                            onValueChange={(value: any) => {
+                            onValueChange={(value) => {
                                 changeExcludeRange('end', value);
                             }}
                         >
@@ -216,7 +216,7 @@ export function UserActivityTopWorldsSection({
                             <Switch
                                 id="activity-exclude-home-world"
                                 checked={excludeHomeWorldEnabled}
-                                onCheckedChange={(value: any) => {
+                                onCheckedChange={(value) => {
                                     changeExcludeHomeWorld(value);
                                 }}
                                 className="scale-75"
@@ -238,7 +238,7 @@ export function UserActivityTopWorldsSection({
                             </span>
                             <Select
                                 value={topWorldsSortBy}
-                                onValueChange={(value: any) => {
+                                onValueChange={(value) => {
                                     changeTopWorldsSort(value);
                                 }}
                                 disabled={topWorldsLoading}

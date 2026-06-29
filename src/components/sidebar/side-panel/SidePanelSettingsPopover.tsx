@@ -86,7 +86,7 @@ function SortSelect({ value, disabled, onChange, placeholder = 'None' }: any) {
         <Select
             value={value || '__none__'}
             disabled={disabled}
-            onValueChange={(nextValue: any) =>
+            onValueChange={(nextValue) =>
                 onChange(nextValue === '__none__' ? '' : nextValue)
             }
         >
@@ -192,7 +192,7 @@ export function SidePanelSettingsPopover({
                     >
                         <Switch
                             checked={prefs.sidebarGroupByInstance}
-                            onCheckedChange={(value: any) =>
+                            onCheckedChange={(value) =>
                                 onUpdateBoolPreference(
                                     'sidebarGroupByInstance',
                                     value
@@ -210,7 +210,7 @@ export function SidePanelSettingsPopover({
                             >
                                 <Switch
                                     checked={prefs.isHideFriendsInSameInstance}
-                                    onCheckedChange={(value: any) =>
+                                    onCheckedChange={(value) =>
                                         onUpdateBoolPreference(
                                             'isHideFriendsInSameInstance',
                                             value
@@ -226,7 +226,7 @@ export function SidePanelSettingsPopover({
                             >
                                 <Switch
                                     checked={prefs.isSameInstanceAboveFavorites}
-                                    onCheckedChange={(value: any) =>
+                                    onCheckedChange={(value) =>
                                         onUpdateBoolPreference(
                                             'isSameInstanceAboveFavorites',
                                             value
@@ -242,7 +242,7 @@ export function SidePanelSettingsPopover({
                     >
                         <Switch
                             checked={prefs.isSidebarDivideByFriendGroup}
-                            onCheckedChange={(value: any) =>
+                            onCheckedChange={(value) =>
                                 onUpdateBoolPreference(
                                     'isSidebarDivideByFriendGroup',
                                     value

@@ -6,29 +6,23 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 
 export function useWorldDialogRuntimeState() {
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentHomeLocation = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot?.homeLocation || ''
+        (state) => state.auth.currentUserSnapshot?.homeLocation || ''
     );
-    const isGameRunning = useRuntimeStore((state: any) =>
+    const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
-    const setAuthBootstrap = useRuntimeStore(
-        (state: any) => state.setAuthBootstrap
-    );
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
-    const closeDialog = useDialogStore((state: any) => state.closeDialog);
+    const setAuthBootstrap = useRuntimeStore((state) => state.setAuthBootstrap);
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
+    const closeDialog = useDialogStore((state) => state.closeDialog);
     const updateEntityDialogMetadata = useDialogStore(
-        (state: any) => state.updateEntityDialogMetadata
+        (state) => state.updateEntityDialogMetadata
     );
-    const showLaunchDialog = useLaunchStore(
-        (state: any) => state.showLaunchDialog
-    );
+    const showLaunchDialog = useLaunchStore((state) => state.showLaunchDialog);
 
     return {
         closeDialog,
@@ -45,28 +39,24 @@ export function useWorldDialogRuntimeState() {
 }
 
 export function useWorldDialogTabbedRuntimeState() {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const screenshotCacheStatus = useRuntimeStore(
-        (state: any) => state.hostCapabilities.screenshotCache
+        (state) => state.hostCapabilities.screenshotCache
     );
     const currentGameLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const currentLocationStartedAt = useRuntimeStore(
-        (state: any) => state.gameState.currentLocationStartedAt
+        (state) => state.gameState.currentLocationStartedAt
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
 
     return {
         currentEndpoint,

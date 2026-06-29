@@ -264,24 +264,22 @@ function useQuickSearchCatalogState({
 }
 
 function useQuickSearchResults({ catalog, normalizedQuery }: any) {
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const remoteFavoritesByObjectId = useFavoriteStore(
-        (state: any) => state.remoteFavoritesByObjectId
+        (state) => state.remoteFavoritesByObjectId
     );
     const localWorldDetailsById = useFavoriteStore(
-        (state: any) => state.localWorldDetailsById
+        (state) => state.localWorldDetailsById
     );
     const localAvatarDetailsById = useFavoriteStore(
-        (state: any) => state.localAvatarDetailsById
+        (state) => state.localAvatarDetailsById
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const groupInstancesState = useRuntimeStore(
-        (state: any) => state.groupInstances
+        (state) => state.groupInstances
     );
     const groupInstances =
         groupInstancesState.userId === currentUserId &&
@@ -505,11 +503,9 @@ function useQuickSearchSelectResult({ onOpenChange, setQuery }: any) {
 
 export function QuickSearchDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
@@ -540,7 +536,7 @@ export function QuickSearchDialog({ open, onOpenChange }: any) {
     return (
         <Dialog
             open={open}
-            onOpenChange={(nextOpen: any) => {
+            onOpenChange={(nextOpen) => {
                 onOpenChange(nextOpen);
                 if (!nextOpen) {
                     setQuery('');

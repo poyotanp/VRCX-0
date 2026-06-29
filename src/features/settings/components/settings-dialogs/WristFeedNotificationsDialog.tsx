@@ -208,10 +208,10 @@ function OverlayActivityFilterDialog({
     const [selectedCategory, setSelectedCategory] =
         useState<OverlayActivityCategory>('actionRequired');
     const favoriteFriendGroups = useFavoriteStore(
-        (state: any) => state.favoriteFriendGroups
+        (state) => state.favoriteFriendGroups
     );
     const localFriendFavoriteGroups = useFavoriteStore(
-        (state: any) => state.localFriendFavoriteGroups
+        (state) => state.localFriendFavoriteGroups
     );
     const favoriteGroupOptions = useMemo(
         () =>

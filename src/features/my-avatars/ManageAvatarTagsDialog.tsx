@@ -70,7 +70,9 @@ export function ManageAvatarTagsDialog({
 
     const avatarId = normalizeTagName(avatar?.id);
     const avatarName = avatar?.name || avatarId || 'Avatar';
-    const [tagEntries, setTagEntries] = useState<any[]>([]);
+    const [tagEntries, setTagEntries] = useState<
+        ReturnType<typeof normalizeTagEntries>
+    >([]);
     const [newTagName, setNewTagName] = useState('');
 
     useEffect(() => {
@@ -135,10 +137,10 @@ export function ManageAvatarTagsDialog({
                                 <Input
                                     id="avatar-tag-name"
                                     value={newTagName}
-                                    onChange={(event: any) =>
+                                    onChange={(event) =>
                                         setNewTagName(event.target.value)
                                     }
-                                    onKeyDown={(event: any) => {
+                                    onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
                                             event.preventDefault();
                                             addTag();

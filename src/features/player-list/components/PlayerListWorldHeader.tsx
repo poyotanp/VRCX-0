@@ -13,6 +13,27 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 
 import { CurrentWorldHeader } from './PlayerListViewParts';
 
+type CurrentWorldProfile = Awaited<
+    ReturnType<typeof worldProfileRepository.getWorldProfile>
+>;
+type CurrentWorldFileAnalysis = {
+    android?: WorldFileAnalysisPlatform;
+    standalonewindows?: WorldFileAnalysisPlatform;
+    ios?: WorldFileAnalysisPlatform;
+    [key: string]: WorldFileAnalysisPlatform | undefined;
+};
+type WorldFileAnalysisPlatform = {
+    created_at?: string;
+    encryptionKey?: string;
+    fileSize?: number;
+    success?: boolean;
+    uncompressedSize?: number;
+    worldSignature?: string;
+    _fileSize?: string;
+    _uncompressedSize?: string;
+    [key: string]: unknown;
+};
+
 export function PlayerListWorldHeader({
     clockNow,
     currentUserLocation,
@@ -23,20 +44,19 @@ export function PlayerListWorldHeader({
     startedAt
 }: any) {
     const currentUserEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
     const parsedLocation = parseLocation(
         instanceSnapshot.location || currentUserLocation || ''
     );
-    const [currentWorldProfile, setCurrentWorldProfile] = useState(null);
+    const [currentWorldProfile, setCurrentWorldProfile] =
+        useState<CurrentWorldProfile | null>(null);
     const [currentWorldFileAnalysis, setCurrentWorldFileAnalysis] =
-        useState<any>({});
+        useState<CurrentWorldFileAnalysis>({});
     const [currentWorldCacheInfo, setCurrentWorldCacheInfo] = useState(() =>
         defaultWorldCacheInfo()
     );

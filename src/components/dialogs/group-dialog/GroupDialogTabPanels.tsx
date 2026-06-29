@@ -535,7 +535,7 @@ export function GroupDialogTabPanels(props: any) {
                     </div>
                     <Input
                         value={search.posts}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onSearchPostsChange(event.target.value)
                         }
                         placeholder={t('dialog.group.posts.search_placeholder')}
@@ -647,7 +647,7 @@ export function GroupDialogTabPanels(props: any) {
                     </Select>
                     <Input
                         value={search.members}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onSearchMembersChange(event.target.value)
                         }
                         placeholder={t('dialog.group.members.search')}

@@ -151,8 +151,8 @@ function TypeFilterDropdown({
                         <DropdownMenuCheckboxItem
                             key={type}
                             checked={selectedTypes.includes(type)}
-                            onSelect={(event: any) => event.preventDefault()}
-                            onCheckedChange={(checked: any) => {
+                            onSelect={(event) => event.preventDefault()}
+                            onCheckedChange={(checked) => {
                                 onSelectedTypesChange(
                                     checked
                                         ? [...selectedTypes, type]

@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import type { FriendRecord } from '@/domain/friends/friendRosterTypes';
 import {
     openGroupDialog,
     openUserDialog,
@@ -23,6 +24,19 @@ import {
     resolveWorldDialogTarget
 } from './friendsLocationsRows';
 
+type FriendsLocationsSectionActionTarget = Record<string, unknown> & {
+    groupId?: string;
+    title?: string;
+};
+
+type FriendsLocationsLocationActionSummary = {
+    label?: unknown;
+};
+
+function getFriendActionLabel(friend: FriendRecord, fallback: string): string {
+    return friend.displayName || normalizeId(friend.username) || fallback;
+}
+
 export function useFriendsLocationsActions({
     canInviteFromCurrentLocation,
     currentEndpoint,
@@ -35,15 +49,15 @@ export function useFriendsLocationsActions({
     currentEndpoint: string;
     currentInviteLocation: string;
     currentUserId: string;
-    friendsMap: Map<string, any>;
-    setCollapsedFavoriteGroups: Dispatch<SetStateAction<Set<unknown>>>;
+    friendsMap: Map<string, unknown>;
+    setCollapsedFavoriteGroups: Dispatch<SetStateAction<Set<string>>>;
 }) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const boopPrompt = useModalStore((state: any) => state.boopPrompt);
+    const confirm = useModalStore((state) => state.confirm);
+    const boopPrompt = useModalStore((state) => state.boopPrompt);
 
-    function toggleFavoriteGroup(groupKey: any) {
-        setCollapsedFavoriteGroups((current: any) => {
+    function toggleFavoriteGroup(groupKey: string) {
+        setCollapsedFavoriteGroups((current) => {
             const next = new Set(current);
             if (next.has(groupKey)) {
                 next.delete(groupKey);
@@ -54,7 +68,7 @@ export function useFriendsLocationsActions({
         });
     }
 
-    function canUseFriendLocation(location: any) {
+    function canUseFriendLocation(location: string) {
         const parsedLocation = parseLocation(location);
         if (
             !parsedLocation.isRealInstance ||
@@ -70,7 +84,7 @@ export function useFriendsLocationsActions({
         });
     }
 
-    async function launchFriendLocation(location: any) {
+    async function launchFriendLocation(location: string) {
         const parsedLocation = parseLocation(location);
         if (
             !parsedLocation.isRealInstance ||
@@ -105,7 +119,7 @@ export function useFriendsLocationsActions({
         }
     }
 
-    async function selfInviteFriendLocation(location: any) {
+    async function selfInviteFriendLocation(location: string) {
         const parsedLocation = parseLocation(location);
         if (
             !parsedLocation.isRealInstance ||
@@ -130,7 +144,7 @@ export function useFriendsLocationsActions({
         }
     }
 
-    async function sendFriendInvite(friend: any) {
+    async function sendFriendInvite(friend: FriendRecord) {
         const friendId = normalizeId(friend?.id || friend?.userId);
         if (!friendId || friendId === normalizeId(currentUserId)) {
             return;
@@ -162,7 +176,7 @@ export function useFriendsLocationsActions({
         }
         const result = await confirm({
             title: t('view.friends.modal.send_invite'),
-            description: friend?.displayName || friend?.username || 'this user',
+            description: getFriendActionLabel(friend, 'this user'),
             confirmText: t('view.friends.modal.invite'),
             cancelText: t('common.actions.cancel')
         });
@@ -188,14 +202,14 @@ export function useFriendsLocationsActions({
         }
     }
 
-    async function requestFriendInvite(friend: any) {
+    async function requestFriendInvite(friend: FriendRecord) {
         const friendId = normalizeId(friend?.id || friend?.userId);
         if (!friendId || friendId === normalizeId(currentUserId)) {
             return;
         }
         const result = await confirm({
             title: t('view.friends.modal.request_invite'),
-            description: friend?.displayName || friend?.username || 'this user',
+            description: getFriendActionLabel(friend, 'this user'),
             confirmText: t('view.friends.modal.request_invite_2'),
             cancelText: t('common.actions.cancel')
         });
@@ -217,7 +231,7 @@ export function useFriendsLocationsActions({
         }
     }
 
-    async function sendFriendBoop(friend: any) {
+    async function sendFriendBoop(friend: FriendRecord) {
         const friendId = normalizeId(friend?.id || friend?.userId);
         if (!friendId || friendId === normalizeId(currentUserId)) {
             return;
@@ -225,7 +239,7 @@ export function useFriendsLocationsActions({
         try {
             const result = await boopPrompt({
                 endpoint: currentEndpoint,
-                targetLabel: friend?.displayName || friend?.username || friendId
+                targetLabel: getFriendActionLabel(friend, friendId)
             });
             if (!result.ok) {
                 return;
@@ -245,36 +259,39 @@ export function useFriendsLocationsActions({
         }
     }
 
-    function openSectionWorld(section: any) {
+    function openSectionWorld(section: FriendsLocationsSectionActionTarget) {
         openWorldDialog({
             worldId: resolveWorldDialogTarget(section),
             title: section.title
         });
     }
 
-    function openSectionGroup(section: any) {
+    function openSectionGroup(section: FriendsLocationsSectionActionTarget) {
         openGroupDialog({
             groupId: section.groupId,
             title: undefined
         });
     }
 
-    function openFriendUser(friend: any) {
+    function openFriendUser(friend: FriendRecord) {
         openUserDialog({
             userId: friend?.id,
-            title: friend?.displayName || friend?.username || undefined,
+            title: getFriendActionLabel(friend, '') || undefined,
             seedData: friend
         });
     }
 
-    function openFriendWorld(target: any, location: any) {
+    function openFriendWorld(
+        target: FriendsLocationsSectionActionTarget,
+        location: FriendsLocationsLocationActionSummary
+    ) {
         openWorldDialog({
             worldId: resolveWorldDialogTarget(target),
             title: location.label || undefined
         });
     }
 
-    function openFriendGroup(target: any) {
+    function openFriendGroup(target: FriendsLocationsSectionActionTarget) {
         openGroupDialog({
             groupId: target.groupId,
             title: undefined

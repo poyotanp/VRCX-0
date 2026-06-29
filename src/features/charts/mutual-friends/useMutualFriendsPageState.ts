@@ -29,7 +29,7 @@ import { useMutualFriendsSnapshot } from './useMutualFriendsSnapshot';
 
 export function useMutualFriendsPageState() {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const {
         currentUserId,
         currentUserEndpoint,

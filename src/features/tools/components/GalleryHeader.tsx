@@ -49,7 +49,7 @@ function GalleryGridSettingsMenu({ gridDensity, onGridDensityChange }: any) {
                             size="sm"
                             spacing={1}
                             value={gridDensity}
-                            onValueChange={(nextValue: any) => {
+                            onValueChange={(nextValue) => {
                                 if (nextValue) {
                                     onGridDensityChange(nextValue);
                                 }

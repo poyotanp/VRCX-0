@@ -48,9 +48,9 @@ type AuthExecutionError = Error & {
 };
 
 type AuthUserRecord = Record<string, unknown> & {
-    id?: unknown;
-    displayName?: unknown;
-    username?: unknown;
+    id?: string;
+    displayName?: string;
+    username?: string;
 };
 type LoginParams = {
     username: string;

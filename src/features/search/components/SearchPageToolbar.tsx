@@ -47,10 +47,10 @@ export function SearchPageToolbar({
                             'min-w-0 flex-1',
                             searchText ? 'pr-8' : 'pr-16'
                         )}
-                        onChange={(event: any) =>
+                        onChange={(event) =>
                             onSearchTextChange(event.target.value)
                         }
-                        onKeyDown={(event: any) => {
+                        onKeyDown={(event) => {
                             if (event.key === 'Enter') {
                                 event.preventDefault();
                                 onSearch();

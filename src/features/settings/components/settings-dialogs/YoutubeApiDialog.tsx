@@ -48,7 +48,7 @@ export function YoutubeApiDialog({
                             placeholder={t('dialog.youtube_api.placeholder')}
                             maxLength={39}
                             rows={2}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 setYoutubeApiKeyDraft(event.target.value)
                             }
                         />

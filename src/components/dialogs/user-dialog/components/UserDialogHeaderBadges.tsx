@@ -195,9 +195,7 @@ export function UserDialogHeaderMediaBadges({
                                               !isBadgeVisible && 'opacity-60'
                                           )
                                 }
-                                onClick={(event: any) =>
-                                    event.stopPropagation()
-                                }
+                                onClick={(event) => event.stopPropagation()}
                             >
                                 {badgeImageUrl ? (
                                     <img
@@ -296,7 +294,7 @@ export function UserDialogHeaderMediaBadges({
                                             value={visibilityValue}
                                             aria-label={visibilityLabel}
                                             className="grid w-full grid-cols-2"
-                                            onValueChange={(nextValue: any) => {
+                                            onValueChange={(nextValue) => {
                                                 if (!nextValue) {
                                                     return;
                                                 }

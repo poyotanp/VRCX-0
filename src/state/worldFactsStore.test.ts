@@ -62,4 +62,25 @@ describe('worldFactsStore', () => {
         expect(fact).not.toHaveProperty('instances');
         expect(fact).not.toHaveProperty('unknownLargeField');
     });
+
+    it('preserves non-array summary values without coercing their shape', () => {
+        const createdAt = { iso: '2026-06-01T00:00:00.000Z' };
+
+        useWorldFactsStore.getState().upsertWorldFacts({
+            id: 'wrld_raw_summary',
+            capacity: '32',
+            createdAt,
+            tags: [' system_labs ', 42, 'author_tag_test']
+        });
+
+        expect(
+            useWorldFactsStore.getState().getWorldFact('wrld_raw_summary')
+        ).toMatchObject({
+            id: 'wrld_raw_summary',
+            capacity: '32',
+            createdAt,
+            created_at: createdAt,
+            tags: ['system_labs', 'author_tag_test']
+        });
+    });
 });

@@ -8,7 +8,7 @@ import { SettingsInterfaceUserColorsCard } from './SettingsInterfaceUserColorsCa
 
 export function SettingsInterfaceTab({ settingsInterface }: any) {
     const isMacHost = useRuntimeStore(
-        (state: any) => state.hostCapabilities.platform === 'macos'
+        (state) => state.hostCapabilities.platform === 'macos'
     );
     const {
         locale,

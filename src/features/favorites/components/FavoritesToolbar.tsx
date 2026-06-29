@@ -97,9 +97,7 @@ function FavoritesToolbar({
                     </InputGroupAddon>
                     <InputGroupInput
                         value={searchQuery}
-                        onChange={(event: any) =>
-                            onSearchChange(event.target.value)
-                        }
+                        onChange={(event) => onSearchChange(event.target.value)}
                         placeholder={searchPlaceholder}
                         className="text-sm"
                     />
@@ -169,7 +167,7 @@ function FavoritesToolbar({
                     <DropdownMenuContent align="end" className="w-56">
                         <FieldGroup
                             className="gap-3 px-3 py-2"
-                            onClick={(event: any) => event.stopPropagation()}
+                            onClick={(event) => event.stopPropagation()}
                         >
                             <Field>
                                 <div className="flex items-center justify-between text-sm font-semibold">
@@ -185,7 +183,7 @@ function FavoritesToolbar({
                                     max={CARD_SCALE_SLIDER.max}
                                     step={CARD_SCALE_SLIDER.step}
                                     value={[cardScale]}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         onCardScaleChange(value[0])
                                     }
                                 />
@@ -204,7 +202,7 @@ function FavoritesToolbar({
                                     max={CARD_SPACING_SLIDER.max}
                                     step={CARD_SPACING_SLIDER.step}
                                     value={[cardSpacing]}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         onCardSpacingChange(value[0])
                                     }
                                 />

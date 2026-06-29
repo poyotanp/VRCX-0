@@ -4,7 +4,14 @@ import {
     queryKeys,
     setCachedQueryData
 } from '@/lib/entityQueryCache';
-import { commands } from '@/platform/tauri/bindings';
+import {
+    commands,
+    type HttpApiExecuteResponse,
+    type VrchatWorldIdInput as IpcVrchatWorldIdInput,
+    type VrchatWorldListByUserInput,
+    type VrchatWorldPersistentDataDeleteInput,
+    type VrchatWorldSaveInput
+} from '@/platform/tauri/bindings';
 import { useWorldFactsStore } from '@/state/worldFactsStore';
 
 import {
@@ -62,7 +69,7 @@ interface WorldPersistentDataInput extends WorldIdInput {
 }
 
 type WorldRecord = Record<string, unknown>;
-type WorldProfileRecord = WorldRecord & {
+export type WorldProfileRecord = WorldRecord & {
     id: string;
     name: string;
     description: string;
@@ -91,18 +98,12 @@ type WorldProfileRecord = WorldRecord & {
     hasPersistData?: unknown;
 };
 
-type VrchatApiResult = {
-    status: number;
-    data: unknown;
-    raw: unknown;
-};
-
 function isRecord(value: unknown): value is Record<string, unknown> {
     return Boolean(value && typeof value === 'object');
 }
 
 function unwrapVrchatWorldResponse<TJson = unknown>(
-    response: VrchatApiResult,
+    response: HttpApiExecuteResponse,
     path: string
 ) {
     const json = parseJsonResponse(response.data);
@@ -124,6 +125,13 @@ function unwrapVrchatWorldResponse<TJson = unknown>(
         status: response.status,
         raw: response.raw
     };
+}
+
+function worldIdInput(
+    worldId: string,
+    endpoint: string
+): IpcVrchatWorldIdInput {
+    return { worldId, endpoint };
 }
 
 function normalizeEntityId(value: unknown) {
@@ -309,7 +317,10 @@ async function getLocalCachedWorldProfile(
     }
 }
 
-async function fetchWorldProfile({ worldId, endpoint = '' }: WorldIdInput) {
+async function fetchWorldProfile({
+    worldId,
+    endpoint = ''
+}: WorldIdInput): Promise<WorldProfileRecord> {
     const normalizedWorldId = normalizeEntityId(worldId);
     if (!normalizedWorldId) {
         throw new Error(
@@ -317,11 +328,9 @@ async function fetchWorldProfile({ worldId, endpoint = '' }: WorldIdInput) {
         );
     }
 
+    const input = worldIdInput(normalizedWorldId, endpoint);
     const response = unwrapVrchatWorldResponse(
-        await commands.appVrchatWorldGet({
-            worldId: normalizedWorldId,
-            endpoint
-        }),
+        await commands.appVrchatWorldGet(input),
         `worlds/${encodeURIComponent(normalizedWorldId)}`
     );
     const world = normalize(response.json);
@@ -336,7 +345,7 @@ async function getWorldProfile({
     dialog = false,
     full = false,
     location = false
-}: WorldProfileInput) {
+}: WorldProfileInput): Promise<WorldProfileRecord> {
     const normalizedWorldId = normalizeEntityId(worldId);
     if (!normalizedWorldId) {
         throw new Error(
@@ -379,7 +388,7 @@ async function getWorldsByUser({
     order = 'descending',
     releaseStatus = 'all',
     force = false
-}: WorldsByUserOptions = {}) {
+}: WorldsByUserOptions = {}): Promise<WorldProfileRecord[]> {
     const normalizedUserId = normalizeEntityId(userId);
     if (!normalizedUserId) {
         throw new Error(
@@ -400,22 +409,22 @@ async function getWorldsByUser({
         policy: entityQueryPolicies.worldCollection,
         force,
         queryFn: async () => {
+            const input = {
+                endpoint,
+                userId: normalizedUserId,
+                n,
+                offset,
+                sort,
+                order,
+                releaseStatus
+            } satisfies VrchatWorldListByUserInput;
             const response = unwrapVrchatWorldResponse<unknown[]>(
-                await commands.appVrchatWorldListByUserGet({
-                    endpoint,
-                    userId: normalizedUserId,
-                    n,
-                    offset,
-                    sort,
-                    order,
-                    releaseStatus
-                }),
+                await commands.appVrchatWorldListByUserGet(input),
                 'worlds'
             );
             return Array.isArray(response.json) ? response.json : [];
         }
     });
-
     const worlds = rows.map((world) => normalize(world));
     useWorldFactsStore.getState().upsertWorldFacts(worlds);
     return worlds;
@@ -433,12 +442,13 @@ async function saveWorld({
         );
     }
 
+    const input = {
+        worldId: normalizedWorldId,
+        params,
+        endpoint
+    } satisfies VrchatWorldSaveInput;
     const response = unwrapVrchatWorldResponse(
-        await commands.appVrchatWorldSave({
-            worldId: normalizedWorldId,
-            params,
-            endpoint
-        }),
+        await commands.appVrchatWorldSave(input),
         `worlds/${encodeURIComponent(normalizedWorldId)}`
     );
     if (response.json && typeof response.json === 'object') {
@@ -460,10 +470,9 @@ async function deleteWorld({ worldId, endpoint = '' }: WorldIdInput) {
     }
 
     return unwrapVrchatWorldResponse(
-        await commands.appVrchatWorldDelete({
-            worldId: normalizedWorldId,
-            endpoint
-        }),
+        await commands.appVrchatWorldDelete(
+            worldIdInput(normalizedWorldId, endpoint)
+        ),
         `worlds/${encodeURIComponent(normalizedWorldId)}`
     );
 }
@@ -476,11 +485,9 @@ async function publishWorld({ worldId, endpoint = '' }: WorldIdInput) {
         );
     }
 
+    const input = worldIdInput(normalizedWorldId, endpoint);
     const response = unwrapVrchatWorldResponse(
-        await commands.appVrchatWorldPublish({
-            worldId: normalizedWorldId,
-            endpoint
-        }),
+        await commands.appVrchatWorldPublish(input),
         `worlds/${encodeURIComponent(normalizedWorldId)}/publish`
     );
     if (response.json && typeof response.json === 'object') {
@@ -501,11 +508,9 @@ async function unpublishWorld({ worldId, endpoint = '' }: WorldIdInput) {
         );
     }
 
+    const input = worldIdInput(normalizedWorldId, endpoint);
     const response = unwrapVrchatWorldResponse(
-        await commands.appVrchatWorldUnpublish({
-            worldId: normalizedWorldId,
-            endpoint
-        }),
+        await commands.appVrchatWorldUnpublish(input),
         `worlds/${encodeURIComponent(normalizedWorldId)}/publish`
     );
     if (response.json && typeof response.json === 'object') {
@@ -531,12 +536,13 @@ async function deleteWorldPersistentData({
         );
     }
 
+    const input = {
+        userId: normalizedUserId,
+        worldId: normalizedWorldId,
+        endpoint
+    } satisfies VrchatWorldPersistentDataDeleteInput;
     const response = unwrapVrchatWorldResponse(
-        await commands.appVrchatWorldPersistentDataDelete({
-            userId: normalizedUserId,
-            worldId: normalizedWorldId,
-            endpoint
-        }),
+        await commands.appVrchatWorldPersistentDataDelete(input),
         `users/${encodeURIComponent(normalizedUserId)}/${encodeURIComponent(normalizedWorldId)}/persist`
     );
     setCachedQueryData(
@@ -569,12 +575,13 @@ async function hasWorldPersistentData({
         policy: entityQueryPolicies.worldPersistData,
         force,
         queryFn: async () => {
+            const input = {
+                userId: normalizedUserId,
+                worldId: normalizedWorldId,
+                endpoint
+            } satisfies VrchatWorldPersistentDataDeleteInput;
             const response = unwrapVrchatWorldResponse(
-                await commands.appVrchatWorldPersistentDataExists({
-                    userId: normalizedUserId,
-                    worldId: normalizedWorldId,
-                    endpoint
-                }),
+                await commands.appVrchatWorldPersistentDataExists(input),
                 `users/${encodeURIComponent(normalizedUserId)}/${encodeURIComponent(normalizedWorldId)}/persist/exists`
             );
             if (typeof response.json === 'boolean') {

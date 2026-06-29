@@ -10,10 +10,10 @@ import {
 
 export function useFeedTimeDisplayMode() {
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const preferenceMode = usePreferencesStore(
-        (state: any) => state.feedTimeDisplayMode
+        (state) => state.feedTimeDisplayMode
     );
     const [mode, setMode] = useState<FeedTimeDisplayModePreference>('relative');
 

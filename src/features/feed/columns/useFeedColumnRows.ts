@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import type { FeedReadModelResult } from '@/domain/feed/feedReadModelTypes';
 import type { FeedCursor } from '@/repositories/feedPersistenceRepository';
 import feedRepository from '@/repositories/feedRepository';
 import { useFavoriteStore } from '@/state/favoriteStore';
@@ -16,11 +17,6 @@ import { getFeedRowId, normalizeFeedId as normalizeId } from '../feedRows';
 import type { FeedLoadStatus, FeedRow } from '../feedTypes';
 
 const FEED_COLUMN_PAGE_SIZE = 80;
-
-type FeedColumnReadModelResult = {
-    rows: FeedRow[];
-    maxSequence: number;
-};
 
 export function resolveFeedColumnInitialLiveSequence(value: unknown) {
     const sequence = Number(value);
@@ -51,24 +47,6 @@ function resolveLastFeedCursor(rows: FeedRow[]): FeedCursor | null {
     return null;
 }
 
-function normalizeFeedColumnReadModelResult(
-    result: unknown
-): FeedColumnReadModelResult {
-    if (!result || typeof result !== 'object') {
-        return {
-            rows: [],
-            maxSequence: 0
-        };
-    }
-    const readModel = result as { rows?: unknown; maxSequence?: unknown };
-    return {
-        rows: Array.isArray(readModel.rows)
-            ? (readModel.rows as FeedRow[])
-            : [],
-        maxSequence: resolveFeedColumnInitialLiveSequence(readModel.maxSequence)
-    };
-}
-
 function appendUniqueRows(currentRows: FeedRow[], nextRows: FeedRow[]) {
     const seen = new Set(currentRows.map(getFeedRowId));
     const output = [...currentRows];
@@ -83,17 +61,15 @@ function appendUniqueRows(currentRows: FeedRow[], nextRows: FeedRow[]) {
 }
 
 export function useFeedColumnRows(column: FeedColumnConfig) {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const isFavoritesLoaded = useSessionStore(
-        (state: any) => state.isFavoritesLoaded
+        (state) => state.isFavoritesLoaded
     );
     const remoteFavoritesById = useFavoriteStore(
-        (state: any) => state.remoteFavoritesById
+        (state) => state.remoteFavoritesById
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
     const [rows, setRows] = useState<FeedRow[]>([]);
     const [loadStatus, setLoadStatus] = useState<FeedLoadStatus>('idle');
@@ -165,7 +141,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             requestIsCurrent(): boolean;
             rows: FeedRow[];
         }) => {
-            let result: FeedColumnReadModelResult = {
+            let result: FeedReadModelResult<FeedRow> = {
                 rows,
                 maxSequence: minLiveSequence
             };
@@ -176,19 +152,17 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
                     result.rows.length + liveSnapshot.entries.length,
                     result.rows.length + FEED_COLUMN_PAGE_SIZE
                 );
-                result = normalizeFeedColumnReadModelResult(
-                    await feedRepository.mergeLiveRows({
-                        rows: result.rows,
-                        userId: currentUserId,
-                        filters: column.feedTypes,
-                        excludedFavoriteUserIds,
-                        favoriteUserIds,
-                        liveEntries: liveSnapshot.entries,
-                        minLiveSequence: result.maxSequence,
-                        favoritesOnly: column.friendScope.kind === 'favorites',
-                        maxRows
-                    })
-                );
+                result = await feedRepository.mergeLiveRows({
+                    rows: result.rows,
+                    userId: currentUserId,
+                    filters: column.feedTypes,
+                    excludedFavoriteUserIds,
+                    favoriteUserIds,
+                    liveEntries: liveSnapshot.entries,
+                    minLiveSequence: result.maxSequence,
+                    favoritesOnly: column.friendScope.kind === 'favorites',
+                    maxRows
+                });
                 if (!requestIsCurrent()) {
                     return null;
                 }
@@ -218,7 +192,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
             result
         }: {
             requestIsCurrent(): boolean;
-            result: FeedColumnReadModelResult;
+            result: FeedReadModelResult<FeedRow>;
         }) => {
             let nextResult = result;
             while (requestIsCurrent()) {
@@ -282,11 +256,10 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
                 favoritesOnly: column.friendScope.kind === 'favorites',
                 maxRows: FEED_COLUMN_PAGE_SIZE
             })
-            .then(async (result: unknown) => {
+            .then(async (readModel) => {
                 if (!requestIsCurrent()) {
                     return;
                 }
-                const readModel = normalizeFeedColumnReadModelResult(result);
                 const pageRows = readModel.rows;
                 cursorRef.current = resolveLastFeedCursor(pageRows);
                 setHasMore(pageRows.length >= FEED_COLUMN_PAGE_SIZE);
@@ -336,7 +309,7 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
         if (loadStatus !== 'ready' || !normalizeId(currentUserId)) {
             return undefined;
         }
-        return useFeedLiveStore.subscribe((state: any, previousState: any) => {
+        return useFeedLiveStore.subscribe((state, previousState) => {
             if (
                 state.version === previousState?.version ||
                 state.entries.length === 0 ||
@@ -396,13 +369,11 @@ export function useFeedColumnRows(column: FeedColumnConfig) {
                 maxEntries: FEED_COLUMN_PAGE_SIZE,
                 cursor
             })
-            .then((dbRows: unknown) => {
+            .then((dbRows) => {
                 if (requestIdRef.current !== requestId) {
                     return;
                 }
-                const pageRows = Array.isArray(dbRows)
-                    ? (dbRows as FeedRow[])
-                    : [];
+                const pageRows: FeedRow[] = Array.isArray(dbRows) ? dbRows : [];
                 cursorRef.current = resolveLastFeedCursor(pageRows);
                 setHasMore(pageRows.length >= FEED_COLUMN_PAGE_SIZE);
                 setRows((currentRows) => {

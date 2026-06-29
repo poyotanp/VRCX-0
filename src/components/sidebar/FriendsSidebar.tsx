@@ -10,6 +10,7 @@ import { subscribeRecentActions } from '@/services/recentActionService';
 import { checkCanInvite } from '@/shared/utils/invite';
 import { normalizeString as normalizeId } from '@/shared/utils/string';
 import { useFavoriteStore } from '@/state/favoriteStore';
+import type { FavoriteGroup } from '@/state/favoriteStoreTypes';
 import { useFriendRosterStore } from '@/state/friendRosterStore';
 import { useModalStore } from '@/state/modalStore';
 import { usePreferencesStore } from '@/state/preferencesStore';
@@ -41,29 +42,33 @@ import { useFriendsSidebarPreferences } from './friends-sidebar/useFriendsSideba
 
 const EMPTY_CURRENT_LOCATION_PLAYER_IDS = Object.freeze([]);
 
+function hasFavoriteGroupKey(
+    group: FavoriteGroup
+): group is FavoriteGroup & { key: string } {
+    return typeof group.key === 'string' && group.key.length > 0;
+}
+
 function useFriendsSidebarRuntimeSnapshot() {
-    const themeMode = useShellStore((state: any) => state.themeMode);
+    const themeMode = useShellStore((state) => state.themeMode);
     const currentUser = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const runtimeCurrentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const runtimeCurrentDestination = useRuntimeStore(
-        (state: any) => state.gameState.currentDestination
+        (state) => state.gameState.currentDestination
     );
     const currentLocationPlayerIds = useRuntimeStore(
-        (state: any) => state.gameState.currentLocationPlayerIds
+        (state) => state.gameState.currentLocationPlayerIds
     );
     const domainCurrentInstancePresence = useCurrentInstancePresence();
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
     const effectiveCurrentLocationPlayerIds =
         currentLocationPlayerIds && currentLocationPlayerIds.length
@@ -105,14 +110,14 @@ function useFriendsSidebarRuntimeSnapshot() {
 }
 
 function useFriendsSidebarRosterState() {
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const orderedFriendIds = useFriendRosterStore(
-        (state: any) => state.orderedFriendIds
+        (state) => state.orderedFriendIds
     );
-    const onlineIds = useFriendRosterStore((state: any) => state.onlineIds);
-    const activeIds = useFriendRosterStore((state: any) => state.activeIds);
-    const offlineIds = useFriendRosterStore((state: any) => state.offlineIds);
-    const loadStatus = useFriendRosterStore((state: any) => state.loadStatus);
+    const onlineIds = useFriendRosterStore((state) => state.onlineIds);
+    const activeIds = useFriendRosterStore((state) => state.activeIds);
+    const offlineIds = useFriendRosterStore((state) => state.offlineIds);
+    const loadStatus = useFriendRosterStore((state) => state.loadStatus);
     const factsById = useKnownUserFacts(orderedFriendIds);
     const mergedFriendsById = useMemo(
         () => mergeRosterFriendFacts(friendsById, factsById),
@@ -131,19 +136,19 @@ function useFriendsSidebarRosterState() {
 
 function useFriendsSidebarFavoriteState() {
     const favoriteFriendIds = useFavoriteStore(
-        (state: any) => state.favoriteFriendIds
+        (state) => state.favoriteFriendIds
     );
     const favoriteFriendGroups = useFavoriteStore(
-        (state: any) => state.favoriteFriendGroups
+        (state) => state.favoriteFriendGroups
     );
     const groupedFavoriteFriendIdsByGroupKey = useFavoriteStore(
-        (state: any) => state.groupedFavoriteFriendIdsByGroupKey
+        (state) => state.groupedFavoriteFriendIdsByGroupKey
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
     const localFriendFavoriteGroups = useFavoriteStore(
-        (state: any) => state.localFriendFavoriteGroups
+        (state) => state.localFriendFavoriteGroups
     );
 
     return {
@@ -157,17 +162,17 @@ function useFriendsSidebarFavoriteState() {
 
 function useFriendsSidebarDisplayPreferences() {
     const randomUserColours = usePreferencesStore(
-        (state: any) => state.randomUserColours
+        (state) => state.randomUserColours
     );
-    const trustColor = usePreferencesStore((state: any) => state.trustColor);
+    const trustColor = usePreferencesStore((state) => state.trustColor);
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const ageGatedInstancesVisiblePreference = usePreferencesStore(
-        (state: any) => state.isAgeGatedInstancesVisible
+        (state) => state.isAgeGatedInstancesVisible
     );
     const showInstanceIdInLocation = usePreferencesStore(
-        (state: any) => state.showInstanceIdInLocation
+        (state) => state.showInstanceIdInLocation
     );
     const ageGatedInstancesVisible =
         preferencesHydrated && ageGatedInstancesVisiblePreference;
@@ -210,8 +215,8 @@ export function FriendsSidebar({
         localFriendFavoriteGroups,
         localFriendFavorites
     } = useFriendsSidebarFavoriteState();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
     const {
         ageGatedInstancesVisible,
         randomUserColours,
@@ -244,7 +249,7 @@ export function FriendsSidebar({
     const canInviteFromCurrentLocation = useMemo(
         () =>
             checkCanInvite(currentInviteLocation, {
-                currentUserId,
+                currentUserId: currentUserId || '',
                 lastLocationStr: currentInviteLocation,
                 cachedInstances: new Map()
             }),
@@ -574,8 +579,9 @@ export function FriendsSidebar({
         const seen = new Set();
         const sections = [];
 
-        const orderedRemoteGroups = [...(favoriteFriendGroups || [])].sort(
-            (left: any, right: any) => {
+        const orderedRemoteGroups = [...(favoriteFriendGroups || [])]
+            .filter(hasFavoriteGroupKey)
+            .sort((left, right) => {
                 const order = Array.isArray(prefs.sidebarFavoriteGroupOrder)
                     ? prefs.sidebarFavoriteGroupOrder
                     : [];
@@ -595,8 +601,7 @@ export function FriendsSidebar({
                 ).localeCompare(
                     String(right.displayName || right.name || right.key || '')
                 );
-            }
-        );
+            });
         const orderedLocalGroups = [
             ...(localFriendFavoriteGroups?.length
                 ? localFriendFavoriteGroups
@@ -686,7 +691,7 @@ export function FriendsSidebar({
         if (favoriteCollectionTab) {
             return buildFavoriteCollectionSidebarVirtualRows({
                 activeRows: favoriteCollectionActiveRows,
-                currentUserId,
+                currentUserId: currentUserId || '',
                 emptyText: t(
                     'side_panel.settings.custom_tabs.empty_favorite_collection'
                 ),

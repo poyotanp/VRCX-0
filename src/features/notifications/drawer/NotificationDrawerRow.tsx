@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import {
     BanIcon,
     BellIcon,
@@ -16,9 +17,10 @@ import {
     Trash2Icon,
     UserIcon,
     UsersIcon,
-    XIcon
+    XIcon,
+    type LucideIcon
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -36,6 +38,10 @@ import {
 import { Location } from '@/components/Location';
 import { formatDateFilter, formatRelativeTime } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
+import type {
+    NotificationResponse,
+    NotificationRow
+} from '@/repositories/notificationPersistenceRepository';
 import { hasGroupIdPrefix } from '@/shared/constants/vrchatIds';
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/shadcn/avatar';
 import { Badge } from '@/ui/shadcn/badge';
@@ -56,6 +62,7 @@ import { Separator } from '@/ui/shadcn/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
 import { getNotificationLifecycleBucket } from './notificationDrawerBuckets';
+import type { NotificationDrawerHandlers } from './NotificationDrawerList';
 
 const STATUS_JOINME_TINT =
     'color-mix(in srgb, var(--status-joinme) 14%, transparent)';
@@ -75,14 +82,23 @@ const PERSON_TYPES = new Set<string>([
     'message'
 ]);
 
-function usesAvatar(notification: any) {
+type NotificationDrawerAction = {
+    Icon: LucideIcon;
+    key: string;
+    label: string;
+    onClick: () => void;
+};
+
+function usesAvatar(notification: NotificationRow | null | undefined) {
     return (
         PERSON_TYPES.has(String(notification?.type || '')) &&
         !hasGroupIdPrefix(String(notification?.senderUserId || ''))
     );
 }
 
-function getDiscIcon(notification: any) {
+function getDiscIcon(
+    notification: NotificationRow | null | undefined
+): LucideIcon {
     const type = String(notification?.type || '');
     if (type === 'event.announcement') {
         return CalendarIcon;
@@ -102,7 +118,10 @@ function getDiscIcon(notification: any) {
     return BellIcon;
 }
 
-function getResponseIcon(response: any, notificationType: any) {
+function getResponseIcon(
+    response: NotificationResponse | null | undefined,
+    notificationType: unknown
+): LucideIcon {
     if (response?.type === 'link') {
         return LinkIcon;
     }
@@ -122,21 +141,30 @@ function getResponseIcon(response: any, notificationType: any) {
     }
 }
 
-function canMarkNotificationSeen(notification: any) {
+function canMarkNotificationSeen(
+    notification: NotificationRow | null | undefined
+) {
     return !(
         Number(notification?.version ?? 1) !== 2 &&
         notification?.type === 'friendRequest'
     );
 }
 
-function getNotificationTypeLabel(notification: any, t: any) {
+function getNotificationTypeLabel(
+    notification: NotificationRow | null | undefined,
+    t: TFunction
+) {
     const type = notification?.type || 'unknown';
-    return t(`view.notification.filters.${type}`, {
-        defaultValue: type
-    });
+    return String(
+        t(`view.notification.filters.${type}`, {
+            defaultValue: type
+        })
+    );
 }
 
-function getNotificationAbsoluteTime(notification: any) {
+function getNotificationAbsoluteTime(
+    notification: NotificationRow | null | undefined
+) {
     const timestamp = notification?.createdAt || notification?.created_at;
     if (!timestamp) {
         return '';
@@ -145,7 +173,9 @@ function getNotificationAbsoluteTime(notification: any) {
     return formatted === '-' ? '' : formatted;
 }
 
-function getNotificationRelativeTime(notification: any) {
+function getNotificationRelativeTime(
+    notification: NotificationRow | null | undefined
+) {
     const timestamp = notification?.createdAt || notification?.created_at;
     if (!timestamp) {
         return '';
@@ -153,7 +183,7 @@ function getNotificationRelativeTime(notification: any) {
     return formatRelativeTime(timestamp);
 }
 
-function getGroupDisplayName(notification: any) {
+function getGroupDisplayName(notification: NotificationRow | null | undefined) {
     return (
         notification?.title ||
         notification?.data?.groupName ||
@@ -164,11 +194,11 @@ function getGroupDisplayName(notification: any) {
     );
 }
 
-function getHoverTitle(notification: any) {
+function getHoverTitle(notification: NotificationRow | null | undefined) {
     return notification?.data?.announcementTitle || notification?.title || '';
 }
 
-function getFriendMessage(notification: any) {
+function getFriendMessage(notification: NotificationRow | null | undefined) {
     return (
         notification?.message ||
         notification?.details?.inviteMessage ||
@@ -178,7 +208,7 @@ function getFriendMessage(notification: any) {
     );
 }
 
-function isGroupNotification(notification: any) {
+function isGroupNotification(notification: NotificationRow | null | undefined) {
     return (
         hasGroupIdPrefix(String(notification?.senderUserId || '')) ||
         notification?.type?.startsWith('group.') ||
@@ -186,7 +216,9 @@ function isGroupNotification(notification: any) {
     );
 }
 
-function isFriendNotification(notification: any) {
+function isFriendNotification(
+    notification: NotificationRow | null | undefined
+) {
     return [
         'invite',
         'requestInvite',
@@ -195,14 +227,14 @@ function isFriendNotification(notification: any) {
         'friendRequest',
         'ignoredFriendRequest',
         'boop'
-    ].includes(notification?.type);
+    ].includes(String(notification?.type || ''));
 }
 
-function computeRemaining(expiresAt: any) {
+function computeRemaining(expiresAt: unknown) {
     if (!expiresAt) {
         return null;
     }
-    const ts = Date.parse(expiresAt);
+    const ts = Date.parse(String(expiresAt));
     if (!Number.isFinite(ts)) {
         return null;
     }
@@ -216,7 +248,7 @@ function formatCountdown(ms: number) {
     return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-function useExpiryCountdown(expiresAt: any, enabled: boolean) {
+function useExpiryCountdown(expiresAt: unknown, enabled: boolean) {
     const [remainingMs, setRemainingMs] = useState<number | null>(() =>
         enabled ? computeRemaining(expiresAt) : null
     );
@@ -234,7 +266,11 @@ function useExpiryCountdown(expiresAt: any, enabled: boolean) {
     return remainingMs;
 }
 
-function NotificationPersonAvatar({ notification }: any) {
+function NotificationPersonAvatar({
+    notification
+}: {
+    notification: NotificationRow;
+}) {
     const imageUrl = getNotificationImageUrl(notification);
     return (
         <Avatar className="size-9 shrink-0">
@@ -246,7 +282,11 @@ function NotificationPersonAvatar({ notification }: any) {
     );
 }
 
-function NotificationIconDisc({ notification }: any) {
+function NotificationIconDisc({
+    notification
+}: {
+    notification: NotificationRow;
+}) {
     const Icon = getDiscIcon(notification);
     const imageUrl = getNotificationImageUrl(notification);
     if (imageUrl) {
@@ -266,7 +306,11 @@ function NotificationIconDisc({ notification }: any) {
     );
 }
 
-function NotificationLocationLine({ notification }: any) {
+function NotificationLocationLine({
+    notification
+}: {
+    notification: NotificationRow;
+}) {
     if (notification?.type === 'invite' && notification?.details?.worldId) {
         return (
             <Location
@@ -321,7 +365,13 @@ function NotificationHoverContent({
     typeLabel,
     message,
     absoluteTime
-}: any) {
+}: {
+    absoluteTime: string;
+    message: string;
+    notification: NotificationRow;
+    senderName: string;
+    typeLabel: string;
+}) {
     const groupNotification = isGroupNotification(notification);
     const friendNotification = isFriendNotification(notification);
     const groupDisplayName = getGroupDisplayName(notification);
@@ -417,7 +467,15 @@ function NotificationHoverContent({
     );
 }
 
-function NotificationActionButton({ label, onClick, children }: any) {
+function NotificationActionButton({
+    label,
+    onClick,
+    children
+}: {
+    children: ReactNode;
+    label: string;
+    onClick: () => void;
+}) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
@@ -442,7 +500,13 @@ function buildOrderedActions({
     canInviteFromCurrentLocation,
     handlers,
     t
-}: any) {
+}: {
+    canInviteFromCurrentLocation: boolean;
+    currentUserId?: string;
+    handlers: NotificationDrawerHandlers;
+    notification: NotificationRow;
+    t: TFunction;
+}): NotificationDrawerAction[] {
     const remoteActionsVisible =
         notification?.senderUserId !== currentUserId &&
         !isNotificationExpired(notification);
@@ -453,7 +517,7 @@ function buildOrderedActions({
     const responses = Array.isArray(notification?.responses)
         ? notification.responses
         : [];
-    const actions: any[] = [];
+    const actions: NotificationDrawerAction[] = [];
     if (type === 'friendRequest') {
         actions.push({
             key: 'accept',
@@ -520,11 +584,17 @@ export function NotificationDrawerRow({
     currentUserId,
     canInviteFromCurrentLocation,
     handlers
-}: any) {
+}: {
+    canInviteFromCurrentLocation: boolean;
+    currentUserId?: string;
+    handlers: NotificationDrawerHandlers;
+    isUnseen: boolean;
+    notification: NotificationRow;
+}) {
     const { t } = useTranslation();
-    const message = getNotificationMessage(notification);
+    const message = String(getNotificationMessage(notification) || '');
     const senderName =
-        getSenderName(notification) ||
+        String(getSenderName(notification) || '') ||
         notification?.type ||
         t('nav_tooltip.notification');
     const typeLabel = getNotificationTypeLabel(notification, t);
@@ -532,7 +602,7 @@ export function NotificationDrawerRow({
     const absoluteTime =
         getNotificationAbsoluteTime(notification) ||
         formatNotificationTime(notification);
-    const expired = isNotificationExpired(notification);
+    const expired = Boolean(isNotificationExpired(notification));
     const isAction =
         getNotificationLifecycleBucket(notification?.type) === 'action';
     const isQueueReady = notification?.type === 'group.queueReady';
@@ -548,7 +618,7 @@ export function NotificationDrawerRow({
     const inlineActions = orderedActions.slice(0, 2);
     const overflowActions = orderedActions.slice(2);
     const showMarkRead = isUnseen && canMarkNotificationSeen(notification);
-    const showDelete = shouldShowDeleteLog(notification);
+    const showDelete = Boolean(shouldShowDeleteLog(notification));
     const hasMenu = showMarkRead || overflowActions.length > 0 || showDelete;
 
     const countdownMs = useExpiryCountdown(
@@ -660,7 +730,7 @@ export function NotificationDrawerRow({
                                         ) : null}
                                     </Button>
                                 ) : null}
-                                {inlineActions.map((action: any) => (
+                                {inlineActions.map((action) => (
                                     <NotificationActionButton
                                         key={action.key}
                                         label={action.label}
@@ -698,17 +768,15 @@ export function NotificationDrawerRow({
                                                     )}
                                                 </DropdownMenuItem>
                                             ) : null}
-                                            {overflowActions.map(
-                                                (action: any) => (
-                                                    <DropdownMenuItem
-                                                        key={action.key}
-                                                        onClick={action.onClick}
-                                                    >
-                                                        <action.Icon data-icon="inline-start" />
-                                                        {action.label}
-                                                    </DropdownMenuItem>
-                                                )
-                                            )}
+                                            {overflowActions.map((action) => (
+                                                <DropdownMenuItem
+                                                    key={action.key}
+                                                    onClick={action.onClick}
+                                                >
+                                                    <action.Icon data-icon="inline-start" />
+                                                    {action.label}
+                                                </DropdownMenuItem>
+                                            ))}
                                             {showDelete ? (
                                                 <>
                                                     {showMarkRead ||

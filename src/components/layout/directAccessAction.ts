@@ -9,9 +9,9 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 
 export function useDirectAccessAction() {
     const { t } = useTranslation();
-    const prompt = useModalStore((state: any) => state.prompt);
+    const prompt = useModalStore((state) => state.prompt);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const busyRef = useRef(false);
 

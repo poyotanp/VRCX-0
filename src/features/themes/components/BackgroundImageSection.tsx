@@ -215,16 +215,12 @@ function CurrentBackgroundImageSummary({
 
 export function BackgroundImageSection() {
     const { t } = useTranslation();
-    const mode = useBackgroundImageStore((state: any) => state.mode);
-    const enabled = useBackgroundImageStore((state: any) => state.enabled);
-    const providerId = useBackgroundImageStore(
-        (state: any) => state.providerId
-    );
-    const customSource = useBackgroundImageStore(
-        (state: any) => state.customSource
-    );
-    const snapshot = useBackgroundImageStore((state: any) => state.snapshot);
-    const loading = useBackgroundImageStore((state: any) => state.loading);
+    const mode = useBackgroundImageStore((state) => state.mode);
+    const enabled = useBackgroundImageStore((state) => state.enabled);
+    const providerId = useBackgroundImageStore((state) => state.providerId);
+    const customSource = useBackgroundImageStore((state) => state.customSource);
+    const snapshot = useBackgroundImageStore((state) => state.snapshot);
+    const loading = useBackgroundImageStore((state) => state.loading);
     const showRotation = isBackgroundImageCustomSourceRotating(
         customSource,
         snapshot?.imageCount

@@ -31,7 +31,8 @@ import {
     normalizeSidebarTabDisplayMode,
     normalizeSidebarTabLayout,
     serializeSidebarTabLayout,
-    sidebarTabFallbackIcon
+    sidebarTabFallbackIcon,
+    type FavoriteGroupItem
 } from './side-panel/sidebarTabLayout';
 import { SidePanelCustomTabsDialog } from './side-panel/SidePanelCustomTabsDialog';
 import { SidePanelFavoriteGroupOrderDialog } from './side-panel/SidePanelFavoriteGroupOrderDialog';
@@ -201,32 +202,28 @@ function useSidePanelSettingsState({
 }
 
 function useSidePanelTabData({ activeTab, prefs, setActiveTab, t }: any) {
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
-    const onlineIds = useFriendRosterStore((state: any) => state.onlineIds);
-    const favoriteLoadStatus = useFavoriteStore(
-        (state: any) => state.loadStatus
-    );
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
+    const onlineIds = useFriendRosterStore((state) => state.onlineIds);
+    const favoriteLoadStatus = useFavoriteStore((state) => state.loadStatus);
     const favoriteFriendGroups = useFavoriteStore(
-        (state: any) => state.favoriteFriendGroups
+        (state) => state.favoriteFriendGroups
     );
     const localFriendFavoriteGroups = useFavoriteStore(
-        (state: any) => state.localFriendFavoriteGroups
+        (state) => state.localFriendFavoriteGroups
     );
     const groupedFavoriteFriendIdsByGroupKey = useFavoriteStore(
-        (state: any) => state.groupedFavoriteFriendIdsByGroupKey
+        (state) => state.groupedFavoriteFriendIdsByGroupKey
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
     const groupInstancesState = useRuntimeStore(
-        (state: any) => state.groupInstances
+        (state) => state.groupInstances
     );
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const groupInstances =
         groupInstancesState.userId === currentUserId &&
         groupInstancesState.endpoint === currentEndpoint
@@ -234,18 +231,18 @@ function useSidePanelTabData({ activeTab, prefs, setActiveTab, t }: any) {
             : [];
     const totalFriendCount = Object.keys(friendsById || {}).length;
 
-    const favoriteGroupItems = useMemo(
+    const favoriteGroupItems = useMemo<FavoriteGroupItem[]>(
         () =>
             [
                 ...(favoriteFriendGroups || []).map((group: any) => ({
                     key: group.key,
                     label: group.displayName || group.name || group.key,
-                    source: 'remote'
+                    source: 'remote' as const
                 })),
                 ...(localFriendFavoriteGroups || []).map((groupName: any) => ({
                     key: `local:${groupName}`,
                     label: groupName,
-                    source: 'local'
+                    source: 'local' as const
                 }))
             ].filter((group: any) => group.key),
         [favoriteFriendGroups, localFriendFavoriteGroups]

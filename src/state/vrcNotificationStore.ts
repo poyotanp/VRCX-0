@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import notificationPersistenceRepository from '@/repositories/notificationPersistenceRepository';
+import type { NotificationRow } from '@/repositories/notificationPersistenceRepository';
 import { DAY_MS } from '@/shared/constants/time';
 import { windowDelay } from '@/shared/utils/delays';
 import {
@@ -13,21 +14,10 @@ import { useShellStore } from '@/state/shellStore';
 const RECENT_WINDOW_MS = DAY_MS;
 const TRANSIENT_V1_UNSEEN_TYPES = new Set(['friendRequest']);
 const ACTION_REQUIRED_V1_TYPES = new Set(['friendRequest']);
-const pendingSeenIds = new Set<unknown>();
+const pendingSeenIds = new Set<string>();
 
-type LoadStatus = 'idle' | 'running' | 'ready' | 'error';
-type NotificationCategoryKey = 'friend' | 'group' | 'other';
-type NotificationRow = Record<string, unknown> & {
-    id?: string;
-    version?: number;
-    seen?: boolean;
-    expired?: boolean;
-    $isExpired?: boolean;
-    expiresAt?: string;
-    created_at?: string | number | null;
-    createdAt?: string | number | null;
-    type?: string;
-};
+export type LoadStatus = 'idle' | 'running' | 'ready' | 'error';
+export type NotificationCategoryKey = 'friend' | 'group' | 'other';
 type NotificationPatch = Partial<{
     displayName: string;
     senderDisplayName: string;
@@ -35,11 +25,24 @@ type NotificationPatch = Partial<{
     worldName: string;
     displayLocation: string;
 }>;
-type NotificationBucket = {
+export type NotificationBucket = {
     unseen: NotificationRow[];
     recent: NotificationRow[];
 };
+type NotificationStateSnapshot = {
+    rows: NotificationRow[];
+    categories: NotificationCategories;
+    unseenCount: number;
+    detail: string;
+};
 const NOTIFICATION_DETAILS_PATCH_KEYS = [
+    'worldName',
+    'displayLocation'
+] as const;
+const NOTIFICATION_PATCH_KEYS = [
+    'displayName',
+    'senderDisplayName',
+    'senderUsername',
     'worldName',
     'displayLocation'
 ] as const;
@@ -50,14 +53,31 @@ function normalizeNotificationId(value: unknown): string {
         : String(value ?? '').trim();
 }
 
+function isNonEmptyString(value: unknown): value is string {
+    return typeof value === 'string' && value.trim() !== '';
+}
+
+function normalizeNotificationIds(value: unknown | unknown[]): string[] {
+    return (Array.isArray(value) ? value : [value])
+        .map((entry) => normalizeNotificationId(entry))
+        .filter(Boolean);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
 function nonEmptyNotificationPatch(
     fields: NotificationPatch
 ): NotificationPatch {
-    return Object.fromEntries(
-        Object.entries(fields).filter(
-            ([, value]) => typeof value === 'string' && value.trim() !== ''
-        )
-    ) as NotificationPatch;
+    const patch: NotificationPatch = {};
+    for (const key of NOTIFICATION_PATCH_KEYS) {
+        const value = fields[key];
+        if (typeof value === 'string' && value.trim() !== '') {
+            patch[key] = value;
+        }
+    }
+    return patch;
 }
 
 function notificationDetailsPatch(
@@ -72,7 +92,7 @@ function notificationDetailsPatch(
     return detailsPatch;
 }
 
-type NotificationCategories = Record<
+export type NotificationCategories = Record<
     NotificationCategoryKey,
     NotificationBucket
 >;
@@ -150,7 +170,7 @@ function buildCategories(rows: NotificationRow[]): NotificationCategories {
     const categories = createEmptyCategories();
     const recentCutoff = Date.now() - RECENT_WINDOW_MS;
 
-    for (const notification of Array.isArray(rows) ? rows : []) {
+    for (const notification of rows) {
         const category = getNotificationCategory(
             String(notification?.type || '')
         );
@@ -169,34 +189,31 @@ function buildCategories(rows: NotificationRow[]): NotificationCategories {
 
     for (const bucket of Object.values(categories)) {
         bucket.unseen.sort(
-            (left: any, right: any) =>
-                getNotificationTs(right) - getNotificationTs(left)
+            (left, right) => getNotificationTs(right) - getNotificationTs(left)
         );
         bucket.recent.sort(
-            (left: any, right: any) =>
-                getNotificationTs(right) - getNotificationTs(left)
+            (left, right) => getNotificationTs(right) - getNotificationTs(left)
         );
     }
 
     return categories;
 }
 
-function sortRows(rows: unknown): NotificationRow[] {
-    return [...(Array.isArray(rows) ? rows : [])].sort(
-        (left: any, right: any) => {
-            const leftTime = getNotificationTs(left);
-            const rightTime = getNotificationTs(right);
-            if (leftTime !== rightTime) {
-                return rightTime - leftTime;
-            }
-            return String(right?.id || '').localeCompare(
-                String(left?.id || '')
-            );
+function sortRows(rows: NotificationRow[]): NotificationRow[] {
+    return [...rows].sort((left, right) => {
+        const leftTime = getNotificationTs(left);
+        const rightTime = getNotificationTs(right);
+        if (leftTime !== rightTime) {
+            return rightTime - leftTime;
         }
-    );
+        return String(right?.id || '').localeCompare(String(left?.id || ''));
+    });
 }
 
-function createNotificationState(rows: unknown, detail: any = '') {
+function createNotificationState(
+    rows: NotificationRow[],
+    detail = ''
+): NotificationStateSnapshot {
     const sortedRows = sortRows(rows);
     return {
         rows: sortedRows,
@@ -210,16 +227,16 @@ function getCurrentAuth(): RuntimeAuthSnapshot {
     return (useRuntimeStore.getState().auth || {}) as RuntimeAuthSnapshot;
 }
 
-function getUnseenRows(rows: unknown): NotificationRow[] {
-    return (Array.isArray(rows) ? rows : []).filter(isUnseenNotification);
+function getUnseenRows(rows: NotificationRow[]): NotificationRow[] {
+    return rows.filter(isUnseenNotification);
 }
 
 function applyPendingSeenRows(rows: NotificationRow[]): NotificationRow[] {
     if (!pendingSeenIds.size) {
         return rows;
     }
-    return rows.map((row: any) =>
-        pendingSeenIds.has(row.id)
+    return rows.map((row) =>
+        row.id && pendingSeenIds.has(row.id)
             ? {
                   ...row,
                   seen: true
@@ -233,7 +250,7 @@ function syncShellUnseenCount(unseenCount: unknown) {
 }
 
 export const useVrcNotificationStore = create<VrcNotificationStore>(
-    (set: any, get: any) => ({
+    (set, get) => ({
         rows: [],
         categories: createEmptyCategories(),
         unseenCount: 0,
@@ -283,7 +300,7 @@ export const useVrcNotificationStore = create<VrcNotificationStore>(
                 throw error;
             }
         },
-        setCenterOpen(isCenterOpen: any) {
+        setCenterOpen(isCenterOpen: unknown) {
             const nextOpen = Boolean(isCenterOpen);
             set({ isCenterOpen: nextOpen });
             if (nextOpen) {
@@ -295,30 +312,27 @@ export const useVrcNotificationStore = create<VrcNotificationStore>(
         openCenter() {
             get().setCenterOpen(true);
         },
-        upsertNotification(notification: any) {
+        upsertNotification(notification: NotificationRow) {
             if (!notification?.id) {
                 return;
             }
-            set((state: any) => {
+            set((state) => {
                 const existing =
-                    state.rows.find((row: any) => row.id === notification.id) ||
-                    {};
+                    state.rows.find((row) => row.id === notification.id) || {};
                 const rows = [
                     { ...existing, ...notification },
-                    ...state.rows.filter(
-                        (row: any) => row.id !== notification.id
-                    )
+                    ...state.rows.filter((row) => row.id !== notification.id)
                 ];
                 return createNotificationState(rows, state.detail);
             });
             syncShellUnseenCount(get().unseenCount);
         },
-        patchNotification(id: any, fields: any) {
+        patchNotification(id: unknown, fields: NotificationPatch) {
             const normalizedId = normalizeNotificationId(id);
-            if (!normalizedId || !fields || typeof fields !== 'object') {
+            if (!normalizedId || !isRecord(fields)) {
                 return;
             }
-            set((state: any) => {
+            set((state) => {
                 let changed = false;
                 const rows = state.rows.map((row: NotificationRow) => {
                     if (row.id !== normalizedId) {
@@ -328,10 +342,7 @@ export const useVrcNotificationStore = create<VrcNotificationStore>(
                     if (!Object.keys(patch).length) {
                         return row;
                     }
-                    const details =
-                        row.details && typeof row.details === 'object'
-                            ? (row.details as Record<string, unknown>)
-                            : {};
+                    const details = isRecord(row.details) ? row.details : {};
                     const detailsPatch = notificationDetailsPatch(patch);
                     changed = true;
                     return {
@@ -348,54 +359,46 @@ export const useVrcNotificationStore = create<VrcNotificationStore>(
             });
             syncShellUnseenCount(get().unseenCount);
         },
-        expireNotifications(ids: any) {
-            const idSet = new Set(
-                (Array.isArray(ids) ? ids : [ids]).filter(Boolean)
-            );
+        expireNotifications(ids: unknown | unknown[]) {
+            const idSet = new Set(normalizeNotificationIds(ids));
             if (!idSet.size) {
                 return;
             }
             const expiresAt = new Date().toISOString();
-            set((state: any) =>
-                createNotificationState(
-                    state.rows.map((row: any) =>
-                        idSet.has(row.id)
-                            ? {
-                                  ...row,
-                                  expiresAt,
-                                  expired: true,
-                                  seen: true
-                              }
-                            : row
-                    ),
-                    state.detail
-                )
-            );
+            set((state) => {
+                const rows = state.rows.map((row) =>
+                    row.id && idSet.has(row.id)
+                        ? {
+                              ...row,
+                              expiresAt,
+                              expired: true,
+                              seen: true
+                          }
+                        : row
+                );
+                return createNotificationState(rows, state.detail);
+            });
             syncShellUnseenCount(get().unseenCount);
         },
-        markNotificationsSeen(ids: any) {
-            const idSet = new Set(
-                (Array.isArray(ids) ? ids : [ids]).filter(Boolean)
-            );
+        markNotificationsSeen(ids: unknown | unknown[]) {
+            const idSet = new Set(normalizeNotificationIds(ids));
             if (!idSet.size) {
                 return;
             }
-            set((state: any) =>
-                createNotificationState(
-                    state.rows.map((row: any) =>
-                        idSet.has(row.id)
-                            ? {
-                                  ...row,
-                                  seen: true
-                              }
-                            : row
-                    ),
-                    state.detail
-                )
-            );
+            set((state) => {
+                const rows = state.rows.map((row) =>
+                    row.id && idSet.has(row.id)
+                        ? {
+                              ...row,
+                              seen: true
+                          }
+                        : row
+                );
+                return createNotificationState(rows, state.detail);
+            });
             syncShellUnseenCount(get().unseenCount);
         },
-        async markNotificationSeen(notification: any) {
+        async markNotificationSeen(notification?: NotificationRow | null) {
             const auth = getCurrentAuth();
             if (
                 !auth.currentUserId ||
@@ -422,17 +425,15 @@ export const useVrcNotificationStore = create<VrcNotificationStore>(
 
             const markableRows = unseenRows.filter(shouldMarkSeenOnCenterClose);
             const ids = markableRows
-                .map((notification: any) => notification.id)
-                .filter(Boolean);
+                .map((notification) => notification.id)
+                .filter(isNonEmptyString);
             if (!ids.length) {
                 return;
             }
             const localV2Ids = markableRows
-                .filter(
-                    (notification: any) => Number(notification.version) === 2
-                )
-                .map((notification: any) => notification.id)
-                .filter(Boolean);
+                .filter((notification) => Number(notification.version) === 2)
+                .map((notification) => notification.id)
+                .filter(isNonEmptyString);
             for (const id of ids) {
                 pendingSeenIds.add(id);
             }
@@ -450,7 +451,7 @@ export const useVrcNotificationStore = create<VrcNotificationStore>(
                             version: notification.version,
                             endpoint: auth.currentUserEndpoint
                         })
-                        .catch((error: any) => {
+                        .catch((error: unknown) => {
                             console.warn(
                                 'Failed to mark VRChat notification as seen:',
                                 error

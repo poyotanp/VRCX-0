@@ -24,9 +24,9 @@ import {
 
 export function ExportDiscordNamesDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const orderedFriendIds = useFriendRosterStore(
-        (state: any) => state.orderedFriendIds
+        (state) => state.orderedFriendIds
     );
     const [content, setContent] = useState('');
 
@@ -69,9 +69,9 @@ export function ExportDiscordNamesDialog({ open, onOpenChange }: any) {
 
 export function ExportFriendsListDialog({ open, onOpenChange }: any) {
     const { t } = useTranslation();
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const orderedFriendIds = useFriendRosterStore(
-        (state: any) => state.orderedFriendIds
+        (state) => state.orderedFriendIds
     );
     const [csv, setCsv] = useState('');
     const [json, setJson] = useState('');

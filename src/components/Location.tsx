@@ -46,20 +46,18 @@ export function Location({
     worldNameClassName = ''
 }: any) {
     const { t } = useTranslation();
-    const showLaunchDialog = useLaunchStore(
-        (state: any) => state.showLaunchDialog
-    );
-    const isGameRunning = useRuntimeStore((state: any) =>
+    const showLaunchDialog = useLaunchStore((state) => state.showLaunchDialog);
+    const isGameRunning = useRuntimeStore((state) =>
         Boolean(state.gameState.isGameRunning)
     );
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const ageGatedInstancesVisiblePreference = usePreferencesStore(
-        (state: any) => state.isAgeGatedInstancesVisible
+        (state) => state.isAgeGatedInstancesVisible
     );
     const globalShowInstanceIdInLocation = usePreferencesStore(
-        (state: any) => state.showInstanceIdInLocation
+        (state) => state.showInstanceIdInLocation
     );
     const ageGatedInstancesVisible =
         preferencesHydrated && ageGatedInstancesVisiblePreference;

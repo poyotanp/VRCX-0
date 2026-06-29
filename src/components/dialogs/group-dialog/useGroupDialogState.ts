@@ -21,21 +21,19 @@ export function useGroupDialogState({ groupId, seedData = null }: any) {
 
     const normalizedGroupId = normalizeEntityId(groupId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const currentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
-    const confirm = useModalStore((state: any) => state.confirm);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
+    const confirm = useModalStore((state) => state.confirm);
     const updateEntityDialogMetadata = useDialogStore(
-        (state: any) => state.updateEntityDialogMetadata
+        (state) => state.updateEntityDialogMetadata
     );
     const [group, setGroup] = useState(() =>
         seedData ? groupProfileRepository.normalize(seedData) : null
@@ -45,7 +43,13 @@ export function useGroupDialogState({ groupId, seedData = null }: any) {
     );
     const [actionStatus, setActionStatus] = useState('idle');
     const [detail, setDetail] = useState('');
-    const [previousInstances, setPreviousInstances] = useState<any[]>([]);
+    const [previousInstances, setPreviousInstances] = useState<
+        Awaited<
+            ReturnType<typeof gameLogRepository.getPreviousInstancesByGroupId>
+        > extends Map<unknown, infer V>
+            ? V[]
+            : unknown[]
+    >([]);
     const actionStatusRef = useRef('idle');
     const activeGroupTargetRef = useRef<any>({
         groupId: normalizedGroupId,

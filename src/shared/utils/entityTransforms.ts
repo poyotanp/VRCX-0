@@ -1,6 +1,13 @@
 import { replaceBioSymbols } from './string';
 
 type EntityRecord = Record<string, unknown>;
+type FavoriteCachedRef = EntityRecord & {
+    id: string;
+    type: string;
+    favoriteId: string;
+    tags: string[];
+    $groupKey: string;
+};
 
 /**
  * Sanitize arbitrary entity JSON fields via replaceBioSymbols.
@@ -45,16 +52,30 @@ export function createDefaultFavoriteGroupRef(json: EntityRecord = {}) {
  * @returns {object}
  */
 export function createDefaultFavoriteCachedRef(json: EntityRecord = {}) {
-    const ref: any = {
+    const jsonTags = Array.isArray(json.tags)
+        ? json.tags.map((value) => String(value))
+        : [];
+    const ref: FavoriteCachedRef = {
+        ...json,
         id: '',
         type: '',
         favoriteId: '',
-        tags: [],
+        tags: jsonTags,
         // VRCX
-        $groupKey: '',
-        //
-        ...json
+        $groupKey: ''
     };
+    if (typeof json.id === 'string') {
+        ref.id = json.id;
+    }
+    if (typeof json.type === 'string') {
+        ref.type = json.type;
+    }
+    if (typeof json.favoriteId === 'string') {
+        ref.favoriteId = json.favoriteId;
+    }
+    if (typeof json.$groupKey === 'string') {
+        ref.$groupKey = json.$groupKey;
+    }
     ref.$groupKey = `${ref.type}:${String(ref.tags[0])}`;
     return ref;
 }

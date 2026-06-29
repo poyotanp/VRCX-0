@@ -9,16 +9,23 @@ import {
     sanitizeFriendsLocationsDensity
 } from './friendsLocationsDensity';
 
+type FriendsLocationsSidebarFavoritePrefs = {
+    isDivideByGroup: boolean;
+    selectedGroups: string[];
+    groupOrder: string[];
+};
+
 export function useFriendsLocationsPreferences() {
     const [preferencesReady, setPreferencesReady] = useState(false);
     const [showSameInstanceInOnline, setShowSameInstanceInOnline] =
         useState(false);
     const [density, setDensity] = useState(DEFAULT_FRIENDS_LOCATIONS_DENSITY);
-    const [sidebarFavoritePrefs, setSidebarFavoritePrefs] = useState<any>({
-        isDivideByGroup: false,
-        selectedGroups: [],
-        groupOrder: []
-    });
+    const [sidebarFavoritePrefs, setSidebarFavoritePrefs] =
+        useState<FriendsLocationsSidebarFavoritePrefs>({
+            isDivideByGroup: false,
+            selectedGroups: [],
+            groupOrder: []
+        });
     const [sidebarSortMethods, setSidebarSortMethods] = useState<any[]>([
         'Sort by Status',
         'Sort Alphabetically',

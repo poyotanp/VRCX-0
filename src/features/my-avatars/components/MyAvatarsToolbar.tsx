@@ -67,9 +67,7 @@ export function MyAvatarsToolbar({
     onRefresh
 }: MyAvatarsToolbarProps) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
 
     return (
         <div className="flex shrink-0 flex-col gap-2 px-0.5 pt-1.5 lg:flex-row lg:items-center lg:justify-between">
@@ -144,9 +142,7 @@ export function MyAvatarsToolbar({
                     </InputGroupAddon>
                     <InputGroupInput
                         value={searchQuery}
-                        onChange={(event: any) =>
-                            onSearchChange(event.target.value)
-                        }
+                        onChange={(event) => onSearchChange(event.target.value)}
                         placeholder={t('common.actions.search')}
                         aria-label={t('common.actions.search')}
                     />

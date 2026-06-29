@@ -1,5 +1,6 @@
 import { commands } from '@/platform/tauri/bindings';
 import type {
+    AvatarCacheOutput,
     AvatarTagInput,
     AvatarTagsPatchInput
 } from '@/platform/tauri/bindings';
@@ -22,8 +23,8 @@ interface AvatarCacheInput {
 }
 
 interface AvatarTag {
-    tag: unknown;
-    color: unknown;
+    tag?: unknown;
+    color?: unknown;
 }
 
 function asObjectRow(row: ObjectRow | unknown[] | null | undefined): ObjectRow {
@@ -35,7 +36,7 @@ function parseInteger(value: unknown, fallback: number) {
 }
 
 function normalizeAvatarCacheRow(
-    row: ObjectRow | unknown[] | null | undefined
+    row: AvatarCacheOutput | ObjectRow | unknown[] | null | undefined
 ) {
     if (Array.isArray(row)) {
         return {
@@ -70,6 +71,13 @@ function normalizeAvatarCacheRow(
     };
 }
 
+function normalizeAvatarTagInput(entry: AvatarTag): AvatarTagInput {
+    return {
+        tag: normalizeString(entry.tag),
+        color: entry.color ?? null
+    };
+}
+
 async function addAvatarToCache(entry: AvatarCacheInput) {
     return commands.appAvatarCacheUpsert({
         id: entry.id,
@@ -92,15 +100,13 @@ async function getCachedAvatarById(id: unknown) {
         return null;
     }
 
-    const row = (await commands.appAvatarCacheGet(
-        normalizedId
-    )) as ObjectRow | null;
+    const row = await commands.appAvatarCacheGet(normalizedId);
     return row ? normalizeAvatarCacheRow(row) : null;
 }
 
 async function getAvatarCache() {
-    const rows = (await commands.appAvatarCacheList()) as ObjectRow[];
-    return Array.isArray(rows) ? rows.map(normalizeAvatarCacheRow) : [];
+    const rows = await commands.appAvatarCacheList();
+    return rows.map(normalizeAvatarCacheRow);
 }
 
 async function removeAvatarFromCache(avatarId: unknown) {
@@ -112,12 +118,13 @@ async function removeAvatarFromCache(avatarId: unknown) {
 }
 
 async function addAvatarToHistory(userId: unknown, avatarId: unknown) {
+    const normalizedUserId = normalizeString(userId);
     const normalizedAvatarId = normalizeString(avatarId);
-    if (!normalizedAvatarId) {
+    if (!normalizedUserId || !normalizedAvatarId) {
         return;
     }
 
-    await commands.appAvatarHistoryAdd(userId as string, normalizedAvatarId);
+    await commands.appAvatarHistoryAdd(normalizedUserId, normalizedAvatarId);
 }
 
 async function addAvatarTimeSpent(
@@ -125,78 +132,94 @@ async function addAvatarTimeSpent(
     avatarId: unknown,
     timeSpent: unknown
 ) {
+    const normalizedUserId = normalizeString(userId);
     const normalizedAvatarId = normalizeString(avatarId);
     const normalizedTimeSpent = parseInteger(timeSpent, 0);
-    if (!normalizedAvatarId) {
+    if (!normalizedUserId || !normalizedAvatarId) {
         return;
     }
 
     await commands.appAvatarTimeSpentAdd(
-        userId as string,
+        normalizedUserId,
         normalizedAvatarId,
         normalizedTimeSpent
     );
 }
 
 async function getAvatarTimeSpent(userId: unknown, avatarId: unknown) {
+    const normalizedUserId = normalizeString(userId);
     const normalizedAvatarId = normalizeString(avatarId);
     const ref = {
         timeSpent: 0,
         avatarId: normalizedAvatarId
     };
-    if (!normalizedAvatarId) {
+    if (!normalizedUserId || !normalizedAvatarId) {
         return ref;
     }
 
-    const row = (await commands.appAvatarTimeSpentGet(
-        userId as string,
+    const row = await commands.appAvatarTimeSpentGet(
+        normalizedUserId,
         normalizedAvatarId
-    )) as ObjectRow | null;
-    ref.timeSpent = parseInteger(row?.timeSpent ?? row?.time_spent, 0);
+    );
+    ref.timeSpent = parseInteger(row.timeSpent, 0);
     return ref;
 }
 
 async function getAllAvatarTimeSpent(userId: unknown) {
-    const map = new Map<unknown, number>();
-    const rows = (await commands.appAvatarTimeSpentList(userId as string)) as
-        | ObjectRow[]
-        | null;
-    for (const row of Array.isArray(rows) ? rows : []) {
-        const avatarId = row.avatarId ?? row.avatar_id;
+    const map = new Map<string, number>();
+    const normalizedUserId = normalizeString(userId);
+    if (!normalizedUserId) {
+        return map;
+    }
+
+    const rows = await commands.appAvatarTimeSpentList(normalizedUserId);
+    for (const row of rows) {
+        const avatarId = row.avatarId;
         if (avatarId) {
-            map.set(avatarId, parseInteger(row.timeSpent ?? row.time_spent, 0));
+            map.set(avatarId, parseInteger(row.timeSpent, 0));
         }
     }
     return map;
 }
 
 async function getAvatarHistory(userId: unknown, limit: unknown = 100) {
-    const rows = (await commands.appAvatarHistoryList(
-        normalizeString(userId),
+    const normalizedUserId = normalizeString(userId);
+    if (!normalizedUserId) {
+        return [];
+    }
+
+    const rows = await commands.appAvatarHistoryList(
+        normalizedUserId,
         parseInteger(limit, 100)
-    )) as ObjectRow[];
-    return Array.isArray(rows) ? rows.map(normalizeAvatarCacheRow) : [];
+    );
+    return rows.map(normalizeAvatarCacheRow);
 }
 
 async function clearAvatarHistory(userId: unknown) {
-    await commands.appAvatarHistoryClear(userId as string);
+    const normalizedUserId = normalizeString(userId);
+    if (!normalizedUserId) {
+        return;
+    }
+    await commands.appAvatarHistoryClear(normalizedUserId);
 }
 
 async function getAvatarTags(avatarId: unknown) {
-    const rows = (await commands.appAvatarTagsGet(
-        normalizeString(avatarId)
-    )) as ObjectRow[];
-    return (Array.isArray(rows) ? rows : []).map((row) => ({
+    const normalizedAvatarId = normalizeString(avatarId);
+    if (!normalizedAvatarId) {
+        return [];
+    }
+    const rows = await commands.appAvatarTagsGet(normalizedAvatarId);
+    return rows.map((row) => ({
         tag: row.tag,
         color: row.color || null
     }));
 }
 
 async function getAllAvatarTags() {
-    const map = new Map<unknown, AvatarTag[]>();
-    const rows = (await commands.appAvatarTagsList()) as ObjectRow[];
-    for (const row of Array.isArray(rows) ? rows : []) {
-        const avatarId = row.avatarId ?? row.avatar_id;
+    const map = new Map<string, AvatarTag[]>();
+    const rows = await commands.appAvatarTagsList();
+    for (const row of rows) {
+        const avatarId = row.avatarId;
         const tag = row.tag;
         const color = row.color || null;
         if (!map.has(avatarId)) {
@@ -208,8 +231,7 @@ async function getAllAvatarTags() {
 }
 
 async function getAllDistinctTags() {
-    const tags = (await commands.appAvatarTagsDistinct()) as unknown[];
-    return Array.isArray(tags) ? tags : [];
+    return commands.appAvatarTagsDistinct();
 }
 
 async function addAvatarTag(
@@ -243,7 +265,7 @@ async function removeAllAvatarTags(avatarId: unknown) {
 async function replaceAvatarTags(avatarId: unknown, entries: AvatarTag[] = []) {
     await commands.appAvatarTagsReplace(
         normalizeString(avatarId),
-        (Array.isArray(entries) ? entries : []) as AvatarTagInput[]
+        (Array.isArray(entries) ? entries : []).map(normalizeAvatarTagInput)
     );
 }
 
@@ -252,10 +274,16 @@ async function patchAvatarTags(
     previousEntries: AvatarTag[] = [],
     nextEntries: AvatarTag[] = []
 ) {
-    await commands.appAvatarTagsPatch(normalizeString(avatarId), {
-        previousEntries: Array.isArray(previousEntries) ? previousEntries : [],
-        nextEntries: Array.isArray(nextEntries) ? nextEntries : []
-    } as AvatarTagsPatchInput);
+    const patch: AvatarTagsPatchInput = {
+        previousEntries: (Array.isArray(previousEntries)
+            ? previousEntries
+            : []
+        ).map(normalizeAvatarTagInput),
+        nextEntries: (Array.isArray(nextEntries) ? nextEntries : []).map(
+            normalizeAvatarTagInput
+        )
+    };
+    await commands.appAvatarTagsPatch(normalizeString(avatarId), patch);
 }
 
 const avatarCacheRepository = Object.freeze({

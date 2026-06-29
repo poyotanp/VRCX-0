@@ -30,6 +30,58 @@ interface RecordLogoutOptions {
     cookies?: unknown;
 }
 
+function isRecord(value: unknown): value is GenericRecord {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeSavedCredentialRecord(
+    value: unknown
+): SavedCredentialRecord | null {
+    if (!isRecord(value)) {
+        return null;
+    }
+    return {
+        ...value,
+        user: isRecord(value.user) ? value.user : null,
+        loginParams: isRecord(value.loginParams) ? value.loginParams : null,
+        hasLoginCredentials: value.hasLoginCredentials === true
+    };
+}
+
+function normalizeSavedCredentialsMap(value: unknown): SavedCredentialsMap {
+    if (!isRecord(value)) {
+        return {};
+    }
+    const result: SavedCredentialsMap = {};
+    for (const [userId, credential] of Object.entries(value)) {
+        const normalized = normalizeSavedCredentialRecord(credential);
+        if (normalized) {
+            result[userId] = normalized;
+        }
+    }
+    return result;
+}
+
+function normalizeSavedAuthSnapshot(value: unknown): SavedAuthSnapshot {
+    const record = isRecord(value) ? value : {};
+    return {
+        ...record,
+        lastUserLoggedIn: record.lastUserLoggedIn ?? null,
+        savedCredentialCount: record.savedCredentialCount ?? 0,
+        autoLoginStatus:
+            typeof record.autoLoginStatus === 'string'
+                ? record.autoLoginStatus
+                : '',
+        autoLoginReason:
+            typeof record.autoLoginReason === 'string'
+                ? record.autoLoginReason
+                : '',
+        autoLoginDelayEnabled: record.autoLoginDelayEnabled ?? false,
+        autoLoginDelaySeconds: record.autoLoginDelaySeconds ?? 0,
+        savedCredentials: normalizeSavedCredentialsMap(record.savedCredentials)
+    };
+}
+
 async function runAuthSavedCommand<T>(
     command: () => Promise<T>,
     fallbackMessage: string
@@ -43,18 +95,17 @@ async function runAuthSavedCommand<T>(
 
 async function getSavedAuthSnapshot(): Promise<SavedAuthSnapshot> {
     return runAuthSavedCommand(
-        () =>
-            commands.appVrchatAuthSavedSnapshotGet() as Promise<SavedAuthSnapshot>,
+        async () =>
+            normalizeSavedAuthSnapshot(
+                await commands.appVrchatAuthSavedSnapshotGet()
+            ),
         'Auth saved snapshot failed'
     );
 }
 
 async function getSavedCredentialsMap(): Promise<SavedCredentialsMap> {
     const snapshot = await getSavedAuthSnapshot();
-    return snapshot?.savedCredentials &&
-        typeof snapshot.savedCredentials === 'object'
-        ? (snapshot.savedCredentials as SavedCredentialsMap)
-        : {};
+    return normalizeSavedCredentialsMap(snapshot.savedCredentials);
 }
 
 async function getSavedCredential(userId: string) {
@@ -70,11 +121,15 @@ async function deleteSavedCredential(
     userId: string
 ): Promise<SavedAuthSnapshot> {
     return runAuthSavedCommand(
-        () =>
-            commands.appVrchatAuthSavedCredentialDelete({
-                userId:
-                    typeof userId === 'string' ? userId : String(userId ?? '')
-            }) as Promise<SavedAuthSnapshot>,
+        async () =>
+            normalizeSavedAuthSnapshot(
+                await commands.appVrchatAuthSavedCredentialDelete({
+                    userId:
+                        typeof userId === 'string'
+                            ? userId
+                            : String(userId ?? '')
+                })
+            ),
         'Saved credential delete failed'
     );
 }
@@ -86,13 +141,15 @@ async function recordLoginSuccess({
     saveCredentials = false
 }: RecordLoginSuccessInput): Promise<SavedAuthSnapshot> {
     return runAuthSavedCommand(
-        () =>
-            commands.appVrchatAuthLoginSuccessRecord({
-                user,
-                loginParams,
-                storedLoginParams,
-                saveCredentials
-            }) as Promise<SavedAuthSnapshot>,
+        async () =>
+            normalizeSavedAuthSnapshot(
+                await commands.appVrchatAuthLoginSuccessRecord({
+                    user,
+                    loginParams,
+                    storedLoginParams,
+                    saveCredentials
+                })
+            ),
         'Login success record failed'
     );
 }
@@ -102,15 +159,17 @@ async function recordLogout(
     options: RecordLogoutOptions = {}
 ): Promise<SavedAuthSnapshot> {
     return runAuthSavedCommand(
-        () =>
-            commands.appVrchatAuthLogoutRecord({
-                userOrUserId,
-                clearLastUserLoggedIn:
-                    options.clearLastUserLoggedIn === undefined
-                        ? undefined
-                        : Boolean(options.clearLastUserLoggedIn),
-                cookies: options.cookies
-            }) as Promise<SavedAuthSnapshot>,
+        async () =>
+            normalizeSavedAuthSnapshot(
+                await commands.appVrchatAuthLogoutRecord({
+                    userOrUserId,
+                    clearLastUserLoggedIn:
+                        options.clearLastUserLoggedIn === undefined
+                            ? undefined
+                            : Boolean(options.clearLastUserLoggedIn),
+                    cookies: options.cookies
+                })
+            ),
         'Logout record failed'
     );
 }

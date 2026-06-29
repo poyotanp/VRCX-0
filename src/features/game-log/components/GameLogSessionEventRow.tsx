@@ -274,7 +274,7 @@ function VideoActivityRow({ event }: any) {
                                 type="button"
                                 variant="link"
                                 className="text-foreground h-auto min-w-0 shrink justify-start p-0 text-left font-normal"
-                                onClick={(eventObject: any) => {
+                                onClick={(eventObject) => {
                                     eventObject.stopPropagation();
                                     openExternalLink(event.videoUrl);
                                 }}

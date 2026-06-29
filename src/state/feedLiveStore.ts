@@ -1,27 +1,28 @@
 import { create } from 'zustand';
 
+import type {
+    FeedEntryPatch,
+    FeedEntryPatchInput,
+    FeedLiveEntry,
+    FeedLiveEntryPayload
+} from '@/domain/feed/feedLiveTypes';
 import { normalizeString } from '@/shared/utils/string';
 
-interface FeedLiveEntry {
-    sequence: number;
-    ownerUserId: string;
-    entry: Record<string, unknown>;
-}
-
-type FeedEntryPatch = Partial<{
-    displayName: string;
-    worldName: string;
-    displayLocation: string;
-}>;
+type FeedLivePushOptions = {
+    ownerUserId?: string;
+};
 
 interface FeedLiveStoreState {
     version: number;
     entries: FeedLiveEntry[];
     pushEntry: (
-        entry: Record<string, unknown> | null | undefined,
-        options?: { ownerUserId?: string }
+        entry: FeedLiveEntryPayload | null | undefined,
+        options?: FeedLivePushOptions
     ) => void;
-    patchEntry: (id: unknown, fields: FeedEntryPatch) => void;
+    patchEntry: (
+        id: unknown,
+        fields: FeedEntryPatchInput | null | undefined
+    ) => void;
     resetFeedLive: () => void;
 }
 
@@ -30,7 +31,11 @@ const initialState: Pick<FeedLiveStoreState, 'version' | 'entries'> = {
     entries: []
 };
 
-export function feedEntryCorrectionId(row: Record<string, unknown>): string {
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+export function feedEntryCorrectionId(row: FeedLiveEntryPayload): string {
     if (row?.id != null) {
         return `id:${row.id}`;
     }
@@ -45,49 +50,60 @@ export function feedEntryCorrectionId(row: Record<string, unknown>): string {
     const type = row?.type ?? '';
     const createdAt = row?.created_at ?? row?.createdAt ?? '';
     const userId = row?.userId ?? row?.senderUserId ?? '';
-    const details =
-        row?.details && typeof row.details === 'object'
-            ? (row.details as Record<string, unknown>)
-            : {};
+    const details = isRecord(row?.details) ? row.details : {};
     const location = row?.location ?? details.location ?? '';
     const message = row?.message ?? '';
     return `${type}:${createdAt}:${userId}:${location}:${message}`;
 }
 
-function nonEmptyFeedPatch(fields: FeedEntryPatch): FeedEntryPatch {
-    return Object.fromEntries(
-        Object.entries(fields).filter(
-            ([, value]) => normalizeString(value) !== ''
-        )
-    ) as FeedEntryPatch;
+function nonEmptyFeedPatch(fields: FeedEntryPatchInput): FeedEntryPatch {
+    const patch: FeedEntryPatch = {};
+    const displayName = normalizeString(fields.displayName);
+    if (displayName) {
+        patch.displayName = displayName;
+    }
+    const worldName = normalizeString(fields.worldName);
+    if (worldName) {
+        patch.worldName = worldName;
+    }
+    const displayLocation = normalizeString(fields.displayLocation);
+    if (displayLocation) {
+        patch.displayLocation = displayLocation;
+    }
+    return patch;
 }
 
-export const useFeedLiveStore = create<FeedLiveStoreState>((set: any) => ({
+export const useFeedLiveStore = create<FeedLiveStoreState>((set) => ({
     ...initialState,
-    pushEntry(entry: any, { ownerUserId = '' }: any = {}) {
-        if (!entry || typeof entry !== 'object') {
+    pushEntry(entry, { ownerUserId = '' }: FeedLivePushOptions = {}) {
+        if (!isRecord(entry)) {
             return;
         }
-        set((state: any) => ({
-            version: state.version + 1,
-            entries: [
+        set((state) => {
+            const version = state.version + 1;
+            const entries = [
                 ...state.entries,
                 {
-                    sequence: state.version + 1,
+                    sequence: version,
                     ownerUserId,
                     entry: { ...entry, ownerUserId }
                 }
-            ].slice(-100)
-        }));
+            ].slice(-100);
+            const nextState = {
+                version,
+                entries
+            };
+            return nextState;
+        });
     },
-    patchEntry(id: any, fields: any) {
+    patchEntry(id, fields) {
         const normalizedId = normalizeString(id);
-        if (!normalizedId || !fields || typeof fields !== 'object') {
+        if (!normalizedId || !isRecord(fields)) {
             return;
         }
-        set((state: any) => {
+        set((state) => {
             let changed = false;
-            const entries = state.entries.map((entry: FeedLiveEntry) => {
+            const entries = state.entries.map((entry) => {
                 if (feedEntryCorrectionId(entry.entry) !== normalizedId) {
                     return entry;
                 }
@@ -105,10 +121,11 @@ export const useFeedLiveStore = create<FeedLiveStoreState>((set: any) => ({
             if (!changed) {
                 return state;
             }
-            return {
+            const nextState = {
                 version: state.version + 1,
                 entries
             };
+            return nextState;
         });
     },
     resetFeedLive() {

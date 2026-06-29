@@ -1,53 +1,27 @@
 import { commands } from '@/platform/tauri/bindings';
 import type {
+    ActivityBucketCacheInput as IpcActivityBucketCacheInput,
+    ActivityBucketCacheQueryInput as IpcActivityBucketCacheQueryInput,
     ActivityFriendPresenceAfterInput,
-    ActivityFriendPresenceSliceInput
+    ActivityFriendPresenceSliceInput,
+    ActivityPresenceOutput as IpcActivityPresenceOutput,
+    ActivitySelfSessionsRefreshInput as IpcActivitySelfSessionsRefreshInput,
+    ActivitySessionOutput as IpcActivitySessionOutput,
+    ActivitySourceLocationOutput as IpcActivitySourceLocationOutput,
+    ActivitySyncStateInput as IpcActivitySyncStateInput,
+    ActivitySyncStateOutput as IpcActivitySyncStateOutput
 } from '@/platform/tauri/bindings';
 import { DAY_MS } from '@/shared/constants/time';
 import type { ActivitySession } from '@/shared/utils/activityEngine';
 
-type ActivityViewKind =
+export type ActivityViewKind =
     (typeof ACTIVITY_VIEW_KIND)[keyof typeof ACTIVITY_VIEW_KIND];
-type ObjectRow = Record<string, unknown>;
+type ActivitySyncStateRow = IpcActivitySyncStateOutput;
+type ActivitySessionRow = IpcActivitySessionOutput;
+type ActivityLocationRow = IpcActivitySourceLocationOutput;
+type PresenceRow = IpcActivityPresenceOutput;
 
-interface ActivitySyncStateRow extends ObjectRow {
-    user_id?: unknown;
-    userId?: unknown;
-    updated_at?: unknown;
-    updatedAt?: unknown;
-    is_self?: unknown;
-    isSelf?: unknown;
-    source_last_created_at?: unknown;
-    sourceLastCreatedAt?: unknown;
-    pending_session_start_at?: unknown;
-    pendingSessionStartAt?: unknown;
-    cached_range_days?: unknown;
-    cachedRangeDays?: unknown;
-}
-
-interface ActivitySessionRow extends ObjectRow {
-    start_at?: unknown;
-    start?: unknown;
-    end_at?: unknown;
-    end?: unknown;
-    is_open_tail?: unknown;
-    isOpenTail?: unknown;
-    source_revision?: unknown;
-    sourceRevision?: unknown;
-}
-
-interface ActivityLocationRow extends ObjectRow {
-    created_at?: unknown;
-    createdAt?: unknown;
-    time?: unknown;
-}
-
-interface PresenceRow extends ObjectRow {
-    created_at?: unknown;
-    type?: unknown;
-}
-
-interface ActivitySyncStateInput {
+interface ActivitySyncStateEntry {
     userId?: unknown;
     updatedAt?: string;
     isSelf?: unknown;
@@ -62,20 +36,6 @@ interface AppendActivitySessionsInput {
     replaceFromStartAt?: number | null;
 }
 
-interface ActivityBucketCacheRow extends ObjectRow {
-    user_id?: unknown;
-    target_user_id?: unknown;
-    range_days?: unknown;
-    view_kind?: unknown;
-    exclude_key?: unknown;
-    bucket_version?: unknown;
-    built_from_cursor?: unknown;
-    raw_buckets_json?: unknown;
-    normalized_buckets_json?: unknown;
-    summary_json?: unknown;
-    built_at?: unknown;
-}
-
 interface ActivityBucketCacheQuery {
     ownerUserId: string;
     targetUserId?: string;
@@ -84,35 +44,20 @@ interface ActivityBucketCacheQuery {
     excludeKey?: string;
 }
 
-interface ActivityBucketCacheInput extends ActivityBucketCacheQuery {
+interface ActivityBucketCacheEntry extends ActivityBucketCacheQuery {
     bucketVersion?: number;
     builtFromCursor?: string;
-    rawBuckets?: unknown[];
-    normalizedBuckets?: unknown[];
-    summary?: unknown;
+    rawBuckets?: number[];
+    normalizedBuckets?: number[];
+    summary?: ActivityBucketCacheSummary;
     builtAt?: string;
 }
 
-interface ActivitySelfSessionsRefreshInput {
+interface ActivitySelfSessionsRefreshRequest {
     userId?: unknown;
     mode: 'full' | 'incremental' | 'expand';
     rangeDays?: string | number;
     nowMs?: number;
-}
-
-interface ActivitySelfSessionsRefreshOutput extends ObjectRow {
-    sync?: ActivitySyncStateRow | null;
-    sessions?: ActivitySessionRow[];
-    sourceCount?: unknown;
-    source_count?: unknown;
-}
-
-interface ActivitySourceBoundsRow extends ObjectRow {
-    firstCreatedAt?: unknown;
-    first_created_at?: unknown;
-    lastCreatedAt?: unknown;
-    last_created_at?: unknown;
-    count?: unknown;
 }
 
 interface ActivitySourceSliceInput {
@@ -150,21 +95,64 @@ interface ActivitySourceAfterQuery extends ActivitySelfSourceAfterInput {
     isSelf?: boolean;
 }
 
-type NormalizedActivityLocation = {
-    created_at: unknown;
+export type ActivitySourceEvent = {
+    created_at: string;
     time: number;
 };
 
-type NormalizedPresence = {
-    created_at: unknown;
-    type: unknown;
+export type ActivityPresenceEvent = {
+    created_at: string;
+    type: string;
 };
 
-type NormalizedActivitySession = {
+export type ActivityPersistedSession = {
     start: number;
     end: number;
     isOpenTail: boolean;
-    sourceRevision: unknown;
+    sourceRevision: string;
+};
+
+export type ActivitySyncState = {
+    userId: string;
+    updatedAt: string;
+    isSelf: boolean;
+    sourceLastCreatedAt: string;
+    pendingSessionStartAt: string | number | null;
+    cachedRangeDays: number;
+};
+
+export type ActivityRefreshResult = {
+    sync: ActivitySyncState;
+    sessions: ActivityPersistedSession[];
+    sourceCount: number;
+};
+
+export type ActivitySourceBounds = {
+    firstCreatedAt: string;
+    lastCreatedAt: string;
+    count: number;
+};
+
+export type ActivityBucketCacheSummary = Record<string, unknown> & {
+    filteredEventCount?: number;
+    peakDay?: string;
+    peakTime?: string;
+    bestOverlapTime?: string;
+    overlapPercent?: number;
+};
+
+export type ActivityBucketCache = {
+    ownerUserId: string;
+    targetUserId: string;
+    rangeDays: number;
+    viewKind: ActivityViewKind | string;
+    excludeKey: string;
+    bucketVersion: number;
+    builtFromCursor: string;
+    rawBuckets: number[];
+    normalizedBuckets: number[];
+    summary: ActivityBucketCacheSummary;
+    builtAt: string;
 };
 
 const ACTIVITY_VIEW_KIND = Object.freeze({
@@ -172,67 +160,146 @@ const ACTIVITY_VIEW_KIND = Object.freeze({
     OVERLAP: 'overlap'
 });
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function normalizeText(value: unknown): string {
+    return typeof value === 'string'
+        ? value.trim()
+        : String(value ?? '').trim();
+}
+
+function normalizeNumber(value: unknown): number {
+    const parsed = Number.parseFloat(String(value ?? ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeInteger(value: unknown): number {
+    const parsed = Number.parseInt(String(value ?? ''), 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizePendingSessionStartAt(
+    value: unknown
+): string | number | null {
+    return typeof value === 'string' || typeof value === 'number'
+        ? value
+        : null;
+}
+
+function normalizeNumberArray(value: unknown): number[] {
+    if (Array.isArray(value)) {
+        return value.map(normalizeNumber);
+    }
+    if (typeof value === 'string' && value.trim()) {
+        try {
+            const parsed = JSON.parse(value) as unknown;
+            return Array.isArray(parsed) ? parsed.map(normalizeNumber) : [];
+        } catch {
+            return [];
+        }
+    }
+    return [];
+}
+
+function parseMaybeObject(value: unknown): Record<string, unknown> {
+    if (isRecord(value)) {
+        return value;
+    }
+    if (typeof value === 'string' && value.trim()) {
+        try {
+            const parsed = JSON.parse(value) as unknown;
+            return isRecord(parsed) ? parsed : {};
+        } catch {
+            return {};
+        }
+    }
+    return {};
+}
+
+function normalizeBucketSummary(value: unknown): ActivityBucketCacheSummary {
+    const source = parseMaybeObject(value);
+    const summary: ActivityBucketCacheSummary = { ...source };
+
+    if ('filteredEventCount' in source) {
+        summary.filteredEventCount = normalizeInteger(
+            source.filteredEventCount
+        );
+    }
+    if ('peakDay' in source) {
+        summary.peakDay = normalizeText(source.peakDay);
+    }
+    if ('peakTime' in source) {
+        summary.peakTime = normalizeText(source.peakTime);
+    }
+    if ('bestOverlapTime' in source) {
+        summary.bestOverlapTime = normalizeText(source.bestOverlapTime);
+    }
+    if ('overlapPercent' in source) {
+        summary.overlapPercent = normalizeNumber(source.overlapPercent);
+    }
+
+    return summary;
+}
+
 function normalizeActivitySyncStateRow(
     row: ActivitySyncStateRow | null,
     fallbackUserId: string
-) {
+): ActivitySyncState | null {
     if (!row || typeof row !== 'object') {
         return null;
     }
 
     return {
-        userId: row.user_id ?? row.userId ?? fallbackUserId,
-        updatedAt: row.updated_at ?? row.updatedAt ?? '',
-        isSelf: Boolean(row.is_self ?? row.isSelf),
-        sourceLastCreatedAt:
-            row.source_last_created_at ?? row.sourceLastCreatedAt ?? '',
-        pendingSessionStartAt:
-            row.pending_session_start_at ?? row.pendingSessionStartAt ?? null,
-        cachedRangeDays:
-            Number.parseInt(
-                String(row.cached_range_days ?? row.cachedRangeDays ?? 0),
-                10
-            ) || 0
+        userId: normalizeText(row.userId || fallbackUserId),
+        updatedAt: normalizeText(row.updatedAt),
+        isSelf: Boolean(row.isSelf),
+        sourceLastCreatedAt: normalizeText(row.sourceLastCreatedAt),
+        pendingSessionStartAt: normalizePendingSessionStartAt(
+            row.pendingSessionStartAt
+        ),
+        cachedRangeDays: normalizeInteger(row.cachedRangeDays)
     };
 }
 
 function normalizeActivitySessionRow(
     row: ActivitySessionRow | null
-): NormalizedActivitySession | null {
+): ActivityPersistedSession | null {
     if (!row || typeof row !== 'object') {
         return null;
     }
 
     return {
-        start: Number.parseInt(String(row.start_at ?? row.start ?? 0), 10) || 0,
-        end: Number.parseInt(String(row.end_at ?? row.end ?? 0), 10) || 0,
-        isOpenTail: Boolean(row.is_open_tail ?? row.isOpenTail),
-        sourceRevision: row.source_revision ?? row.sourceRevision ?? ''
+        start: normalizeInteger(row.start),
+        end: normalizeInteger(row.end),
+        isOpenTail: Boolean(row.isOpenTail),
+        sourceRevision: normalizeText(row.sourceRevision)
     };
 }
 
 function normalizeLocationRow(
     row: ActivityLocationRow | null
-): NormalizedActivityLocation | null {
+): ActivitySourceEvent | null {
     if (!row || typeof row !== 'object') {
         return null;
     }
 
     return {
-        created_at: row.created_at ?? row.createdAt ?? '',
-        time: Number.parseInt(String(row.time ?? 0), 10) || 0
+        created_at: normalizeText(row.created_at),
+        time: normalizeInteger(row.time)
     };
 }
 
 function normalizePresenceRow(
     row: PresenceRow | null
-): NormalizedPresence | null {
+): ActivityPresenceEvent | null {
     if (!row || typeof row !== 'object') {
         return null;
     }
     return {
-        created_at: row.created_at ?? '',
-        type: row.type ?? ''
+        created_at: normalizeText(row.created_at),
+        type: normalizeText(row.type)
     };
 }
 
@@ -250,10 +317,10 @@ async function getSelfActivitySourceSlice({
     const toDateIso =
         toDays > 0 ? new Date(Date.now() - toDays * DAY_MS).toISOString() : '';
 
-    const rows = (await commands.appActivitySelfSourceSlice({
+    const rows = await commands.appActivitySelfSourceSlice({
         fromDateIso,
         toDateIso
-    })) as ActivityLocationRow[];
+    });
 
     if (!Array.isArray(rows)) {
         return [];
@@ -266,10 +333,10 @@ async function getSelfActivitySourceAfter({
     afterCreatedAt,
     inclusive = false
 }: ActivitySelfSourceAfterInput) {
-    const rows = (await commands.appActivitySelfSourceAfter({
+    const rows = await commands.appActivitySelfSourceAfter({
         afterCreatedAt,
         inclusive
-    })) as ActivityLocationRow[];
+    });
 
     if (!Array.isArray(rows)) {
         return [];
@@ -278,16 +345,12 @@ async function getSelfActivitySourceAfter({
     return rows.map(normalizeLocationRow).filter(hasCreatedAt);
 }
 
-async function getSelfActivitySourceBounds() {
-    const row =
-        ((await commands.appActivitySelfSourceBounds()) as ActivitySourceBoundsRow | null) ||
-        {};
+async function getSelfActivitySourceBounds(): Promise<ActivitySourceBounds> {
+    const row = await commands.appActivitySelfSourceBounds();
     return {
-        firstCreatedAt: String(
-            row.firstCreatedAt ?? row.first_created_at ?? ''
-        ),
-        lastCreatedAt: String(row.lastCreatedAt ?? row.last_created_at ?? ''),
-        count: Number.parseInt(String(row.count ?? 0), 10) || 0
+        firstCreatedAt: String(row.firstCreatedAt ?? ''),
+        lastCreatedAt: String(row.lastCreatedAt ?? ''),
+        count: normalizeInteger(row.count)
     };
 }
 
@@ -303,9 +366,7 @@ async function getFriendPresenceSlice({
         fromDateIso: String(fromDateIso ?? ''),
         toDateIso: String(toDateIso ?? '')
     };
-    const rows = (await commands.appActivityFriendPresenceSlice(
-        input
-    )) as PresenceRow[];
+    const rows = await commands.appActivityFriendPresenceSlice(input);
 
     const output = Array.isArray(rows)
         ? rows.map(normalizePresenceRow).filter(hasCreatedAt)
@@ -328,9 +389,7 @@ async function getFriendPresenceAfter({
         userId: String(userId ?? ''),
         afterCreatedAt: String(afterCreatedAt ?? '')
     };
-    const rows = (await commands.appActivityFriendPresenceAfter(
-        input
-    )) as PresenceRow[];
+    const rows = await commands.appActivityFriendPresenceAfter(input);
     return Array.isArray(rows)
         ? rows.map(normalizePresenceRow).filter(hasCreatedAt)
         : [];
@@ -374,7 +433,9 @@ async function getActivitySourceAfter({
           });
 }
 
-async function getActivitySyncState(userId: unknown) {
+async function getActivitySyncState(
+    userId: unknown
+): Promise<ActivitySyncState | null> {
     const normalizedUserId =
         typeof userId === 'string'
             ? userId.trim()
@@ -383,9 +444,7 @@ async function getActivitySyncState(userId: unknown) {
         return null;
     }
 
-    const row = (await commands.appActivitySyncStateGet(
-        normalizedUserId
-    )) as ActivitySyncStateRow | null;
+    const row = await commands.appActivitySyncStateGet(normalizedUserId);
 
     if (!row) {
         return null;
@@ -394,7 +453,7 @@ async function getActivitySyncState(userId: unknown) {
     return normalizeActivitySyncStateRow(row, normalizedUserId);
 }
 
-async function upsertActivitySyncState(entry: ActivitySyncStateInput) {
+async function upsertActivitySyncState(entry: ActivitySyncStateEntry) {
     const normalizedUserId =
         typeof entry?.userId === 'string'
             ? entry.userId.trim()
@@ -405,7 +464,7 @@ async function upsertActivitySyncState(entry: ActivitySyncStateInput) {
         );
     }
 
-    await commands.appActivitySyncStateUpsert({
+    const input = {
         userId: normalizedUserId,
         updatedAt: entry.updatedAt || '',
         isSelf: Boolean(entry.isSelf),
@@ -413,7 +472,9 @@ async function upsertActivitySyncState(entry: ActivitySyncStateInput) {
         pendingSessionStartAt: entry.pendingSessionStartAt ?? null,
         cachedRangeDays:
             Number.parseInt(String(entry.cachedRangeDays ?? 0), 10) || 0
-    });
+    } satisfies IpcActivitySyncStateInput;
+
+    await commands.appActivitySyncStateUpsert(input);
 }
 
 async function refreshSelfActivitySessions({
@@ -421,7 +482,7 @@ async function refreshSelfActivitySessions({
     mode,
     rangeDays = 0,
     nowMs
-}: ActivitySelfSessionsRefreshInput) {
+}: ActivitySelfSessionsRefreshRequest): Promise<ActivityRefreshResult> {
     const normalizedUserId =
         typeof userId === 'string'
             ? userId.trim()
@@ -432,12 +493,13 @@ async function refreshSelfActivitySessions({
         );
     }
 
-    const result = (await commands.appActivitySelfSessionsRefresh({
+    const input = {
         userId: normalizedUserId,
         mode,
         rangeDays,
         ...(Number.isFinite(nowMs) ? { nowMs } : {})
-    })) as ActivitySelfSessionsRefreshOutput | null;
+    } satisfies IpcActivitySelfSessionsRefreshInput;
+    const result = await commands.appActivitySelfSessionsRefresh(input);
     const sync = normalizeActivitySyncStateRow(
         result?.sync || null,
         normalizedUserId
@@ -446,7 +508,7 @@ async function refreshSelfActivitySessions({
         ? result.sessions
               .map(normalizeActivitySessionRow)
               .filter(
-                  (row): row is NormalizedActivitySession =>
+                  (row): row is ActivityPersistedSession =>
                       Number.isFinite(row?.start) && Number.isFinite(row?.end)
               )
         : [];
@@ -462,15 +524,13 @@ async function refreshSelfActivitySessions({
                 cachedRangeDays: 0
             },
         sessions,
-        sourceCount:
-            Number.parseInt(
-                String(result?.sourceCount ?? result?.source_count ?? 0),
-                10
-            ) || 0
+        sourceCount: normalizeInteger(result?.sourceCount)
     };
 }
 
-async function getActivitySessions(userId: unknown) {
+async function getActivitySessions(
+    userId: unknown
+): Promise<ActivityPersistedSession[]> {
     const normalizedUserId =
         typeof userId === 'string'
             ? userId.trim()
@@ -479,9 +539,7 @@ async function getActivitySessions(userId: unknown) {
         return [];
     }
 
-    const rows = (await commands.appActivitySessionsGet(
-        normalizedUserId
-    )) as ActivitySessionRow[];
+    const rows = await commands.appActivitySessionsGet(normalizedUserId);
 
     if (!Array.isArray(rows)) {
         return [];
@@ -490,7 +548,7 @@ async function getActivitySessions(userId: unknown) {
     return rows
         .map(normalizeActivitySessionRow)
         .filter(
-            (row): row is NormalizedActivitySession =>
+            (row): row is ActivityPersistedSession =>
                 Number.isFinite(row?.start) && Number.isFinite(row?.end)
         );
 }
@@ -535,42 +593,35 @@ async function getActivityBucketCache({
     rangeDays,
     viewKind,
     excludeKey = ''
-}: ActivityBucketCacheQuery) {
-    const row = (await commands.appActivityBucketCacheGet({
+}: ActivityBucketCacheQuery): Promise<ActivityBucketCache | null> {
+    const query = {
         ownerUserId,
         targetUserId,
         rangeDays,
         viewKind,
         excludeKey
-    })) as
-        | (ActivityBucketCacheRow & {
-              ownerUserId?: unknown;
-              rawBuckets?: unknown;
-              normalizedBuckets?: unknown;
-              summary?: unknown;
-              builtAt?: unknown;
-          })
-        | null;
+    } satisfies IpcActivityBucketCacheQueryInput;
+    const row = await commands.appActivityBucketCacheGet(query);
     if (!row) {
         return null;
     }
     return {
-        ownerUserId: row.ownerUserId ?? row.user_id,
-        targetUserId: row.targetUserId ?? row.target_user_id,
-        rangeDays: row.rangeDays ?? row.range_days,
-        viewKind: row.viewKind ?? row.view_kind,
-        excludeKey: row.excludeKey ?? row.exclude_key ?? '',
-        bucketVersion: row.bucketVersion ?? row.bucket_version ?? 1,
-        builtFromCursor: row.builtFromCursor ?? row.built_from_cursor ?? '',
-        rawBuckets: row.rawBuckets ?? [],
-        normalizedBuckets: row.normalizedBuckets ?? [],
-        summary: row.summary ?? {},
-        builtAt: row.builtAt ?? row.built_at ?? ''
+        ownerUserId: normalizeText(row.ownerUserId),
+        targetUserId: normalizeText(row.targetUserId),
+        rangeDays: normalizeInteger(row.rangeDays),
+        viewKind: normalizeText(row.viewKind),
+        excludeKey: normalizeText(row.excludeKey),
+        bucketVersion: normalizeInteger(row.bucketVersion),
+        builtFromCursor: normalizeText(row.builtFromCursor),
+        rawBuckets: normalizeNumberArray(row.rawBuckets),
+        normalizedBuckets: normalizeNumberArray(row.normalizedBuckets),
+        summary: normalizeBucketSummary(row.summary),
+        builtAt: normalizeText(row.builtAt)
     };
 }
 
-async function upsertActivityBucketCache(entry: ActivityBucketCacheInput) {
-    await commands.appActivityBucketCacheUpsert({
+async function upsertActivityBucketCache(entry: ActivityBucketCacheEntry) {
+    const input = {
         ownerUserId: entry.ownerUserId,
         targetUserId: entry.targetUserId || '',
         rangeDays: entry.rangeDays,
@@ -582,7 +633,9 @@ async function upsertActivityBucketCache(entry: ActivityBucketCacheInput) {
         normalizedBuckets: entry.normalizedBuckets || [],
         summary: entry.summary || {},
         builtAt: entry.builtAt || ''
-    });
+    } satisfies IpcActivityBucketCacheInput;
+
+    await commands.appActivityBucketCacheUpsert(input);
 }
 
 const activityPersistenceRepository = Object.freeze({

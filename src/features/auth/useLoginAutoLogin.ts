@@ -37,7 +37,7 @@ export function useLoginAutoLogin({
 }: any) {
     const { t } = useTranslation();
     const backendRuntimeSnapshotHydrated = useRuntimeStore(
-        (state: any) => state.shell.backendRuntimeSnapshotHydrated
+        (state) => state.shell.backendRuntimeSnapshotHydrated
     );
     const [autoLoginState, setAutoLoginState] = useState<AutoLoginState>({
         status: 'idle',

@@ -2,6 +2,11 @@ import {
     normalizeLocationStatus,
     timestampMsFromValue
 } from '@/components/sidebar/friends-sidebar/friendsSidebarModel';
+import type {
+    FriendRecord,
+    FriendRosterById,
+    FriendRosterStore
+} from '@/domain/friends/friendRosterTypes';
 import { parseLocation } from '@/shared/utils/location';
 import { normalizeString as normalizeId } from '@/shared/utils/string';
 import { useFriendRosterStore } from '@/state/friendRosterStore';
@@ -9,22 +14,32 @@ import { useFriendRosterStore } from '@/state/friendRosterStore';
 const firstSeenByUser = new Map<string, { location: string; since: number }>();
 let started = false;
 
-let previousFriendsById: any = null;
+let previousFriendsById: FriendRosterById | null = null;
 
-function readEntryLocationTag(friend: any) {
-    const ref =
-        friend?.ref && typeof friend.ref === 'object' ? friend.ref : friend;
+function getFriendRefRecord(friend: FriendRecord): Record<string, unknown> {
+    return friend.ref && typeof friend.ref === 'object'
+        ? (friend.ref as Record<string, unknown>)
+        : friend;
+}
+
+function readLocationProjectionTag(value: unknown): unknown {
+    return value && typeof value === 'object'
+        ? (value as Record<string, unknown>).tag
+        : undefined;
+}
+
+function readEntryLocationTag(friend: FriendRecord) {
+    const ref = getFriendRefRecord(friend);
     return normalizeId(
         friend?.location ||
             ref?.location ||
             friend?.$location?.tag ||
-            ref?.$location?.tag
+            readLocationProjectionTag(ref?.$location)
     );
 }
 
-function readEntryUpstreamEpoch(friend: any) {
-    const ref =
-        friend?.ref && typeof friend.ref === 'object' ? friend.ref : friend;
+function readEntryUpstreamEpoch(friend: FriendRecord) {
+    const ref = getFriendRefRecord(friend);
     return timestampMsFromValue(
         friend?.locationAt ||
             ref?.locationAt ||
@@ -33,7 +48,7 @@ function readEntryUpstreamEpoch(friend: any) {
     );
 }
 
-function applyFriendChange(userId: string, friend: any) {
+function applyFriendChange(userId: string, friend: FriendRecord) {
     const stateBucket = normalizeLocationStatus(
         friend?.stateBucket || friend?.state
     );
@@ -57,7 +72,7 @@ function applyFriendChange(userId: string, friend: any) {
     }
 }
 
-function ingestRosterState(state: any) {
+function ingestRosterState(state: FriendRosterStore) {
     const friendsById = state?.friendsById;
     if (!friendsById || friendsById === previousFriendsById) {
         return;
@@ -83,7 +98,7 @@ function ensureStarted() {
     useFriendRosterStore.subscribe(ingestRosterState);
 }
 
-export function getEstimatedDwellSince(userId: any, location: any) {
+export function getEstimatedDwellSince(userId: unknown, location: unknown) {
     ensureStarted();
     const tracked = firstSeenByUser.get(normalizeId(userId));
     if (tracked && tracked.location === normalizeId(location)) {

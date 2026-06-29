@@ -119,17 +119,15 @@ export function useMyAvatarsActions({
     setManageTagsAvatar
 }: MyAvatarsActionsOptions) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const currentAvatarId = currentUserSnapshot?.currentAvatar || '';
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const [savingTagsAvatarId, setSavingTagsAvatarId] = useState('');
     const [updatingAvatarId, setUpdatingAvatarId] = useState('');
     const [uploadingImageAvatarId, setUploadingImageAvatarId] = useState('');

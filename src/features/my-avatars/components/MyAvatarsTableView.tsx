@@ -94,7 +94,7 @@ export function MyAvatarsTableView({
 }: MyAvatarsTableViewProps) {
     const { t } = useTranslation();
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const currentAvatarId = currentUserSnapshot?.currentAvatar || '';
 
@@ -138,7 +138,7 @@ export function MyAvatarsTableView({
                                                             )
                                                     }
                                                 )}
-                                                onKeyDown={(event: any) => {
+                                                onKeyDown={(event) => {
                                                     if (
                                                         isInteractiveRowEvent(
                                                             event
@@ -157,7 +157,7 @@ export function MyAvatarsTableView({
                                                         row.original
                                                     );
                                                 }}
-                                                onClick={(event: any) => {
+                                                onClick={(event) => {
                                                     if (
                                                         isInteractiveRowEvent(
                                                             event

@@ -26,7 +26,7 @@ export function useVrcNotificationPageController() {
     });
     const rowsState = useNotificationRows({
         activeTypes: filters.activeTypes,
-        currentUserId: runtime.currentUserId,
+        currentUserId: runtime.currentUserId ?? undefined,
         deferredSearchQuery: filters.deferredSearchQuery,
         filtersReady: filters.filtersReady
     });
@@ -34,7 +34,7 @@ export function useVrcNotificationPageController() {
     const actions = useNotificationActions({
         canInviteFromCurrentLocation: runtime.canInviteFromCurrentLocation,
         currentInviteLocation: runtime.currentInviteLocation,
-        currentUserId: runtime.currentUserId,
+        currentUserId: runtime.currentUserId ?? undefined,
         endpoint: runtime.endpoint,
         reload: rowsState.reload,
         setBoopReplyRequest: dialogs.setBoopReplyRequest,

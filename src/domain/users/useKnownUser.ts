@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
-import { useRuntimeStore } from '@/state/runtimeStore';
+import {
+    useRuntimeStore,
+    type CurrentUserSnapshotState
+} from '@/state/runtimeStore';
 import { useUserFactsStore } from '@/state/userFactsStore';
 
 import { getKnownUserFact } from './userFactAccess';
@@ -29,28 +32,53 @@ function normalizeUserIdList(userIds: unknown): string[] {
     return ids;
 }
 
+function currentSnapshotToUserFact(
+    snapshot: CurrentUserSnapshotState | null | undefined,
+    userId: unknown,
+    endpoint: unknown
+): UserFact | null {
+    if (!snapshot) {
+        return null;
+    }
+    const normalizedUserId = normalizeUserId(snapshot.id || userId);
+    if (!normalizedUserId) {
+        return null;
+    }
+    return {
+        ...snapshot,
+        id: normalizedUserId,
+        endpoint: normalizeEndpoint(snapshot.endpoint || endpoint),
+        updatedAt:
+            typeof snapshot.updatedAt === 'string' ? snapshot.updatedAt : ''
+    };
+}
+
 function useKnownUserFact(userId: unknown, options: UseKnownUserOptions = {}) {
     const storeEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const endpoint = normalizeEndpoint(options.endpoint || storeEndpoint);
     const normalizedUserId = normalizeUserId(userId);
     const key = useMemo(
         () => userFactKey(endpoint, normalizedUserId),
         [endpoint, normalizedUserId]
     );
-    const fact = useUserFactsStore((state: any) =>
+    const fact = useUserFactsStore((state) =>
         key ? state.usersByKey[key] || null : null
     );
-    const currentUserSnapshot = useRuntimeStore((state: any) =>
+    const currentUserSnapshot = useRuntimeStore((state) =>
         normalizedUserId && normalizedUserId === currentUserId
             ? state.auth.currentUserSnapshot
             : null
     );
-    return currentUserSnapshot || fact;
+    return (
+        currentSnapshotToUserFact(
+            currentUserSnapshot,
+            normalizedUserId,
+            endpoint
+        ) || fact
+    );
 }
 
 function useKnownUserFacts(
@@ -58,16 +86,14 @@ function useKnownUserFacts(
     options: UseKnownUserOptions = {}
 ) {
     const storeEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
     const endpoint = normalizeEndpoint(options.endpoint || storeEndpoint);
-    const version = useUserFactsStore((state: any) => state.version);
+    const version = useUserFactsStore((state) => state.version);
     const normalizedUserIds = useMemo(
         () => normalizeUserIdList(userIds),
         [userIds]
@@ -77,7 +103,14 @@ function useKnownUserFacts(
         const usersById: Record<string, UserFact> = {};
         for (const userId of normalizedUserIds) {
             if (userId === currentUserId && currentUserSnapshot) {
-                usersById[userId] = currentUserSnapshot;
+                const currentUserFact = currentSnapshotToUserFact(
+                    currentUserSnapshot,
+                    userId,
+                    endpoint
+                );
+                if (currentUserFact) {
+                    usersById[userId] = currentUserFact;
+                }
                 continue;
             }
             const fact = getKnownUserFact(endpoint, userId);

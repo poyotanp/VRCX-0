@@ -29,9 +29,7 @@ function FeedLocationLink({
     worldName = '',
     wrapperClassName = ''
 }: FeedLocationLinkProps) {
-    const endpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
-    );
+    const endpoint = useRuntimeStore((state) => state.auth.currentUserEndpoint);
     const normalizedLocation = normalizeId(location);
     const parsedLocation = parseLocation(normalizedLocation);
     const worldTarget = parsedLocation.worldId || '';

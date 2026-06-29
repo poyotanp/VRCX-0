@@ -55,7 +55,7 @@ export function UserNoteMemoDialog({
                                 maxLength={256}
                                 disabled={saving}
                                 className="min-h-24 resize-y"
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     onNoteChange(event.target.value)
                                 }
                             />
@@ -73,7 +73,7 @@ export function UserNoteMemoDialog({
                             value={memo}
                             disabled={saving}
                             className="min-h-32 resize-y"
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onMemoChange(event.target.value)
                             }
                         />

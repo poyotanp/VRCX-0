@@ -4,7 +4,10 @@ import { toast } from 'sonner';
 
 import { useVrcNotificationStore } from '@/state/vrcNotificationStore';
 
-import type { NotificationRow } from './notificationPageTypes';
+import type {
+    NotificationLoadStatus,
+    NotificationRow
+} from './notificationPageTypes';
 import { filterNotificationRows } from './notificationRows';
 
 export function useNotificationRows({
@@ -19,20 +22,17 @@ export function useNotificationRows({
     filtersReady: boolean;
 }) {
     const { t } = useTranslation();
-    const notificationRows = useVrcNotificationStore(
-        (state: any) => state.rows
-    );
+    const notificationRows = useVrcNotificationStore((state) => state.rows);
     const notificationLoadStatus = useVrcNotificationStore(
-        (state: any) => state.loadStatus
+        (state) => state.loadStatus
     );
-    const notificationDetail = useVrcNotificationStore(
-        (state: any) => state.detail
-    );
+    const notificationDetail = useVrcNotificationStore((state) => state.detail);
     const loadNotificationsForCurrentUser = useVrcNotificationStore(
-        (state: any) => state.loadForCurrentUser
+        (state) => state.loadForCurrentUser
     );
     const [rows, setRows] = useState<NotificationRow[]>([]);
-    const [loadStatus, setLoadStatus] = useState('idle');
+    const [loadStatus, setLoadStatus] =
+        useState<NotificationLoadStatus>('idle');
     const [detail, setDetail] = useState('');
     const [reloadToken, setReloadToken] = useState(0);
 
@@ -55,7 +55,7 @@ export function useNotificationRows({
                 active = false;
             };
         }
-        loadNotificationsForCurrentUser().catch((error: any) => {
+        loadNotificationsForCurrentUser().catch((error: unknown) => {
             if (!active) {
                 return;
             }

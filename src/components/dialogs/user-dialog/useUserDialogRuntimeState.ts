@@ -11,13 +11,11 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 const EMPTY_GROUP_ORDER: any[] = [];
 
 export function useUserDialogRuntimeState(normalizedUserId: string) {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentUserSnapshot = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot
+        (state) => state.auth.currentUserSnapshot
     );
-    const isLocalUserVrcPlusSupporter = useRuntimeStore((state: any) =>
+    const isLocalUserVrcPlusSupporter = useRuntimeStore((state) =>
         Boolean(
             state.auth.currentUserSnapshot?.$isVRCPlus ||
             state.auth.currentUserSnapshot?.tags?.includes?.(
@@ -28,62 +26,58 @@ export function useUserDialogRuntimeState(normalizedUserId: string) {
         )
     );
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
     const runtimeCurrentLocation = useRuntimeStore(
-        (state: any) => state.gameState.currentLocation
+        (state) => state.gameState.currentLocation
     );
     const runtimeCurrentDestination = useRuntimeStore(
-        (state: any) => state.gameState.currentDestination
+        (state) => state.gameState.currentDestination
     );
     const runtimeCurrentWorldId = useRuntimeStore(
-        (state: any) => state.gameState.currentWorldId
+        (state) => state.gameState.currentWorldId
     );
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
     const groupInstancesEndpoint = useRuntimeStore(
-        (state: any) => state.groupInstances.endpoint
+        (state) => state.groupInstances.endpoint
     );
     const groupInstancesUserId = useRuntimeStore(
-        (state: any) => state.groupInstances.userId
+        (state) => state.groupInstances.userId
     );
     const groupInstances = useRuntimeStore(
-        (state: any) => state.groupInstances.instances
+        (state) => state.groupInstances.instances
     );
     const groupInstancesLastLoadedAt = useRuntimeStore(
-        (state: any) => state.groupInstances.lastLoadedAt
+        (state) => state.groupInstances.lastLoadedAt
     );
     const groupInstancesFetchedAt = useRuntimeStore(
-        (state: any) => state.groupInstances.fetchedAt
+        (state) => state.groupInstances.fetchedAt
     );
     const groupInstancesStatus = useRuntimeStore(
-        (state: any) => state.groupInstances.status
+        (state) => state.groupInstances.status
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
     const applyFriendPatch = useFriendRosterStore(
-        (state: any) => state.applyFriendPatch
+        (state) => state.applyFriendPatch
     );
     const remoteFavoriteFriendIds = useFavoriteStore(
-        (state: any) => state.favoriteFriendIds
+        (state) => state.favoriteFriendIds
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
-    const prompt = useModalStore((state: any) => state.prompt);
-    const confirm = useModalStore((state: any) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
     const updateEntityDialogMetadata = useDialogStore(
-        (state: any) => state.updateEntityDialogMetadata
+        (state) => state.updateEntityDialogMetadata
     );
     const gameLogDisabled = usePreferencesStore(
-        (state: any) => state.gameLogDisabled
+        (state) => state.gameLogDisabled
     );
-    const hideUserNotes = usePreferencesStore(
-        (state: any) => state.hideUserNotes
-    );
-    const hideUserMemos = usePreferencesStore(
-        (state: any) => state.hideUserMemos
-    );
+    const hideUserNotes = usePreferencesStore((state) => state.hideUserNotes);
+    const hideUserMemos = usePreferencesStore((state) => state.hideUserMemos);
     const knownTargetUser = useKnownUserFact(normalizedUserId, {
         endpoint: currentEndpoint
     });
@@ -143,19 +137,17 @@ export function useUserDialogRuntimeState(normalizedUserId: string) {
 
 export function useUserDialogTabbedRuntimeState() {
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentAvatarId = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot?.currentAvatar || ''
+        (state) => state.auth.currentUserSnapshot?.currentAvatar || ''
     );
     const previousAvatarSwapTime = useRuntimeStore(
-        (state: any) =>
+        (state) =>
             Number(state.auth.currentUserSnapshot?.$previousAvatarSwapTime) || 0
     );
-    const isLocalUserVrcPlusSupporter = useRuntimeStore((state: any) =>
+    const isLocalUserVrcPlusSupporter = useRuntimeStore((state) =>
         Boolean(
             state.auth.currentUserSnapshot?.$isVRCPlus ||
             state.auth.currentUserSnapshot?.tags?.includes?.(
@@ -165,18 +157,16 @@ export function useUserDialogTabbedRuntimeState() {
                 ?.debugVrcPlus
         )
     );
-    const inGameGroupOrder = useRuntimeStore((state: any) =>
+    const inGameGroupOrder = useRuntimeStore((state) =>
         state.groupInstances.userId === state.auth.currentUserId &&
         state.groupInstances.endpoint === state.auth.currentUserEndpoint
             ? state.groupInstances.groupOrder
             : EMPTY_GROUP_ORDER
     );
-    const friendsById = useFriendRosterStore((state: any) => state.friendsById);
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
-    const prompt = useModalStore((state: any) => state.prompt);
-    const confirm = useModalStore((state: any) => state.confirm);
+    const friendsById = useFriendRosterStore((state) => state.friendsById);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
+    const prompt = useModalStore((state) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
 
     return {
         confirm,

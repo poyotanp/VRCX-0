@@ -40,8 +40,8 @@ export function StatusBarContextMenuContent({
                     <ContextMenuCheckboxItem
                         key={key}
                         checked={Boolean(visibility[key])}
-                        onSelect={(event: any) => event.preventDefault()}
-                        onCheckedChange={(checked: any) =>
+                        onSelect={(event) => event.preventDefault()}
+                        onCheckedChange={(checked) =>
                             onToggleVisibility(key, checked)
                         }
                     >
@@ -57,7 +57,7 @@ export function StatusBarContextMenuContent({
                 <ContextMenuSubContent className="w-36">
                     <ContextMenuRadioGroup
                         value={String(clockCount)}
-                        onValueChange={(value: any) =>
+                        onValueChange={(value) =>
                             onSetClockCountValue(Number(value))
                         }
                     >

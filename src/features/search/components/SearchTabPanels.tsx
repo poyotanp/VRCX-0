@@ -37,7 +37,7 @@ export function SearchUserTabPanel({
 }: any) {
     const { t } = useTranslation();
     const randomUserColours = usePreferencesStore(
-        (state: any) => state.randomUserColours
+        (state) => state.randomUserColours
     );
     const isDarkMode =
         typeof document !== 'undefined' &&
@@ -58,7 +58,7 @@ export function SearchUserTabPanel({
                         <Checkbox
                             id="search-user-by-bio"
                             checked={searchUserByBio}
-                            onCheckedChange={(checked: any) =>
+                            onCheckedChange={(checked) =>
                                 onSearchUserByBioChange(checked === true)
                             }
                         />
@@ -70,7 +70,7 @@ export function SearchUserTabPanel({
                         <Checkbox
                             id="search-user-sort-by-last-logged-in"
                             checked={searchUserSortByLastLoggedIn}
-                            onCheckedChange={(checked: any) =>
+                            onCheckedChange={(checked) =>
                                 onSearchUserSortByLastLoggedInChange(
                                     checked === true
                                 )
@@ -137,7 +137,7 @@ export function SearchWorldTabPanel({
                         <Checkbox
                             id="search-world-community-lab"
                             checked={includeCommunityLabs}
-                            onCheckedChange={(checked: any) =>
+                            onCheckedChange={(checked) =>
                                 onIncludeCommunityLabsChange(checked === true)
                             }
                         />

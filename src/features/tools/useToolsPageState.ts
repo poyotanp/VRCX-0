@@ -139,18 +139,16 @@ function useToolsQuickAccessState() {
 export function useToolsPageState() {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const hostCapabilities = useRuntimeStore(
-        (state: any) => state.hostCapabilities
-    );
-    const dashboards = useDashboardStore((state: any) => state.dashboards);
+    const hostCapabilities = useRuntimeStore((state) => state.hostCapabilities);
+    const dashboards = useDashboardStore((state) => state.dashboards);
     const ensureDashboardsLoaded = useDashboardStore(
-        (state: any) => state.ensureLoaded
+        (state) => state.ensureLoaded
     );
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const notificationLayout = usePreferencesStore(
-        (state: any) => state.notificationLayout
+        (state) => state.notificationLayout
     );
     const sensors = useSensors(
         useSensor(PointerSensor, {

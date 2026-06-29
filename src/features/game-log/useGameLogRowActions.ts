@@ -27,7 +27,7 @@ export function useGameLogRowActions({
     removeRowByKey
 }: UseGameLogRowActionsOptions) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
+    const confirm = useModalStore((state) => state.confirm);
     const [deletingGameLogKey, setDeletingGameLogKey] = useState('');
 
     const deleteGameLogRow = useCallback(

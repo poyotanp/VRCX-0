@@ -115,17 +115,17 @@ export function showUpdateReadyToast({
 
 export function UpdateAvailableToastHost(): null {
     const { t } = useTranslation();
-    const hasAvailableUpdate = useRuntimeStore((state: any) =>
+    const hasAvailableUpdate = useRuntimeStore((state) =>
         Boolean(state.updateLoop.hasAvailableUpdate)
     );
     const latestUpdaterRelease = useRuntimeStore(
-        (state: any) => state.updateLoop.latestUpdaterRelease
+        (state) => state.updateLoop.latestUpdaterRelease
     );
     const autoDownloadState = useRuntimeStore(
-        (state: any) => state.updateLoop.autoDownloadState
+        (state) => state.updateLoop.autoDownloadState
     );
     const downloadedVersion = useRuntimeStore(
-        (state: any) => state.updateLoop.downloadedVersion
+        (state) => state.updateLoop.downloadedVersion
     );
 
     useEffect(() => {

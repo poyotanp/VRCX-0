@@ -18,8 +18,61 @@ import {
     OVERLAP_EXCLUDE_END_KEY,
     OVERLAP_EXCLUDE_START_KEY,
     OVERLAP_LOADING_DELAY_MS,
-    TOP_WORLDS_LOADING_DELAY_MS
+    TOP_WORLDS_LOADING_DELAY_MS,
+    type ActivityHeatmapData,
+    type TopWorldsSort,
+    type UserActivityTopWorld
 } from './userActivityPanelModel';
+
+type UserActivityPanelControllerProps = {
+    active: boolean;
+    activityContextKey: string;
+    currentHomeWorldId?: string | null;
+    currentUserId?: string | null;
+    dayLabels: string[];
+    failedToLoadMessage: string;
+    isCurrentUser: boolean;
+    userId?: string | null;
+};
+
+type LoadTopWorldsOptions = {
+    excludeHomeWorld: boolean;
+    rangeDays: number;
+    requestId: number;
+    sortBy: TopWorldsSort;
+};
+
+type RefreshTopWorldsOptions = {
+    excludeHomeWorld?: boolean;
+    period?: string;
+    sortBy?: TopWorldsSort;
+};
+
+type RefreshOverlapOptions = {
+    excludeEnd?: string;
+    excludeOverlap?: boolean;
+    excludeStart?: string;
+};
+
+type RefreshDataOptions = RefreshTopWorldsOptions &
+    RefreshOverlapOptions & {
+        forceRefresh?: boolean;
+    };
+
+type OverlapViewResult = Awaited<
+    ReturnType<typeof userActivityViewService.loadOverlapView>
+>;
+type WorldProfileResult = Awaited<
+    ReturnType<typeof worldProfileRepository.getWorldProfile>
+>;
+
+function isTopWorld(value: unknown): value is UserActivityTopWorld {
+    return Boolean(value && typeof value === 'object');
+}
+
+function normalizeTopWorlds(value: unknown): UserActivityTopWorld[] {
+    return Array.isArray(value) ? value.filter(isTopWorld) : [];
+}
 
 export function useUserActivityPanelController({
     active,
@@ -30,7 +83,7 @@ export function useUserActivityPanelController({
     failedToLoadMessage,
     isCurrentUser,
     userId
-}: any) {
+}: UserActivityPanelControllerProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedPeriod, setSelectedPeriod] = useState('30');
@@ -38,15 +91,16 @@ export function useUserActivityPanelController({
     const [filteredEventCount, setFilteredEventCount] = useState(0);
     const [peakDayText, setPeakDayText] = useState('');
     const [peakTimeText, setPeakTimeText] = useState('');
-    const [mainHeatmap, setMainHeatmap] = useState<any>({
+    const [mainHeatmap, setMainHeatmap] = useState<ActivityHeatmapData>({
         rawBuckets: [],
         normalizedBuckets: []
     });
-    const [topWorlds, setTopWorlds] = useState<any[]>([]);
+    const [topWorlds, setTopWorlds] = useState<UserActivityTopWorld[]>([]);
     const [topWorldsLoading, setTopWorldsLoading] = useState(false);
     const [topWorldsLoadingVisible, setTopWorldsLoadingVisible] =
         useState(false);
-    const [topWorldsSortBy, setTopWorldsSortBy] = useState('time');
+    const [topWorldsSortBy, setTopWorldsSortBy] =
+        useState<TopWorldsSort>('time');
     const [excludeHomeWorldEnabled, setExcludeHomeWorldEnabled] =
         useState(false);
     const [overlapLoading, setOverlapLoading] = useState(false);
@@ -54,7 +108,7 @@ export function useUserActivityPanelController({
     const [hasOverlapData, setHasOverlapData] = useState(false);
     const [overlapPercent, setOverlapPercent] = useState(0);
     const [bestOverlapTime, setBestOverlapTime] = useState('');
-    const [overlapHeatmap, setOverlapHeatmap] = useState<any>({
+    const [overlapHeatmap, setOverlapHeatmap] = useState<ActivityHeatmapData>({
         rawBuckets: [],
         normalizedBuckets: []
     });
@@ -64,9 +118,13 @@ export function useUserActivityPanelController({
     const activityRequestIdRef = useRef(0);
     const overlapRequestIdRef = useRef(0);
     const topWorldRequestIdRef = useRef(0);
-    const topWorldsLoadingTimerRef = useRef<any>(null);
-    const overlapLoadingTimerRef = useRef<any>(null);
-    const pendingWorldThumbnailFetchesRef = useRef(new Set());
+    const topWorldsLoadingTimerRef = useRef<ReturnType<
+        typeof setTimeout
+    > | null>(null);
+    const overlapLoadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+        null
+    );
+    const pendingWorldThumbnailFetchesRef = useRef(new Set<string>());
     const lastLoadedContextRef = useRef('');
 
     function clearTopWorldsLoadingTimer() {
@@ -83,7 +141,7 @@ export function useUserActivityPanelController({
         }
     }
 
-    function beginTopWorldsLoading(requestId: any) {
+    function beginTopWorldsLoading(requestId: number) {
         setTopWorldsLoading(true);
         setTopWorldsLoadingVisible(false);
         clearTopWorldsLoadingTimer();
@@ -95,7 +153,7 @@ export function useUserActivityPanelController({
         }, TOP_WORLDS_LOADING_DELAY_MS);
     }
 
-    function finishTopWorldsLoading(requestId: any) {
+    function finishTopWorldsLoading(requestId: number) {
         if (requestId !== topWorldRequestIdRef.current) {
             return;
         }
@@ -104,7 +162,7 @@ export function useUserActivityPanelController({
         setTopWorldsLoadingVisible(false);
     }
 
-    function beginOverlapLoading(requestId: any) {
+    function beginOverlapLoading(requestId: number) {
         setOverlapLoading(true);
         setOverlapLoadingVisible(false);
         clearOverlapLoadingTimer();
@@ -116,7 +174,7 @@ export function useUserActivityPanelController({
         }, OVERLAP_LOADING_DELAY_MS);
     }
 
-    function finishOverlapLoading(requestId: any) {
+    function finishOverlapLoading(requestId: number) {
         if (requestId !== overlapRequestIdRef.current) {
             return;
         }
@@ -150,43 +208,48 @@ export function useUserActivityPanelController({
         setOverlapLoadingVisible(false);
     }
 
-    async function fetchMissingTopWorldThumbnails(worlds: any) {
+    async function fetchMissingTopWorldThumbnails(
+        worlds: UserActivityTopWorld[]
+    ) {
         const pendingWorldThumbnailFetches =
             pendingWorldThumbnailFetchesRef.current;
-        const missingWorlds = worlds.filter((world: any) => {
+        const missingWorlds = worlds.filter((world) => {
+            const worldId = String(world.worldId || '').trim();
             if (
-                !world.worldId ||
+                !worldId ||
                 getWorldThumbnailUrl(world) ||
-                pendingWorldThumbnailFetches.has(world.worldId)
+                pendingWorldThumbnailFetches.has(worldId)
             ) {
                 return false;
             }
-            pendingWorldThumbnailFetches.add(world.worldId);
+            pendingWorldThumbnailFetches.add(worldId);
             return true;
         });
         if (!missingWorlds.length) {
             return;
         }
 
-        let results = [];
+        let results: PromiseSettledResult<WorldProfileResult>[] = [];
         try {
             results = await Promise.allSettled(
-                missingWorlds.map((world: any) =>
+                missingWorlds.map((world) =>
                     worldProfileRepository.getWorldProfile({
-                        worldId: world.worldId
+                        worldId: String(world.worldId || '').trim()
                     })
                 )
             );
         } finally {
             for (const world of missingWorlds) {
-                pendingWorldThumbnailFetches.delete(world.worldId);
+                pendingWorldThumbnailFetches.delete(
+                    String(world.worldId || '').trim()
+                );
             }
         }
-        const profileByWorldId = new Map();
-        results.forEach((result: any, index: any) => {
+        const profileByWorldId = new Map<string, WorldProfileResult>();
+        results.forEach((result, index) => {
             if (result.status === 'fulfilled' && result.value?.id) {
                 profileByWorldId.set(
-                    missingWorlds[index].worldId,
+                    String(missingWorlds[index].worldId || '').trim(),
                     result.value
                 );
             }
@@ -195,9 +258,11 @@ export function useUserActivityPanelController({
             return;
         }
 
-        setTopWorlds((currentRows: any) =>
-            currentRows.map((world: any) => {
-                const profileWorld = profileByWorldId.get(world.worldId);
+        setTopWorlds((currentRows) =>
+            currentRows.map((world) => {
+                const profileWorld = profileByWorldId.get(
+                    String(world.worldId || '').trim()
+                );
                 if (!profileWorld) {
                     return world;
                 }
@@ -219,19 +284,23 @@ export function useUserActivityPanelController({
         sortBy,
         excludeHomeWorld,
         requestId
-    }: any) {
+    }: LoadTopWorldsOptions) {
         if (!isCurrentUser || !userId) {
             return;
         }
         const topWorldRequestId = ++topWorldRequestIdRef.current;
         beginTopWorldsLoading(topWorldRequestId);
         try {
-            const rows = await userActivityViewService.loadTopWorldsView({
-                rangeDays,
-                limit: 5,
-                sortBy,
-                excludeWorldId: excludeHomeWorld ? currentHomeWorldId : ''
-            });
+            const rows = normalizeTopWorlds(
+                await userActivityViewService.loadTopWorldsView({
+                    rangeDays,
+                    limit: 5,
+                    sortBy,
+                    excludeWorldId: excludeHomeWorld
+                        ? (currentHomeWorldId ?? '')
+                        : ''
+                })
+            );
             if (
                 requestId !== activityRequestIdRef.current ||
                 topWorldRequestId !== topWorldRequestIdRef.current
@@ -245,7 +314,7 @@ export function useUserActivityPanelController({
         }
     }
 
-    function applyOverlapView(overlapView: any) {
+    function applyOverlapView(overlapView: OverlapViewResult) {
         setHasOverlapData(overlapView.hasOverlapData);
         setOverlapPercent(overlapView.overlapPercent || 0);
         setBestOverlapTime(overlapView.bestOverlapTime || '');
@@ -259,7 +328,7 @@ export function useUserActivityPanelController({
         sortBy = topWorldsSortBy,
         excludeHomeWorld = excludeHomeWorldEnabled,
         period = selectedPeriod
-    }: any = {}) {
+    }: RefreshTopWorldsOptions = {}) {
         if (!active || !isCurrentUser || !hasAnyData || !userId) {
             return;
         }
@@ -275,7 +344,7 @@ export function useUserActivityPanelController({
         excludeOverlap = excludeHoursEnabled,
         excludeStart = excludeStartHour,
         excludeEnd = excludeEndHour
-    }: any = {}) {
+    }: RefreshOverlapOptions = {}) {
         if (
             !active ||
             isCurrentUser ||
@@ -328,7 +397,7 @@ export function useUserActivityPanelController({
         excludeOverlap = excludeHoursEnabled,
         excludeStart = excludeStartHour,
         excludeEnd = excludeEndHour
-    }: any = {}) {
+    }: RefreshDataOptions = {}) {
         if (!active || !userId) {
             return;
         }
@@ -342,7 +411,7 @@ export function useUserActivityPanelController({
             const activityView = await userActivityViewService.loadActivityView(
                 {
                     userId,
-                    ownerUserId: currentUserId,
+                    ownerUserId: currentUserId ?? '',
                     isSelf: isCurrentUser,
                     rangeDays,
                     dayLabels,
@@ -531,7 +600,7 @@ export function useUserActivityPanelController({
         }
     }, [currentHomeWorldId]);
 
-    async function changePeriod(value: any) {
+    async function changePeriod(value: unknown) {
         const nextPeriod = normalizeActivityPeriod(value);
         setSelectedPeriod(nextPeriod);
         await configRepository.setString(
@@ -543,7 +612,7 @@ export function useUserActivityPanelController({
         await refreshData({ period: nextPeriod });
     }
 
-    async function changeTopWorldsSort(value: any) {
+    async function changeTopWorldsSort(value: unknown) {
         const nextSortBy = normalizeTopWorldsSort(value);
         setTopWorldsSortBy(nextSortBy);
         await configRepository.setString(
@@ -553,22 +622,24 @@ export function useUserActivityPanelController({
         await refreshTopWorldsOnly({ sortBy: nextSortBy });
     }
 
-    async function changeExcludeHomeWorld(value: any) {
-        setExcludeHomeWorldEnabled(value);
+    async function changeExcludeHomeWorld(value: unknown) {
+        const enabled = value === true;
+        setExcludeHomeWorldEnabled(enabled);
         await configRepository.setBool(
             ACTIVITY_SELF_EXCLUDE_HOME_WORLD_KEY,
-            value
+            enabled
         );
-        await refreshTopWorldsOnly({ excludeHomeWorld: value });
+        await refreshTopWorldsOnly({ excludeHomeWorld: enabled });
     }
 
-    async function changeExcludeHours(value: any) {
-        setExcludeHoursEnabled(value);
-        await configRepository.setBool(OVERLAP_EXCLUDE_ENABLED_KEY, value);
-        await refreshOverlapOnly({ excludeOverlap: value });
+    async function changeExcludeHours(value: unknown) {
+        const enabled = value === true;
+        setExcludeHoursEnabled(enabled);
+        await configRepository.setBool(OVERLAP_EXCLUDE_ENABLED_KEY, enabled);
+        await refreshOverlapOnly({ excludeOverlap: enabled });
     }
 
-    async function changeExcludeRange(kind: any, value: any) {
+    async function changeExcludeRange(kind: 'start' | 'end', value: string) {
         const nextStart = kind === 'start' ? value : excludeStartHour;
         const nextEnd = kind === 'end' ? value : excludeEndHour;
         if (kind === 'start') {

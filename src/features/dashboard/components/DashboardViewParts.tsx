@@ -491,21 +491,21 @@ export function DashboardEditorRow({
 
 function useDashboardPagePreviewMetrics(): DashboardPageMetrics {
     const { friendCount, onlineCount } = useFriendRosterStore(
-        useShallow((state: any) => ({
+        useShallow((state) => ({
             friendCount: state.orderedFriendIds.length,
             onlineCount: state.onlineIds.length
         }))
     );
     const { favoriteFriendCount, favoriteWorldCount, favoriteAvatarCount } =
         useFavoriteStore(
-            useShallow((state: any) => ({
+            useShallow((state) => ({
                 favoriteFriendCount: state.favoriteFriendIds.length,
                 favoriteWorldCount: state.favoriteWorldIds.length,
                 favoriteAvatarCount: state.favoriteAvatarIds.length
             }))
         );
     const notificationCount = useNotificationStore(
-        (state: any) => state.items.length
+        (state) => state.items.length
     );
 
     return {

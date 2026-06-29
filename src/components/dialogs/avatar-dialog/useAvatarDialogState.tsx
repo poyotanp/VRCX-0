@@ -27,22 +27,18 @@ export function useAvatarDialogState({ avatarId, seedData = null }: any) {
 
     const normalizedAvatarId = normalizeEntityId(avatarId);
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const currentAvatarId = useRuntimeStore(
-        (state: any) => state.auth.currentUserSnapshot?.currentAvatar || ''
+        (state) => state.auth.currentUserSnapshot?.currentAvatar || ''
     );
-    const setAuthBootstrap = useRuntimeStore(
-        (state: any) => state.setAuthBootstrap
-    );
-    const confirm = useModalStore((state: any) => state.confirm);
-    const prompt = useModalStore((state: any) => state.prompt);
-    const closeDialog = useDialogStore((state: any) => state.closeDialog);
+    const setAuthBootstrap = useRuntimeStore((state) => state.setAuthBootstrap);
+    const confirm = useModalStore((state) => state.confirm);
+    const prompt = useModalStore((state) => state.prompt);
+    const closeDialog = useDialogStore((state) => state.closeDialog);
     const updateEntityDialogMetadata = useDialogStore(
-        (state: any) => state.updateEntityDialogMetadata
+        (state) => state.updateEntityDialogMetadata
     );
     const [avatar, setAvatar] = useState(() =>
         seedData ? avatarProfileRepository.normalize(seedData) : null

@@ -1,7 +1,8 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState, type MutableRefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import type { InviteMessageUsePayload } from '@/components/dialogs/invite-message/InviteMessagePanel';
 import {
     sendInviteToLocation,
     sendRequestInviteToUser
@@ -11,9 +12,74 @@ import { parseLocation } from '@/shared/utils/location';
 
 import { normalizeUserId } from './userProfileFields';
 
-function inviteMessageSlot(row: any) {
-    const value = row?.slot ?? row?.messageSlot ?? row?.requestSlot ?? row?.id;
-    return Number.parseInt(value, 10);
+type Confirm = (
+    options: Record<string, unknown>
+) => Promise<{ ok?: boolean }> | { ok?: boolean };
+type BuildInviteContextOptions = {
+    requireCurrentUser?: boolean;
+};
+type UserInviteActionsOptions = {
+    actionStatusRef: MutableRefObject<string>;
+    canInviteFromCurrentLocation: boolean;
+    confirm: Confirm;
+    currentEndpoint?: string | null;
+    currentInviteLocation?: string | null;
+    isCurrentUser: boolean;
+    isFriend: boolean;
+    normalizedCurrentUserId?: string | null;
+    normalizedUserId?: string | null;
+    openNonce?: unknown;
+    profile?: Record<string, unknown> | null;
+    setActionStatus: (status: string) => void;
+};
+type InviteContext = {
+    rosterUserId: string;
+    endpoint?: string | null;
+    messageOwnerUserId?: string | null;
+    parsedLocation: ReturnType<typeof parseLocation>;
+    inviteLocation: string;
+    targetLabel: string;
+};
+type InviteRequestContext = {
+    rosterUserId: string;
+    endpoint?: string | null;
+    messageOwnerUserId?: string | null;
+    targetLabel: string;
+};
+type InviteMessageRequest =
+    | {
+          kind: 'invite';
+          messageType: 'message';
+          context: InviteContext;
+      }
+    | {
+          kind: 'request';
+          messageType: 'request';
+          context: InviteRequestContext;
+      };
+type SendInviteOptions = {
+    withMessage?: boolean;
+};
+type PerformSendInviteOptions = {
+    messageSlot?: number | null;
+    imageData?: string;
+    context?: InviteContext | null;
+};
+type PerformSendInviteRequestOptions = {
+    requestSlot?: number | null;
+    imageData?: string;
+    context?: InviteRequestContext | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function inviteMessageSlot(row: unknown) {
+    const source = isRecord(row) ? row : {};
+    const value =
+        source.slot ?? source.messageSlot ?? source.requestSlot ?? source.id;
+    return Number.parseInt(String(value), 10);
 }
 
 export function useUserInviteActions({
@@ -29,13 +95,10 @@ export function useUserInviteActions({
     openNonce,
     profile,
     setActionStatus
-}: any) {
+}: UserInviteActionsOptions) {
     const { t } = useTranslation();
-    const [inviteMessageRequest, setInviteMessageRequest] = useState<{
-        kind: string;
-        messageType: string;
-        context: any;
-    } | null>(null);
+    const [inviteMessageRequest, setInviteMessageRequest] =
+        useState<InviteMessageRequest | null>(null);
 
     useLayoutEffect(() => {
         setInviteMessageRequest(null);
@@ -47,7 +110,9 @@ export function useUserInviteActions({
         profile?.id
     ]);
 
-    function buildInviteContext({ requireCurrentUser = false }: any = {}) {
+    function buildInviteContext({
+        requireCurrentUser = false
+    }: BuildInviteContextOptions = {}): InviteContext | null {
         const rosterUserId = normalizeUserId(profile?.id);
         if (
             !rosterUserId ||
@@ -100,13 +165,13 @@ export function useUserInviteActions({
             messageOwnerUserId: normalizedCurrentUserId,
             parsedLocation,
             inviteLocation: parsedLocation.tag || currentInviteLocation,
-            targetLabel: profile?.displayName || rosterUserId
+            targetLabel: String(profile?.displayName || rosterUserId)
         };
     }
 
     function buildInviteRequestContext({
         requireCurrentUser = false
-    }: any = {}) {
+    }: BuildInviteContextOptions = {}): InviteRequestContext | null {
         const rosterUserId = normalizeUserId(profile?.id);
         if (
             !rosterUserId ||
@@ -130,7 +195,7 @@ export function useUserInviteActions({
             rosterUserId,
             endpoint: currentEndpoint,
             messageOwnerUserId: normalizedCurrentUserId,
-            targetLabel: profile?.displayName || rosterUserId
+            targetLabel: String(profile?.displayName || rosterUserId)
         };
     }
 
@@ -138,7 +203,7 @@ export function useUserInviteActions({
         messageSlot = null,
         imageData = '',
         context: contextSnapshot = null
-    }: any = {}) {
+    }: PerformSendInviteOptions = {}) {
         const context = contextSnapshot || buildInviteContext();
         if (!context) {
             return false;
@@ -152,7 +217,7 @@ export function useUserInviteActions({
         try {
             await sendInviteToLocation({
                 receiverUserId: context.rosterUserId,
-                endpoint: context.endpoint,
+                endpoint: context.endpoint ?? undefined,
                 instanceId: context.inviteLocation,
                 worldId: context.parsedLocation.worldId,
                 messageSlot,
@@ -182,7 +247,9 @@ export function useUserInviteActions({
         }
     }
 
-    async function sendUserInvite({ withMessage = false }: any = {}) {
+    async function sendUserInvite({
+        withMessage = false
+    }: SendInviteOptions = {}) {
         if (withMessage) {
             const context = buildInviteContext({ requireCurrentUser: true });
             if (context) {
@@ -217,7 +284,7 @@ export function useUserInviteActions({
         requestSlot = null,
         imageData = '',
         context: contextSnapshot = null
-    }: any = {}) {
+    }: PerformSendInviteRequestOptions = {}) {
         const context = contextSnapshot || buildInviteRequestContext();
         if (!context) {
             return false;
@@ -231,7 +298,7 @@ export function useUserInviteActions({
         try {
             await sendRequestInviteToUser({
                 receiverUserId: context.rosterUserId,
-                endpoint: context.endpoint,
+                endpoint: context.endpoint ?? undefined,
                 requestSlot,
                 imageData
             });
@@ -260,7 +327,9 @@ export function useUserInviteActions({
         }
     }
 
-    async function sendUserInviteRequest({ withMessage = false }: any = {}) {
+    async function sendUserInviteRequest({
+        withMessage = false
+    }: SendInviteOptions = {}) {
         if (withMessage) {
             const context = buildInviteRequestContext({
                 requireCurrentUser: true
@@ -293,7 +362,10 @@ export function useUserInviteActions({
         await performSendUserInviteRequest({ context });
     }
 
-    async function selectInviteMessage({ row, imageData = '' }: any) {
+    async function selectInviteMessage({
+        row,
+        imageData = ''
+    }: InviteMessageUsePayload) {
         const slot = inviteMessageSlot(row);
         if (!Number.isFinite(slot)) {
             toast.error(
@@ -313,7 +385,8 @@ export function useUserInviteActions({
                 : await performSendUserInvite({
                       messageSlot: slot,
                       imageData,
-                      context: request?.context
+                      context:
+                          request?.kind === 'invite' ? request.context : null
                   });
 
         if (sent) {
@@ -322,7 +395,7 @@ export function useUserInviteActions({
         return sent;
     }
 
-    const handleInviteMessageDialogOpenChange = (nextOpen: any) => {
+    const handleInviteMessageDialogOpenChange = (nextOpen: boolean) => {
         if (!nextOpen && actionStatusRef.current === 'idle') {
             setInviteMessageRequest(null);
         }

@@ -100,9 +100,17 @@ const markdownComponents = {
     )
 };
 
+type ChangelogRelease = {
+    displayName?: string;
+    tagName?: string;
+    body?: string;
+} & Record<string, unknown>;
+
 export function ChangelogDialog({ open, onOpenChange, targetVersion }: any) {
     const { i18n, t } = useTranslation();
-    const [latestRelease, setLatestRelease] = useState<any>(null);
+    const [latestRelease, setLatestRelease] = useState<ChangelogRelease | null>(
+        null
+    );
     const [entries, setEntries] = useState<LocalizedChangelogEntry[]>([]);
     const [note, setNote] = useState('');
     const [activeLanguage, setActiveLanguage] = useState('');

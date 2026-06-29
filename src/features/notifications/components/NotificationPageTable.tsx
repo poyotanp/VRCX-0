@@ -1,3 +1,4 @@
+import type { Table as ReactTable } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -14,6 +15,24 @@ import { ResizableTableCell } from '@/components/data-table/ResizableTableParts'
 import { userFacingErrorMessage } from '@/lib/errorDisplay';
 import { Table, TableBody, TableCell, TableRow } from '@/ui/shadcn/table';
 
+import type {
+    NotificationLoadStatus,
+    NotificationRow
+} from '../notificationPageTypes';
+
+type NotificationPageTableProps = {
+    detail: string;
+    loadStatus: NotificationLoadStatus;
+    onPageSizeChange: (value: number) => void;
+    pageSizes: number[];
+    pagination: {
+        pageIndex: number;
+        pageSize: number;
+    };
+    rowsCount: number;
+    table: ReactTable<NotificationRow>;
+};
+
 export function NotificationPageTable({
     table,
     detail,
@@ -22,7 +41,7 @@ export function NotificationPageTable({
     pagination,
     pageSizes,
     onPageSizeChange
-}: any) {
+}: NotificationPageTableProps) {
     const { t } = useTranslation();
     const visibleColumnCount = Math.max(
         table.getVisibleLeafColumns().length,
@@ -51,14 +70,14 @@ export function NotificationPageTable({
                             <DataTableHeader table={table} />
                             <TableBody>
                                 {table.getRowModel().rows.length > 0 ? (
-                                    table.getRowModel().rows.map((row: any) => (
+                                    table.getRowModel().rows.map((row) => (
                                         <TableRow key={row.id}>
                                             <DataTableColumnSortableContext
                                                 table={table}
                                             >
                                                 {row
                                                     .getVisibleCells()
-                                                    .map((cell: any) => (
+                                                    .map((cell) => (
                                                         <ResizableTableCell
                                                             key={cell.id}
                                                             cell={cell}

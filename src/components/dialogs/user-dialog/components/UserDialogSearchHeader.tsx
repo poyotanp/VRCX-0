@@ -55,7 +55,7 @@ export function UserDialogSearchHeader({
             <div className="ml-auto flex min-w-0 flex-1 basis-64 flex-wrap items-center justify-end gap-2">
                 <Input
                     value={currentSearch}
-                    onChange={(event: any) =>
+                    onChange={(event) =>
                         setSearch((current: any) => ({
                             ...current,
                             [searchKey]: event.target.value

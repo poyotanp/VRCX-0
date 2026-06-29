@@ -45,24 +45,22 @@ export function useGameLogRows({
     viewMode
 }: UseGameLogRowsOptions) {
     const { t } = useTranslation();
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const addGameLogEventCount = useRuntimeStore(
-        (state: any) => state.runtimeEvents.addGameLogEvent.count
+        (state) => state.runtimeEvents.addGameLogEvent.count
     );
     const throttledGameLogEventCount = useThrottledValue(
         addGameLogEventCount,
         GAME_LOG_LIVE_REFRESH_THROTTLE_MS
     );
     const gameLogDisabled = usePreferencesStore(
-        (state: any) => state.gameLogDisabled
+        (state) => state.gameLogDisabled
     );
     const isFavoritesLoaded = useSessionStore(
-        (state: any) => state.isFavoritesLoaded
+        (state) => state.isFavoritesLoaded
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
     const favoriteIdSet = useMemo(
         () => buildGameLogFavoriteIdSet(localFriendFavorites),

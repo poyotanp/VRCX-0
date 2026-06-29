@@ -162,7 +162,7 @@ function LegacyStatusEditor({
                             placeholder={t(
                                 'view.settings.general.automation.status_description_placeholder'
                             )}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 onDescChange(event.target.value)
                             }
                         />
@@ -258,7 +258,7 @@ export function ContextRulesTab({
                         </>
                     }
                     onSelect={() => setSelectedRuleId(rule.id)}
-                    onEnabledChange={(checked: any) =>
+                    onEnabledChange={(checked) =>
                         update(rule.id, (current: any) => ({
                             ...current,
                             enabled: checked
@@ -293,7 +293,7 @@ export function ContextRulesTab({
                             <Input
                                 value={selectedRule.label || ''}
                                 disabled={loading}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     update(selectedRule.id, (current: any) => ({
                                         ...current,
                                         label: event.target.value
@@ -310,7 +310,7 @@ export function ContextRulesTab({
                                     selectedRule.priority
                                 )}
                                 disabled={loading}
-                                onValueChange={(value: any) =>
+                                onValueChange={(value) =>
                                     update(selectedRule.id, (current: any) => ({
                                         ...current,
                                         priority: priorityNumberFromValue(value)
@@ -347,7 +347,7 @@ export function ContextRulesTab({
                                 <Select
                                     value={selectedRule.preset || 'alone'}
                                     disabled={loading}
-                                    onValueChange={(value: any) =>
+                                    onValueChange={(value) =>
                                         update(
                                             selectedRule.id,
                                             (current: any) => ({
@@ -389,7 +389,7 @@ export function ContextRulesTab({
                                         options={groupOptions}
                                         disabled={loading}
                                         columns="two"
-                                        onChange={(next: any) =>
+                                        onChange={(next) =>
                                             update(
                                                 selectedRule.id,
                                                 (current: any) => ({
@@ -413,7 +413,7 @@ export function ContextRulesTab({
                                             selectedRule.friendCountValue || 1
                                         }
                                         disabled={loading}
-                                        onChange={(event: any) =>
+                                        onChange={(event) =>
                                             update(
                                                 selectedRule.id,
                                                 (current: any) => ({
@@ -441,7 +441,7 @@ export function ContextRulesTab({
                                             selectedRule.playerCountValue || 1
                                         }
                                         disabled={loading}
-                                        onChange={(event: any) =>
+                                        onChange={(event) =>
                                             update(
                                                 selectedRule.id,
                                                 (current: any) => ({
@@ -468,7 +468,7 @@ export function ContextRulesTab({
                                         ).join(', ')}
                                         disabled={loading}
                                         placeholder="usr_..., usr_..."
-                                        onChange={(event: any) =>
+                                        onChange={(event) =>
                                             update(
                                                 selectedRule.id,
                                                 (current: any) => ({
@@ -498,7 +498,7 @@ export function ContextRulesTab({
                                     options={instanceOptions}
                                     disabled={loading}
                                     columns="two"
-                                    onChange={(next: any) =>
+                                    onChange={(next) =>
                                         update(
                                             selectedRule.id,
                                             (current: any) => ({
@@ -522,14 +522,14 @@ export function ContextRulesTab({
                         statusDescription={
                             selectedRule.actions?.statusDescription || ''
                         }
-                        onStatusChange={(value: any) =>
+                        onStatusChange={(value) =>
                             update(selectedRule.id, (current: any) =>
                                 value === 'no-change'
                                     ? removeAction(current, 'status')
                                     : updateAction(current, { status: value })
                             )
                         }
-                        onStatusDescriptionEnabledChange={(checked: any) =>
+                        onStatusDescriptionEnabledChange={(checked) =>
                             update(selectedRule.id, (current: any) =>
                                 checked
                                     ? updateAction(current, {
@@ -538,7 +538,7 @@ export function ContextRulesTab({
                                     : removeAction(current, 'statusDescription')
                             )
                         }
-                        onStatusDescriptionChange={(value: any) =>
+                        onStatusDescriptionChange={(value) =>
                             update(selectedRule.id, (current: any) =>
                                 updateAction(current, {
                                     statusDescription: value
@@ -578,7 +578,7 @@ export function ContextRulesTab({
                         checked={values.autoStateChangeEnabled}
                         disabled={loading}
                         aria-label={t(`${I18N_ROOT}.enable_legacy_auto_status`)}
-                        onCheckedChange={(checked: any) => {
+                        onCheckedChange={(checked) => {
                             onSaveValue(
                                 'autoStateChangeEnabled',
                                 checked,
@@ -603,7 +603,7 @@ export function ContextRulesTab({
                                             : 'alone'
                                     }
                                     disabled={legacyDisabled}
-                                    onValueChange={(value: any) => {
+                                    onValueChange={(value) => {
                                         onSaveValue(
                                             'autoStateChangeNoFriends',
                                             value === 'noFriends',
@@ -650,7 +650,7 @@ export function ContextRulesTab({
                                         !values.autoStateChangeNoFriends
                                     }
                                     columns="two"
-                                    onChange={(next: any) => {
+                                    onChange={(next) => {
                                         onSaveValue(
                                             'autoStateChangeGroups',
                                             next,
@@ -670,7 +670,7 @@ export function ContextRulesTab({
                                 options={instanceOptions}
                                 disabled={legacyDisabled}
                                 columns="two"
-                                onChange={(next: any) => {
+                                onChange={(next) => {
                                     onSaveValue(
                                         'autoStateChangeInstanceTypes',
                                         next,

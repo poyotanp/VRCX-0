@@ -30,10 +30,10 @@ export function useFriendLogTableState({
     selectedTypes: string[];
 }) {
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
     const tablePageSizesPreference = usePreferencesStore(
-        (state: any) => state.tablePageSizes
+        (state) => state.tablePageSizes
     );
     const [persistedState] = useState(() => readPersistedState());
     const hasWrittenSortingRef = useRef(false);
@@ -70,7 +70,7 @@ export function useFriendLogTableState({
             getTablePageSizesPreference(DEFAULT_PAGE_SIZES),
             getTablePageSizePreference(20)
         ])
-            .then(([nextPageSizes, nextPageSize]: any) => {
+            .then(([nextPageSizes, nextPageSize]) => {
                 if (!active) {
                     return;
                 }
@@ -95,7 +95,7 @@ export function useFriendLogTableState({
                       )
                     : resolvedConfiguredPageSize;
                 setPageSizes(resolvedPageSizes);
-                setPagination((current: any) => ({
+                setPagination((current) => ({
                     ...current,
                     pageSize: resolvedActivePageSize
                 }));
@@ -112,7 +112,7 @@ export function useFriendLogTableState({
         }
         const resolvedPageSizes = sanitizePageSizes(tablePageSizesPreference);
         setPageSizes(resolvedPageSizes);
-        setPagination((current: any) => {
+        setPagination((current) => {
             const pageSize = resolvePageSize(
                 current.pageSize,
                 resolvedPageSizes
@@ -160,7 +160,7 @@ export function useFriendLogTableState({
     }, [columnOrder, columnOrderLocked, columnSizing, columnVisibility]);
 
     useEffect(() => {
-        setPagination((current: any) => ({
+        setPagination((current) => ({
             ...current,
             pageIndex: 0
         }));
@@ -172,7 +172,7 @@ export function useFriendLogTableState({
             Math.ceil(orderedRowsLength / pagination.pageSize) - 1
         );
         if (pagination.pageIndex > maxPageIndex) {
-            setPagination((current: any) => ({
+            setPagination((current) => ({
                 ...current,
                 pageIndex: maxPageIndex
             }));

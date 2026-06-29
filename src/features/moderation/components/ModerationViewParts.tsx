@@ -49,7 +49,7 @@ export function ModerationTypeFilterDropdown({
                         <DropdownMenuCheckboxItem
                             key={type}
                             checked={selectedTypes.includes(type)}
-                            onCheckedChange={(checked: any) => {
+                            onCheckedChange={(checked) => {
                                 const next = checked
                                     ? [...selectedTypes, type]
                                     : selectedTypes.filter(
@@ -57,7 +57,7 @@ export function ModerationTypeFilterDropdown({
                                       );
                                 onChange(sanitizeTypes(next));
                             }}
-                            onSelect={(event: any) => event.preventDefault()}
+                            onSelect={(event) => event.preventDefault()}
                         >
                             {getTypeLabel(type)}
                         </DropdownMenuCheckboxItem>

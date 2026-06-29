@@ -40,7 +40,9 @@ export function GroupPostEditorDialog({
 }: any) {
     const { t } = useTranslation();
 
-    const [galleryRows, setGalleryRows] = useState<any[]>([]);
+    const [galleryRows, setGalleryRows] = useState<
+        Awaited<ReturnType<typeof mediaRepository.getFileList>>['json']
+    >([]);
     const [galleryStatus, setGalleryStatus] = useState('idle');
     const [galleryError, setGalleryError] = useState('');
     const galleryRequestIdRef = useRef(0);
@@ -134,7 +136,7 @@ export function GroupPostEditorDialog({
                         <Input
                             id="group-post-title"
                             value={form.title}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 updateForm({ title: event.target.value })
                             }
                             disabled={submitting}
@@ -148,7 +150,7 @@ export function GroupPostEditorDialog({
                             id="group-post-text"
                             rows={4}
                             value={form.text}
-                            onChange={(event: any) =>
+                            onChange={(event) =>
                                 updateForm({ text: event.target.value })
                             }
                             disabled={submitting}
@@ -164,7 +166,7 @@ export function GroupPostEditorDialog({
                                 id="group-post-send-notification"
                                 checked={Boolean(form.sendNotification)}
                                 disabled={submitting}
-                                onCheckedChange={(checked: any) =>
+                                onCheckedChange={(checked) =>
                                     updateForm({
                                         sendNotification: checked === true
                                     })
@@ -184,7 +186,7 @@ export function GroupPostEditorDialog({
                             variant="outline"
                             size="sm"
                             value={form.visibility}
-                            onValueChange={(visibility: any) => {
+                            onValueChange={(visibility) => {
                                 if (visibility) {
                                     updateForm({ visibility });
                                 }
@@ -264,7 +266,7 @@ export function GroupPostEditorDialog({
                             <InputGroupInput
                                 id="group-post-image-id"
                                 value={form.imageId || ''}
-                                onChange={(event: any) =>
+                                onChange={(event) =>
                                     updateForm({ imageId: event.target.value })
                                 }
                                 disabled={submitting}

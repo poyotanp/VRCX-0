@@ -1,4 +1,12 @@
-import { commands } from '@/platform/tauri/bindings';
+import type { FeedLiveEntry } from '@/domain/feed/feedLiveTypes';
+import type { FeedReadModelResult } from '@/domain/feed/feedReadModelTypes';
+import {
+    commands,
+    type FeedLiveRowsMergeInput,
+    type FeedReadModelOutput,
+    type FeedReadModelQueryInput,
+    type FeedRowsQueryInput
+} from '@/platform/tauri/bindings';
 import {
     DEFAULT_MAX_TABLE_SIZE,
     DEFAULT_SEARCH_LIMIT
@@ -7,14 +15,15 @@ import { normalizeString } from '@/shared/utils/string';
 
 import { normalizeUserTablePrefix } from './userSessionRepository';
 
-type FeedDatabaseRow = {
-    [key: string]: unknown;
-    rowId: unknown;
+type FeedRowValue = Record<string, unknown>;
+
+type FeedDatabaseRow = FeedRowValue & {
+    rowId?: unknown;
     sourceRank?: unknown;
-    created_at: unknown;
-    userId: unknown;
-    displayName: unknown;
-    type: unknown;
+    created_at?: unknown;
+    userId?: unknown;
+    displayName?: unknown;
+    type?: unknown;
     location?: unknown;
     worldName?: unknown;
     previousLocation?: unknown;
@@ -34,23 +43,11 @@ type FeedDatabaseRow = {
     previousCurrentAvatarThumbnailImageUrl?: unknown;
 };
 
-type FeedRowValue = Record<string, unknown>;
-
-type FeedLiveEntry = {
-    sequence: number;
-    entry: Record<string, unknown>;
-};
-
 type FeedMode = 'search' | 'lookup' | 'instance' | string;
 export type FeedCursor = {
     createdAt: string;
     sourceRank: number;
     rowId: number;
-};
-
-type FeedReadModelResult = {
-    rows: FeedRowValue[];
-    maxSequence: number;
 };
 
 interface FeedRowsQueryOptions {
@@ -94,6 +91,10 @@ function normalizeStringList(value: unknown): string[] {
     return Array.isArray(value)
         ? value.map(normalizeString).filter(Boolean)
         : [];
+}
+
+function isFeedRowValue(value: unknown): value is FeedRowValue {
+    return Boolean(value && typeof value === 'object');
 }
 
 function getUserPrefix(userId: unknown) {
@@ -153,7 +154,7 @@ async function queryFeedRows({
     cursor = null
 }: FeedRowsQueryOptions): Promise<FeedDatabaseRow[]> {
     await ensureFeedTablesForUser(userId);
-    const rows = (await commands.appFeedRowsQuery({
+    const query = {
         userId: normalizeString(userId),
         mode,
         search,
@@ -164,22 +165,19 @@ async function queryFeedRows({
         dateFrom,
         dateTo,
         cursor
-    })) as FeedDatabaseRow[];
-    return Array.isArray(rows) ? rows : [];
+    } satisfies FeedRowsQueryInput;
+    const rows: unknown = await commands.appFeedRowsQuery(query);
+    return Array.isArray(rows) ? rows.filter(isFeedRowValue) : [];
 }
 
-function normalizeFeedReadModelResult(result: unknown): FeedReadModelResult {
-    if (!result || typeof result !== 'object') {
-        return {
-            rows: [],
-            maxSequence: 0
-        };
-    }
-    const value = result as { rows?: unknown; maxSequence?: unknown };
+function normalizeFeedReadModelResult(
+    result: FeedReadModelOutput
+): FeedReadModelResult<FeedRowValue> {
+    const rows: unknown = result.rows;
+    const maxSequence = Number(result.maxSequence);
     return {
-        rows: Array.isArray(value.rows) ? (value.rows as FeedRowValue[]) : [],
-        maxSequence:
-            typeof value.maxSequence === 'number' ? value.maxSequence : 0
+        rows: Array.isArray(rows) ? rows.filter(isFeedRowValue) : [],
+        maxSequence: Number.isFinite(maxSequence) ? maxSequence : 0
     };
 }
 
@@ -297,26 +295,27 @@ const feed = {
         cursor = null
     }: FeedReadModelQueryOptions) {
         await ensureFeedTablesForUser(userId);
+        const query = {
+            userId: normalizeString(userId),
+            mode,
+            search,
+            filters: normalizeStringList(filters),
+            vipList: normalizeStringList(vipList),
+            maxEntries,
+            dateFrom,
+            dateTo,
+            cursor,
+            liveEntries: Array.isArray(liveEntries) ? liveEntries : [],
+            minLiveSequence,
+            favoritesOnly,
+            favoriteUserIds: Array.isArray(favoriteUserIds)
+                ? favoriteUserIds
+                : [],
+            excludedUserIds: normalizeStringList(excludedUserIds),
+            maxRows
+        } satisfies FeedReadModelQueryInput;
         return normalizeFeedReadModelResult(
-            await commands.appFeedReadModelQuery({
-                userId: normalizeString(userId),
-                mode,
-                search,
-                filters: normalizeStringList(filters),
-                vipList: normalizeStringList(vipList),
-                maxEntries,
-                dateFrom,
-                dateTo,
-                cursor,
-                liveEntries: Array.isArray(liveEntries) ? liveEntries : [],
-                minLiveSequence,
-                favoritesOnly,
-                favoriteUserIds: Array.isArray(favoriteUserIds)
-                    ? favoriteUserIds
-                    : [],
-                excludedUserIds: normalizeStringList(excludedUserIds),
-                maxRows
-            })
+            await commands.appFeedReadModelQuery(query)
         );
     },
 
@@ -334,23 +333,24 @@ const feed = {
         minLiveSequence = 0,
         maxRows = DEFAULT_MAX_TABLE_SIZE
     }: FeedLiveRowsMergeOptions) {
+        const query = {
+            rows: Array.isArray(rows) ? rows : [],
+            currentUserId: normalizeString(currentUserId),
+            filters: normalizeStringList(filters),
+            search,
+            dateFrom,
+            dateTo,
+            favoritesOnly,
+            favoriteUserIds: Array.isArray(favoriteUserIds)
+                ? favoriteUserIds
+                : [],
+            excludedUserIds: normalizeStringList(excludedUserIds),
+            liveEntries: Array.isArray(liveEntries) ? liveEntries : [],
+            minLiveSequence,
+            maxRows
+        } satisfies FeedLiveRowsMergeInput;
         return normalizeFeedReadModelResult(
-            await commands.appFeedLiveRowsMerge({
-                rows: Array.isArray(rows) ? rows : [],
-                currentUserId: normalizeString(currentUserId),
-                filters: normalizeStringList(filters),
-                search,
-                dateFrom,
-                dateTo,
-                favoritesOnly,
-                favoriteUserIds: Array.isArray(favoriteUserIds)
-                    ? favoriteUserIds
-                    : [],
-                excludedUserIds: normalizeStringList(excludedUserIds),
-                liveEntries: Array.isArray(liveEntries) ? liveEntries : [],
-                minLiveSequence,
-                maxRows
-            })
+            await commands.appFeedLiveRowsMerge(query)
         );
     },
 

@@ -56,9 +56,7 @@ function writeSidePanelRouteOpenState(routeKey: any, open: any) {
 
 export function useRightSidePanelVisibility(pathname: any) {
     const routeKey = getDefaultHiddenSidePanelPath(pathname);
-    const rightSidebarOpen = useShellStore(
-        (state: any) => state.rightSidebarOpen
-    );
+    const rightSidebarOpen = useShellStore((state) => state.rightSidebarOpen);
     const [routeOpenState, setRouteOpenState] = useState(
         readSidePanelRouteOpenState
     );

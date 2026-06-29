@@ -188,91 +188,85 @@ export function AppStatusBar() {
         false
     ]);
     const websocketConnected = useRuntimeStore(
-        (state: any) => state.transport.websocketConnected
+        (state) => state.transport.websocketConnected
     );
     const lastGameStartedAt = useRuntimeStore(
-        (state: any) => state.gameState.lastGameStartedAt
+        (state) => state.gameState.lastGameStartedAt
     );
     const currentLocationStartedAt = useRuntimeStore(
-        (state: any) => state.gameState.currentLocationStartedAt
+        (state) => state.gameState.currentLocationStartedAt
     );
     const currentWorldName = useRuntimeStore(
-        (state: any) => state.gameState.currentWorldName
+        (state) => state.gameState.currentWorldName
     );
     const currentWorldId = useRuntimeStore(
-        (state: any) => state.gameState.currentWorldId
+        (state) => state.gameState.currentWorldId
     );
     const lastGameLogAt = useRuntimeStore(
-        (state: any) => state.gameState.lastGameLogAt
+        (state) => state.gameState.lastGameLogAt
     );
     const lastGameLogType = useRuntimeStore(
-        (state: any) => state.gameState.lastGameLogType
+        (state) => state.gameState.lastGameLogType
     );
-    const nowPlayingUrl = useRuntimeStore((state: any) => state.nowPlaying.url);
-    const nowPlayingName = useRuntimeStore(
-        (state: any) => state.nowPlaying.name
-    );
+    const nowPlayingUrl = useRuntimeStore((state) => state.nowPlaying.url);
+    const nowPlayingName = useRuntimeStore((state) => state.nowPlaying.name);
     const nowPlayingStartedAt = useRuntimeStore(
-        (state: any) => state.nowPlaying.startedAt
+        (state) => state.nowPlaying.startedAt
     );
     const nowPlayingPosition = useRuntimeStore(
-        (state: any) => state.nowPlaying.position
+        (state) => state.nowPlaying.position
     );
     const nowPlayingLength = useRuntimeStore(
-        (state: any) => state.nowPlaying.length
+        (state) => state.nowPlaying.length
     );
-    const instanceQueue = useRuntimeStore((state: any) => state.instanceQueue);
+    const instanceQueue = useRuntimeStore((state) => state.instanceQueue);
     const mutualGraphRunId = useRuntimeStore(
-        (state: any) => state.mutualGraph.runId
+        (state) => state.mutualGraph.runId
     );
     const mutualGraphStatus = useRuntimeStore(
-        (state: any) => state.mutualGraph.status
+        (state) => state.mutualGraph.status
     );
     const mutualGraphProcessedFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.processedFriends
+        (state) => state.mutualGraph.processedFriends
     );
     const mutualGraphTotalFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.totalFriends
+        (state) => state.mutualGraph.totalFriends
     );
     const mutualGraphCancelRequested = useRuntimeStore(
-        (state: any) => state.mutualGraph.cancelRequested
+        (state) => state.mutualGraph.cancelRequested
     );
     const mutualGraphFailedFriends = useRuntimeStore(
-        (state: any) => state.mutualGraph.failedFriends
+        (state) => state.mutualGraph.failedFriends
     );
     const mutualGraphLastError = useRuntimeStore(
-        (state: any) => state.mutualGraph.lastError
+        (state) => state.mutualGraph.lastError
     );
     const isGameRunning = useRuntimeStore(
-        (state: any) => state.gameState.isGameRunning
+        (state) => state.gameState.isGameRunning
     );
     const isSteamVRRunning = useRuntimeStore(
-        (state: any) => state.gameState.isSteamVRRunning
+        (state) => state.gameState.isSteamVRRunning
     );
     const vrcStatusIndicator = useRuntimeStore(
-        (state: any) => state.vrcStatus.indicator
+        (state) => state.vrcStatus.indicator
     );
     const vrcStatusSummary = useRuntimeStore(
-        (state: any) => state.vrcStatus.summary
+        (state) => state.vrcStatus.summary
     );
-    const vrcStatusStatus = useRuntimeStore(
-        (state: any) => state.vrcStatus.status
-    );
+    const vrcStatusStatus = useRuntimeStore((state) => state.vrcStatus.status);
     const vrcStatusLastFetchedAt = useRuntimeStore(
-        (state: any) => state.vrcStatus.lastFetchedAt
+        (state) => state.vrcStatus.lastFetchedAt
     );
     const vrcStatusRefreshing = useRuntimeStore(
-        (state: any) => state.vrcStatus.refreshing
+        (state) => state.vrcStatus.refreshing
     );
-    const vrcStatusError = useRuntimeStore(
-        (state: any) => state.vrcStatus.error
-    );
+    const vrcStatusError = useRuntimeStore((state) => state.vrcStatus.error);
     const preferencesHydrated = usePreferencesStore(
-        (state: any) => state.preferencesHydrated
+        (state) => state.preferencesHydrated
     );
-    const proxyServer = usePreferencesStore((state: any) => state.proxyServer);
-    const zoomLevel = useShellStore((state: any) => state.zoomLevel);
-    const prompt = useModalStore((state: any) => state.prompt);
+    const proxyServer = usePreferencesStore((state) => state.proxyServer);
+    const zoomLevel = useShellStore((state) => state.zoomLevel);
+    const prompt = useModalStore((state) => state.prompt);
     const visibleClocks = clocks.slice(
         0,
         Math.max(0, Math.min(3, Number(clockCount) || 0))

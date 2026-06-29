@@ -4,7 +4,12 @@ import friendLogHistoryRepository from '@/repositories/friendLogHistoryRepositor
 import { usePreferencesStore } from '@/state/preferencesStore';
 import { useRuntimeStore } from '@/state/runtimeStore';
 
-import { matchesSearch, normalizeUserId, sortRows } from './friendLogRows';
+import {
+    matchesSearch,
+    normalizeUserId,
+    sortRows,
+    type FriendLogRow
+} from './friendLogRows';
 import { useFriendLogResolvedNames } from './useFriendLogResolvedNames';
 
 export function useFriendLogRows({
@@ -14,21 +19,17 @@ export function useFriendLogRows({
 }: {
     refreshToken: number;
     searchQuery: string;
-    selectedTypes: any[];
+    selectedTypes: string[];
 }) {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
-    const hideUnfriends = usePreferencesStore(
-        (state: any) => state.hideUnfriends
-    );
-    const [rows, setRows] = useState<any[]>([]);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
+    const hideUnfriends = usePreferencesStore((state) => state.hideUnfriends);
+    const [rows, setRows] = useState<FriendLogRow[]>([]);
     const [rowsOwnerUserId, setRowsOwnerUserId] = useState('');
     const [loadStatus, setLoadStatus] = useState('idle');
     const [detail, setDetail] = useState('');
     const rowsOwnerUserIdRef = useRef('');
 
-    function updateRowsOwnerUserId(ownerUserId: any) {
+    function updateRowsOwnerUserId(ownerUserId: unknown) {
         const normalizedOwnerUserId = normalizeUserId(ownerUserId);
         rowsOwnerUserIdRef.current = normalizedOwnerUserId;
         setRowsOwnerUserId(normalizedOwnerUserId);
@@ -54,7 +55,7 @@ export function useFriendLogRows({
 
         friendLogHistoryRepository
             .getFriendLogHistory(currentUserId)
-            .then((nextRows: any) => {
+            .then((nextRows) => {
                 if (!active) {
                     return;
                 }
@@ -87,7 +88,7 @@ export function useFriendLogRows({
             ? new Set(selectedTypes)
             : null;
 
-        const result: any[] = [];
+        const result: FriendLogRow[] = [];
         for (const row of rows) {
             if (hideUnfriends && row?.type === 'Unfriend') {
                 continue;
@@ -110,7 +111,7 @@ export function useFriendLogRows({
     const orderedRows = useMemo(() => sortRows(filteredRows), [filteredRows]);
 
     return {
-        currentUserId,
+        currentUserId: currentUserId ?? '',
         detail,
         hideUnfriends,
         loadStatus,

@@ -97,7 +97,7 @@ function SessionFriendFacepile({ friends }: { friends: any[] }) {
                         type="button"
                         title={friend.displayName}
                         aria-label={friend.displayName}
-                        onClick={(event: any) => {
+                        onClick={(event) => {
                             event.stopPropagation();
                             openGameLogUser(friend, t);
                         }}

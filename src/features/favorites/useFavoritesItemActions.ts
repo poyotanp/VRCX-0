@@ -78,10 +78,10 @@ export function useFavoritesItemActions({
     setSelectedSource(value: FavoriteSource): void;
 }) {
     const { t } = useTranslation();
-    const confirm = useModalStore((state: any) => state.confirm);
-    const boopPrompt = useModalStore((state: any) => state.boopPrompt);
+    const confirm = useModalStore((state) => state.confirm);
+    const boopPrompt = useModalStore((state) => state.boopPrompt);
     const createLocalFavoriteGroup = useFavoriteStore(
-        (state: any) => state.createLocalFavoriteGroup
+        (state) => state.createLocalFavoriteGroup
     );
 
     function isFavoriteFriendRecord(

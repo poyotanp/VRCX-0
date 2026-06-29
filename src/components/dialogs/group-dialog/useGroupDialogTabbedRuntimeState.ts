@@ -3,16 +3,12 @@ import { useRuntimeStore } from '@/state/runtimeStore';
 
 export function useGroupDialogTabbedRuntimeState() {
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
-    const openImagePreview = useModalStore(
-        (state: any) => state.openImagePreview
-    );
-    const prompt = useModalStore((state: any) => state.prompt);
-    const confirm = useModalStore((state: any) => state.confirm);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
+    const openImagePreview = useModalStore((state) => state.openImagePreview);
+    const prompt = useModalStore((state) => state.prompt);
+    const confirm = useModalStore((state) => state.confirm);
 
     return {
         confirm,

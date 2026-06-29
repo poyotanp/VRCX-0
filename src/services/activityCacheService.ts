@@ -18,9 +18,6 @@ type ActivitySession = Awaited<
 type ActivityRefreshResult = Awaited<
     ReturnType<typeof activityPersistenceRepository.refreshSelfActivitySessions>
 >;
-type ActivitySourceBounds = Awaited<
-    ReturnType<typeof activityPersistenceRepository.getSelfActivitySourceBounds>
->;
 type CurrentUserSnapshot = Record<string, unknown> & {
     id?: unknown;
     displayName?: unknown;
@@ -210,7 +207,7 @@ function applyActivityRefreshResult(
     result: ActivityRefreshResult
 ) {
     if (Array.isArray(result?.sessions)) {
-        snapshot.sessions = result.sessions as ActivitySession[];
+        snapshot.sessions = result.sessions;
     }
     if (result?.sync && typeof result.sync === 'object') {
         snapshot.sync = {
@@ -326,7 +323,7 @@ async function runActivityCacheWarmup({
     }
 
     const currentDays = snapshot.sync.cachedRangeDays || INITIAL_RANGE_DAYS;
-    const sourceBounds: ActivitySourceBounds =
+    const sourceBounds =
         await activityPersistenceRepository.getSelfActivitySourceBounds();
 
     if (!isCurrentWarmupTarget(normalizedUserId)) {
@@ -390,12 +387,13 @@ async function runActivityCacheWarmup({
     }
 
     setWarmupReady(snapshot, displayName);
-    return {
+    const result = {
         userId: normalizedUserId,
         stale: false,
         cachedRangeDays: snapshot.sync.cachedRangeDays || 0,
         sessionCount: snapshot.sessions.length
     };
+    return result;
 }
 
 export function bootstrapActivityCache(

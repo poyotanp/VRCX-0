@@ -282,7 +282,7 @@ function SidebarTrigger({
             variant="ghost"
             size="icon-sm"
             className={cn(className)}
-            onClick={(event: any) => {
+            onClick={(event) => {
                 onClick?.(event);
                 toggleSidebar();
             }}

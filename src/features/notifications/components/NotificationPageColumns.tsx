@@ -1,16 +1,18 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { CheckIcon, SendIcon, Trash2Icon, XIcon } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatDateFilter } from '@/lib/dateTime';
 import { cn } from '@/lib/utils';
+import type { NotificationResponse } from '@/repositories/notificationPersistenceRepository';
 import { convertFileUrlToImageUrl } from '@/services/entityMediaService';
 import { hasGroupIdPrefix } from '@/shared/constants/vrchatIds';
 import { Badge } from '@/ui/shadcn/badge';
 import { Button } from '@/ui/shadcn/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/shadcn/tooltip';
 
+import type { NotificationRow } from '../notificationPageTypes';
 import {
     canDeclineNotification,
     getNotificationCreatedAt,
@@ -26,6 +28,44 @@ import {
     getResponseIcon,
     notificationLinkIsInternal
 } from './NotificationViewParts';
+
+type NotificationActionOptions = {
+    skipConfirm?: boolean;
+};
+
+type DialogParams = Record<string, unknown>;
+
+type NotificationColumnsOptions = {
+    canInviteFromCurrentLocation: boolean;
+    currentUserId?: string | null;
+    isTypeClickable: (notification: NotificationRow) => boolean;
+    notificationTypeLabel: (type: unknown) => string;
+    onAcceptFriendRequest: (notification: NotificationRow) => void;
+    onAcceptRequestInvite: (notification: NotificationRow) => void;
+    onDeleteNotification: (
+        notification: NotificationRow,
+        options?: NotificationActionOptions
+    ) => void;
+    onHideNotification: (
+        notification: NotificationRow,
+        options?: NotificationActionOptions
+    ) => void;
+    onMarkSeen: (notification: NotificationRow) => void;
+    onOpenGroup: (params: DialogParams) => void;
+    onOpenNotificationImagePreview: (notification: NotificationRow) => void;
+    onOpenNotificationLink: (link: unknown) => void;
+    onOpenTypeTarget: (notification: NotificationRow) => void;
+    onOpenUser: (params: DialogParams) => void;
+    onSendInviteResponseWithMessage: (
+        notification: NotificationRow,
+        messageType: string
+    ) => void;
+    onSendNotificationResponse: (
+        notification: NotificationRow,
+        response: NotificationResponse
+    ) => void;
+    shiftHeld: boolean;
+};
 
 export function useNotificationColumns({
     currentUserId,
@@ -45,23 +85,23 @@ export function useNotificationColumns({
     onHideNotification,
     onMarkSeen,
     onDeleteNotification
-}: any) {
+}: NotificationColumnsOptions) {
     const { t } = useTranslation();
 
-    return useMemo<ColumnDef<unknown>[]>(
+    return useMemo<ColumnDef<NotificationRow>[]>(
         () => [
             {
                 id: 'created_at',
-                accessorFn: (row: any) =>
+                accessorFn: (row) =>
                     new Date(getNotificationCreatedAt(row) || 0).valueOf() || 0,
                 meta: { label: t('table.notification.date') },
-                header: ({ column }: any) => (
+                header: ({ column }) => (
                     <SortButton
                         column={column}
                         label={t('table.notification.date')}
                     />
                 ),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const createdAt = getNotificationCreatedAt(row.original);
                     const shortText = formatDateFilter(createdAt, 'short');
                     const longText = formatDateFilter(createdAt, 'long');
@@ -79,15 +119,15 @@ export function useNotificationColumns({
             },
             {
                 id: 'type',
-                accessorFn: (row: any) => String(row?.type || ''),
+                accessorFn: (row) => String(row?.type || ''),
                 meta: { label: t('table.notification.type') },
-                header: ({ column }: any) => (
+                header: ({ column }) => (
                     <SortButton
                         column={column}
                         label={t('table.notification.type')}
                     />
                 ),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const notification = row.original;
                     const label = notificationTypeLabel(notification.type);
                     const badge = (
@@ -116,15 +156,15 @@ export function useNotificationColumns({
             },
             {
                 id: 'senderUsername',
-                accessorFn: (row: any) => getNotificationSenderLabel(row),
+                accessorFn: (row) => getNotificationSenderLabel(row),
                 meta: { label: t('table.notification.user') },
-                header: ({ column }: any) => (
+                header: ({ column }) => (
                     <SortButton
                         column={column}
                         label={t('table.notification.user')}
                     />
                 ),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const notification = row.original;
                     const senderLabel =
                         getNotificationSenderLabel(notification);
@@ -190,10 +230,10 @@ export function useNotificationColumns({
             },
             {
                 id: 'groupName',
-                accessorFn: (row: any) => getNotificationGroupColumnLabel(row),
+                accessorFn: (row) => getNotificationGroupColumnLabel(row),
                 meta: { label: t('table.notification.group') },
                 header: t('table.notification.group'),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const notification = row.original;
                     const label = getNotificationGroupColumnLabel(notification);
                     const groupId = hasGroupIdPrefix(notification.senderUserId)
@@ -201,7 +241,9 @@ export function useNotificationColumns({
                         : notification.link?.startsWith('group:')
                           ? notification.link.slice('group:'.length)
                           : notification.link?.startsWith('event:')
-                            ? notification.link.slice('event:').split(',')[0]
+                            ? notification.link
+                                  .slice('event:'.length)
+                                  .split(',')[0]
                             : '';
                     if (!label) {
                         return null;
@@ -227,7 +269,7 @@ export function useNotificationColumns({
                 enableSorting: false,
                 meta: { label: t('table.notification.photo') },
                 header: t('table.notification.photo'),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const imageUrl =
                         row.original.details?.imageUrl ||
                         row.original.imageUrl ||
@@ -271,11 +313,11 @@ export function useNotificationColumns({
             },
             {
                 id: 'message',
-                accessorFn: (row: any) => getNotificationMessage(row),
+                accessorFn: (row) => getNotificationMessage(row),
                 enableSorting: false,
                 meta: { label: t('table.notification.message') },
                 header: t('table.notification.message'),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const notification = row.original;
                     const message = getNotificationMessage(notification);
                     const worldId =
@@ -339,7 +381,7 @@ export function useNotificationColumns({
                 enableSorting: false,
                 meta: { label: t('table.notification.action') },
                 header: t('table.notification.action'),
-                cell: ({ row }: any) => {
+                cell: ({ row }) => {
                     const notification = row.original;
                     const remoteActionsVisible =
                         notification.senderUserId !== currentUserId &&
@@ -460,7 +502,7 @@ export function useNotificationColumns({
                                 </Tooltip>
                             ) : null}
                             {remoteActionsVisible
-                                ? responses.map((response: any) => {
+                                ? responses.map((response) => {
                                       const label = getResponseLabel(response);
                                       const ResponseIcon = getResponseIcon(
                                           response,
@@ -504,7 +546,9 @@ export function useNotificationColumns({
                                             aria-label={t(
                                                 'view.notification.actions.decline'
                                             )}
-                                            onClick={(event: any) => {
+                                            onClick={(
+                                                event: MouseEvent<HTMLButtonElement>
+                                            ) => {
                                                 onHideNotification(
                                                     notification,
                                                     {
@@ -564,7 +608,9 @@ export function useNotificationColumns({
                                             aria-label={t(
                                                 'view.notification.actions.delete_log'
                                             )}
-                                            onClick={(event: any) => {
+                                            onClick={(
+                                                event: MouseEvent<HTMLButtonElement>
+                                            ) => {
                                                 onDeleteNotification(
                                                     notification,
                                                     {

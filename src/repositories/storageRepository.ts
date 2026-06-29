@@ -56,10 +56,7 @@ export class StorageRepository {
     }
 
     async clear(): Promise<void> {
-        const entries = (await commands.storageGetAll()) as Record<
-            string,
-            unknown
-        >;
+        const entries = await commands.storageGetAll();
         const keys = Object.keys(entries || {}).filter((key) =>
             this.#prefix ? key.startsWith(this.#prefix) : true
         );

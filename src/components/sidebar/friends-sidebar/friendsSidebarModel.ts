@@ -1,5 +1,6 @@
 import { getFriendsSortFunction, sortStatus } from '@/shared/utils/friend';
 import { isRealInstance } from '@/shared/utils/instance';
+export { resolveCurrentInviteLocation } from '@/shared/utils/invite';
 import {
     parseLocation,
     resolveFriendPresenceLocation
@@ -76,23 +77,6 @@ export function clearStaleOfflineLocation(location: any, state: any) {
         return '';
     }
     return location;
-}
-
-export function resolveCurrentInviteLocation(
-    gameState: any,
-    currentUserSnapshot: any
-) {
-    const currentLocation = normalizeId(gameState?.currentLocation);
-    if (currentLocation === 'traveling') {
-        return normalizeId(gameState?.currentDestination);
-    }
-    return (
-        currentLocation ||
-        normalizeId(gameState?.currentDestination) ||
-        normalizeId(
-            currentUserSnapshot?.$locationTag || currentUserSnapshot?.location
-        )
-    );
 }
 
 export function buildFavoriteIdSet(

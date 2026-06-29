@@ -4,13 +4,13 @@ import { useSessionStore } from '@/state/sessionStore';
 
 export function useFriendListFilters() {
     const isFavoritesLoaded = useSessionStore(
-        (state: any) => state.isFavoritesLoaded
+        (state) => state.isFavoritesLoaded
     );
     const [searchQuery, setSearchQuery] = useState('');
     const [favoritesOnly, setFavoritesOnly] = useState(false);
-    const [activeSearchFilterIds, setActiveSearchFilterIds] = useState(
-        () => new Set()
-    );
+    const [activeSearchFilterIds, setActiveSearchFilterIds] = useState<
+        Set<string>
+    >(() => new Set<string>());
 
     useEffect(() => {
         if (!isFavoritesLoaded && favoritesOnly) {

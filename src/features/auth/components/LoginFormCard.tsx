@@ -49,7 +49,7 @@ export function LoginFormCard({
                                     'view.login.placeholder.account'
                                 )}
                                 value={loginForm.username}
-                                onChange={(event: any) => {
+                                onChange={(event) => {
                                     onCancelAutoLogin(
                                         t(
                                             'view.auth.auto_login.skipped_form_changed'
@@ -85,7 +85,7 @@ export function LoginFormCard({
                                     'view.login.placeholder.password'
                                 )}
                                 value={loginForm.password}
-                                onChange={(event: any) => {
+                                onChange={(event) => {
                                     onCancelAutoLogin(
                                         t(
                                             'view.auth.auto_login.skipped_form_changed'
@@ -113,7 +113,7 @@ export function LoginFormCard({
                                 id="react-login-save-credentials"
                                 checked={loginForm.saveCredentials}
                                 disabled={busy}
-                                onCheckedChange={(checked: any) => {
+                                onCheckedChange={(checked) => {
                                     onCancelAutoLogin(
                                         t(
                                             'view.auth.auto_login.skipped_form_changed'

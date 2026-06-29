@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import type { FeedReadModelResult } from '@/domain/feed/feedReadModelTypes';
 import feedRepository from '@/repositories/feedRepository';
 import friendLogRepository from '@/repositories/friendLogRepository';
 import gameLogRepository from '@/repositories/gameLogRepository';
@@ -20,11 +21,6 @@ import {
 } from './feedRows';
 import type { FeedFilterType, FeedLoadStatus, FeedRow } from './feedTypes';
 
-type FeedReadModelResult = {
-    rows: FeedRow[];
-    maxSequence: number;
-};
-
 type UseFeedRowsOptions = {
     activeFilters: FeedFilterType[];
     dateFrom: string;
@@ -42,26 +38,24 @@ export function useFeedRows({
     favoritesOnly,
     preferencesReady
 }: UseFeedRowsOptions) {
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
     const isFavoritesLoaded = useSessionStore(
-        (state: any) => state.isFavoritesLoaded
+        (state) => state.isFavoritesLoaded
     );
     const remoteFavoritesById = useFavoriteStore(
-        (state: any) => state.remoteFavoritesById
+        (state) => state.remoteFavoritesById
     );
     const localFriendFavorites = useFavoriteStore(
-        (state: any) => state.localFriendFavorites
+        (state) => state.localFriendFavorites
     );
     const favoriteGroupFilterIds = usePreferencesStore(
-        (state: any) => state.localFavoriteFriendsGroups
+        (state) => state.localFavoriteFriendsGroups
     );
     const maxFeedRows = usePreferencesStore(
-        (state: any) => state.tableLimits.maxTableSize
+        (state) => state.tableLimits.maxTableSize
     );
     const friendRosterLastLoadedAt = useFriendRosterStore(
-        (state: any) => state.lastLoadedAt
+        (state) => state.lastLoadedAt
     );
     const [rows, setRows] = useState<FeedRow[]>([]);
     const [friendLogNamesById, setFriendLogNamesById] = useState<
@@ -97,15 +91,15 @@ export function useFeedRows({
         minLiveSequence: number;
         favoriteUserIds: unknown[];
         requestIsCurrent(): boolean;
-    }): Promise<FeedReadModelResult | null> {
-        let result: FeedReadModelResult = {
+    }): Promise<FeedReadModelResult<FeedRow> | null> {
+        let result: FeedReadModelResult<FeedRow> = {
             rows,
             maxSequence: minLiveSequence
         };
         let previousMaxSequence = minLiveSequence;
         while (requestIsCurrent()) {
             const liveFeedSnapshot = useFeedLiveStore.getState();
-            result = (await feedRepository.mergeLiveRows({
+            result = await feedRepository.mergeLiveRows({
                 rows: result.rows,
                 userId: currentUserId,
                 search: deferredSearchQuery,
@@ -117,7 +111,7 @@ export function useFeedRows({
                 minLiveSequence: result.maxSequence,
                 favoritesOnly,
                 maxRows: maxFeedRows
-            })) as FeedReadModelResult;
+            });
             if (!requestIsCurrent()) {
                 return null;
             }
@@ -138,7 +132,7 @@ export function useFeedRows({
         favoriteUserIds,
         requestIsCurrent
     }: {
-        result: FeedReadModelResult;
+        result: FeedReadModelResult<FeedRow>;
         favoriteUserIds: unknown[];
         requestIsCurrent(): boolean;
     }) {
@@ -304,10 +298,9 @@ export function useFeedRows({
                     return;
                 }
                 const mergedResult = await mergeRowsWithLatestLive({
-                    rows: (result as FeedReadModelResult).rows,
+                    rows: result.rows,
                     favoriteUserIds,
-                    minLiveSequence: (result as FeedReadModelResult)
-                        .maxSequence,
+                    minLiveSequence: result.maxSequence,
                     requestIsCurrent: () => requestIdRef.current === requestId
                 });
                 if (!mergedResult || requestIdRef.current !== requestId) {
@@ -358,7 +351,7 @@ export function useFeedRows({
         if (!preferencesReady || !currentUserId) {
             return undefined;
         }
-        return useFeedLiveStore.subscribe((state: any, previousState: any) => {
+        return useFeedLiveStore.subscribe((state, previousState) => {
             if (
                 state.version === previousState?.version ||
                 state.entries.length === 0

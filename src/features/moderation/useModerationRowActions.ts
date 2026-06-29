@@ -33,12 +33,10 @@ export function useModerationRowActions({
 }: ModerationRowActionsOptions) {
     const { t } = useTranslation();
     const currentEndpoint = useRuntimeStore(
-        (state: any) => state.auth.currentUserEndpoint
+        (state) => state.auth.currentUserEndpoint
     );
-    const currentUserId = useRuntimeStore(
-        (state: any) => state.auth.currentUserId
-    );
-    const confirm = useModalStore((state: any) => state.confirm);
+    const currentUserId = useRuntimeStore((state) => state.auth.currentUserId);
+    const confirm = useModalStore((state) => state.confirm);
     const [deletingModerationKey, setDeletingModerationKey] = useState('');
 
     const handleDeleteModeration = async (
