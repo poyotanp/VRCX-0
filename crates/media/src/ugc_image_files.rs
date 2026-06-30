@@ -102,8 +102,26 @@ pub fn default_image_extension(file_name: &str) -> &str {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UgcCategory {
+    Prints,
+    Stickers,
+    Emoji,
+}
+
+impl UgcCategory {
+    pub fn folder_name(self) -> &'static str {
+        match self {
+            Self::Prints => "Prints",
+            Self::Stickers => "Stickers",
+            Self::Emoji => "Emoji",
+        }
+    }
+}
+
 pub fn build_ugc_image_path(
     ugc_folder_path: &str,
+    category: UgcCategory,
     month_folder: &str,
     file_name: &str,
 ) -> Result<PathBuf, Error> {
@@ -114,6 +132,7 @@ pub fn build_ugc_image_path(
     let month_folder = sanitize_ugc_component(month_folder, "month_folder")?;
     let file_name = sanitize_ugc_component(file_name, "file_name")?;
     Ok(PathBuf::from(ugc_folder_path)
+        .join(category.folder_name())
         .join(month_folder)
         .join(file_name))
 }
@@ -145,11 +164,17 @@ mod tests {
 
     #[test]
     fn builds_ugc_image_paths_from_single_components() -> Result<(), Error> {
-        let path = super::build_ugc_image_path(r"C:\VRCX\UGC", "2026/04", r"..\avatar:name?.png")?;
+        let path = super::build_ugc_image_path(
+            r"C:\VRCX\UGC",
+            super::UgcCategory::Prints,
+            "2026/04",
+            r"..\avatar:name?.png",
+        )?;
 
         assert_eq!(
             path,
             PathBuf::from(r"C:\VRCX\UGC")
+                .join("Prints")
                 .join("2026_04")
                 .join(".._avatar_name_.png")
         );

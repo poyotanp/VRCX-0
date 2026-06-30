@@ -12,6 +12,7 @@ use crate::image_cache::{self, ImageCache};
 use crate::web_client::WebClient;
 use crate::{Error, Result};
 use vrcx_0_media::image_processing;
+use vrcx_0_media::ugc_image_files::UgcCategory;
 use vrcx_0_persistence::config as config_store;
 use vrcx_0_persistence::DatabaseService;
 use vrcx_0_vrchat_client::http_api::{ApiScope, HttpApiRequestInput};
@@ -156,6 +157,7 @@ async fn save_instance_print(deps: InstanceMediaDeps, print_id: &str) -> Result<
         &deps.image_cache,
         &image_url,
         &ugc_path,
+        UgcCategory::Prints,
         &month_folder,
         &file_name,
     )
@@ -205,16 +207,23 @@ async fn save_inventory_media(
     let created = parse_datetime_or_now(&created_at);
     let month_folder = created.format("%Y-%m").to_string();
     let file_date = created.format("%Y-%m-%d_%H-%M-%S%.3f").to_string();
-    let file_name = if expected_type == "sticker" {
-        format!("{display_name}_{file_date}_{inventory_id}.png")
+    let (category, file_name) = if expected_type == "sticker" {
+        (
+            UgcCategory::Stickers,
+            format!("{display_name}_{file_date}_{inventory_id}.png"),
+        )
     } else {
-        emoji_file_name(&item, user_id, inventory_id)
+        (
+            UgcCategory::Emoji,
+            emoji_file_name(&item, user_id, inventory_id),
+        )
     };
 
     image_cache::save_ugc_image_to_file(
         &deps.image_cache,
         &image_url,
         &ugc_path,
+        category,
         &month_folder,
         &file_name,
     )

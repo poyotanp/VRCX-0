@@ -199,6 +199,7 @@ pub use task_supervisor::{
     RuntimeTask, RuntimeTaskExecutor, RuntimeTaskHandle, TaskStopToken, TaskSupervisor,
 };
 pub use vrcx_0_core::location::ParsedLocation;
+pub use vrcx_0_media::ugc_image_files::UgcCategory;
 pub use web_client::WebClient;
 pub use worker::{OverflowPolicy, RuntimeJobHandler, RuntimePushReport};
 pub use world_cache::WorldCache;

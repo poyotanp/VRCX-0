@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use vrcx_0_media::image_cache::ImageCache as LocalImageCache;
+use vrcx_0_media::ugc_image_files::UgcCategory;
 use vrcx_0_media::Error as MediaError;
 use vrcx_0_vrchat_client::image_fetcher::ImageFetcher;
 
@@ -51,11 +52,13 @@ pub async fn save_ugc_image_to_file(
     image_cache: &ImageCache,
     url: &str,
     ugc_folder_path: &str,
+    category: UgcCategory,
     month_folder: &str,
     file_name: &str,
 ) -> Result<String> {
     let out = vrcx_0_media::ugc_image_files::build_ugc_image_path(
         ugc_folder_path,
+        category,
         month_folder,
         file_name,
     )?;

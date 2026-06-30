@@ -168,7 +168,8 @@ pub fn crop_print_base64(base64data: &str) -> Result<String, Error> {
 }
 
 pub fn crop_all_prints(ugc_folder_path: &str) -> Result<(), Error> {
-    let folder = PathBuf::from(ugc_folder_path).join("Prints");
+    let folder = PathBuf::from(ugc_folder_path)
+        .join(crate::ugc_image_files::UgcCategory::Prints.folder_name());
     if !folder.is_dir() {
         return Ok(());
     }

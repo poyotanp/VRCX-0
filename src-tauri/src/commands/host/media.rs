@@ -6,7 +6,7 @@ use tauri::{AppHandle, State};
 
 use crate::error::AppError;
 use crate::state::AppState;
-use vrcx_0_application::save_ugc_image_to_file;
+use vrcx_0_application::{save_ugc_image_to_file, UgcCategory};
 use vrcx_0_media::{image_processing, media_files};
 
 #[tauri::command]
@@ -90,10 +90,9 @@ pub fn app__crop_print_image(state: State<'_, AppState>, path: String) -> Result
         .map_err(|e| AppError::Custom(format!("{path}: {e}")))
 }
 
-#[tauri::command]
-#[specta::specta]
-pub async fn app__save_print_to_file(
-    state: State<'_, AppState>,
+async fn save_ugc_category_to_file(
+    state: &AppState,
+    category: UgcCategory,
     url: String,
     ugc_folder_path: String,
     month_folder: String,
@@ -106,10 +105,31 @@ pub async fn app__save_print_to_file(
         &state.image_cache,
         &url,
         &ugc_folder_path,
+        category,
         &month_folder,
         &file_name,
     )
     .await?)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn app__save_print_to_file(
+    state: State<'_, AppState>,
+    url: String,
+    ugc_folder_path: String,
+    month_folder: String,
+    file_name: String,
+) -> Result<String, AppError> {
+    save_ugc_category_to_file(
+        &state,
+        UgcCategory::Prints,
+        url,
+        ugc_folder_path,
+        month_folder,
+        file_name,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -121,17 +141,15 @@ pub async fn app__save_sticker_to_file(
     month_folder: String,
     file_name: String,
 ) -> Result<String, AppError> {
-    state
-        .host_file_access
-        .ensure_write_allowed(&ugc_folder_path, &state.paths)?;
-    Ok(save_ugc_image_to_file(
-        &state.image_cache,
-        &url,
-        &ugc_folder_path,
-        &month_folder,
-        &file_name,
+    save_ugc_category_to_file(
+        &state,
+        UgcCategory::Stickers,
+        url,
+        ugc_folder_path,
+        month_folder,
+        file_name,
     )
-    .await?)
+    .await
 }
 
 #[tauri::command]
@@ -143,15 +161,13 @@ pub async fn app__save_emoji_to_file(
     month_folder: String,
     file_name: String,
 ) -> Result<String, AppError> {
-    state
-        .host_file_access
-        .ensure_write_allowed(&ugc_folder_path, &state.paths)?;
-    Ok(save_ugc_image_to_file(
-        &state.image_cache,
-        &url,
-        &ugc_folder_path,
-        &month_folder,
-        &file_name,
+    save_ugc_category_to_file(
+        &state,
+        UgcCategory::Emoji,
+        url,
+        ugc_folder_path,
+        month_folder,
+        file_name,
     )
-    .await?)
+    .await
 }
